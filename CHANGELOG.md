@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.1.3 — 2026-11-15
+
 ### Học từ câu trả lời
 
 - `query` giờ dùng bộ nhớ làm việc chứ không chỉ hiển thị nó:
@@ -18,6 +20,16 @@
   agent hỏi graph so với grep/đọc file, kèm số token. Trên monorepo thử nghiệm,
   57 phiên trước khi cài pilothify đã dùng 4.134 lần grep/glob/đọc file, trả về
   khoảng 2,8 triệu token.
+
+### Windows
+
+- CI chạy toàn bộ test trên Windows. Lần chạy đầu lộ ra 17 lỗi:
+  - Bộ skill của plugin luôn bị coi là cũ, vì danh sách file dùng dấu `\`.
+  - Khai báo và định nghĩa C++ nằm ở ổ đĩa khác root không được gộp.
+  - Các test chạy shell gọi nhầm trình khởi chạy WSL thay vì bash của Git.
+  - Một test watch kỳ vọng dấu `\`, trong khi graph lưu đường dẫn dạng `/`.
+
+  Cả 17 lỗi đã được sửa.
 
 ### Tài liệu
 
