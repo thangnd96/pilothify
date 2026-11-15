@@ -6,7 +6,7 @@ semantic subagents (the skill prompt's node-ID spec), and the graph builder
 (``build._normalize_id``, which reconciles edge endpoints). The recipe used to be
 copy-pasted into ``_make_id`` and ``_normalize_id`` and kept in sync only by
 mirrored docstrings — exactly how the recurring ID-drift bug class crept in
-(#811 Unicode collapse, #550 same-filename collisions, #1033 AST-vs-LLM file-node
+(Unicode collapse, same-filename collisions AST-vs-LLM file-node
 mismatch).
 
 Both callers now delegate to :mod:`pilothify.ids`, so they share one
@@ -52,7 +52,7 @@ CONTRACT_CASES = [
 ]
 
 # Characters whose casefold expands or recomposes — the exact class that broke
-# the contract in #2614. Kept separate from CONTRACT_CASES because a few of them
+# the contract. Kept separate from CONTRACT_CASES because a few of them
 # (e.g. U+01F0) legitimately normalize to a precomposed character that is not
 # equal to its own casefold, which the lowercase assertion below would reject.
 CASE_EXPANDING_CHARS = [
@@ -92,7 +92,7 @@ def test_make_id_joins_then_normalizes():
 
 
 def test_unicode_identifiers_do_not_collapse_to_empty():
-    """#811: non-ASCII identifiers must yield distinct, non-empty IDs rather than
+    """Non-ASCII identifiers must yield distinct, non-empty IDs rather than
     collapsing to a single per-file node."""
     a = _make_id("クラスА")
     b = _make_id("クラスB")
@@ -110,7 +110,7 @@ def test_normalized_ids_are_safe_node_ids():
 
 @pytest.mark.parametrize("ch", CASE_EXPANDING_CHARS)
 def test_case_expanding_chars_yield_word_only_ids(ch):
-    """#2614: the postcondition the old recipe silently broke.
+    """The postcondition the old recipe silently broke.
 
     ``normalize_id`` must emit only ``\\w`` characters and ``_``. Casefolding
     last let the combining mark that ``İ``.casefold() produces slip past the
@@ -145,7 +145,7 @@ def test_case_expanding_chars_normalize_case_insensitively(ch):
 
 
 def test_turkish_identifier_ids_match_between_extractor_and_builder():
-    """#2614 end to end: the drift that split a Turkish symbol into ghost nodes.
+    """End to end: the drift that split a Turkish symbol into ghost nodes.
 
     ``make_id`` minted ``islem_i̇slemyap`` (with U+0307) while the builder's
     re-normalization produced ``islem_i_slemyap``, so ``_semantic_id_remap``'s
@@ -219,7 +219,7 @@ def test_property_normalize_id_idempotent(s):
     assert normalize_id(once) == once
 
 
-# The plain st.text() property above already existed when #2614 shipped, and did
+# The plain st.text() property above already existed when that fix shipped, and did
 # not catch it: the bug needs one specific codepoint (U+0130) out of ~1.1M, which
 # a uniform draw essentially never produces. These strategies bias the search
 # toward the characters that actually stress the recipe — case-expanding letters
@@ -240,7 +240,7 @@ def test_property_normalize_id_idempotent_under_case_stress(s):
 
 @given(_stress_text)
 def test_property_normalize_id_emits_only_word_chars(s):
-    """The postcondition #2614 violated: only \\w and _ may survive."""
+    """The postcondition the earlier fix violated: only \\w and _ may survive."""
     out = normalize_id(s)
     assert not re.search(r"[^\w]", out.replace("_", "")), (
         f"normalize_id({s!r}) -> {out!r} leaked a non-word character"

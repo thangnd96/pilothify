@@ -1,11 +1,11 @@
-"""Indirect dispatch via assignment + return references — #1566 slice 2.
+"""Indirect dispatch via assignment + return references — slice 2.
 
 A function bound to a name (`cb = handler`) or returned from a factory
 (`def make(): return handler`) is a real reference. It is emitted under `indirect_call`
 via the shared resolve-and-emit guard. The VALUE side only -- the assignment TARGET is a
 new local binding, not a reference -- so the shadow guard still holds: a param or local
 named on the RHS is the local, not the module fn. The negatives pin that the false edges
-#1565 fixed do not come back.
+Fixed do not come back.
 """
 import networkx as nx
 

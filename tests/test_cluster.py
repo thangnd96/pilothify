@@ -139,7 +139,7 @@ def _grouping(partition):
 
 
 def test_native_leiden_matches_graspologic_wrapper(monkeypatch):
-    """#3104: the direct graspologic_native path must produce the SAME partition
+    """The direct graspologic_native path must produce the SAME partition
     as the graspologic wrapper it replaces. Run _partition with the native path
     active, then with _native_leiden forced to fall through to the wrapper, and
     assert identical node groupings. Skips unless both are installed."""
@@ -202,7 +202,7 @@ def test_native_leiden_returns_none_when_binding_absent(monkeypatch):
 
 
 def test_partition_is_invariant_to_edge_endpoint_orientation():
-    """#3146: for an undirected graph, (a,b) and (b,a) are the same edge, but the
+    """For an undirected graph, (a,b) and (b,a) are the same edge, but the
     orientation networkx yields can vary across builds/machines. _partition must
     canonicalise endpoints so the ordering fed to the clusterer — and thus the
     resulting communities — is identical regardless of how edges were inserted."""

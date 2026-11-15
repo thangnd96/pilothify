@@ -1,4 +1,4 @@
-"""`affected` must traverse a dynamic `import('…')` written inside a function — #2584.
+"""`affected` must traverse a dynamic `import('…')` written inside a function — .
 
 The edge was already emitted, so an edge-existence assertion passes while the
 answer users actually read is short. The reason is a granularity mismatch: a static import
@@ -84,7 +84,7 @@ def test_dynamic_import_in_function_emits_a_file_level_edge(tmp_path: Path):
     assert edges, "no file-level edge for a dynamic import written inside a function"
     # `dynamic_import`, not `imports_from`: it keeps the deferred nature legible, it is
     # already in DEFAULT_AFFECTED_RELATIONS, and find_import_cycles reads only
-    # `imports_from`/`re_exports` — so the phantom file cycle of #1241 cannot come back
+    # `imports_from`/`re_exports` — so the phantom file cycle of that fix cannot come back
     # through this edge the way a second `imports_from` might.
     assert all(e["relation"] == "dynamic_import" for e in edges)
 

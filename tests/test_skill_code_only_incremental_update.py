@@ -40,7 +40,7 @@ def _section(body: str, start: str, end: str) -> str:
 
 
 def _run_code(script: str, *, cwd: Path, root: Path) -> subprocess.CompletedProcess[str]:
-    # Since #4762 the blocks read the scan root from the trusted .pilothify_root
+    # Since that fix the blocks read the scan root from the trusted .pilothify_root
     # sidecar instead of a substituted literal; Step 1 writes it, so simulate that.
     out = cwd / "pilothify-out"
     out.mkdir(parents=True, exist_ok=True)

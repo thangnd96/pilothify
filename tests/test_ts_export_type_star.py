@@ -1,4 +1,4 @@
-"""#3942: TypeScript 5.0's `export type * from "..."` has no equivalent in
+"""TypeScript 5.0's `export type * from "..."` has no equivalent in
 tree-sitter-typescript 0.23 (the latest release) — the grammar raises an
 ERROR on the `type` keyword in this position, and the whole file is dropped,
 losing every symbol, not just the one statement.

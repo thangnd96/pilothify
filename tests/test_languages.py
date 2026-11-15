@@ -274,7 +274,7 @@ def test_cpp_field_and_template_argument_contexts():
 
 
 def test_cpp_class_inherits_edge():
-    """Regression for #915: `class Derived : public Base {}` should emit an inherits edge."""
+    """`class Derived : public Base {}` should emit an inherits edge."""
     r = extract_cpp(FIXTURES / "sample.cpp")
     node_by_id = {n["id"]: n["label"] for n in r["nodes"]}
     found = any(
@@ -444,7 +444,7 @@ def test_ruby_inherits_edge():
 
 
 def test_ruby_suffixed_methods_survive_extraction(tmp_path: Path):
-    """#3077: foo, foo!, foo?, and foo= must all survive extraction with distinct IDs."""
+    """Foo, foo!, foo?, and foo= must all survive extraction with distinct IDs."""
     f = tmp_path / "service.rb"
     f.write_text("""\
 class Service
@@ -946,7 +946,7 @@ def test_java_enum_and_annotation_declarations_are_type_nodes(tmp_path):
 
 
 def test_nested_types_contained_by_enclosing_type(tmp_path):
-    """#2040: a nested class/object/trait's `contains` edge sources from its
+    """A nested class/object/trait's `contains` edge sources from its
     ENCLOSING type, not the file node; top-level types still source from the file
     (keeping the tree connected: file -> Outer -> Inner)."""
     # Java inner class
@@ -968,7 +968,7 @@ def test_nested_types_contained_by_enclosing_type(tmp_path):
 
 
 def test_csharp_nested_type_gets_containment_edge(tmp_path):
-    """#2040 for C#: the nested type now gets a real `contains` edge from its
+    """For C#: the nested type now gets a real `contains` edge from its
     enclosing type (the is_nested_type flag it already carried is retained and
     covered by test_csharp_type_resolution)."""
     c = tmp_path / "N.cs"
@@ -1041,7 +1041,7 @@ def test_kotlin_finds_function():
     assert any("createClient" in l for l in _labels(r))
 
 def test_kotlin_enum_entries_have_case_of_edge():
-    # #1700 (Kotlin half): enum entries must be nodes with case_of edges to the enum.
+    # (Kotlin half): enum entries must be nodes with case_of edges to the enum.
     r = extract_kotlin(FIXTURES / "sample.kt")
     labels = _labels(r)
     assert "NORMAL" in labels and "GROUP" in labels and "SYSTEM" in labels
@@ -1302,7 +1302,7 @@ def test_php_enum_cases_have_case_of_edge(tmp_path):
     `enum_declaration` is in PHP's class_types, so the enum type and its methods
     were captured, but the cases nest in the `enum_declaration_list` body as
     `enum_case` nodes that nothing handled — so they were dropped and the enum was
-    left a caseless leaf. This brings PHP to parity with Java #1719, Scala, Swift,
+    left a caseless leaf. This brings PHP to parity with Java, Scala, Swift,
     and C++. Backed enums (`: string` with `= 'H'`) and pure enums both apply, and
     enum methods must still be captured.
     """
@@ -1436,7 +1436,7 @@ def test_php_constructor_property_promotion_contexts():
 
 
 def test_php_indexes_inline_script_block(tmp_path):
-    """#2320: tree-sitter-php treats an inline <script> as opaque markup, so JS
+    """Tree-sitter-php treats an inline <script> as opaque markup, so JS
     declared there was previously entirely absent from the graph. Both
     functions and the call edge between them must now be extracted."""
     f = tmp_path / "page.php"
@@ -3184,7 +3184,7 @@ def test_powershell_enum_is_extracted_and_reference_resolves(tmp_path):
 
 def test_powershell_enum_members_emit_case_of_not_contains(tmp_path):
     """A PowerShell enum member is a discriminant case, so it must get a
-    `case_of` edge like every other language with enums (Java #1719, C#, Swift,
+    `case_of` edge like every other language with enums (Java, C#, Swift,
     Rust, VB.NET), not the `contains` edge used for real class fields.
     PowerShell was routing enum members through the same `contains` path as a
     class property. The relation also matters to resolution: `case_of` targets
@@ -3703,7 +3703,7 @@ def _ts_label_calls(r, src_sub):
 
 
 def test_ts_injected_field_resolves_to_typed_class_not_same_named_collision(tmp_path):
-    """The decisive #1316 guardrail: two classes each define `query`, but the
+    """The decisive guardrail: two classes each define `query`, but the
     injected field is typed `Database`, so `this.db.query()` must resolve to
     Database.query ONLY — never HttpClient.query (no global name-match fan-out)."""
     from pilothify.extract import extract
@@ -4109,7 +4109,7 @@ def test_markdown_wikilink_fallback_root_wins(tmp_path):
 
 def test_markdown_wikilink_sibling_still_wins(tmp_path):
     """An existing sibling target keeps lexical resolution — the fallback only
-    fires when the resolved path is missing, so #1376 behavior is unchanged."""
+    fires when the resolved path is missing, so the earlier behavior is unchanged."""
     vault = tmp_path / "vault"
     (vault / "sub").mkdir(parents=True)
     (vault / "hub.md").write_text("# Root hub\n")
@@ -4159,7 +4159,7 @@ def test_markdown_wikilink_fallback_unicode_normalization(tmp_path):
 
 
 def test_markdown_wikilink_index_prunes_ignored_directories(tmp_path, monkeypatch):
-    """#3822: _build_link_index must prune directories and files matched by
+    """_build_link_index must prune directories and files matched by
     .pilothifyignore/.gitignore, preventing both 50+ min directory walks on
     large ignored trees and wikilinks erroneously resolving into ignored files."""
     vault = tmp_path / "vault"
@@ -5021,7 +5021,7 @@ def _assert_no_dangling(r):
         assert e["target"] in ids, f"dangling target: {e}"
 
 
-# --- #1547: C++ paired header/impl --------------------------------------------
+# --- C++ paired header/impl --------------------------------------------
 
 def test_cpp_header_routes_to_cpp_extractor():
     """A `.h` with a C++ class must route to extract_cpp, not extract_c (which has
@@ -5124,7 +5124,7 @@ def test_cpp_paired_no_dangling_edges():
     _assert_no_dangling(r)
 
 
-# --- #1556: ObjC paired header/impl + bridging header -------------------------
+# --- ObjC paired header/impl + bridging header -------------------------
 
 def test_objc_header_with_import_routes_to_objc():
     """A bridging header that is only `#import "X.h"` (no @interface) must route to
@@ -5162,7 +5162,7 @@ def test_objc_paired_no_dangling_edges():
     _assert_no_dangling(r)
 
 
-# --- #1556: Swift extension folds onto canonical ObjC class -------------------
+# --- Swift extension folds onto canonical ObjC class -------------------
 
 def test_swift_extension_folds_onto_objc_class():
     """`extension Widget` in Swift over an ObjC `Widget` must fold onto the single
@@ -5721,7 +5721,7 @@ def test_zig_enum_members_emit_case_of_nodes(tmp_path):
 
     The enum body walk only emitted the enum's methods; its members (the
     `container_field` nodes `red`, `north = 0`) were dropped, leaving the enum a
-    memberless leaf. Every other language with enums (Java #1719, Swift, Scala,
+    memberless leaf. Every other language with enums (Java, Swift, Scala,
     Rust) emits a node per member with a `case_of` edge; this brings Zig to
     parity. Struct fields share the container_field shape and must stay untouched.
     """
@@ -5794,7 +5794,7 @@ def test_zig_tagged_union_variants_emit_case_of_nodes(tmp_path):
     tagged union (`union(enum) { circle: f64, point }`) kept its methods but
     dropped every variant, leaving the union a near-memberless leaf. A tagged
     union's fields are its discriminant cases — the same shape as enum members —
-    so they get the same node + `case_of` edge (Java #1719 / Swift / Scala
+    so they get the same node + `case_of` edge (Java / Swift / Scala
     parity). A bare `union { ... }` has typed data fields, not cases, so — like a
     struct's fields — it stays untouched.
     """
@@ -6026,7 +6026,7 @@ def test_robot_suite_level_test_template(tmp_path):
 
 def test_robot_curdir_and_execdir_imports_resolve_without_double_prefix():
     # ${CURDIR}/${EXECDIR} already anchor the path; re-joining the source dir
-    # would double it for relative scan paths (bot finding on PR).
+    # would double it for relative scan paths (a review bot finding).
     # Pure path logic - needs no robotframework install.
     from pathlib import Path as P
     from pilothify.extractors.robot import _resolve_robot_import

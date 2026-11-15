@@ -1,4 +1,4 @@
-"""#4334: a forward-referenced class named after its file must not swallow the file node."""
+"""A forward-referenced class named after its file must not swallow the file node."""
 from pathlib import Path
 
 from pilothify.extract import extract

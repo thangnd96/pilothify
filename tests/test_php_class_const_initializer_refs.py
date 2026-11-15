@@ -1,4 +1,4 @@
-"""#4648 — PHP `Scope::MEMBER` accesses in class-level initializers (const
+"""PHP `Scope::MEMBER` accesses in class-level initializers (const
 values, property defaults, parameter defaults incl. promoted constructor
 properties) must emit a `references_constant` edge, not be dropped because the
 call-graph pass only walks function bodies."""

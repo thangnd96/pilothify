@@ -31,7 +31,7 @@ def _extract(tmp_path, files: dict[str, str]):
 
 
 def test_same_namespace_static_call_is_extracted_not_inferred(tmp_path):
-    """The exact shape from #3872: a same-namespace static call has no `use`
+    """The exact shape from that fix: a same-namespace static call has no `use`
     import (none needed), so it must not be penalized as INFERRED."""
     calls, _ = _extract(tmp_path, {
         "Helper.php": (
@@ -50,7 +50,7 @@ def test_same_namespace_static_call_is_extracted_not_inferred(tmp_path):
 def test_self_and_static_scope_resolve_to_enclosing_class(tmp_path):
     """A same-named decoy method on an unrelated class proves `self::`/
     `static::` bind to the ENCLOSING class, not to any node sharing the bare
-    method name (review finding on PR #3874: without a decoy, a bare-name
+    method name (review finding on: without a decoy, a bare-name
     coincidence would pass this test even if self/static were never scoped)."""
     calls, _ = _extract(tmp_path, {
         "Widget.php": (
@@ -99,7 +99,7 @@ def test_dynamic_scope_produces_no_phantom_edge(tmp_path):
     must stay unresolved rather than guess and mint a wrong edge. A same-file,
     same-named decoy method proves the resolver actually ran and declined to
     bind, rather than the guard never being exercised (review finding on PR
-    #3874: without the decoy, the old bare-name path would silently produce
+    Without the decoy, the old bare-name path would silently produce
     the same "no edge to a DIFFERENT-labeled node" result for the wrong
     reason)."""
     calls, r = _extract(tmp_path, {"Caller.php": (
@@ -112,7 +112,7 @@ def test_dynamic_scope_produces_no_phantom_edge(tmp_path):
 def test_lowercase_class_name_still_resolves(tmp_path):
     """PHP class names are conventionally StudlyCase but the language does not
     enforce it - a lowercase-first class is still a class, not a variable, and
-    must resolve the same way (review finding on PR)."""
+    must resolve the same way (a review finding)."""
     calls, _ = _extract(tmp_path, {
         "helper.php": (
             "<?php\nnamespace App;\nclass helper {\n"
@@ -129,7 +129,7 @@ def test_lowercase_class_name_still_resolves(tmp_path):
 def test_fully_qualified_scope_resolves_by_last_segment(tmp_path):
     """A fully-qualified scope (`\\App\\Helper::method()` or
     `App\\Helper::method()`) must match the class's own unqualified label,
-    not be left parked as unresolved (review finding on PR)."""
+    not be left parked as unresolved (a review finding)."""
     calls, _ = _extract(tmp_path, {
         "Helper.php": (
             "<?php\nnamespace App;\nclass Helper {\n"
@@ -146,7 +146,7 @@ def test_fully_qualified_scope_resolves_by_last_segment(tmp_path):
 def test_method_name_case_insensitivity(tmp_path):
     """PHP method names are case-insensitive at the call site - a call spelled
     with different case than the declaration must still resolve (review
-    finding on PR #3874)."""
+    finding on)."""
     calls, _ = _extract(tmp_path, {
         "Helper.php": (
             "<?php\nnamespace App;\nclass Helper {\n"

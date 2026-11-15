@@ -1,4 +1,4 @@
-"""#1688 - pilothify's shared-file section update must not destroy user content.
+"""Pilothify's shared-file section update must not destroy user content.
 
 _replace_or_append_section used to locate its marker (`## pilothify`) as a
 substring, so a bullet or inline reference to the section became the replace

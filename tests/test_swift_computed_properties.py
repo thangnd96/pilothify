@@ -1,4 +1,4 @@
-"""Regression tests for #2181.
+"""
 
 Swift computed properties (`var body: some View { … }`) and observed
 properties (`willSet` / `didSet`) carry a body. Before the fix the Swift

@@ -1,4 +1,4 @@
-"""#4635: T-SQL bracket names, stored-procedure reads, and writes."""
+"""T-SQL bracket names, stored-procedure reads, and writes."""
 from __future__ import annotations
 
 from pathlib import Path

@@ -193,7 +193,7 @@ def _parse_frontmatter_fallback(fm_lines: list[str]) -> dict:
 # sibling resolution below is correct when the target exists beside the
 # source; when it does not, the reference edge kept an id derived from a
 # nonexistent path, matched no node, and silently dropped at build time — the
-# same lost-edge failure #1376 fixed for hub docs, reintroduced for every
+# same lost-edge failure fixed for hub docs, reintroduced for every
 # cross-folder vault link. The fallback consults a per-scan-root index of
 # document files and only fires when the lexically resolved path does not
 # exist, so non-vault corpora and resolvable relative links are untouched.
@@ -665,7 +665,7 @@ def extract_markdown(path: Path) -> dict:
             return
         linked_targets.add(tgt_nid)
         # Stamp the resolved target file (mirroring the JS/Python import
-        # stamps) so the #2169 remap pass can canonicalize this
+        # stamps) so the remap pass can canonicalize this
         # edge's target on an incremental run where the linked doc is not in
         # the batch — without it the target keeps an absolute-path-derived id
         # that matches no node in the merged graph and the md->md reference

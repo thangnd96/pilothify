@@ -130,7 +130,7 @@ def test_body_content_no_frontmatter():
     assert _body_content(content) == content
 
 
-# --- #1259: frontmatter delimiters must be whole `---` lines -----------------
+# --- frontmatter delimiters must be whole `---` lines -----------------
 
 def test_body_content_hr_start_is_not_frontmatter():
     """A document opening with a ``----`` thematic break has no frontmatter;
@@ -190,7 +190,7 @@ def test_md_edit_above_hr_changes_hash(tmp_path):
     assert h1 != h2
 
 
-# --- #777: portable cache source_file fields --------------------------------
+# --- portable cache source_file fields --------------------------------
 # ``save_cached`` relativizes ``source_file`` entries inside the cache file
 # so a committed ``pilothify-out/cache/`` is portable across machines and
 # CI runners. ``load_cached`` re-absolutizes them so consumers (extract,
@@ -224,7 +224,7 @@ def test_save_cached_relativizes_source_file(tmp_path):
 
 
 def test_save_cached_survives_a_winerror_17_replace(tmp_path, monkeypatch):
-    """#3508: on some Windows/filesystem combinations, `os.replace` raises
+    """On some Windows/filesystem combinations, `os.replace` raises
     WinError 17 ("cannot move to a different disk drive") even for a temp file
     and destination in the same directory on the same drive -- reported for
     exactly this AST cache write path. WinError 17 is a plain OSError, not a
@@ -379,7 +379,7 @@ def _portability_corpus(base: Path) -> Path:
 
 
 def _graph_ids(result: dict) -> tuple[list[str], list[tuple]]:
-    """Node ids + edge endpoint pairs — the granularity #2257 is about.
+    """Node ids + edge endpoint pairs — the granularity the fix is about.
 
     Deliberately not whole-dict equality: transient hints such as
     ``target_file`` are minted from the resolved path while other fields keep
@@ -393,7 +393,7 @@ def _graph_ids(result: dict) -> tuple[list[str], list[tuple]]:
 
 
 def test_warm_cache_from_another_root_does_not_leak_that_root(tmp_path, monkeypatch):
-    """#2257: extract corpus under root A (populating the cache), copy the tree
+    """Extract corpus under root A (populating the cache), copy the tree
     AND pilothify-out to root B, extract under B on the warm cache.
 
     No node id or edge endpoint may carry root A's slug, and the ids must match
@@ -524,7 +524,7 @@ def test_relative_root_does_not_reanchor_an_already_canonical_id(tmp_path, monke
 
 
 def test_warm_hit_with_relative_inputs_from_above_the_root(tmp_path, monkeypatch):
-    """#2630: relative inputs handed to extract() from a CWD above the root.
+    """Relative inputs handed to extract() from a CWD above the root.
 
     Extractors stamp ``source_file`` with the path STRING they were handed, so
     a relative input yields a CWD-relative stamp — but the stored format is
@@ -710,7 +710,7 @@ def test_legacy_unversioned_ast_entries_not_served(tmp_path):
     unversioned = tmp_path / _PILOTHIFY_OUT / "cache" / "ast"
     unversioned.mkdir(parents=True)
     (unversioned / f"{h}.json").write_text(payload)
-    # Legacy flat cache/{hash}.json (pre-0.5.3 layout)
+    # Legacy flat cache/{hash}.json (oldest layout)
     (unversioned.parent / f"{h}.json").write_text(payload)
 
     assert load_cached(f, root=tmp_path, kind="ast") is None
@@ -813,7 +813,7 @@ def test_file_hash_keeps_resolved_fallback_for_external_symlink(
 def test_warm_cache_keeps_target_and_symlink_sources_distinct(
     requires_symlinks, tmp_path, monkeypatch
 ):
-    """#2832: a warm cache must not move target nodes onto its symlink."""
+    """A warm cache must not move target nodes onto its symlink."""
     from collections import Counter
 
     import pilothify.extract as extract_mod
@@ -855,7 +855,7 @@ def test_warm_cache_keeps_target_and_symlink_sources_distinct(
 
 @pytest.mark.skipif(os.name != "nt", reason="directory junctions are Windows-only")
 def test_file_hash_distinguishes_walked_junction_paths(tmp_path):
-    r"""#2832 with junctions, which need no symlink privilege. Under a junctioned
+    r"""With junctions, which need no symlink privilege. Under a junctioned
     scan root the walked-parent match compared a plain spelling with the
     ``\\?\`` form of the root, never matched, and the in-root alias fell
     back to its target's salt and shared its digest."""
@@ -1134,7 +1134,7 @@ def test_save_semantic_cache_overwrites_by_default(tmp_path):
 
 
 def test_save_semantic_cache_rejects_out_of_scope_source_file(tmp_path):
-    """#1757: an undispatched file must keep its complete cache entry when a
+    """An undispatched file must keep its complete cache entry when a
     semantic result misattributes a node to it."""
     from pilothify.cache import save_semantic_cache
 
@@ -1179,7 +1179,7 @@ def test_save_semantic_cache_rejects_out_of_scope_source_file(tmp_path):
     assert protected_cache["hyperedges"] == []
 
 
-# --- #1894: mode-namespaced semantic cache -----------------------------------
+# --- mode-namespaced semantic cache -----------------------------------
 # `extract --mode deep` produces richer results than standard extraction, so
 # deep entries live in their own namespace (cache/semantic-deep/). mode=None
 # must stay byte-identical to the historical behavior: older installed skill
@@ -1290,7 +1290,7 @@ def test_cached_files_includes_deep_namespace(tmp_path):
 
 
 def test_semantic_prune_sweeps_both_namespaces_against_same_live_set(tmp_path):
-    """#1894 follow-up to #1527: prune must sweep cache/semantic/ AND
+    """Follow-up: prune must sweep cache/semantic/ AND
     cache/semantic-deep/ against the SAME live-hash set (liveness is
     content-based, mode-independent). Orphans go in both namespaces; live
     entries survive in both."""
@@ -1323,7 +1323,7 @@ def test_semantic_prune_sweeps_both_namespaces_against_same_live_set(tmp_path):
 
 
 def test_save_semantic_cache_merge_existing_unions(tmp_path):
-    """#1715: merge_existing=True unions with the prior entry so a file split
+    """merge_existing=True unions with the prior entry so a file split
     across chunks (checkpointed per chunk) keeps every slice."""
     from pilothify.cache import save_semantic_cache
     f = tmp_path / "big.md"; f.write_text("# Big\n")
@@ -1341,9 +1341,9 @@ def test_save_semantic_cache_merge_existing_unions(tmp_path):
 
 
 def test_save_semantic_cache_drops_edges_to_out_of_scope_nodes(tmp_path):
-    """#1916: an edge in an ALLOWED file's group referencing a node grouped
+    """An edge in an ALLOWED file's group referencing a node grouped
     under an out-of-scope REAL file used to be written verbatim, so on replay
-    (check_semantic_cache) it dangled forever — the #1895 merged-result filter
+    (check_semantic_cache) it dangled forever — the merged-result filter
     runs after this checkpoint write and is bypassed entirely on replay. The
     written entry must carry no reference to the skipped id, while a
     duplicate-attribution node (also defined in a written group) must not be
@@ -1383,7 +1383,7 @@ def test_save_semantic_cache_drops_edges_to_out_of_scope_nodes(tmp_path):
 
 
 def test_save_semantic_cache_drops_edges_to_ghost_file_nodes(tmp_path):
-    """#1916 (ghost variant): a node group whose source_file does not exist is
+    """(ghost variant): a node group whose source_file does not exist is
     silently skipped by the write loop; edges in a written group referencing
     its node ids must not survive into the cache."""
     from pilothify.cache import check_semantic_cache, save_semantic_cache
@@ -1414,7 +1414,7 @@ def test_save_semantic_cache_drops_edges_to_ghost_file_nodes(tmp_path):
 
 
 def test_save_semantic_cache_drops_hyperedges_touching_skipped_nodes(tmp_path):
-    """#1916: a hyperedge whose member list intersects the skipped ids is
+    """A hyperedge whose member list intersects the skipped ids is
     dropped whole (mirroring the  semantics), while hyperedges over
     surviving nodes are kept."""
     from pilothify.cache import check_semantic_cache, save_semantic_cache
@@ -1446,7 +1446,7 @@ def test_save_semantic_cache_drops_hyperedges_touching_skipped_nodes(tmp_path):
 
 
 def test_save_semantic_cache_unscoped_preserves_dangling_refs_verbatim(tmp_path):
-    """#1916 guard-rail: unscoped callers (allowed_source_files=None) must stay
+    """Guard-rail: unscoped callers (allowed_source_files=None) must stay
     byte-identical — no pruning happens even when an edge or hyperedge
     references a node grouped under a ghost file."""
     from pilothify.cache import save_semantic_cache
@@ -1473,7 +1473,7 @@ def test_save_semantic_cache_unscoped_preserves_dangling_refs_verbatim(tmp_path)
 
 
 def test_save_semantic_cache_merge_existing_prunes_only_incoming(tmp_path):
-    """#1916 + #1715: with merge_existing=True (the llm.py checkpoint path),
+    """With merge_existing=True (the llm.py checkpoint path),
     only the INCOMING slice is pruned before the union — the prior cached
     entry's valid edges must survive untouched."""
     from pilothify.cache import save_semantic_cache
@@ -1616,7 +1616,7 @@ def test_semantic_cache_prompt_and_mode_compose(tmp_path):
 def test_semantic_cache_legacy_entries_served_with_warning(tmp_path):
     """Entries written before fingerprinting have unknowable vintage. They are
     still served — dropping them would re-bill a whole corpus on upgrade — but
-    the user is told how many, which is the signal #1939 says is missing today."""
+    the user is told how many, which is the signal the issue says is missing today."""
     from pilothify.cache import check_semantic_cache, save_semantic_cache
 
     a = tmp_path / "a.md"
@@ -1681,7 +1681,7 @@ def test_semantic_cache_merge_existing_never_fuses_legacy_vintage(tmp_path):
 
 def test_semantic_prune_and_clear_reach_fingerprint_subdirs(tmp_path):
     """A glob that stopped at the top level would leave every fingerprinted
-    entry unprunable, re-growing the unbounded-orphan problem of #1527."""
+    entry unprunable, re-growing the unbounded-orphan problem of that fix."""
     from pilothify.cache import (
         cached_files, clear_cache, prune_semantic_cache, save_semantic_cache,
     )
@@ -1707,7 +1707,7 @@ def test_semantic_prune_and_clear_reach_fingerprint_subdirs(tmp_path):
 def test_semantic_cache_unreadable_prompt_file_warns_and_falls_back(tmp_path):
     """A skill snippet substitutes SPEC_PATH by hand. If it lands on a path that
     isn't there, the fallback to the unattributed layout must be loud: silently
-    reverting to unversioned keying is exactly the #1939 behavior being fixed."""
+    reverting to unversioned keying is exactly the behavior being fixed."""
     from pilothify.cache import check_semantic_cache, save_semantic_cache
 
     f = tmp_path / "doc.md"
@@ -1837,10 +1837,10 @@ def test_corrupt_semantic_entry_warns_and_is_a_miss(tmp_path):
     assert uncached == [str(f)]
 
 
-# --- #2927: zero-node semantic cache rejection and healing -------------------
+# --- zero-node semantic cache rejection and healing -------------------
 
 def test_edge_only_semantic_result_not_cached(tmp_path):
-    """#2927: an edge-only semantic result (0 nodes, 0 hyperedges) represents an
+    """An edge-only semantic result (0 nodes, 0 hyperedges) represents an
     omission by the model and must NOT be written to cache, so subsequent runs
     can re-dispatch and retry the file."""
     from pilothify.cache import check_semantic_cache, load_cached, save_semantic_cache
@@ -1888,7 +1888,7 @@ def test_node_only_and_node_edge_semantic_results_cached(tmp_path):
 
 
 def test_hyperedge_only_semantic_result_cached(tmp_path):
-    """#1920: hyperedge-only documents are valid semantic output and must be cached."""
+    """Hyperedge-only documents are valid semantic output and must be cached."""
     from pilothify.cache import check_semantic_cache, load_cached, save_semantic_cache
 
     f = tmp_path / "hyper.md"
@@ -1910,7 +1910,7 @@ def test_hyperedge_only_semantic_result_cached(tmp_path):
 
 
 def test_poisoned_edge_only_cache_entry_treated_as_miss(tmp_path):
-    """#2927 healing: a legacy on-disk cache entry containing edges but no nodes
+    """Healing: a legacy on-disk cache entry containing edges but no nodes
     or hyperedges must be rejected by load_cached as a cache MISS."""
     import json
     from pilothify.cache import cache_dir, file_hash, load_cached, prompt_fingerprint
@@ -1938,7 +1938,7 @@ def test_poisoned_edge_only_cache_entry_treated_as_miss(tmp_path):
 
 
 def test_existing_hyperedge_only_cache_entry_remains_hit(tmp_path):
-    """#1920 / #2927: an existing on-disk cache entry with hyperedges but no nodes
+    """An existing on-disk cache entry with hyperedges but no nodes
     remains a valid cache hit."""
     import json
     from pilothify.cache import cache_dir, file_hash, load_cached, prompt_fingerprint
@@ -1963,8 +1963,8 @@ def test_existing_hyperedge_only_cache_entry_remains_hit(tmp_path):
     loaded = load_cached(f, root=tmp_path, kind="semantic", prompt=prompt)
     assert loaded is not None
     assert len(loaded["hyperedges"]) == 1
-# --- #2926: graph-side scope filter -------------------------------------------
-# The #1757 guard protects the cache write, but the unfiltered fresh result
+# --- graph-side scope filter -------------------------------------------
+# The guard protects the cache write, but the unfiltered fresh result
 # also feeds build_merge(), whose replace-set logic swaps a non-dispatched
 # file's entire prior contribution for a stray fragment. scope_semantic_result
 # applies the same allowlist to the result dict before it reaches the merge.
@@ -2026,7 +2026,7 @@ def test_scope_semantic_result_matches_absolute_and_relative_forms(tmp_path):
 
 
 def test_scope_semantic_result_prunes_edges_referencing_dropped_ids(tmp_path):
-    """#1916 mirror: an edge attributed to an ALLOWED file that references a
+    """Mirror: an edge attributed to an ALLOWED file that references a
     node id only defined by a DROPPED group would materialize that id as a
     phantom node at build time; it must be dropped too. A duplicate-attribution
     id (defined by both a kept and a dropped group) keeps its edges."""
@@ -2076,7 +2076,7 @@ def test_scope_semantic_result_unscoped_is_a_no_op():
     assert [n["id"] for n in result["nodes"]] == ["n"]
 
 
-# -- #5083: mark a degraded entry partial so the next run self-heals ----------
+# -- mark a degraded entry partial so the next run self-heals ----------
 
 def test_mark_semantic_cache_partial_forces_next_run_miss(tmp_path):
     """A degraded entry stays on disk for inspection but stops being served."""

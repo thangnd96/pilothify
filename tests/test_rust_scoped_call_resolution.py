@@ -5,7 +5,7 @@ idiomatic Rust — used to be dropped at extraction: bare last-segment lookup
 across crates produced spurious INFERRED edges, so a real production
 caller showed 0 dependents while grep found the call site immediately.
 
-The resolver keeps the #908 guard but uses the discarded qualifier as the
+The resolver keeps the guard but uses the discarded qualifier as the
 verification key: the last segment must BE the defining module (`<seg>.rs` or
 `<seg>/mod.rs`), every remaining segment must match the successive parent
 directory (stopping at `crate`/`super`/`self`), candidates are Rust-only, and

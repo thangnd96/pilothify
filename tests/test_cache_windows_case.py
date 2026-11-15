@@ -102,7 +102,7 @@ def test_hardlink_aliases_keep_distinct_hashes(win32_on_case_sensitive_fs):
     os.link(target, alias)
     assert os.path.samefile(target, alias)
 
-    # #1989 keeps the walked path distinct even when two names share an inode.
+    # keeps the walked path distinct even when two names share an inode.
     assert cache.file_hash(alias, root) != cache.file_hash(target, root)
 
 

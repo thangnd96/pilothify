@@ -1,4 +1,4 @@
-"""Regression tests for issue #2597: a wiki link's target must BE the on-disk
+"""Regression tests: a wiki link's target must BE the on-disk
 filename, byte for byte.
 
 `_md_link` percent-encoded the slug (`_make_id%28%29.md`) while `to_wiki` wrote

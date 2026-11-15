@@ -352,7 +352,7 @@ def test_to_html_contains_visjs():
 
 
 def test_to_html_title_uses_portable_path_not_host_absolute():
-    """#2598 / #433: <title> must not embed the generator host absolute path."""
+    """<title> must not embed the generator host absolute path."""
     import re
 
     G = make_graph()
@@ -382,7 +382,7 @@ def test_html_document_title_helper_windows_and_relative():
     assert _html_document_title("/tmp/only/graph.html") == "graph.html"
 
 def test_to_html_neighbor_links_have_no_inline_onclick_xss():
-    """#1838: neighbor links dropped an unescaped JSON.stringify(nid) into a
+    """Neighbor links dropped an unescaped JSON.stringify(nid) into a
     quoted inline onclick — which broke every link (the value's own quotes
     truncated the attribute) and let a node id/label containing a double-quote
     (from a document or a scraped `pilothify add` URL) inject a live event handler
@@ -546,7 +546,7 @@ def test_to_html_unannotated_identical_to_pre_feature():
 
 
 def test_to_html_tooltips_preserve_special_characters_without_html_entities(tmp_path):
-    """Issue #3664: Node and edge hover tooltips (vis-network title) must preserve
+    """Node and edge hover tooltips (vis-network title) must preserve
     raw characters (&, ', ", <, >) without HTML entity escaping (&amp;, &#x27;, etc.)
     because vis-network renders title via innerText rather than innerHTML."""
     import networkx as nx
@@ -590,7 +590,7 @@ def test_to_html_tooltips_preserve_special_characters_without_html_entities(tmp_
 
 
 def test_to_html_learning_overlay_tooltip_preserves_special_characters(tmp_path):
-    """Issue #3664: Node with learning overlay preserves special characters in both
+    """Node with learning overlay preserves special characters in both
     the label and lesson text without HTML entity escaping."""
     import networkx as nx
     G = nx.Graph()
@@ -627,7 +627,7 @@ def test_to_canvas_file_paths_relative_to_vault():
 
 
 def test_to_canvas_no_communities_still_populates():
-    """#1324: empty communities (e.g. --no-cluster builds) on a populated graph
+    """Empty communities (e.g. --no-cluster builds) on a populated graph
     must NOT produce the 32-byte empty `{"nodes": [], "edges": []}` shell."""
     G = make_graph()
     with tempfile.TemporaryDirectory() as tmp:
@@ -640,7 +640,7 @@ def test_to_canvas_no_communities_still_populates():
 
 
 def test_to_canvas_node_grid_matches_box_columns():
-    """#1452: a community's node cards are laid out in the same ceil(sqrt(n))-column
+    """A community's node cards are laid out in the same ceil(sqrt(n))-column
     grid the group box is sized for. Previously the box width assumed sqrt(n)
     columns while the placement loop hardcoded 3, so any community bigger than ~9
     rendered as a cramped 3-wide strip filling only part of an over-wide box.
@@ -681,7 +681,7 @@ def test_to_canvas_node_grid_matches_box_columns():
             assert gy <= c["y"] and c["y"] + c["height"] <= gy + gh, (n, c)
 
 
-# ── Issue #1409: punctuation-only Obsidian/Canvas filenames ───────────────────
+# ──: punctuation-only Obsidian/Canvas filenames ───────────────────
 
 def _punct_graph(label: str):
     """A 2-node graph where one node's label is all-punctuation (e.g. a `@/*`
@@ -696,7 +696,7 @@ def _punct_graph(label: str):
 
 
 def test_to_obsidian_never_emits_punctuation_only_filenames():
-    """#1409: an all-punctuation label (e.g. `@/*`) must not produce a `@.md`-style
+    """An all-punctuation label (e.g. `@/*`) must not produce a `@.md`-style
     filename — valid on disk but empty once a downstream tool re-slugs on word chars
     (crashes `qmd update`). It falls back to `unnamed`."""
     G = _punct_graph("@/*")
@@ -711,7 +711,7 @@ def test_to_obsidian_never_emits_punctuation_only_filenames():
 
 
 def test_to_canvas_never_emits_punctuation_only_filenames():
-    """#1409: same guard on the canvas exporter's file-node names."""
+    """Same guard on the canvas exporter's file-node names."""
     G = _punct_graph("@")
     communities = cluster(G)
     with tempfile.TemporaryDirectory() as tmp:
@@ -725,7 +725,7 @@ def test_to_canvas_never_emits_punctuation_only_filenames():
 
 
 def test_to_obsidian_leading_dot_labels_are_not_hidden_filenames():
-    """#2205: Obsidian hides notes whose names start with `.` — `.env` must
+    """Obsidian hides notes whose names start with `.` — `.env` must
     become `dot-env.md` (and canvas must point at the same stem)."""
     import networkx as nx
     G = nx.Graph()
@@ -755,11 +755,11 @@ def test_to_obsidian_leading_dot_labels_are_not_hidden_filenames():
 
 
 def test_obsidian_safe_stem_all_dots_label_falls_back_to_unnamed():
-    """#2205 follow-up: the `dot-` prefix only applies when a word char survives
-    the dot strip. An all-dots label like "..." must hit the #1409 "unnamed"
+    """Follow-up: the `dot-` prefix only applies when a word char survives
+    the dot strip. An all-dots label like "..." must hit the "unnamed"
     fallback, not produce the meaningless stem "dot-"."""
     from pilothify.export import _obsidian_safe_stem
-    assert _obsidian_safe_stem(".env") == "dot-env"        # #2205 fix unchanged
+    assert _obsidian_safe_stem(".env") == "dot-env"        # fix unchanged
     assert _obsidian_safe_stem("...") == "unnamed"         # not "dot-"
     assert _obsidian_safe_stem("Database") == "Database"   # normal labels untouched
 
@@ -776,7 +776,7 @@ def _two_node_graph():
 
 
 def test_to_obsidian_preserves_existing_user_notes_and_obsidian_config():
-    """#1506: exporting into an existing vault must not overwrite a user's note that
+    """Exporting into an existing vault must not overwrite a user's note that
     collides with a pilothify node name, nor their .obsidian/ graph settings."""
     G, communities = _two_node_graph()
     with tempfile.TemporaryDirectory() as tmp:
@@ -829,7 +829,7 @@ def _four_node_two_community_graph():
 
 
 def test_to_obsidian_rerun_prunes_removed_nodes():
-    """#1896: re-exporting into the same vault must delete pilothify's own notes for
+    """Re-exporting into the same vault must delete pilothify's own notes for
     nodes (and communities) that dropped out of the graph, so the vault mirrors the
     current graph rather than old-union-new. User files are never touched."""
     G4, comm4 = _four_node_two_community_graph()
@@ -851,7 +851,7 @@ def test_to_obsidian_rerun_prunes_removed_nodes():
 
 
 def test_to_obsidian_removed_node_returning_is_writable_again(capsys):
-    """#1896 follow-on: a node that disappears and later returns must be writable
+    """Follow-on: a node that disappears and later returns must be writable
     again. Before the fix, the manifest was rewritten to only this run's files, so
     the orphaned note was disowned and the returning node's write was skipped as a
     'pre-existing user file' forever."""
@@ -978,7 +978,7 @@ def test_to_obsidian_community_notes_case_collision():
         assert len(set(lowered)) == len(lowered), [p.name for p in comm]
 
 
-# ── Issue #834: backup_if_protected ──────────────────────────────────────────
+# ──: backup_if_protected ──────────────────────────────────────────
 
 def test_backup_no_graph_json(tmp_path):
     """No graph.json → no backup."""
@@ -1061,7 +1061,7 @@ def test_backup_env_disable(tmp_path, monkeypatch):
     assert backup_if_protected(tmp_path) is None
 
 
-# ── Issue #3769: incomplete backups reported as successful ──────────────────
+# ──: incomplete backups reported as successful ──────────────────
 
 def test_backup_failed_copy_warns_and_returns_none(tmp_path, monkeypatch, capsys):
     """A copy that fails part-way leaves a stale snapshot; it must be warned
@@ -1129,7 +1129,7 @@ def _mkG(n):
 
 
 def test_to_json_refuses_shrink(tmp_path):
-    """#479: refuse to silently overwrite an existing graph with fewer nodes."""
+    """Refuse to silently overwrite an existing graph with fewer nodes."""
     p = tmp_path / "graph.json"
     json.dump({"nodes": [{"id": f"n{i}"} for i in range(5)]}, p.open("w"))
     assert to_json(_mkG(2), {}, str(p), force=False) is False
@@ -1137,7 +1137,7 @@ def test_to_json_refuses_shrink(tmp_path):
 
 
 def test_to_json_refuses_lost_semantic_id_when_total_grows(tmp_path, capsys):
-    """#2229: AST growth and a new stub must not replace a saved rationale id."""
+    """AST growth and a new stub must not replace a saved rationale id."""
     import networkx as nx
 
     saved_nodes = [
@@ -1235,7 +1235,7 @@ def test_to_json_proceeds_on_empty_existing(tmp_path):
 
 
 def test_to_html_handles_null_source_file_and_label(tmp_path):
-    """#1775: a node with source_file=None or label=None must not crash to_html
+    """A node with source_file=None or label=None must not crash to_html
     (synthetic/aggregate nodes legitimately carry null source_file; JSON `null`
     survives .get()'s default). Regression guard — fixed via sanitize_label's
     None-coercion + the str(source_file or "") call-site guard."""
@@ -1256,7 +1256,7 @@ def test_existing_graph_node_count(tmp_path):
     p.write_text("", encoding="utf-8")
     assert existing_graph_node_count(p) is None            # empty -> nothing to protect
     # Non-empty but unparseable must fail CLOSED (sentinel), matching to_json's
-    # #479 guard — a corrupt/mid-write file could be hiding a complete graph.
+    # guard — a corrupt/mid-write file could be hiding a complete graph.
     p.write_text("{not json", encoding="utf-8")
     assert existing_graph_node_count(p) is MALFORMED_GRAPH  # malformed -> fail closed
     p.write_text('{"nodes": "notalist"}', encoding="utf-8")
@@ -1394,7 +1394,7 @@ def test_to_html_pins_vis_network_version_for_tooltip_xss_boundary():
     """Tooltip `title` is passed to vis-network as a STRING and rendered via
     Popup.setText -> innerText (verified in the 9.1.6 bundle), so tooltips are
     intentionally NOT html-escaped. That safety rests on the pin:
-    if vis-network is bumped, the innerText rendering path (the #1838 stored-XSS
+    if vis-network is bumped, the innerText rendering path (the stored-XSS
     boundary) must be re-verified. This guard fails CI on a silent bump."""
     G = make_graph()
     communities = cluster(G)
@@ -1410,7 +1410,7 @@ def test_to_html_pins_vis_network_version_for_tooltip_xss_boundary():
 
 
 def test_to_html_spiral_seed_uses_a_real_map_index():
-    """#3699: the Fermat-spiral seed positions reference `i`, so the node map
+    """The Fermat-spiral seed positions reference `i`, so the node map
     MUST bind an index (`RAW_NODES.map((n, i) => ...)`). Without it the emitted
     JS throws `ReferenceError: i is not defined` and graph.html fails to render
     at every graph size. Guards against the free-`i` regression."""
@@ -1428,7 +1428,7 @@ def test_to_html_spiral_seed_uses_a_real_map_index():
 
 
 def test_to_html_canonical_node_schema_mapping(tmp_path):
-    """#3914: nodesDS and showInfo must use canonical un-prefixed field names
+    """nodesDS and showInfo must use canonical un-prefixed field names
     matching RAW_NODES and Pilothify's node schema (file_type, source_file,
     community_name, degree), eliminating the underscore-prefixed mapping."""
     import networkx as nx
@@ -1548,7 +1548,7 @@ console.log('OUTPUT:' + doc.getElementById('info-content').innerHTML);
 
 
 def test_to_html_show_info_runtime_renders_node_fields(tmp_path):
-    """#3914: Execute showInfo in Node.js for a normal node.
+    """Execute showInfo in Node.js for a normal node.
     Type: code and Source: src/sample.py must be rendered into info-content,
     not Type: unknown or Source: -."""
     import networkx as nx
@@ -1572,7 +1572,7 @@ def test_to_html_show_info_runtime_renders_node_fields(tmp_path):
 
 
 def test_to_html_aggregated_community_nodes_runtime(tmp_path):
-    """#3914: Execute showInfo in Node.js for an aggregated community node.
+    """Execute showInfo in Node.js for an aggregated community node.
     Community meta-nodes have no file_type/source_file and must not display
     misleading Type: unknown or Source: -; they must display community name
     and member count."""

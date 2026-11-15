@@ -1,4 +1,4 @@
-"""#4475: JS/TS class members that differ only by `_`, `$` or `#` stay separate nodes."""
+"""JS/TS class members that differ only by `_`, `$` or `#` stay separate nodes."""
 from __future__ import annotations
 
 import warnings
@@ -108,7 +108,7 @@ def test_cross_file_ts_typed_receiver_hits_each_member(tmp_path):
     ("  _a(): void {}\n  $a(): void {}\n", "c.a()"),
 ])
 def test_cross_file_call_matching_no_member_exactly_is_not_guessed(tmp_path, members, call):
-    # Review on #4479: neither member has the called name, and the loose key fits
+    # Review finding: neither member has the called name, and the loose key fits
     # both, so picking one would be a guess (it was whichever registered last).
     r = _extract(tmp_path, {
         "ctx.ts": "export class Ctx {\n" + members + "}\n",

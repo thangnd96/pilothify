@@ -202,7 +202,7 @@ def test_extract_corpus_parallel_accepts_str_and_mixed_paths(tmp_path, monkeypat
 
 
 def test_corpus_parallel_oversized_markdown_does_not_crash_on_fileslice(tmp_path, monkeypatch):
-    # #1397/#1399 regression: a Markdown file large enough to be sliced into
+    # regression: a Markdown file large enough to be sliced into
     # FileSlice units must not crash extract_files_direct's Path() coercion
     #. The earlier str-path tests used tiny files, so slicing never ran.
     from pilothify.llm import _FILE_CHAR_CAP
@@ -881,7 +881,7 @@ def test_ollama_extra_body_sets_num_ctx_and_keep_alive(monkeypatch):
 
 
 def test_ollama_num_ctx_scales_with_small_token_budget(monkeypatch):
-    # Regression for #798 follow-up: with --token-budget 8192, the old hardcoded
+    # follow-up: with --token-budget 8192, the old hardcoded
     # 131072 forced Ollama to allocate 128k KV-cache slots on a 31B model, causing
     # VRAM exhaustion by chunk 4. num_ctx must now reflect actual chunk size.
     captured = _install_capturing_openai(monkeypatch)
@@ -1565,7 +1565,7 @@ def test_resolve_temperature_env_var_invalid_falls_back(monkeypatch):
 
 
 def test_openai_compat_omits_temperature_for_o3_model(tmp_path, monkeypatch):
-    # Regression for #1191: with a reasoning model the request must not carry a
+    # with a reasoning model the request must not carry a
     # `temperature` key at all, or the API returns HTTP 400.
     _clear_backend_env(monkeypatch)
     monkeypatch.delenv("PILOTHIFY_LLM_TEMPERATURE", raising=False)
@@ -1797,7 +1797,7 @@ def test_resolve_max_retries_default_and_env(monkeypatch):
 def test_openai_compat_client_built_with_retries(monkeypatch):
     """The OpenAI-compatible client (kimi/openai/gemini/deepseek/ollama) is built with
     max_retries so rate-limited (429) chunks are retried with backoff instead of being
-    dropped — the kimi rate-limit failure in #1523."""
+    dropped — the kimi rate-limit failure."""
     import sys
     import types
 
@@ -1830,7 +1830,7 @@ def test_openai_compat_client_built_with_retries(monkeypatch):
 def test_call_llm_claude_client_built_with_timeout_and_retries(monkeypatch):
     """The secondary dispatch path (_call_llm, used by the dedup tiebreaker)
     must build its Anthropic client with both timeout and max_retries, matching
-    the primary extraction path — #1442. Previously _call_llm passed neither
+    the primary extraction path — . Previously _call_llm passed neither
     (then only max_retries), so PILOTHIFY_API_TIMEOUT was silently ignored here."""
     import sys
     import types
@@ -1859,7 +1859,7 @@ def test_call_llm_claude_client_built_with_timeout_and_retries(monkeypatch):
 
 
 def test_call_llm_openai_compat_client_built_with_timeout_and_retries(monkeypatch):
-    """Same #1442 fix for the OpenAI-compatible branch of _call_llm."""
+    """Same fix for the OpenAI-compatible branch of _call_llm."""
     import sys
     import types
 
@@ -1887,7 +1887,7 @@ def test_call_llm_openai_compat_client_built_with_timeout_and_retries(monkeypatc
 
 
 def test_adaptive_retry_does_not_bisect_a_hollow_response(tmp_path, monkeypatch):
-    """#2880: a hollow response is retried as-is, never bisected.
+    """A hollow response is retried as-is, never bisected.
 
     Bisecting cannot converge — both halves go to the same misbehaving backend
     — so it burned up to 2**max_depth billed calls per chunk. The retry must be
@@ -1954,7 +1954,7 @@ def test_adaptive_retry_recovers_a_transient_hollow_response(tmp_path, monkeypat
 
 
 def test_max_retry_depth_zero_disables_hollow_retries_too(tmp_path, monkeypatch):
-    """#2880 review catch: `0` means no retries of ANY kind.
+    """Review catch: `0` means no retries of ANY kind.
 
     Bounding only the bisection depth still let a misbehaving backend triple
     the call count of a run whose operator had explicitly asked for no retries,
@@ -2016,7 +2016,7 @@ def test_hollow_retries_still_run_at_the_default_depth(tmp_path, monkeypatch):
 
 
 def test_max_retry_depth_reads_the_env_var(monkeypatch):
-    """#2880: max_retry_depth was a Python-API kwarg only, so a `pilothify
+    """max_retry_depth was a Python-API kwarg only, so a `pilothify
     extract` operator had no way to lower it as a mitigation."""
     monkeypatch.delenv("PILOTHIFY_MAX_RETRY_DEPTH", raising=False)
     assert llm._resolve_max_retry_depth() == 3

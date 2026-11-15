@@ -1,4 +1,4 @@
-"""#3554 / #3732: an OpenCode upgrade must not leave a dead pilothify plugin behind.
+"""An OpenCode upgrade must not leave a dead pilothify plugin behind.
 
 Until 0.9.74 `pilothify opencode install` wrote a plugin with only a named
 export, the OpenCode 1 shape. OpenCode 2 refuses it ("Plugin must export a

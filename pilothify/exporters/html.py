@@ -469,7 +469,7 @@ def _html_document_title(output_path: str) -> str:
     """Return a portable label for the graph.html <title>.
 
     Tracked artifacts must not embed the generator host absolute path
-    (regression of ; reported again as  on Windows). Keep from the
+    (a regression, reported again on Windows). Keep from the
     configured output-dir bare name (``pilothify-out`` / ``PILOTHIFY_OUT``
     basename) onward — portable in every case; otherwise fall back to a
     cwd-relative label, and finally the filename only.
@@ -640,7 +640,7 @@ def to_html(
             # bundle has zero `innerHTML = <var>` sinks). So raw special chars
             # are shown literally and must NOT be html-escaped here or the user
             # sees `&amp;`/`&lt;` in the tooltip. This is the
-            # #1838 stored-XSS boundary: never pass an HTMLElement as `title`,
+            # stored-XSS boundary: never pass an HTMLElement as `title`,
             # and do not change the vis-network pin below without re-checking
             # Popup rendering (the test_export version-pin guard enforces this).
             "title": label,

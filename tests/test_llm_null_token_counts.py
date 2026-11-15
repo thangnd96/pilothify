@@ -1,4 +1,4 @@
-"""Regression tests for #4325: null token counts from LLM backends must not crash extraction.
+"""Null token counts from LLM backends must not crash extraction.
 
 Some OpenAI-compatible gateways (and custom providers) return a `usage` object
 whose token-count fields are `null`. Reading them verbatim left `None` in

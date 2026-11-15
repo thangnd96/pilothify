@@ -91,7 +91,7 @@ def test_node_attributed_to_undispatched_file_is_left_to_out_of_scope(tmp_path):
         {"id": "a", "label": "ghost_func()", "file_type": "code", "source_file": "other.py"},
     ]
     out = _by_label(_run([src], nodes, tmp_path))
-    # Not in the dispatched set -> #1895's domain, not evidence-binding's.
+    # Not in the dispatched set -> the domain, not evidence-binding's.
     assert "verification" not in out["ghost_func()"]
 
 

@@ -42,7 +42,7 @@ def test_java_cross_file_implements_resolves_to_real_def(tmp_path: Path):
 
 
 def test_java_ambiguous_implements_disambiguated_by_import(tmp_path: Path):
-    # #1318 core case: two interfaces with the SAME simple name in different
+    # core case: two interfaces with the SAME simple name in different
     # packages. The importing file's `import` must pick the right one, and no
     # orphan shadow node may remain.
     a = _write(
@@ -318,7 +318,7 @@ def test_java_external_annotation_does_not_conflate_with_local_class(tmp_path: P
 
 
 def test_java_in_corpus_annotation_still_resolves(tmp_path: Path):
-    # #2504 guard: a locally-defined @interface used via an explicit import must
+    # guard: a locally-defined @interface used via an explicit import must
     # still resolve to the real source-backed node, not get parked externally.
     anno = _write(
         tmp_path / "src/com/example/anno/Loggable.java",
@@ -345,7 +345,7 @@ def test_java_in_corpus_annotation_still_resolves(tmp_path: Path):
 
 
 def test_java_same_package_annotation_resolves_without_import(tmp_path: Path):
-    # #2504 guard: same-package use (no import, no facts) keeps resolving via
+    # guard: same-package use (no import, no facts) keeps resolving via
     # the legacy unique-label rewire.
     anno = _write(
         tmp_path / "src/com/example/anno/Loggable.java",
@@ -370,7 +370,7 @@ def test_java_same_package_annotation_resolves_without_import(tmp_path: Path):
 
 
 def test_java_qualified_inline_annotation_resolves_internally(tmp_path: Path):
-    # #2504 (qualified inline form): `@com.example.anno.Loggable` with no import
+    # (qualified inline form): `@com.example.anno.Loggable` with no import
     # must resolve to the real @interface node via its FQN.
     anno = _write(
         tmp_path / "src/com/example/anno/Loggable.java",
@@ -395,7 +395,7 @@ def test_java_qualified_inline_annotation_resolves_internally(tmp_path: Path):
 
 
 def test_java_qualified_inline_external_annotation_does_not_bind_local_class(tmp_path: Path):
-    # #2504 (qualified inline form): an external `@io.micrometer.core.annotation.Timed`
+    # (qualified inline form): an external `@io.micrometer.core.annotation.Timed`
     # must not bind to a same-named local class.
     local = _write(
         tmp_path / "src/com/example/model/Timed.java",

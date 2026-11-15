@@ -173,7 +173,7 @@ def test_default_is_the_full_path(
     # the subset that test_only_changed_files_are_re_extracted pins for
     # incremental=True.
     #
-    # One change first, so the assertion holds whether or not the #4740 no-change
+    # One change first, so the assertion holds whether or not the no-change
     # gate is present: a correct gate can never skip a tree that changed, so the
     # run reaches the pipeline either way.
     (built / "src" / "a.py").write_text("def fa():\n    return 99\n")

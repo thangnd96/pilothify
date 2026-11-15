@@ -1,6 +1,6 @@
 """The Gemini CLI BeforeTool guard nudges toward the graph, shell-agnostically.
 
-Since #522 it runs as `pilothify hook-guard gemini` (not a `python -c` one-liner
+Since that fix it runs as `pilothify hook-guard gemini` (not a `python -c` one-liner
 that depended on a bare `python` on PATH and embedded PowerShell-hostile
 backticks). It always returns {"decision":"allow"} so a tool is never blocked,
 and appends additionalContext only when a graph exists.

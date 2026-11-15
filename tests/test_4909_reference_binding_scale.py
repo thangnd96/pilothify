@@ -1,6 +1,6 @@
-"""#4909: binding references must not scan every edge for every import.
+"""Binding references must not scan every edge for every import.
 
-The #4854 pass rewrites a reference edge that points at a sourceless stub so it
+The pass rewrites a reference edge that points at a sourceless stub so it
 points at the declaration in the imported file. Its first shape looped over the
 whole edge list once per import fact, which made a full rebuild O(imports x
 edges). This pins the lookup shape without timing anything: with E edges and I

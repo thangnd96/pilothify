@@ -11,7 +11,7 @@ pytest.importorskip("watchdog")
     reason="the pruned watch tree is Linux-only",
 )
 def test_watch_schedules_only_kept_directories(tmp_path, monkeypatch):
-    """#5033: ignored directories must not get an inotify watch.
+    """Ignored directories must not get an inotify watch.
 
     Smallest case: root + one kept dir + one .pilothifyignore'd dir. The
     watcher should schedule root and keep/ only, non-recursively.

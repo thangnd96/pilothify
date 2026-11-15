@@ -4,7 +4,7 @@
 requirement, because that is what the call site names. The conforming
 `RemoteStore.fetch()` is a separate node, and nothing joins the two, so a
 directed walk stops at the protocol and every chain through an injected
-dependency is cut at that point — the Swift twin of the C# gap #3003 closed.
+dependency is cut at that point — the Swift twin of the C# gap closed.
 
 The mechanism — single-owner, per-method `dispatches_to` edges at INFERRED,
 fanning out to every conformer — lives in `pilothify.interface_dispatch` and

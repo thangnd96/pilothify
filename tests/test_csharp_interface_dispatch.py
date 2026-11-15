@@ -163,7 +163,7 @@ def test_no_matching_member_produces_no_edge(tmp_path):
 
 
 def test_overloaded_implementer_still_links(tmp_path):
-    # A's overloads are two nodes since #4584; the interface's M() pairs with
+    # A's overloads are two nodes since that fix; the interface's M() pairs with
     # the one of the same parameter count.
     dispatch, r = _extract(tmp_path, {"S.cs": (
         "public interface IR { void M(); }\n"

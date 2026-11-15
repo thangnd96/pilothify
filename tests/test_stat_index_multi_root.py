@@ -1,4 +1,4 @@
-"""#3989 — a process that touches more than one cache root must not have the
+"""A process that touches more than one cache root must not have the
 first root's stat-index.json poisoned with entries from every root that
 followed it.
 

@@ -104,7 +104,7 @@ def test_source_backed_exception_call_is_preserved(tmp_path: Path):
 
 
 def test_constructor_call_survives_same_file_annotation_stub(tmp_path: Path):
-    """#3888: an annotation mints a sourceless stub for the imported class, and
+    """An annotation mints a sourceless stub for the imported class, and
     the constructor call in the same file must still reach the real definition
     through cross-file resolution instead of being dropped with the stub."""
     pkg = tmp_path / "app" / "engines"
@@ -132,7 +132,7 @@ def test_constructor_call_survives_same_file_annotation_stub(tmp_path: Path):
 
 
 def test_csharp_new_survives_generic_arg_stub_without_binding_members(tmp_path: Path):
-    """#3888, C# shape: `List<Widget>` stubs `Widget` in the file, so `new Widget()`
+    """C# shape: `List<Widget>` stubs `Widget` in the file, so `new Widget()`
     was lost. Recovering it must not let `new List<int>()` bind to an enum
     member that happens to be called `List`."""
     files = {
@@ -211,7 +211,7 @@ def test_csharp_new_survives_generic_arg_stub_without_binding_members(tmp_path: 
     ],
 )
 def test_stub_rescued_call_needs_import_or_scope_evidence(tmp_path: Path, files: dict[str, str]):
-    """#3888 review: the file annotates the type and imports it from elsewhere,
+    """Review: the file annotates the type and imports it from elsewhere,
     so a same-named class in an unrelated package/namespace is not the target.
     Before the stub rescue these calls had no edge; they must not gain a wrong one."""
     calls = _calls(_extract_tree(tmp_path, files))

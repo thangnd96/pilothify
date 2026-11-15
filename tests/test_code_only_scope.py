@@ -1,4 +1,4 @@
-"""#4923: a graph built with `extract --code-only` must stay code-only across
+"""A graph built with `extract --code-only` must stay code-only across
 hook-style rebuilds. Assertions are on the final graph only, so the same file
 can judge any candidate fix (persisted flag, hook flag, rc key)."""
 import json

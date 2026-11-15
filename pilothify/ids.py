@@ -10,8 +10,8 @@ entity into disconnected ghost nodes:
 
 Historically the normalization recipe was copy-pasted into ``extract._make_id``
 and ``build._normalize_id`` and kept in sync only by mirrored docstrings, which
-is exactly how the recurring ID-drift bug class crept in (#811 Unicode collapse,
-#550 same-filename collisions, #1033 AST-vs-LLM file-node mismatch). This
+is exactly how the recurring ID-drift bug class crept in (Unicode collapse,
+same-filename collisions AST-vs-LLM file-node mismatch). This
 module exists so the recipe lives in one place and the two callers can no longer
 diverge.
 
@@ -150,7 +150,7 @@ class DeclIdRegistry:
     def lookup(self, name: str, kinds=("type", "fn", "var", "ns", "alias")) -> str | None:
         norm = normalize_id(name)
         # A declaration spelled exactly like the reference wins over one that
-        # only normalizes alike: once #4904 keeps `Session` and `session()`
+        # only normalizes alike: once once keeps `Session` and `session()`
         # apart, `Session s;` names the declaration spelled `Session`, whatever
         # its kind. Without an exact spelling the kind order decides, as before.
         exact = {i for kind in kinds for i in self._by_name.get((kind, norm), ())

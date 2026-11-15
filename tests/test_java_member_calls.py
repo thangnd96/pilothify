@@ -243,7 +243,7 @@ def test_ambiguous_receiver_type_emits_no_edge(tmp_path: Path):
 
 
 def test_inherited_field_resolves_and_chained_receiver_follows_return_type(tmp_path: Path):
-    """#3151: a field declared on the superclass now types `this.<field>` in
+    """A field declared on the superclass now types `this.<field>` in
     the subclass, so `this.gateway.charge()` resolves. A chained receiver
     (`factory.create().charge()`) is typed by `create()`'s declared return."""
     calls, result = _calls(tmp_path, {

@@ -2,8 +2,7 @@
 
 `enum_declaration` is in `_CSHARP_CONFIG.class_types`, so the enum type was a
 node while its members were not — the type sat in the graph as a leaf. Java has
-emitted a node per `enum_constant` with a `case_of` edge since #1719 and Kotlin
-since #1738 (both from), and Swift does the same for `enum_entry`. The C#
+emitted a node per `enum_constant` with a `case_of` edge, and so does Kotlin, and Swift does the same for `enum_entry`. The C#
 walk already descends into `enum_member_declaration_list` with the enum as
 `parent_class_nid`, so this is the Java shape applied where it was missing.
 """
@@ -166,7 +165,7 @@ def test_a_property_and_an_enum_member_sharing_a_name_stay_separate(tmp_path):
     assert enum_member != class_member
 
 
-# ── #4245: a call must never bind to a same-named enum member ──────────────
+# ── a call must never bind to a same-named enum member ──────────────
 
 def test_a_bare_call_to_a_delegate_field_does_not_bind_to_a_same_named_enum_case(tmp_path):
     """Invoking a delegate-typed field whose name collides with one of its own

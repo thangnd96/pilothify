@@ -7,7 +7,7 @@ subclass and every member call through it was dropped, even though the
 `inherits` edge sat in the same graph. Java failed even with parent and child
 in one file; cross-file needed the tables at corpus level, which is why they
 now ride the per-file results keyed by class label + source_file (never node
-id — the id-keyed ObjC table is how #3150 happened).
+id — the id-keyed ObjC table is how the earlier bug happened).
 """
 from __future__ import annotations
 
@@ -166,7 +166,7 @@ def test_objc_property_on_the_superclass_types_self_field(tmp_path, monkeypatch)
         p = tmp_path / name
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(body, encoding="utf-8")
-    monkeypatch.chdir(tmp_path)  # relative paths: independent of the #3150 fix
+    monkeypatch.chdir(tmp_path)  # relative paths: independent of the fix
     with redirect_stdout(io.StringIO()):
         r = extract([Path(n) for n in files], cache_root=Path(tempfile.mkdtemp()), parallel=False)
     labels = {n["id"]: n["label"] for n in r["nodes"]}

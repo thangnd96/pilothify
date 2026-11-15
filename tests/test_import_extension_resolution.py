@@ -1,8 +1,8 @@
-"""Tests for #716 — TypeScript bare-path imports, Svelte 5 rune file imports
+"""TypeScript bare-path imports, Svelte 5 rune file imports
 (`from './foo.svelte'` for a `.svelte.ts` file), and directory/index.ts
 imports must resolve to the actual file's node id, not a phantom.
 
-Before #716, `_import_js` only rewrote `.js → .ts` and `.jsx → .tsx`. Every
+Before that fix, `_import_js` only rewrote `.js → .ts` and `.jsx → .tsx`. Every
 other shape (bare path, `.svelte → .svelte.ts`, `./foo` directory imports)
 produced an id like `..._foo` while the real file's node id was `..._foo_ts`,
 so `build_from_json` dropped the edge as external.
@@ -170,7 +170,7 @@ def test_resolve_jsx_to_tsx_when_real_file_is_tsx(tmp_path):
 
 def test_resolve_returns_unchanged_when_nothing_matches(tmp_path):
     """External / truly missing paths fall back to the input — preserves
-    pre-#716 behavior of becoming an external phantom edge."""
+    older behavior of becoming an external phantom edge."""
     nothing = tmp_path / "does_not_exist"
     assert _resolve_js_module_path(nothing) == nothing
 
@@ -186,7 +186,7 @@ def test_resolve_real_js_stays_js_when_ts_does_not_exist(tmp_path):
 
 
 def test_bare_path_import_resolves_in_ts_file(tmp_path):
-    """The #716 reproducer: TS file imports a sibling without an extension."""
+    """The reproducer: TS file imports a sibling without an extension."""
     target = _write(tmp_path / "type-helpers.ts",
                     "export type GetNestedType<T> = T")
     importer = _write(tmp_path / "page.ts",
@@ -352,7 +352,7 @@ def test_named_imports_emit_symbol_edges_after_resolution(tmp_path):
     )
 
 
-# ── #4860 — relative specifiers with a ?query / #fragment suffix ─────────────
+# ── relative specifiers with a ?query / #fragment suffix ─────────────
 
 
 def test_resolve_relative_specifier_with_query_string(tmp_path):
@@ -374,7 +374,7 @@ def test_resolve_relative_specifier_with_query_and_fragment(tmp_path):
 
 
 def test_query_string_import_resolves_and_emits_no_phantom(tmp_path):
-    """The #4860 reproducer: `import { foo } from './lib/foo.js?v=134'`
+    """The reproducer: `import { foo } from './lib/foo.js?v=134'`
     must produce an `imports_from` edge to the real file and a per-symbol
     `imports` edge for `foo`, with no phantom `ref_..._v_134` target."""
     target = _write(tmp_path / "lib" / "foo.js", "export const foo = 1")

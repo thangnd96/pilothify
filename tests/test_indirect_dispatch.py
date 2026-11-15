@@ -289,7 +289,7 @@ def test_cross_file_affected_includes_importing_dispatcher(tmp_path):
     for e in r["edges"]:
         g.add_edge(e["source"], e["target"], **e)
     affected = {h.node_id for h in affected_nodes(g, nid["on_event"])}
-    # editing on_event now flags the cross-module dispatcher — the gap #1565
+    # editing on_event now flags the cross-module dispatcher — the gap an earlier fix
     # left open (it only saw same-file callbacks).
     assert nid["schedule"] in affected
 
@@ -534,7 +534,7 @@ def test_typescript_typed_params_and_arrow_consts(tmp_path):
 
 def test_class_ref_is_not_indirect_call(tmp_path):
     """A class referenced BY NAME as a value is a descriptor, not an invocation, so it
-    must NOT emit an indirect_call edge — across all three symptom families of #2137:
+    must NOT emit an indirect_call edge — across all three symptom families of that fix:
     ORM args (`select(Model)`, `db.get(Model, id)`), exception tuples
     (`except (ErrorA, ErrorB)`), and string-literal getattr resolving to a same-named
     class. A real function callback in the same file still emits its edge."""

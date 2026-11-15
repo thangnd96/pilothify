@@ -79,7 +79,7 @@ def test_a_small_document_is_still_passed_through_whole(tmp_path):
 def test_image_documents_are_not_sliced(tmp_path):
     """An image has no addressable text, so it can never be sliced and must pass
     through untouched. (A PDF, by contrast, is now sliced through its converter —
-    #2906 — so the old assertion that PDFs are unsplittable no longer holds; the
+    So the old assertion that PDFs are unsplittable no longer holds; the
     unreadable-PDF passthrough case is covered in test_pdf_slicing.py.)"""
     f = tmp_path / "diagram.png"
     f.write_bytes(b"\x89PNG\r\n\x1a\n" + b"x" * 40_000)

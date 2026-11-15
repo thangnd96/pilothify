@@ -1,4 +1,4 @@
-"""#2316: `pilothify update <target>` must write manifest.json into the TARGET's
+"""`pilothify update <target>` must write manifest.json into the TARGET's
 pilothify-out/, not the process CWD's.
 
 `_rebuild_code` computes ``out = watch_path / _PILOTHIFY_OUT`` and routes every
@@ -106,7 +106,7 @@ def test_second_run_reaches_the_same_topology_early_return(two_projects, monkeyp
 
 
 def test_update_does_not_destroy_the_cwd_projects_own_manifest(two_projects, monkeypatch):
-    """The severe half of #2316: it is data loss, not just a misplaced file.
+    """The severe half of that fix: it is data loss, not just a misplaced file.
 
     save_manifest read-modify-writes the same path and full-scan callers pass
     scan_corpus, so the CWD project's rows were pruned as out-of-corpus and
@@ -133,7 +133,7 @@ def test_update_does_not_destroy_the_cwd_projects_own_manifest(two_projects, mon
 
 
 def test_relative_target_manifest_keys_stay_portable(two_projects, monkeypatch):
-    """#777/#1964 portability, broken here by the CWD-derived ``root=``.
+    """Portability, broken here by the CWD-derived ``root=``.
 
     ``project_root`` was ``Path.cwd()`` for a relative target, so the target's
     files were out-of-root and ``_to_relative_for_storage`` kept them absolute.
@@ -163,7 +163,7 @@ def test_relative_target_manifest_keys_stay_portable(two_projects, monkeypatch):
 
 
 def test_built_at_commit_comes_from_the_target_repo(two_projects, monkeypatch):
-    """Same CWD-anchoring class as #2316, but it writes wrong data, not a wrong path.
+    """Same CWD-anchoring class as that fix, but it writes wrong data, not a wrong path.
 
     ``_git_head()`` ran ``git rev-parse HEAD`` with no ``cwd=``, so it read the
     invoking repo. An update of project B from project A stamped A's commit into
@@ -210,7 +210,7 @@ def test_relative_target_manifest_is_consumable_by_detect_incremental(
     """End of the chain: the point of the manifest is the next incremental run.
 
     A manifest anchored to the wrong root makes every file look new, which is
-    the user-visible cost of #2316 even once the file is in the right place.
+    the user-visible cost of that fix even once the file is in the right place.
     """
     from pilothify.detect import detect_incremental
     from pilothify.watch import _rebuild_code

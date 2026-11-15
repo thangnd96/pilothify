@@ -349,7 +349,7 @@ def test_sanitize_rationale_only_propagates_through_rationale_for_edges():
 
 
 def test_sanitize_keeps_members_keyed_hyperedge(capsys):
-    """#1561: a `members`-keyed hyperedge with >=2 surviving members must be
+    """A `members`-keyed hyperedge with >=2 surviving members must be
     KEPT (normalized to `nodes`), not silently dropped before build."""
     fragment = {
         "nodes": [
@@ -370,7 +370,7 @@ def test_sanitize_keeps_members_keyed_hyperedge(capsys):
 
 
 def test_validate_accepts_node_ids_keyed_hyperedge():
-    """#1561: an alias-keyed hyperedge must not be rejected for a missing
+    """An alias-keyed hyperedge must not be rejected for a missing
     `nodes` list — validate normalizes first."""
     fragment = _valid_fragment()
     fragment["nodes"].append({"id": "second", "label": "Second", "file_type": "code"})

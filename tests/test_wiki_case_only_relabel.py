@@ -1,4 +1,4 @@
-"""#4508 — a community relabelled only by letter case lost its article.
+"""A community relabelled only by letter case lost its article.
 
 `to_wiki` writes each article through `write_text_atomic_if_changed`, then sweeps
 `*.md` files the run did not produce. On a case-preserving, case-insensitive

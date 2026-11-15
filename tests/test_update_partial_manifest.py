@@ -1,4 +1,4 @@
-"""#4807: a doc only partly read during ``--update`` is queued again by the next ``--update``.
+"""A doc only partly read during ``--update`` is queued again by the next ``--update``.
 
 Step B3.5 lists the files a subagent read only partway in ``.pilothify_partial.txt``. A full
 build's Step 9 passes that list to ``_stamped_manifest_files``, so those files stay unstamped and
@@ -108,7 +108,7 @@ def _env() -> dict[str, str]:
 
 
 def _bash(block: str, proj: Path, root: str) -> str:
-    # Since #4762 the block reads the scan root from the trusted .pilothify_root
+    # Since that fix the block reads the scan root from the trusted .pilothify_root
     # sidecar instead of a substituted literal; write it as Step 1 would.
     out = proj / "pilothify-out"
     out.mkdir(parents=True, exist_ok=True)

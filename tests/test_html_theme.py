@@ -5,7 +5,7 @@ import networkx as nx
 
 from pilothify.export import to_html
 
-# Page-chrome colors graph.html hardcoded before #3894. The dark defaults must
+# Page-chrome colors graph.html hardcoded before that fix. The dark defaults must
 # keep these exact values so the out-of-the-box look does not change.
 DARK_DEFAULTS = {
     "--bg": "#0f0f1a",

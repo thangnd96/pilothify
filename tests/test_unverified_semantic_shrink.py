@@ -163,7 +163,7 @@ def test_merge_raw_extraction_parity(tmp_path):
     assert merged.get("_unverified_semantic_shrink") == {"doc.md": (5, 1)}
 
 
-# ── 2. Integration / CLI Tests for #3203 Behavior ─────────────────────────────
+# ── 2. Integration / CLI Tests Behavior ─────────────────────────────
 
 def _run_cli():
     try:
@@ -174,7 +174,7 @@ def _run_cli():
 
 
 def test_3203_e2e_repro_protected_and_manifest_unstamped(tmp_path, monkeypatch, capsys):
-    """Reproduce #3203: Initial 3 nodes for README.md -> re-extracted with 1 node.
+    """Reproduce the shrink bug: Initial 3 nodes for README.md -> re-extracted with 1 node.
     The shrink guard refuses the overwrite, exits 1, and README.md is not stamped.
     """
     corpus = tmp_path / "repo"
@@ -317,7 +317,7 @@ def test_3203_allow_partial_override_permits_intentional_reduction(tmp_path, mon
     assert len(graph["nodes"]) == 1
 
 
-# -- 3. #5083: the degraded cache entry must not pin the corpus forever --------
+# -- 3. the degraded cache entry must not pin the corpus forever --------
 
 _PROMPT = llmmod._extraction_system(deep=False)
 

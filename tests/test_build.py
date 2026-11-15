@@ -60,7 +60,7 @@ def test_build_from_json_edge_count():
     assert G.number_of_edges() == 4
 
 def test_null_weight_edge_builds_and_clusters(tmp_path):
-    """#1960: an explicit ``"weight": null`` (JSON null -> None) used to survive
+    """An explicit ``"weight": null`` (JSON null -> None) used to survive
     ``.get("weight", 1.0)`` and crash Louvain/Leiden modularity with a TypeError.
     It must now coerce to the 1.0 default, build, and cluster without raising."""
     from pilothify.cluster import cluster
@@ -137,7 +137,7 @@ def test_legacy_edge_from_to_canonicalized():
 
 
 def test_legacy_node_name_path_aliases_folded():
-    """#2194: nodes carrying `name`/`path` instead of `label`/`source_file` must
+    """Nodes carrying `name`/`path` instead of `label`/`source_file` must
     be canonicalized before validation, not enter the graph as label-less
     ghosts. After build the canonicalized dict also passes validation."""
     from pilothify.validate import validate_extraction
@@ -155,7 +155,7 @@ def test_legacy_node_name_path_aliases_folded():
 
 
 def test_legacy_edge_type_confidence_score_aliases_folded():
-    """#2194: edges carrying `type`/`confidence_score` instead of
+    """Edges carrying `type`/`confidence_score` instead of
     `relation`/`confidence` fold to canonical fields. Recovery confidence is
     INFERRED (never EXTRACTED — alias recovery is not provenance) and the
     companion confidence_score float is retained, not popped."""
@@ -251,7 +251,7 @@ def test_legacy_numeric_confidence_normalization_is_idempotent(capsys):
 
 
 def test_node_alias_canonical_field_wins():
-    """#2194: when both the canonical field and its alias are present, the
+    """When both the canonical field and its alias are present, the
     canonical value wins and the alias key is left untouched."""
     ext = {"nodes": [{"id": "n1", "label": "Real", "name": "Alias",
                       "file_type": "code", "source_file": "a.py"}],
@@ -262,7 +262,7 @@ def test_node_alias_canonical_field_wins():
 
 
 def test_alias_node_ghost_merges_into_ast_twin():
-    """#2194: an alias-only semantic node (name/path) must participate in the
+    """An alias-only semantic node (name/path) must participate in the
     AST/LLM ghost merge once folded — same label and file as an AST node with a
     different id collapses into the AST node instead of surviving as a ghost."""
     ext = {"nodes": [
@@ -278,7 +278,7 @@ def test_alias_node_ghost_merges_into_ast_twin():
 
 
 def test_alias_node_gets_nonempty_norm_label(tmp_path):
-    """#2194: a recovered alias node must serialize with a non-empty norm_label
+    """A recovered alias node must serialize with a non-empty norm_label
     so query/explain can find it."""
     from pilothify.export import to_json
     ext = {"nodes": [{"id": "n1", "name": "Foo", "path": "a/b.md", "file_type": "concept"}],
@@ -292,7 +292,7 @@ def test_alias_node_gets_nonempty_norm_label(tmp_path):
 
 
 def test_extraction_warning_breakdown_by_cause(capsys):
-    """#2194: a mixed batch of schema errors must report per-cause counts, not
+    """A mixed batch of schema errors must report per-cause counts, not
     just the first error."""
     ext = {"nodes": [
         {"id": "n1", "label": "A", "file_type": "code", "source_file": "a.py"},
@@ -313,7 +313,7 @@ def test_extraction_warning_breakdown_by_cause(capsys):
 
 
 def test_build_drops_edge_still_missing_relation(capsys):
-    """#4809: after aliases are folded, an edge with no relation must not
+    """After aliases are folded, an edge with no relation must not
     enter the graph because the relationship semantics cannot be reconstructed."""
     ext = {"nodes": [
         {"id": "n1", "label": "A", "file_type": "document", "source_file": "a.md"},
@@ -332,7 +332,7 @@ def test_build_drops_edge_still_missing_relation(capsys):
 
 
 def test_absolute_derived_semantic_ids_rekeyed(tmp_path):
-    """#2197: a semantic fragment whose ids were derived from an ABSOLUTE
+    """A semantic fragment whose ids were derived from an ABSOLUTE
     source_file (Windows detect() emits them) must re-key to the canonical
     repo-relative stem instead of ghosting against the existing graph."""
     from pilothify.ids import make_id
@@ -357,7 +357,7 @@ def test_absolute_derived_semantic_ids_rekeyed(tmp_path):
 
 
 def test_absolute_derived_semantic_ids_rekeyed_backslash(tmp_path):
-    """#2197 (separator variant): the same absolute-derived-id fragment with
+    """(separator variant): the same absolute-derived-id fragment with
     backslash separators in source_file re-keys identically."""
     from pilothify.ids import make_id
     (tmp_path / "docs").mkdir()
@@ -388,7 +388,7 @@ def test_source_file_backslash_normalized():
 
 
 def test_edge_missing_source_file_backfilled_from_node():
-    """#1279: a semantic/LLM edge lacking source_file must inherit it from its
+    """A semantic/LLM edge lacking source_file must inherit it from its
     source node rather than reach graph.json with no file reference."""
     extraction = {
         "nodes": [
@@ -487,7 +487,7 @@ def test_file_type_synonym_mapping():
 
 
 def test_ghost_merge_unique_located_node_still_merges():
-    """#1145 ghost-merge: a semantic ghost collapses into the single AST node
+    """Ghost-merge: a semantic ghost collapses into the single AST node
     sharing its (basename, label), and edges re-point to the AST node."""
     ext = {
         "nodes": [
@@ -508,9 +508,9 @@ def test_ghost_merge_unique_located_node_still_merges():
 
 
 def test_ghost_merge_uses_source_file_not_basename():
-    """#2068: the ghost-merge key is the full source_file, not the bare basename.
+    """The ghost-merge key is the full source_file, not the bare basename.
     A ghost from src/a/index.ts merges into THAT file's AST node (a_render), never
-    the unrelated same-basename b_render in src/b/index.ts. (Pre-#2068 the
+    the unrelated same-basename b_render in src/b/index.ts. (Older the
     (basename, label) key made ('index.ts','render') ambiguous and skipped the
     merge; the directory-aware key resolves it precisely.)"""
     ext = {
@@ -538,7 +538,7 @@ def test_ghost_merge_uses_source_file_not_basename():
 
 
 def test_ghost_merge_not_across_directories_same_basename():
-    """#2068: two unrelated non-AST nodes with the same basename+label in
+    """Two unrelated non-AST nodes with the same basename+label in
     DIFFERENT directories must NOT be merged onto one survivor (the bug: bare
     basename collapsed docs/product_a/index.md and docs/product_b/index.md)."""
     ext = {
@@ -562,7 +562,7 @@ def test_ghost_merge_not_across_directories_same_basename():
 
 
 def test_ghost_merge_non_ast_different_files_both_survive():
-    """#1753: two NON-AST (semantic) nodes sharing (basename, label) but from
+    """Two NON-AST (semantic) nodes sharing (basename, label) but from
     DIFFERENT files are distinct concepts with no AST canonical twin. They must
     not be merged into an arbitrary survivor (which flipped run-to-run with the
     hash seed); both survive, mirroring the AST/AST guard."""
@@ -582,7 +582,7 @@ def test_ghost_merge_non_ast_different_files_both_survive():
 def test_ghost_merge_non_ast_same_file_still_merges():
     """A genuine duplicate — two non-AST nodes with the SAME source_file and
     label — is a real ghost and still collapses to one node (deterministically),
-    so #1753's fix doesn't leave same-file LLM duplicates behind."""
+    so the fix doesn't leave same-file LLM duplicates behind."""
     ext = {
         "nodes": [
             {"id": "a_foo", "label": "Foo", "file_type": "concept",
@@ -597,7 +597,7 @@ def test_ghost_merge_non_ast_same_file_still_merges():
 
 
 def test_ghost_merge_wrong_source_file_resolved_by_label():
-    """#3344: a semantic node that only MENTIONS a file (a saved
+    """A semantic node that only MENTIONS a file (a saved
     pilothify-out/memory/*.md query answer, a runbook narrating "see App.tsx")
     is stamped with source_file = the document being read, not the file named
     in its prose — so the (source_file, label) key can never match the real
@@ -632,7 +632,7 @@ def test_ghost_merge_wrong_source_file_resolved_by_label():
 
 
 def test_label_only_file_fold_preserves_distinct_semantic_evidence():
-    """#4896: two source documents can discuss the same file differently.
+    """Two source documents can discuss the same file differently.
 
     Their independent explanations must not disappear just because an AST file
     with the same basename is present; ordinary evidence-free mentions still
@@ -667,7 +667,7 @@ def test_label_only_file_fold_preserves_distinct_semantic_evidence():
 
 
 def test_ghost_merge_wrong_source_file_ambiguous_basename_left_alone():
-    """#3344: the label-alone fallback must stay conservative — a phantom
+    """The label-alone fallback must stay conservative — a phantom
     mentioning a bare basename that TWO different real files share (an
     "index.ts" in two different directories) has no safe unique winner and
     must be left as-is rather than merged into an arbitrary one."""
@@ -688,7 +688,7 @@ def test_ghost_merge_wrong_source_file_ambiguous_basename_left_alone():
 
 
 def test_build_merge_preserves_call_edge_direction(tmp_path):
-    """Regression for #760.
+    """
 
     When the callee is defined before the caller in source, NetworkX's
     undirected Graph stores edges in node-insertion order. Going through
@@ -755,7 +755,7 @@ def test_build_merge_preserves_call_edge_direction(tmp_path):
 
 
 def test_build_merge_directed_edge_direction_survives_round_trip(tmp_path):
-    """Regression for #2342: once build_merge correctly inherits the on-disk
+    """Once build_merge correctly inherits the on-disk
     `directed` flag, the resulting graph must actually be a DiGraph whose
     edges are readable in the right direction (a -> b, not b -> a)."""
     from pilothify.extract import extract_js
@@ -782,7 +782,7 @@ def test_build_merge_directed_edge_direction_survives_round_trip(tmp_path):
 
 
 def test_build_merge_inherits_directed_flag_from_disk(tmp_path):
-    """Regression for #2342.
+    """
 
     build_merge with no explicit `directed=` must honor the on-disk graph's
     own `directed` flag instead of silently defaulting to False, or an
@@ -814,7 +814,7 @@ def test_build_merge_inherits_directed_flag_from_disk(tmp_path):
 
 def test_build_merge_fresh_graph_defaults_undirected(tmp_path):
     """No existing graph.json + no directed= kwarg -> falls back to the
-    current default (False), same as before #2342."""
+    current default (False), same as before that fix."""
     graph_path = tmp_path / "does_not_exist.json"
     G = build_merge([], graph_path, dedup=False)
     assert G.is_directed() is False
@@ -846,12 +846,12 @@ def test_build_merge_explicit_directed_overrides_disk_flag(tmp_path):
 
 
 def test_build_from_json_preserves_first_direction_on_bidirectional_pair(tmp_path):
-    """Regression for #1061.
+    """
 
     When an extraction emits two `calls` edges between the same pair in
     opposite directions (mutual recursion, callbacks, event handlers, etc.),
     nx.Graph collapses them into a single undirected edge. The deterministic
-    edge sort introduced in #1010 ordered edges by (source, target, relation),
+    edge sort introduced ordered edges by (source, target, relation),
     so the lexicographically-later direction always wrote second and clobbered
     the first edge's _src/_tgt — the surviving edge then exported with caller
     and callee systematically swapped on every collision.
@@ -904,7 +904,7 @@ def test_build_from_json_preserves_first_direction_on_bidirectional_pair(tmp_pat
     )
 
 
-# Regression tests for #796 — edge_data / edge_datas helpers must tolerate
+# edge_data / edge_datas helpers must tolerate
 # MultiGraph and MultiDiGraph, which networkx's node_link_graph() produces
 # whenever the loaded JSON has multigraph: true. Plain G.edges[u, v] crashes
 # on those with `ValueError: not enough values to unpack (expected 3, got 2)`.
@@ -1021,13 +1021,13 @@ def test_build_relativizes_absolute_source_file(tmp_path):
         "edges": [],
     }
     G = build([extraction], root=root)
-    # #1504 re-keys main_fn (old stem "main") to the full-path form "src_main".
+    # re-keys main_fn (old stem "main") to the full-path form "src_main".
     sf = G.nodes["src_main_fn"]["source_file"]
     assert sf == "src/main.py"
 
 
 def test_build_from_json_ambiguous_old_stem_alias_stays_dangling(tmp_path):
-    """The #1504 old-stem alias (e.g. "ping.h" -> bare "ping") is meant to let a
+    """The old-stem alias (e.g. "ping.h" -> bare "ping") is meant to let a
     stale-id edge from an un-re-extracted fragment still find its own file after
     a rekey. But the old-stem form drops the extension and most of the path, so
     two unrelated real files easily collapse onto the same bare alias (a C header
@@ -1100,7 +1100,7 @@ def test_build_from_json_ambiguous_alias_detected_despite_header_impl_salting(tm
 def test_build_from_json_unambiguous_old_stem_alias_still_resolves(tmp_path):
     """Companion to the ambiguous case above: when exactly one real file claims
     an old-stem alias, a dangling edge to that bare alias should still resolve
-    to it — the #1504 migration-compat behavior this index exists for."""
+    to it — the migration-compat behavior this index exists for."""
     root = tmp_path / "repo"
     root.mkdir()
     extraction = {
@@ -1120,7 +1120,7 @@ def test_build_from_json_unambiguous_old_stem_alias_still_resolves(tmp_path):
 
 
 def test_build_from_json_unambiguous_old_stem_alias_still_needs_language_match(tmp_path):
-    """#4941: an unambiguous old-stem alias is not enough on its own — the
+    """An unambiguous old-stem alias is not enough on its own — the
     candidate must also be in the SAME language family as the edge naming it.
 
     A Dart file at the corpus root has no directory prefix, so its old-stem
@@ -1169,7 +1169,7 @@ def test_build_from_json_relative_source_file_unchanged(tmp_path):
 
 
 def test_build_merge_prune_absolute_paths_match_relative_nodes(tmp_path):
-    """#1007: manifest stores absolute paths, graph nodes store relative paths.
+    """Manifest stores absolute paths, graph nodes store relative paths.
     prune_sources with absolute paths must still remove the right nodes and edges."""
     import networkx as nx
 
@@ -1200,7 +1200,7 @@ def test_build_merge_prune_absolute_paths_match_relative_nodes(tmp_path):
 
 
 def test_build_merge_prune_windows_backslash_paths(tmp_path):
-    """#1007: prune_sources with Windows-style backslash absolute paths must still match."""
+    """prune_sources with Windows-style backslash absolute paths must still match."""
     import networkx as nx
 
     root = tmp_path / "corpus"
@@ -1305,7 +1305,7 @@ def _write_two_tier_graph(graph_path):
 
 
 def test_build_merge_semantic_reextract_preserves_ast_layer(tmp_path):
-    """#2333/#2336 (COEXIST): a semantic-only re-extract of a file replaces
+    """(COEXIST): a semantic-only re-extract of a file replaces
     only that file's SEMANTIC tier — its AST document/heading nodes and AST
     edges must survive. Before the fix, replace-by-source was tier-blind and
     the semantic chunk deleted the doc's AST layer."""
@@ -1331,7 +1331,7 @@ def test_build_merge_semantic_reextract_preserves_ast_layer(tmp_path):
 
 
 def test_build_merge_ast_reextract_preserves_semantic_layer(tmp_path):
-    """#2333/#2336 inverse: an AST-only re-extract of a file replaces only
+    """Inverse: an AST-only re-extract of a file replaces only
     that file's AST tier — its semantic concept nodes (and semantic-tier
     hyperedges, which an AST pass cannot regenerate) must survive."""
     graph_path = tmp_path / "graph.json"
@@ -1367,7 +1367,7 @@ def test_build_merge_ast_reextract_preserves_semantic_layer(tmp_path):
 
 
 def test_merge_raw_extraction_tier_scoped(tmp_path):
-    """#2333 raw-path mirror: merge_raw_extraction (extract --no-cluster
+    """Raw-path mirror: merge_raw_extraction (extract --no-cluster
     incremental) applies the same tier-scoped replace as build_merge — a
     semantic-only re-extract keeps the file's AST nodes/edges."""
     from pilothify.build import merge_raw_extraction
@@ -1397,7 +1397,7 @@ def test_merge_raw_extraction_tier_scoped(tmp_path):
 
 
 def test_is_ast_tier_legacy_fallback():
-    """#2334: _origin wins when present; unstamped legacy items fall back to
+    """_origin wins when present; unstamped legacy items fall back to
     the source_location shape (AST emits 'L<line>', semantic emits null)."""
     from pilothify.build import _is_ast_tier
 
@@ -1453,7 +1453,7 @@ def test_build_merge_root_collapses_convention_drift(tmp_path):
     ], "edges": []}
     G_ok = build_merge([fixed], graph_path, prune_sources=None, dedup=False, root=root)
     assert G_ok.number_of_nodes() == 1, "verbatim path + root must collapse to one node"
-    # #1504 re-keys the author-chosen short ids to the canonical full-path stem.
+    # re-keys the author-chosen short ids to the canonical full-path stem.
     assert "docs_wiki_overview_stale" not in G_ok, "stale node for the re-extracted file must be dropped"
     assert G_ok.nodes["docs_wiki_overview_overview"]["source_file"] == "docs/wiki/overview.md", \
         "new chunk must be canonicalized to the stored relative base"
@@ -1508,7 +1508,7 @@ def test_build_from_json_skips_edge_with_non_hashable_endpoint():
     assert G.has_edge("a", "b")
 
 
-# ── #1504 migration: legacy-id detection + re-key source_file contract ──────────
+# ── migration: legacy-id detection + re-key source_file contract ──────────
 
 def test_graph_has_legacy_ids_detects_old_scheme():
     """The read-only-consumer nudge (query/serve) flags a older graph and
@@ -1589,7 +1589,7 @@ def test_subfolder_build_from_parent_is_not_flagged_legacy(tmp_path, monkeypatch
     assert graph_has_legacy_ids(nodes, source_prefix=legacy_id_source_prefix(gp)) is False
 
 
-# ── #2408: globally-scoped MCP node ids are not file-stem derived ──────────────
+# ── globally-scoped MCP node ids are not file-stem derived ──────────────
 
 @pytest.mark.parametrize("mcp_kind, nid", [
     ("mcp_command", "mcp_command_npx"),
@@ -1660,7 +1660,7 @@ def test_semantic_rekey_relative_vs_absolute_source_file():
 
 
 def test_cross_language_imports_references_are_dropped():
-    """#1749: an `imports`/`references` edge must not bind across a language
+    """An `imports`/`references` edge must not bind across a language
     family. A Python `import time` that resolved by bare stem onto a `time.ts`
     file node welds the two language halves together at a phantom edge; the spec
     forbids this for `calls` and it is equally invalid here."""
@@ -1688,7 +1688,7 @@ def test_cross_language_imports_references_are_dropped():
 
 
 def test_cross_family_reference_to_unknown_ext_is_kept():
-    """The #1749 guard only drops when BOTH endpoints are known code languages,
+    """The guard only drops when BOTH endpoints are known code languages,
     so a reference from a config/manifest (unknown ext) to a code file is kept."""
     ext = {
         "nodes": [
@@ -1707,7 +1707,7 @@ def test_cross_family_reference_to_unknown_ext_is_kept():
 
 
 def test_markdown_doc_twin_merges_into_semantic_doc_node():
-    """#1799: the markdown quick-scan's bare `<slug>` doc node and the semantic
+    """The markdown quick-scan's bare `<slug>` doc node and the semantic
     `<slug>_doc` node for the same file must collapse to one node, with edges
     consolidated — otherwise a document is two disconnected halves and traversals
     dead-end on the wrong twin."""
@@ -1737,7 +1737,7 @@ def test_markdown_doc_twin_merges_into_semantic_doc_node():
 
 
 def test_doc_twin_merge_does_not_touch_code_symbols():
-    """#1799 guard: a code symbol `foo` and an unrelated `foo_doc` (not
+    """Guard: a code symbol `foo` and an unrelated `foo_doc` (not
     file_type=document) must NOT merge, even sharing a source_file."""
     ext = {
         "nodes": [
@@ -1755,7 +1755,7 @@ def test_doc_twin_merge_does_not_touch_code_symbols():
 def test_marked_cross_document_stubs_survive_issue_4738_collisions():
     """The complete build keeps every marked reference stub and the definition.
 
-    This covers the three collision shapes reported in #4738, including a
+    This covers the three collision shapes reported, including a
     stub whose ID also looks like an entity defined in its citing file.
     """
     logging = "specifications_20_architecture_operational_logging_document"
@@ -1793,7 +1793,7 @@ def test_marked_cross_document_stubs_survive_issue_4738_collisions():
 
 
 def test_build_from_json_prunes_dangling_hyperedge_members(capsys):
-    """#1916: build_from_json used to copy hyperedges into G.graph["hyperedges"]
+    """build_from_json used to copy hyperedges into G.graph["hyperedges"]
     verbatim without validating members, so a dangling member reached graph.json
     even from a live (non-cache) extraction. Members absent from the built node
     set are pruned — matching how dangling pairwise edges are skipped — and a
@@ -1822,7 +1822,7 @@ def test_build_from_json_prunes_dangling_hyperedge_members(capsys):
 # absolute?" therefore has to answer for BOTH platforms. Host-only tests
 # (Path.is_absolute / os.path.isabs) silently call the other platform's
 # absolute paths relative, which bakes a build directory into node IDs (the
-# mirror of #2197, reported as #2618) or joins it under the scan root.
+# mirror of that fix, reported as that fix) or joins it under the scan root.
 #
 # os.path.isabs is doubly unsafe here: Python 3.13 changed ntpath.isabs so a
 # single leading slash is no longer absolute, where 3.10-3.12 said it was, so
@@ -1836,7 +1836,7 @@ FOREIGN_ABSOLUTE_SOURCE_FILES = [
 
 @pytest.mark.parametrize("sf", FOREIGN_ABSOLUTE_SOURCE_FILES)
 def test_semantic_rekey_skips_absolute_from_either_platform(sf):
-    """#2618: an absolute source_file is left alone whichever OS wrote it."""
+    """An absolute source_file is left alone whichever OS wrote it."""
     from pilothify.build import _semantic_id_remap
     nodes = [{"id": "api_readme", "source_file": sf, "type": "document"}]
     assert _semantic_id_remap(nodes, None) == {}, (
@@ -1898,7 +1898,7 @@ def test_derive_prune_root_recovers_root_from_posix_absolute_prune_sources():
 
     With a host-only absoluteness test, every POSIX-absolute prune source was
     skipped on Windows, the root came back None, and prune/replace silently
-    no-opped — the failure mode of #1151 / #2446 / #2012, reached from the other
+    no-opped — the failure mode of that fix, reached from the other
     direction.
     """
     from pilothify.build import _derive_prune_root
@@ -1908,11 +1908,11 @@ def test_derive_prune_root_recovers_root_from_posix_absolute_prune_sources():
     ) == "/home/ci/build/repo"
 
 
-# ── #3411: Cross-file stub nodes must not pollute AST replacement set ────────
+# ── Cross-file stub nodes must not pollute AST replacement set ────────
 
 
 def test_build_merge_sln_stub_does_not_replace_referenced_csproj(tmp_path):
-    """#3411: Re-extracting a .sln must replace only the .sln's AST contribution.
+    """Re-extracting a .sln must replace only the .sln's AST contribution.
     Cross-file project stubs (source_file='A/A.csproj') in the .sln chunk must not
     cause A/A.csproj's PackageReference/TargetFramework nodes and edges to be wiped."""
     import networkx as nx
@@ -1998,7 +1998,7 @@ def test_build_merge_sln_stub_does_not_replace_referenced_csproj(tmp_path):
 
 
 def test_build_merge_project_reference_stub_does_not_replace_referenced_project(tmp_path):
-    """#3411: Re-extracting B.csproj (which has a ProjectReference to A.csproj) must
+    """Re-extracting B.csproj (which has a ProjectReference to A.csproj) must
     replace only B.csproj's AST contribution. A.csproj's PackageReference and
     TargetFramework nodes must remain intact."""
     import networkx as nx
@@ -2084,7 +2084,7 @@ def test_build_merge_project_reference_stub_does_not_replace_referenced_project(
 
 
 def test_merge_raw_extraction_cross_file_stub_parity(tmp_path):
-    """#3411: merge_raw_extraction shares the same explicit extraction provenance
+    """merge_raw_extraction shares the same explicit extraction provenance
     scoping as build_merge."""
     import networkx as nx
     from pilothify.build import merge_raw_extraction
@@ -2137,7 +2137,7 @@ def test_merge_raw_extraction_cross_file_stub_parity(tmp_path):
 
 
 def test_build_merge_explicit_ast_sources_argument(tmp_path):
-    """#3411: build_merge honors ast_sources argument when passed explicitly."""
+    """build_merge honors ast_sources argument when passed explicitly."""
     import networkx as nx
 
     root = tmp_path / "corpus"

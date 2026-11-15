@@ -157,7 +157,7 @@ def test_self_loops_are_not_introduced():
     """A recursive function carries a self-loop; the traversal never rendered one.
 
     Surfacing them would be an output change beyond the missing edges reported
-    in #2323, so the completion pass skips them.
+, so the completion pass skips them.
     """
     G = nx.Graph()
     _add(G, "recurse", "caller")

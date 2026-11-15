@@ -1,6 +1,6 @@
 """The ambient scan root save/restore pair must be thread-isolated.
 
-Regression test for #4602: `_ACTIVE_SCAN_ROOT` was a module global, so
+`_ACTIVE_SCAN_ROOT` was a module global, so
 overlapping extractions on different threads interleaved their
 save/restore pairs — the second call saved the first one's root and
 restored it last, leaving the ambient root set after `extract()`

@@ -1,4 +1,4 @@
-"""#3144: the stale-skill warning must be actionable, and local SKILL.md
+"""The stale-skill warning must be actionable, and local SKILL.md
 edits must not vanish without a trace.
 
 A plain `pilothify install` refreshes only the detected platform, so a stale

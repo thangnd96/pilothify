@@ -1,4 +1,4 @@
-"""#3154: TypeScript `import(...)` types used in call-expression type arguments.
+"""TypeScript `import(...)` types used in call-expression type arguments.
 
 tree-sitter-typescript misparses `f<typeof import("mod")>()` and
 `f<import("mod").Foo>()` as binary comparison expressions (`<` and `>`),
@@ -151,7 +151,7 @@ def test_ts_multiline_import_type_arguments(tmp_path: Path, capsys):
 
 
 def test_ts_runtime_dynamic_import_between_comparisons_is_not_normalized(tmp_path: Path):
-    """#3210: ``<`` and ``>`` in separate semicolon-less statements must not
+    """``<`` and ``>`` in separate semicolon-less statements must not
     make a runtime import look like a call-expression type argument."""
     r = _extract(tmp_path, {
         "main.ts": (
@@ -288,7 +288,7 @@ def test_ts_normalizer_does_not_mask_import_text_in_literals_or_comments():
 
 
 def test_ts_normalizer_scales_linearly_on_large_files():
-    """#3359: the match/type-argument-range filters must not be O(matches x ranges).
+    """The match/type-argument-range filters must not be O(matches x ranges).
 
     A large monorepo file mixes thousands of generic calls (each a
     ``type_arguments`` range) with thousands of ``import(...)`` types. Filtering

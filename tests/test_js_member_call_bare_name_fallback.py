@@ -1,4 +1,4 @@
-"""#4598: a JS/TS member call must not fall back to a same-file bare-name match.
+"""A JS/TS member call must not fall back to a same-file bare-name match.
 
 `receiver.name(...)` used to resolve to a function called `name` declared
 anywhere in the same file, ignoring the receiver entirely. Inside a
@@ -100,7 +100,7 @@ def test_ts_typed_receiver_still_resolves_through_its_own_type(tmp_path):
 
 
 def test_factory_object_sibling_call_is_unaffected(tmp_path):
-    # #1322/#3408's own pattern: methods assigned onto a local factory object
+    # The own pattern: methods assigned onto a local factory object
     # calling each other through that same object must keep resolving --
     # this is a genuine, already-scoped sibling call, not a guess.
     r = _extract(tmp_path, {"store.js": (

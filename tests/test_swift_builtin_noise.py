@@ -1,10 +1,10 @@
 """Swift/Foundation/SwiftUI builtins must not become god nodes or bind to user symbols.
 
-#2147: `_LANGUAGE_BUILTIN_GLOBALS` and `_BUILTIN_NOISE_LABELS` covered only
+`_LANGUAGE_BUILTIN_GLOBALS` and `_BUILTIN_NOISE_LABELS` covered only
 JS/TS and Python, so on Swift codebases framework types (`Foundation`,
 `NSLock`, `View`, `Data`, `Sendable`, ...) ranked as god nodes and the Swift
 member-call resolver could bind a builtin-typed receiver (`let d: Data`) to a
-same-named user symbol in another file — the same phantom-edge shape #1726
+same-named user symbol in another file — the same phantom-edge shape already
 fixed for TypeScript.
 """
 import networkx as nx
@@ -88,7 +88,7 @@ def test_god_nodes_excludes_swift_builtin_labels(builtin_label: str) -> None:
 
 
 def test_swift_builtin_receiver_does_not_bind_to_user_symbol(tmp_path):
-    # #2147 (same shape as  for TS): a receiver typed with a builtin
+    # (same shape as the TS fix): a receiver typed with a builtin
     # (`let payload: Data`) must not have its member calls bound to a user type
     # that happens to be named `Data` in another file.
     (tmp_path / "Model.swift").write_text(

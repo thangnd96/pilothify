@@ -66,7 +66,7 @@ def test_top_level_slot_roundtrips_unchanged(tmp_path):
 
 
 def test_full_wipeout_emits_one_aggregate_warning(tmp_path, capsys):
-    # Every member dangles, so the #1916 revalidation drops every hyperedge.
+    # Every member dangles, so the revalidation drops every hyperedge.
     # The wipeout must be loud (one aggregate warning naming the count) and
     # explicit (an empty list, not a missing key).
     extraction = {

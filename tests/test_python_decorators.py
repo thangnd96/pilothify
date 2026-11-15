@@ -121,7 +121,7 @@ def test_stacked_decorators_all_emit(tmp_path):
 
 
 def test_decorated_method_owner_is_class_qualified(tmp_path):
-    # Guards the #1050 interaction: the owner must be the class-qualified method
+    # Guards the interaction: the owner must be the class-qualified method
     # id, not a bare module-level id.
     f = _write(tmp_path / "pkg" / "svc.py",
                "from deco import traced\n"
@@ -136,7 +136,7 @@ def test_decorated_method_owner_is_class_qualified(tmp_path):
 
 
 def test_property_still_class_qualified(tmp_path):
-    # #1050 regression guard: @property/@staticmethod must not change the
+    # regression guard: @property/@staticmethod must not change the
     # method node's class-qualified id.
     f = _write(tmp_path / "pkg" / "prop.py",
                "class Config:\n"

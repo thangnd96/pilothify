@@ -1,4 +1,4 @@
-"""#1769 - `pilothify extract` printed this run's tokens but never added them to
+"""`pilothify extract` printed this run's tokens but never added them to
 pilothify-out/cost.json, so the ledger only ever showed the skill's first run.
 """
 from __future__ import annotations

@@ -1,7 +1,7 @@
 """The Read|Glob PreToolUse guard nudges toward the graph instead of raw reads.
 
-Closes the issue #1114 gap: the Bash search hook never sees a file read through
-the native Read tool or a Glob. Since #522 the guard runs as the shell-agnostic
+Closes the gap: the Bash search hook never sees a file read through
+the native Read tool or a Glob. Since that fix the guard runs as the shell-agnostic
 `pilothify hook-guard read` subcommand (not inline bash), so it works on Windows
 too. These tests invoke that subcommand with crafted stdin JSON and assert it
 nudges only for a source/doc file outside pilothify-out/ when a graph exists, and

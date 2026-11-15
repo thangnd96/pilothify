@@ -36,7 +36,7 @@ def _edges_to(result: dict, target: str, *relations: str) -> list[dict]:
 
 
 def test_nested_named_function_dynamic_import_edges(tmp_path: Path):
-    """#2575: the reported case — `await import()` inside a nested named
+    """The reported case — `await import()` inside a nested named
     function produced no edge at all (the boundary returned before the call
     walk could see it)."""
     _write(tmp_path / "src/dep.ts", "export const dep = 1\n")
@@ -94,7 +94,7 @@ def test_module_scope_dynamic_import_edges(tmp_path: Path):
 
 
 def test_ast_captured_dynamic_import_still_gets_a_file_level_edge(tmp_path: Path):
-    """One import() inside a function, two granularities — #2584.
+    """One import() inside a function, two granularities — .
 
     This test used to assert `len(edges) == 1`, on the reasoning that the rescue would be
     restating what the AST pass had already said. The two edges are not the same statement:
@@ -143,7 +143,7 @@ def test_module_scope_dynamic_import_is_still_one_fact(tmp_path: Path):
     """At module scope `caller_nid` IS the file node, so the rescue is genuinely redundant.
 
     This is the half of the old dedupe that was always correct, kept as its own test so a
-    future change cannot quietly restore double-counting here while fixing #2584.
+    future change cannot quietly restore double-counting here while fixing something else.
     """
     _write(tmp_path / "src/dep.ts", "export const dep = 1\n")
     importer = _write(
@@ -177,7 +177,7 @@ def test_static_import_alongside_dynamic_is_untouched(tmp_path: Path):
     # in particular must not mark it deferred. The dynamic side is asserted only for the
     # property that concerns this test — every edge to b.ts is flagged as deferred one way
     # or another, so no arrow into b.ts can be mistaken for a static dependency. Its COUNT
-    # is #2584's subject, pinned in test_ast_captured_dynamic_import_still_gets_a_file_level_edge.
+    # is the subject, pinned in test_ast_captured_dynamic_import_still_gets_a_file_level_edge.
     b_edges = _edges_to(result, "src/b.ts")
     assert b_edges
     assert all(e.get("deferred") or e["relation"] == "dynamic_import" for e in b_edges)
@@ -241,7 +241,7 @@ def test_line_commented_dynamic_import_is_not_matched(tmp_path: Path):
 
 
 def test_nested_named_function_calls_resolve(tmp_path: Path):
-    """ordinary calls inside a nested named function attribute to that inner function now that #2653 emits nested nodes."""
+    """ordinary calls inside a nested named function attribute to that inner function now that emits nested nodes."""
     f = _write(
         tmp_path / "src/mod.ts",
         "export function helper() { return 1 }\n"

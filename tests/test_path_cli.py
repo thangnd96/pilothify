@@ -116,7 +116,7 @@ def test_endpoint_falls_back_to_score_head(monkeypatch, tmp_path, capsys):
     assert "No directed path found" in capsys.readouterr().out
 
 
-# ── #2074: deterministic route + honest edge relation ────────────────────────
+# ── deterministic route + honest edge relation ────────────────────────
 
 def _diamond_graph(tmp_path):
     """Two equal-length routes A->P->B and A->Q->B — a tie the traversal must
@@ -146,7 +146,7 @@ def _arrow_line(stdout: str) -> str:
 
 
 def test_path_deterministic_across_hash_seeds(tmp_path):
-    """#2074: the same graph must yield the same route regardless of
+    """The same graph must yield the same route regardless of
     PYTHONHASHSEED. pytest fixes the seed per process, so run out-of-process."""
     gp = _diamond_graph(tmp_path)
     routes = set()
@@ -164,7 +164,7 @@ def test_path_deterministic_across_hash_seeds(tmp_path):
 
 
 def test_path_relation_matches_stored_edge_not_fabricated(monkeypatch, tmp_path, capsys):
-    """#2074: the printed relation must be the edge's ACTUAL stored relation,
+    """The printed relation must be the edge's ACTUAL stored relation,
     never a hardcoded/fabricated `calls`."""
     data = {
         "directed": False, "multigraph": False, "graph": {},
@@ -184,7 +184,7 @@ def test_path_relation_matches_stored_edge_not_fabricated(monkeypatch, tmp_path,
 
 
 def test_path_relation_fallback_related_when_missing(monkeypatch, tmp_path, capsys):
-    """#2074: an edge with no stored relation prints an honest 'related', not an
+    """An edge with no stored relation prints an honest 'related', not an
     empty '---->' arrow and not a fabricated relation."""
     data = {
         "directed": False, "multigraph": False, "graph": {},
@@ -201,12 +201,12 @@ def test_path_relation_fallback_related_when_missing(monkeypatch, tmp_path, caps
     assert "---->" not in out.replace("--related-->", "")
 
 
-# ── #2309: hop direction must honor _src/_tgt markers, not stored arc order ──
+# ── hop direction must honor _src/_tgt markers, not stored arc order ──
 
 def _flipped_marker_graph(tmp_path):
     """3-node chain where the middle link is PERSISTED in flipped endpoint
     order (source/target swapped) but carries its direction truth in the
-    per-link _src/_tgt markers — the shape produced by pre-#563 graphs, raw
+    per-link _src/_tgt markers — the shape produced by older graphs, raw
     node_link_data dumps, and undirected-storage canonicalization."""
     data = {
         "directed": False, "multigraph": False, "graph": {},
@@ -233,7 +233,7 @@ def _flipped_marker_graph(tmp_path):
 
 
 def test_path_direction_recovered_from_src_tgt_markers(monkeypatch, tmp_path, capsys):
-    """#2309: a hop over a link stored in flipped order must render the TRUE
+    """A hop over a link stored in flipped order must render the TRUE
     direction from its _src/_tgt markers, not the persisted arc order."""
     p = _flipped_marker_graph(tmp_path)
     # the two hops point in opposite TRUE directions (ingest->logger,
@@ -247,7 +247,7 @@ def test_path_direction_recovered_from_src_tgt_markers(monkeypatch, tmp_path, ca
 
 
 def test_path_canonical_marker_graph_still_forward(monkeypatch, tmp_path, capsys):
-    """#2309 control: a to_json-shaped graph whose markers AGREE with the
+    """Control: a to_json-shaped graph whose markers AGREE with the
     persisted source/target order keeps rendering forward (no regression)."""
     data = {
         "directed": False, "multigraph": False, "graph": {},
@@ -270,7 +270,7 @@ def test_path_canonical_marker_graph_still_forward(monkeypatch, tmp_path, capsys
     assert "Beta <--calls [EXTRACTED]-- Alpha" in out
 
 
-# ── #3878: a `contains` edge has no reverse hop back out to its file ────────
+# ── a `contains` edge has no reverse hop back out to its file ────────
 
 def _file_to_symbol_only_graph(tmp_path):
     """`a.py` imports `helper()`, which `b.py` contains — but no edge runs
@@ -303,7 +303,7 @@ def test_path_routes_through_a_contains_edge_to_reach_the_file(monkeypatch, tmp_
 
 
 def test_explain_direction_recovered_from_src_tgt_markers(monkeypatch, tmp_path, capsys):
-    """#2309: explain's in/out classification must honor _src markers — an
+    """Explain's in/out classification must honor _src markers — an
     edge persisted as hub->spoke but truly spoke->hub is an IN edge of hub."""
     data = {
         "directed": False, "multigraph": False, "graph": {},
@@ -329,7 +329,7 @@ def test_explain_direction_recovered_from_src_tgt_markers(monkeypatch, tmp_path,
     assert "--> spoke.ts" not in out
 
 
-# ── #3913: endpoints resolve like `explain` (refuse ambiguity, honor ::/id) ──
+# ── endpoints resolve like `explain` (refuse ambiguity, honor ::/id) ──
 
 def _twin_method_graph(tmp_path):
     """`.nonce()` defined on a class in each of two files, both reachable from run()."""
@@ -563,7 +563,7 @@ def test_path_scoped_endpoint_honors_file_qualifier(monkeypatch, tmp_path, capsy
 
 
 def _no_such_node_graph(tmp_path):
-    """#5079: `zzqqxx_no_such_symbol_9137` names nothing, but `no_such_symbol_helper()`
+    """`zzqqxx_no_such_symbol_9137` names nothing, but `no_such_symbol_helper()`
     shares three of its `_`-split tokens and wins the score fallback, so `path` used
     to print the helper's route and exit 0 while `explain` said "No node matching"."""
     return _write_nodes(tmp_path, [

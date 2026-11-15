@@ -197,7 +197,7 @@ def test_qualified_methods_stay_out_of_god_nodes(tmp_path):
 
 
 def test_semantic_method_ghost_still_collapses_onto_a_qualified_method():
-    """#3705 parity: an LLM ghost `Build()` in the same file remaps onto the one
+    """Parity: an LLM ghost `Build()` in the same file remaps onto the one
     AST method even when that method's persisted label is `PdfReport.Build()`."""
     from pilothify.build import build_from_json
 

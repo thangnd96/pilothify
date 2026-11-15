@@ -437,7 +437,7 @@ def test_class_new_creates_instantiation_edge(tmp_path: Path) -> None:
     assert edge["confidence"] == "EXTRACTED"
 
 
-# ── #1640 node extraction + #1634 constant-receiver resolution ───────────────
+# ── node extraction + constant-receiver resolution ───────────────
 
 
 def _node_labels(result: dict) -> set[str]:
@@ -453,7 +453,7 @@ def _method_edges(result: dict) -> set[tuple[str, str]]:
 
 
 def test_plain_module_gets_a_node_with_methods(tmp_path: Path) -> None:
-    """#1640 shape 1: `module Foo` must get a node and own its methods."""
+    """Shape 1: `module Foo` must get a node and own its methods."""
     r = extract_ruby(_write(tmp_path, "tax.rb",
         "module TaxCalculator\n  module_function\n  def rate_for(order)\n    0.2\n  end\nend\n"))
     assert "TaxCalculator" in _node_labels(r)
@@ -462,7 +462,7 @@ def test_plain_module_gets_a_node_with_methods(tmp_path: Path) -> None:
 
 
 def test_nested_modules_each_get_a_node(tmp_path: Path) -> None:
-    """#1640 shape 1, nested — the inner module is labelled fully qualified,
+    """Shape 1, nested — the inner module is labelled fully qualified,
     so nested and compact declarations converge on one label."""
     r = extract_ruby(_write(tmp_path, "n.rb",
         "module Billing\n  module Rounding\n    def round(x)\n      x.round(2)\n    end\n  end\nend\n"))
@@ -472,7 +472,7 @@ def test_nested_modules_each_get_a_node(tmp_path: Path) -> None:
 
 
 def test_struct_new_constant_creates_class_with_methods(tmp_path: Path) -> None:
-    """#1640 shape 2: `Foo = Struct.new(...) do ... end`."""
+    """Shape 2: `Foo = Struct.new(...) do ... end`."""
     r = extract_ruby(_write(tmp_path, "invoice.rb",
         "Invoice = Struct.new(:total, :tax) do\n  def grand_total\n    total + tax\n  end\nend\n"))
     assert "Invoice" in _node_labels(r)
@@ -480,7 +480,7 @@ def test_struct_new_constant_creates_class_with_methods(tmp_path: Path) -> None:
 
 
 def test_class_new_constant_creates_class_and_inherits(tmp_path: Path) -> None:
-    """#1640 shape 3: `Foo = Class.new(Super)` — node + inherits edge."""
+    """Shape 3: `Foo = Class.new(Super)` — node + inherits edge."""
     r = extract_ruby(_write(tmp_path, "err.rb", "ApiError = Class.new(StandardError)\n"))
     assert "ApiError" in _node_labels(r)
     labels = _labels(r["nodes"])
@@ -495,7 +495,7 @@ def test_data_define_constant_creates_class(tmp_path: Path) -> None:
 
 
 def test_constant_receiver_singleton_call_resolves(tmp_path: Path) -> None:
-    """#1634: `Processor.call` (def self.call) resolves to the singleton method."""
+    """`Processor.call` (def self.call) resolves to the singleton method."""
     _write(tmp_path, "processor.rb", "class Processor\n  def self.call; end\nend\n")
     runner = _write(tmp_path, "runner.rb",
         "class Runner\n  def run\n    Processor.call\n  end\nend\n")
@@ -504,7 +504,7 @@ def test_constant_receiver_singleton_call_resolves(tmp_path: Path) -> None:
 
 
 def test_constant_receiver_module_function_call_resolves(tmp_path: Path) -> None:
-    """#1634 + #1640: `TaxCalculator.rate_for` resolves across files to a
+    """`TaxCalculator.rate_for` resolves across files to a
     module_function — needs both the module node and the resolver."""
     _write(tmp_path, "tax.rb",
         "module TaxCalculator\n  module_function\n  def rate_for(o)\n    0.2\n  end\nend\n")
@@ -515,7 +515,7 @@ def test_constant_receiver_module_function_call_resolves(tmp_path: Path) -> None
 
 
 def test_constant_receiver_unknown_class_method_falls_back_to_class(tmp_path: Path) -> None:
-    """#1634: `Model.where` (no `where` def, e.g. ActiveRecord) still links to the
+    """`Model.where` (no `where` def, e.g. ActiveRecord) still links to the
     class node for blast-radius, rather than dropping the edge."""
     _write(tmp_path, "model.rb", "class Model\n  def self.create; end\nend\n")
     caller = _write(tmp_path, "svc.rb",
@@ -535,7 +535,7 @@ def test_ambiguous_constant_receiver_emits_no_edge(tmp_path: Path) -> None:
     assert _has_call_edge(graph, "run", "call") is None
 
 
-# ── #1668 include/extend/prepend -> mixes_in ─────────────────────────────────
+# ── include/extend/prepend -> mixes_in ─────────────────────────────────
 
 
 def _mixes_in(graph: dict) -> set[tuple[str, str]]:
@@ -593,11 +593,11 @@ def test_mixin_is_not_emitted_as_calls_edge(tmp_path: Path) -> None:
     assert ("K", "C") in _mixes_in(g)
 
 
-# ── #2302 compact-syntax mixins + qualified constant lookup ──────────────────
+# ── compact-syntax mixins + qualified constant lookup ──────────────────
 
 
 def test_compact_and_nested_module_includes_resolve(tmp_path: Path) -> None:
-    """#2302: `module Billing::TotalsConcern` (compact) and a top-level module
+    """`module Billing::TotalsConcern` (compact) and a top-level module
     both resolve as mixin targets, lexically from the including class."""
     _write(tmp_path, "totals_concern.rb",
            "module Billing::TotalsConcern\n  def total; end\nend\n")
@@ -616,7 +616,7 @@ def test_compact_and_nested_module_includes_resolve(tmp_path: Path) -> None:
 
 
 def test_qualified_external_mixin_does_not_bind_to_local(tmp_path: Path) -> None:
-    """#2302: `extend ActiveSupport::Concern` must NOT resolve to an unrelated
+    """`extend ActiveSupport::Concern` must NOT resolve to an unrelated
     local `module Concern` just because the last segment matches."""
     _write(tmp_path, "concern.rb", "module Concern\n  def local_thing; end\nend\n")
     _write(tmp_path, "post.rb", "class Post\n  extend ActiveSupport::Concern\nend\n")
@@ -626,7 +626,7 @@ def test_qualified_external_mixin_does_not_bind_to_local(tmp_path: Path) -> None
 
 
 def test_in_corpus_qualified_mixin_resolves(tmp_path: Path) -> None:
-    """#2302 over-suppression guard: a qualified reference whose full path IS
+    """Over-suppression guard: a qualified reference whose full path IS
     defined in the corpus still resolves."""
     _write(tmp_path, "foo.rb", "module Foo\n  module Concern\n    def helper; end\n  end\nend\n")
     _write(tmp_path, "k.rb", "class K\n  include Foo::Concern\nend\n")
@@ -635,7 +635,7 @@ def test_in_corpus_qualified_mixin_resolves(tmp_path: Path) -> None:
 
 
 def test_nested_declared_class_still_resolves_as_receiver(tmp_path: Path) -> None:
-    """#2302 regression guard: qualifying labels must not break bare constant
+    """Regression guard: qualifying labels must not break bare constant
     receivers — `Processor.new` / typed `p.run` still find `Billing::Processor`."""
     _write(tmp_path, "billing.rb",
            "module Billing\n  class Processor\n    def run\n      42\n    end\n  end\nend\n")
@@ -649,7 +649,7 @@ def test_nested_declared_class_still_resolves_as_receiver(tmp_path: Path) -> Non
 
 
 def test_rake_files_extract_and_resolve_like_rb(tmp_path):
-    """#1784: `.rake` files are plain Ruby and must route to the Ruby extractor
+    """`.rake` files are plain Ruby and must route to the Ruby extractor
     and participate in Ruby cross-file resolution exactly like `.rb`."""
     rake = _write(tmp_path, "ops.rake",
                   "class RakeHelper\n  def self.run\n    Widget.tally\n  end\nend\n")
@@ -667,7 +667,7 @@ def test_rake_files_extract_and_resolve_like_rb(tmp_path):
 
 
 def test_ruby_suffixed_methods_extraction_and_labels(tmp_path: Path) -> None:
-    """#3077: def foo, def foo!, def foo?, and def foo=(val) in the same class
+    """Def foo, def foo!, def foo?, and def foo=(val) in the same class
     must all survive extraction with distinct IDs and raw labels."""
     f = _write(tmp_path, "thing.rb", """\
 class Thing
@@ -701,7 +701,7 @@ end
 
 
 def test_ruby_suffixed_singleton_methods_extraction(tmp_path: Path) -> None:
-    """#3077: Singleton methods (def self.foo!) must use the same sanitizer."""
+    """Singleton methods (def self.foo!) must use the same sanitizer."""
     f = _write(tmp_path, "service.rb", """\
 class Service
   def self.run!; end
@@ -717,7 +717,7 @@ end
 
 
 def test_ruby_suffixed_toplevel_functions_extraction(tmp_path: Path) -> None:
-    """#3077: Top-level functions (def parse!) must use the same sanitizer."""
+    """Top-level functions (def parse!) must use the same sanitizer."""
     f = _write(tmp_path, "utils.rb", """\
 def parse!; end
 def valid?; end
@@ -731,7 +731,7 @@ def valid?; end
 
 
 def test_ruby_suffixed_methods_call_resolution(tmp_path: Path) -> None:
-    """#3077: Calls to p.save and p.save! must resolve to different target nodes."""
+    """Calls to p.save and p.save! must resolve to different target nodes."""
     acc_path = _write(tmp_path, "account.rb", """\
 class Account
   def save
@@ -781,7 +781,7 @@ end
 
 
 def test_ruby_suffixed_methods_id_stability(tmp_path: Path) -> None:
-    """#3077: ID of foo! must remain stable when foo is added later."""
+    """ID of foo! must remain stable when foo is added later."""
     f1 = _write(tmp_path, "model.rb", """\
 class Model
   def foo!; end
@@ -805,7 +805,7 @@ end
 
     assert node2_bang["id"] == id1, "foo!'s ID must remain unchanged when foo is added"
     assert node2_plain["id"] != node2_bang["id"], "foo and foo! must have distinct IDs"
-# ── #3078: a qualified receiver must respect its namespace ────────────────────
+# ── a qualified receiver must respect its namespace ────────────────────
 
 
 _LOCAL_BASE_RB = """\
@@ -894,11 +894,11 @@ end
         "a top-level-pinned constant receiver must still resolve"
 
 
-# ── #3567 inherited implicit-self calls ──────────────────────────────────────
+# ── inherited implicit-self calls ──────────────────────────────────────
 
 
 def test_inherited_singleton_implicit_self_call_is_promoted(tmp_path: Path) -> None:
-    """The BaseTool/GetSchema shape reported in #3567 becomes structural."""
+    """The BaseTool/GetSchema shape reported becomes structural."""
     _write(
         tmp_path,
         "base.rb",

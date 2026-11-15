@@ -1,4 +1,4 @@
-"""#2604 Class 2: an exported object-destructure assignment must emit one node
+"""Class 2: an exported object-destructure assignment must emit one node
 per exported name, not one combined node for the whole pattern.
 
 `export const { auth, handlers } = NextAuth(config)` is NextAuth v5's own
@@ -93,7 +93,7 @@ def test_unexported_require_destructure_does_not_create_a_colliding_node(tmp_pat
     module export. Splitting it would emit a bare-named node in the
     IMPORTING file that collides with the real definition it merely imports,
     turning a clean cross-file call resolution into a false "ambiguous name"
-    (this reproduces the #2604 fix regressing
+    (this reproduces the fix regressing
     test_cross_file_call_promoted_to_extracted_with_import_evidence)."""
     r, lbl = _extract(tmp_path, {
         "lib.js": (

@@ -1,6 +1,6 @@
 """The partial-extraction warning must be actionable and must not misdirect.
 
-It used to end in a hardcoded `` for EVERY language. #2551 is closed and
+It used to end in a hardcoded `` for EVERY language. That issue is closed and
 Kotlin-specific ("bundled grammar rejects one-line type bodies"), so a reader
 following the only lead the message offered landed on a resolved problem in a
 different language — and at least one did, recording an Astro failure as
@@ -10,8 +10,8 @@ The message also could not distinguish a file that contributed nothing but its
 own file node from one that yielded most of its symbols and lost an ERROR
 region. Both rendered as "may be partially extracted".
 
-Part 1 of #2788 — the Astro frontmatter parse itself — is NOT addressed here;
-that belongs to the .svelte/.astro AST work in #2731.
+Part 1 of that fix — the Astro frontmatter parse itself — is NOT addressed here;
+that belongs to the .svelte/.astro AST work.
 """
 import ntpath
 import re
@@ -29,7 +29,7 @@ def _partial_parse_fixture(tmp_path):
     """A file the parser ACCEPTS only through ERROR recovery — an unclosed table
     constructor swallowing the function that follows it.
 
-    Deliberately not the Kotlin one-line body from #2551: whether that shape
+    Deliberately not the Kotlin one-line body from that fix: whether that shape
     trips the gate depends on the bundled grammar build, and these tests are
     about the MESSAGE, which must read the same whichever grammar produced it.
     """
@@ -115,7 +115,7 @@ def test_the_citation_is_gone_from_the_source_not_just_one_path():
     assert "symbol(s) extracted" in text
 
 
-# ── #3946: a clean-parse file that yields nothing but its own file node ─────
+# ── a clean-parse file that yields nothing but its own file node ─────
 
 def _data_only_fixture(tmp_path):
     """A plain data literal with no functions, classes or imports — the AST

@@ -14,7 +14,7 @@ the name had its genuine indirect_call edge suppressed:
 `var` is exempt from all of this — it is genuinely function-scoped
 regardless of how deeply it is nested, so a `var` with the same shapes must
 still correctly shadow a same-named module callable everywhere in the
-function, including outside the block/loop that declares it. And the #2606
+function, including outside the block/loop that declares it. And the
 fix (a loop binding shadows references INSIDE its own loop) must not
 regress.
 """

@@ -57,7 +57,7 @@ def active_scan_root() -> "Path | None":
 # constructors or coercion functions (e.g. String(x), Number(x), Boolean(x)).
 # Without this filter they become god-nodes accumulating spurious edges from
 # every call site. Filter applied at same-file and cross-file resolution.
-# See issue #726.
+#.
 _LANGUAGE_BUILTIN_GLOBALS: frozenset[str] = frozenset({
     # JavaScript / TypeScript ECMAScript built-ins
     "String", "Number", "Boolean", "Object", "Array", "Symbol", "BigInt",

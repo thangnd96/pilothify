@@ -124,7 +124,7 @@ def test_external_decorator_stub_disambiguated_per_file(tmp_path):
 
     Convergence note (v0.9.0+): the edges no longer collapse onto a single shared
     bare-name stub. v0.9.0 embeds the full repo-relative path in node IDs and
-    #1462 disambiguates imported type stubs across files, so the same external
+    Disambiguates imported type stubs across files, so the same external
     `Injectable` referenced from two files now resolves to two distinct per-file
     stubs (`src_a_ts_injectable`, `src_b_ts_injectable`) rather than one hub. (A
     single in-corpus reference still keeps the bare `injectable` stub — only
@@ -145,7 +145,7 @@ def test_external_decorator_stub_disambiguated_per_file(tmp_path):
     assert len(a_targets) == 1 and id_to_label.get(a_targets[0]) == "Injectable"
     assert len(b_targets) == 1 and id_to_label.get(b_targets[0]) == "Injectable"
 
-    # v0.9.0 full-path IDs + #1462 stub disambiguation: external stubs are split
+    # Full-path IDs + stub disambiguation: external stubs are split
     # per file, so the two no longer converge on one shared hub.
     assert a_targets[0] != b_targets[0], (
         "external decorator stubs are disambiguated per file in v0.9.0+; "

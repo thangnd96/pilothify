@@ -2,8 +2,8 @@
 
 The C# config only listed `invocation_expression` in `call_types`, so an
 `object_creation_expression` was never dispatched and a type a method merely
-constructs got no edge at all. Java has taken `new Foo(...)` as a call since
-#1373; C# had not caught up. The types this loses are the ones handed straight
+constructs got no edge at all. Java has taken `new Foo(...)` as a call for a
+while; C# had not caught up. The types this loses are the ones handed straight
 to something else — `Send(new OrderPlaced { ... })` on a message bus, a locally
 built collaborator — so publishers looked unconnected while the class sat right
 there in the graph.
@@ -141,7 +141,7 @@ def test_cross_file_publisher_reaches_the_message_class(tmp_path):
 
 def test_ambiguous_type_name_produces_no_edge(tmp_path):
     # Two classes share a name, so the construction site cannot be pinned to one
-    # of them. No edge beats a coin flip here — #437 is about exactly the kind of
+    # of them. No edge beats a coin flip here — is about exactly the kind of
     # false edge a name-only guess creates.
     calls, r = _extract(tmp_path, {
         "Left.cs": "namespace Left;\npublic class Cache { }\n",
@@ -208,7 +208,7 @@ def test_qualified_construction_with_two_candidates_in_one_namespace(tmp_path):
 
 
 def test_receiver_typed_member_call_still_resolves(tmp_path):
-    # Guard for #1609: adding a node type to call_types must not disturb the
+    # adding a node type to call_types must not disturb the
     # invocation path that binds a call to its receiver's declared type.
     calls, r = _extract(tmp_path, {"S.cs": (
         "public class Server { public bool Save() => true; }\n"

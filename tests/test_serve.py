@@ -140,7 +140,7 @@ def test_score_nodes_multiword_exact_label_outranks_superset():
 def test_score_nodes_coverage_lone_generic_exact_hit_loses_to_multi_term_match():
     """A lone generic-word exact match must not bury a multi-term match.
 
-    Reproduces #1602: in a multi-term query, a single generic term that
+    Reproduces the term-coverage bug: in a multi-term query, a single generic term that
     exactly equals a short leaf label (query term "list" vs a list() function
     node) received the full exact-tier bonus and outranked every node matching
     several of the query's terms, even when the query contained the target's
@@ -185,7 +185,7 @@ def test_score_nodes_coverage_full_coverage_query_is_unchanged():
     """Coverage scaling must not touch full-coverage queries (coverage == 1).
 
     A single-term identifier lookup keeps the exact tier's full magnitude, so
-    `query "FooBarService"` behavior is byte-identical to before #1602.
+    `query "FooBarService"` behavior is byte-identical to before that fix.
     """
     G = _make_graph()
     scored = _score_nodes(G, ["extract"])
@@ -222,7 +222,7 @@ def test_find_node_matches_punctuated_file_label_exactly():
 
 
 def test_find_node_resolves_when_label_and_norm_label_diverge():
-    # #1704 hardening: the tokenized-label tier only rescues the match by
+    # hardening: the tokenized-label tier only rescues the match by
     # coincidence (label tokenizes the same as the query). When `label` and
     # `norm_label` diverge, only the symmetric `norm_query == norm_label` match
     # resolves it. Here label tokenizes to "blockstream" but norm_label is
@@ -285,7 +285,7 @@ def _make_non_ascii_id_graph(n: int = 40) -> nx.Graph:
 
     The filler nodes are load-bearing: `_trigram_candidates` bails out to a full
     scan when `min(present) > int(n * 0.10)`, so on a two-node graph any present
-    trigram trips the guard and the index path — where #2467's second defect lives —
+    trigram trips the guard and the index path — where the second defect lives —
     is never exercised at all."""
     G = nx.Graph()
     for i in range(n):
@@ -476,7 +476,7 @@ def test_query_terms_get_only_falls_back_to_unfiltered(question, expected):
 
 
 def test_pick_seeds_get_question_ignores_framework_hub():
-    # unlike the short, low-degree leaves guarded by #1602, a framework
+    # unlike the short, low-degree leaves guarded, a framework
     # decorator hub must not become a seed just because the question says get.
     G = nx.DiGraph()
     G.add_node("get", label="Get")
@@ -520,7 +520,7 @@ def test_query_terms_all_german_stopwords_falls_back_to_unfiltered():
 
 
 def test_pick_seeds_german_query_seeds_content_node_not_heading_noise():
-    """End-to-end for #1900: a German question over a graph with German
+    """End-to-end: a German question over a graph with German
     heading-noise nodes must seed on the content noun, not on nodes that
     happen to contain 'die'/'wie'/'wird'."""
     G = nx.DiGraph()
@@ -754,7 +754,7 @@ def test_load_graph_corrupted_json_prints_recovery_message(tmp_path, capsys):
 def test_load_graph_generic_value_error_message_unchanged(tmp_path, capsys):
     """A non-decode ValueError (e.g. a non-.json path) must still print the
     generic error, not the corrupted-graph hint — pins the except-clause
-    order from #2005 so a future refactor can't collapse them back."""
+    order from that fix so a future refactor can't collapse them back."""
     p = tmp_path / "graph.txt"
     p.write_text("not a graph")
     with pytest.raises(SystemExit):
@@ -790,7 +790,7 @@ def test_load_graph_accepts_under_cap(monkeypatch, tmp_path):
     assert G2.number_of_nodes() == G.number_of_nodes()
 
 
-# --- #874: MCP hot-reload ---
+# --- MCP hot-reload ---
 
 def _write_graph(path, nodes: list[str]) -> None:
     """Write a minimal graph.json with the given node IDs."""
@@ -945,7 +945,7 @@ def test_pick_seeds_without_diversity_args_is_unchanged():
 
 
 def test_pick_seeds_diversity_recovers_starved_term(monkeypatch):
-    """Reproduces #1445: a vague natural-language query where one term's
+    """Reproduces the vague-query bug: a vague natural-language query where one term's
     incidental EXACT match on an unrelated node (e.g. a common word also used
     as an unrelated field/identifier) outscores every SUBSTRING match on the
     query's other, actually-relevant terms by ~1000x. Without
@@ -1038,7 +1038,7 @@ def test_pick_seeds_keeps_same_label_node_that_is_only_match_for_a_term():
 
 
 def test_pick_seeds_per_term_still_caps_same_label_winner_of_a_label_term():
-    """The #5027 exception is narrow: when the term is part of the shared label,
+    """The exception is narrow: when the term is part of the shared label,
     the seeded twin already matches it, so a different same-label winner is still
     capped. `get2` wins `get` on the degree tie-break while the first loop seeds
     `get0`, so this reaches the per-term cap."""
@@ -1094,7 +1094,7 @@ def test_query_seeds_from_identifier_not_noise():
 def _make_callers_graph() -> nx.Graph:
     """A service, three callers wired via context='call' edges, and a decoy
     whose tokenized label ('callstorewithamount') prefix-matches the intent
-    verb 'calls' — the #2507 pollution vector."""
+    verb 'calls' — the pollution vector."""
     G = nx.Graph()
     G.add_node("svc", label="ChargeCustomerService", source_file="billing/charge.py")
     G.add_node("c1", label="BillingJob", source_file="billing/job.py")
@@ -1593,7 +1593,7 @@ def test_subgraph_to_text_no_notice_when_under_budget():
 
 
 def test_subgraph_to_text_no_banner_when_only_edges_overflow():
-    """#2601: nodes render before edges, so a budget overflow that only trims
+    """Nodes render before edges, so a budget overflow that only trims
     trailing edges cuts zero whole nodes. The banner must not fire with a
     misleading "showing N of N nodes … among the 0 cut nodes" — that pushes an
     agent to distrust a complete answer and issue pointless narrowing calls."""
@@ -1620,7 +1620,7 @@ def test_subgraph_to_text_no_banner_when_only_edges_overflow():
 
 
 def test_subgraph_to_text_overshoot_notice_when_edges_exceed_budget():
-    """#2784: once every node fits, edges are never dropped — but that
+    """Once every node fits, edges are never dropped — but that
     used to mean the char_budget check silently stopped applying, so a query
     could cost 4-6x its requested budget with zero indication. The complete
     answer must still be returned whole, but the overshoot must be visible and
@@ -1675,7 +1675,7 @@ def test_subgraph_to_text_order_is_deterministic():
     assert a == b
 
 
-# --- #2069: token budget on get_neighbors / get_community line lists ----------
+# --- token budget on get_neighbors / get_community line lists ----------
 
 def test_cut_lines_to_budget_under_budget_is_byte_identical():
     lines = ["Neighbors of X:", "  --> a [calls] [EXTRACTED]", "  --> b [calls] [EXTRACTED]"]
@@ -1701,7 +1701,7 @@ def test_cut_lines_to_budget_over_budget_announces_at_top():
 
 
 def test_subgraph_to_text_ignores_dangling_src_tgt(monkeypatch):
-    """#2080 review: a stray/dangling _src/_tgt on an edge (hand-edited or
+    """Review: a stray/dangling _src/_tgt on an edge (hand-edited or
     adversarial graph.json) must NOT crash rendering; fall back to (u, v)."""
     G = nx.Graph()
     G.add_node("a", label="Alpha", source_file="a.py", source_location="L1", community=0)
@@ -1713,7 +1713,7 @@ def test_subgraph_to_text_ignores_dangling_src_tgt(monkeypatch):
 
 
 def test_subgraph_to_text_honors_valid_src_tgt_direction():
-    """#2080: a valid _src/_tgt (the stored direction) is honored even when the
+    """A valid _src/_tgt (the stored direction) is honored even when the
     traversal tuple is reversed."""
     G = nx.Graph()
     G.add_node("caller", label="caller", source_file="c.py", source_location="L1", community=0)
@@ -1765,7 +1765,7 @@ def test_shortest_path_tool_undirected_opt_in():
 
 
 def test_shortest_path_tool_routes_through_a_contains_edge(tmp_path):
-    """#3878 (serve mirror): a directed path from a symbol out to the file that
+    """(serve mirror): a directed path from a symbol out to the file that
     defines a symbol it calls must route through the reverse of the stored
     file -> symbol `contains` edge, instead of dead-ending at 'No directed
     path'. The printed hop still shows the real stored direction (`<--contains--`).
@@ -1921,7 +1921,7 @@ _FAB_RATIONALE = (
 def _rationale_graph():
     """A doc-derived rule node whose LABEL shares no token with the question
     while its `rationale` attribute states the answer in plain words — the
-    #2293 shape. Neighbors carry the identifier-ish labels a codebase would."""
+    Shape. Neighbors carry the identifier-ish labels a codebase would."""
     G = nx.Graph()
     G.add_node("rule", label="FAB visibility rule", source_file="docs/fab.md", rationale=_FAB_RATIONALE)
     G.add_node("fab", label="DirectionsFAB", source_file="src/DirectionsFAB.tsx")
@@ -2037,7 +2037,7 @@ def test_dotted_python_symbol_same_file_tie_is_refused_by_path_endpoint():
 # --- parallel-edge preservation ---
 
 def _parallel_edge_graph_json(tmp_path):
-    """A graph.json like the #4500 reporter's: parallel links stored while the
+    """A graph.json like the reporter's: parallel links stored while the
     serialized flag says multigraph:false."""
     p = tmp_path / "graph.json"
     p.write_text(json.dumps({

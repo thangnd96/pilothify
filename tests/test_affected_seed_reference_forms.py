@@ -1,4 +1,4 @@
-"""#4792 — `affected` and `query --seed` rejected the reference forms `explain`
+"""`affected` and `query --seed` rejected the reference forms `explain`
 already resolved, and `affected` exited 0 on an ambiguous or unmatched seed.
 
 `explain` resolves a `path::Symbol` reference and a dotted Python name

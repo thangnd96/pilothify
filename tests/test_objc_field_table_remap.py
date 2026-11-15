@@ -1,7 +1,7 @@
 """The ObjC field->type table must survive the id remaps.
 
 `_resolve_objc_member_calls`' table is the one extractor bucket keyed
-BY class node id. The #1529 passes rewrote node ids, edge endpoints,
+BY class node id. The passes rewrote node ids, edge endpoints,
 `raw_calls[].caller_nid` and `swift_extensions[].nid` — but not those keys.
 The remap fires whenever the input paths carry a common absolute prefix,
 i.e. always via `pilothify update <dir>`, so `[self.<field> …]` receiver
@@ -61,8 +61,8 @@ needs_objc = pytest.mark.skipif(not HAVE_OBJC, reason="tree-sitter-objc not inst
 
 @needs_objc
 def test_receiver_typing_survives_absolute_input_paths(tmp_path):
-    """The CLI shape: absolute inputs, common prefix stripped by the #1529
-    remap. This is the run where #2591 emitted zero edges."""
+    """The CLI shape: absolute inputs, common prefix stripped by the
+    remap. This is the run where the earlier fix emitted zero edges."""
     corpus = _write(tmp_path)
     cache = tmp_path / "out"
     with redirect_stdout(io.StringIO()):
@@ -72,7 +72,7 @@ def test_receiver_typing_survives_absolute_input_paths(tmp_path):
 
 @needs_objc
 def test_receiver_typing_still_works_with_relative_paths(tmp_path, monkeypatch):
-    """The shape the original #2591 tests used — must keep working."""
+    """The shape the original tests used — must keep working."""
     corpus = _write(tmp_path)
     monkeypatch.chdir(corpus)
     cache = tmp_path / "out"
@@ -109,7 +109,7 @@ def test_the_in_process_remap_rewrites_the_table_keys():
 
 
 def test_cache_portability_rewrites_the_table_keys(tmp_path):
-    """Round-trip a payload through the #2257 portability rewrite: the class id
+    """Round-trip a payload through the portability rewrite: the class id
     inside the table key must follow the node id."""
     from pilothify.cache import _absolutize_ids_in, _relativize_ids_in
     from pilothify.extractors.base import _make_id

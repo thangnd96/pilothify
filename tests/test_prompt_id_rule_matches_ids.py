@@ -1,4 +1,4 @@
-"""#4432 — the node-ID rule in the prompts contradicted `ids.py` for non-ASCII paths.
+"""The node-ID rule in the prompts contradicted `ids.py` for non-ASCII paths.
 
 The extraction prompt told the model "Node ID format: lowercase, only
 ``[a-z0-9_]``", but `ids.normalize_id` keeps anything matching a word character

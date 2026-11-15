@@ -395,7 +395,7 @@ def test_windows_prefers_claude_cmd_over_bare_claude(monkeypatch):
     """On Windows, npm installs `claude.ps1` alongside `claude.cmd`.
     `CreateProcess` cannot execute `.ps1` directly (raises WinError 2),
     so we must explicitly resolve `claude.cmd` and pass its full path
-    to subprocess.run. See issue #1072."""
+    to subprocess.run."""
     completed = MagicMock(returncode=0, stdout=json.dumps(_ENVELOPE), stderr="")
     monkeypatch.setattr(llm, "_response_is_hollow", lambda raw, parsed: False)
 
@@ -529,7 +529,7 @@ def test_simple_completion_resolves_cmd_shim_on_windows(monkeypatch):
 
 
 def test_prefers_structured_output_over_prose_result(monkeypatch):
-    """#2076 review: with --json-schema the CLI puts the constrained object in
+    """Review: with --json-schema the CLI puts the constrained object in
     `structured_output` while `result` may be prose (a 'reporting' turn). The
     backend must parse the structured object; parsing the prose would read as an
     empty/hollow extraction and bisect forever."""

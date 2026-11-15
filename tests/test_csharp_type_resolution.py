@@ -1016,7 +1016,7 @@ def test_csharp_enclosing_namespace_regression_controls(tmp_path: Path):
     assert ref_missing and not any(r.get("source_file") for r in ref_missing)
 
 
-# ── #4249: a generic and a non-generic type of the same name must not merge ──
+# ── a generic and a non-generic type of the same name must not merge ──
 
 def test_csharp_generic_and_non_generic_type_of_same_name_get_separate_nodes(tmp_path: Path):
     """`Effect` / `Effect<T>` (a common base-pair shape: `Comparer`/`Comparer<T>`
@@ -1063,7 +1063,7 @@ def test_csharp_non_generic_pair_with_no_relation_stays_two_plain_nodes(tmp_path
     assert len(workers) == 2
     assert workers[0]["id"] != workers[1]["id"]
 # -------------------------------------------------------------------------
-# Issue #4216: C#: nested types imported with `using static` are resolved
+# C#: nested types imported with `using static` are resolved
 # -------------------------------------------------------------------------
 
 

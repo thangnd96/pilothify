@@ -84,7 +84,7 @@ def test_merge_existing_accumulates_slices_and_stays_partial(tmp_path):
 
 
 def test_save_stamps_partial_file_with_no_items(tmp_path):
-    """#1950 empty-parse gap: a chunk that truncates to an empty parse produces
+    """Empty-parse gap: a chunk that truncates to an empty parse produces
     NO items, so partial-ness can only come from partial_source_files. save must
     still stamp such a file partial (seeding an empty group) — even when a prior
     clean slice already cached it — so it is re-dispatched instead of served."""
@@ -151,7 +151,7 @@ def test_stamped_manifest_excludes_partial_files():
 
 
 def test_stamped_manifest_excludes_failed_ast_sources():
-    """#2543: code files whose AST extract failed (missing extra) stay unstamped."""
+    """Code files whose AST extract failed (missing extra) stay unstamped."""
     from pathlib import Path
     from pilothify.cli import _stamped_manifest_files
 

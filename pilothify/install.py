@@ -570,7 +570,7 @@ def _claude_pretooluse_hooks(strict: bool = False, project: bool = False) -> "li
     The command invokes `pilothify hook-guard <search|read>` via the absolute exe
     path (`_resolve_pilothify_exe`) — or, for a project-scoped install, via the
     bare `pilothify` command, since that config gets committed. Either
-    form parses under sh, cmd.exe and PowerShell alike — this is the #522 fix,
+    form parses under sh, cmd.exe and PowerShell alike — this is the fix,
     and mirrors the codex hook. Matchers are
     "Bash|Grep" and "Read|Glob" and the command always contains "pilothify", so the
     existing install/uninstall filters find and replace both old bash hooks and
@@ -630,7 +630,7 @@ def _is_pilothify_hook_command(command: str) -> bool:
     """True when a hook ``command`` string is one pilothify installed.
 
     Matches pilothify's own guard/check subcommands (current installs) or the
-    ``pilothify-out/`` path its pre-#522 inline bash guard gated on (legacy
+    ``pilothify-out/`` path its older inline bash guard gated on (legacy
     installs). Deliberately command-scoped: the old ``"pilothify" in str(group)``
     match also caught an unrelated group whose command path merely contained the
     word "pilothify".
@@ -956,7 +956,7 @@ def _remove_marker_section(content: str, marker: str, boundary_prefix: str = "##
     stripping surrounding whitespace), never as a substring. The old uninstall
     regex ``## pilothify`` was unanchored, so it matched inside a user's
     ``### pilothify`` heading and deleted hand-written content — the same
-    class of bug the install side hardened against in #1688. Each section runs to
+    class of bug the install side hardened against. Each section runs to
     the line before the next ``boundary_prefix`` heading (default the next H2) or
     EOF, mirroring ``_replace_or_append_section``. All exact-heading sections are
     removed (pre- installs could leave duplicates).
@@ -1162,7 +1162,7 @@ def _gemini_hook(project: bool = False) -> dict:
     }
 def _warn_shadowing_agents_skill() -> None:
     """Gemini CLI prefers ~/.agents/skills over ~/.gemini/skills for a skill of
-    the same name. Before #2800 a Windows gemini install wrote there, so an old
+    the same name. Before that fix a Windows gemini install wrote there, so an old
     copy can hide the one just installed. It may belong to the `agents`
     platform, so point at it rather than delete it."""
     shadow = _platform_skill_destination("agents")
@@ -1196,7 +1196,7 @@ def gemini_install(project_dir: Path | None = None, *, project: bool = False) ->
         _write_keep_newline(target, new_content, newline)
         print(f"pilothify section written to {target.resolve()}")
 
-    # Always re-install the Gemini hook so an older payload (e.g. pre-issue-#580
+    # Always re-install the Gemini hook so an older payload (e.g. older
     # wording) is replaced on upgrade.
     _install_gemini_hook(project_dir, project=project)
     if project:
@@ -1219,7 +1219,7 @@ def _read_settings_for_merge(settings_path: Path) -> dict:
     cannot be parsed as a JSON object aborts via ``_refuse_to_modify`` instead of
     silently falling back to ``{}`` — the old fallback rewrote the whole file and
     destroyed every setting the user had. Reads with ``utf-8-sig`` so a
-    UTF-8 BOM (the most likely parse-error trigger, same class as) is
+    UTF-8 BOM (the most likely parse-error trigger) is
     tolerated rather than fatal.
     """
     if not settings_path.exists():
@@ -1898,7 +1898,7 @@ _OPENCODE_PLUGIN_HEADER = "// pilothify OpenCode plugin"
 def _opencode_plugin_is_v1_only(body: str) -> bool:
     """True for a pilothify plugin written before the OpenCode 2 entrypoint.
 
-    Releases up to 0.9.74 exported a named ``PilothifyPlugin`` function and
+    Older releases exported a named ``PilothifyPlugin`` function and
     nothing else. OpenCode 2 needs a default export, so it rejects the file
     with "Plugin must export a default definition".
     """

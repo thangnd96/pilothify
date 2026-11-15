@@ -2,7 +2,7 @@
 
 The shared cross-file pass skips member calls and the Go extractor read the receiver's
 name only to throw it away, so `g.Greet()` on a receiver whose type lives in another
-file produced no edge — the Go twin of the Swift gap in #1356. Each case below pins one
+file produced no edge — the Go twin of the Swift gap. Each case below pins one
 source of the receiver's type, and the negative cases pin what must stay unresolved: a
 constructor return, a chain that does not start at the method's own receiver, a
 package-qualified type, and an ambiguous type name.
@@ -369,7 +369,7 @@ def test_a_qualifier_never_binds_a_same_named_type_at_another_path(tmp_path):
                 and (n.get("metadata") or {}).get("unresolved_calls")], result["nodes"]
 
 
-# The Grafana shape of #3368: `HTTPServer` is declared in http_server.go with a field typed
+# The Grafana shape of that fix: `HTTPServer` is declared in http_server.go with a field typed
 # `plugins.Client`, and the handler calling `hs.pluginClient.CheckHealth()` lives in a
 # sibling file that does not import `plugins` itself.
 XPKG_SIBLING_FILES = {

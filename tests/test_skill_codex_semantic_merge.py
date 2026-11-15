@@ -26,7 +26,7 @@ def _python_blocks(body: str, start: str, end: str) -> list[str]:
 
 
 def _run(source: str, *, cwd: Path, corpus: Path, spec: Path) -> None:
-    # Since #4762 the blocks read the scan root from the trusted .pilothify_root
+    # Since that fix the blocks read the scan root from the trusted .pilothify_root
     # sidecar instead of a substituted INPUT_PATH literal; simulate Step 1's write.
     out = cwd / "pilothify-out"
     out.mkdir(parents=True, exist_ok=True)
@@ -56,7 +56,7 @@ def test_codex_chunk_results_survive_b3_merge_cache_and_all_cached_rerun(tmp_pat
     b0 = _python_blocks(skill, "**Step B0", "**Step B1")
     b3 = _python_blocks(skill, "**Step B3", "#### Part C")
     part_c = _python_blocks(skill, "#### Part C", "\n### ")[:1]
-    # Step B3.5 (the partial-read coverage check from) sits between the
+    # Step B3.5 (the partial-read coverage check) sits between the
     # B3 merge and Part C, so the sliced range holds four blocks, not three.
     assert len(b0) == 1 and len(b3) == 4 and len(part_c) == 1
 

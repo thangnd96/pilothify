@@ -1,4 +1,4 @@
-"""Hypothesis tests for #4978: reconcile asks a per-file question once per node.
+"""Hypothesis tests: reconcile asks a per-file question once per node.
 
 Two questions are kept apart on purpose:
 
@@ -386,7 +386,7 @@ def built_corpus(tmp_path, capsys):
 
 
 def test_cost_reconcile_resolves_each_source_once(built_corpus, monkeypatch, capsys):
-    """The #4978 invariant: a per-file answer is computed once per file."""
+    """The invariant: a per-file answer is computed once per file."""
     corpus, snap = built_corpus
     _restore(corpus, snap)
     header_nodes = _header_nodes(corpus)

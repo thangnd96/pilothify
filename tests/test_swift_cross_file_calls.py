@@ -29,7 +29,7 @@ def _edge_labels(result: dict, relations=("calls", "references")) -> set[tuple[s
 
 
 def _issue_fixture(base: Path) -> list[Path]:
-    """The three cross-file patterns from #1356, plus a constructor-in-initializer."""
+    """The three cross-file patterns from that fix, plus a constructor-in-initializer."""
     f1 = _write(base / "Models/SessionViewModel.swift",
                 "class SessionViewModel {\n    func update() {}\n}\n")
     f2 = _write(base / "Services/NetworkService.swift",
@@ -111,7 +111,7 @@ def test_swift_cross_file_member_calls_have_correct_confidence_and_resolve(tmp_p
 
 
 def test_swift_ambiguous_type_does_not_over_connect(tmp_path: Path):
-    # #543/#1219 guard: when the receiver's type name is defined in 2+ files the
+    # guard: when the receiver's type name is defined in 2+ files the
     # resolution must bail rather than fan a member call out to every candidate.
     base = tmp_path / "src"
     for sub in ("a", "b", "c"):
@@ -155,7 +155,7 @@ def test_swift_unknown_receiver_emits_no_edge(tmp_path: Path):
 
 
 def test_deferred_singleton_local_var_resolves(tmp_path):
-    """#1604: `let x = Type.shared` cached into a local var, then `x.method()` on a
+    """`let x = Type.shared` cached into a local var, then `x.method()` on a
     later line, must resolve to Type's method. This static-member (navigation) init
     was previously untyped, so the singleton-into-local idiom produced zero edges.
     The constructor form `let x = Type()` is exercised alongside it."""
@@ -198,7 +198,7 @@ def test_cross_file_extension_does_not_erase_static_calls(tmp_path: Path):
     # paths the extension merge matched nothing and Singleton kept two definition
     # nodes; the single-definition guard in _resolve_swift_member_calls then
     # dropped every call edge into it. One `extension Singleton {}` in its own
-    # file was enough to zero the type's call graph, defeating #1533.
+    # file was enough to zero the type's call graph, defeating the cross-file call fix.
     files = _extension_fixture(tmp_path / "src")
     # root= is what the CLI passes; it triggers the id remap that made the
     # recorded extension nid stale. Without it the merge silently works.
@@ -232,7 +232,7 @@ def test_type_annotation_stub_does_not_block_extension_merge(tmp_path: Path):
 
 
 def test_same_file_extension_still_merges(tmp_path: Path):
-    # Type, extension, and caller in ONE file: the pre-#2538 behaviour must hold —
+    # Type, extension, and caller in ONE file: the older behaviour must hold —
     # a single Widget node and resolved calls into both halves.
     f = _write(tmp_path / "src/All.swift", (
         "class Widget {\n    static func sm() {}\n}\n\n"
@@ -273,7 +273,7 @@ def test_extension_does_not_merge_into_same_named_foreign_type(tmp_path: Path):
             assert e.get("target") not in swift_nids, "the TS Store came to own a Swift node"
 
 
-# ── #2561: attribute-argument and factory-returned receiver types ─────────────
+# ── attribute-argument and factory-returned receiver types ─────────────
 
 def test_environment_attribute_typed_receiver_resolves(tmp_path: Path):
     # @Environment(Store.self) names the property's type only inside the
@@ -323,7 +323,7 @@ def test_environment_keypath_and_dotted_forms_are_skipped(tmp_path: Path):
 
 def test_stateobject_annotated_receiver_still_resolves(tmp_path: Path):
     # Regression pin: an explicitly-annotated wrapped property (@StateObject
-    # var vm: ViewModel) resolved before #2561 and must keep resolving — the
+    # var vm: ViewModel) resolved before that fix and must keep resolving — the
     # attribute helper is a LAST resort behind the annotation.
     base = tmp_path / "src"
     _write(base / "ViewModel.swift", "class ViewModel {\n    func load() {}\n}\n")
@@ -372,7 +372,7 @@ def test_factory_returned_receiver_resolves(tmp_path: Path):
 
 
 def test_factory_receiver_resolves_through_cross_file_extension(tmp_path: Path):
-    # #2538 composition: the called method lives in a cross-file `extension
+    # composition: the called method lives in a cross-file `extension
     # Widget` — the extension merge runs before this resolver, so the factory
     # receiver resolves through the merged method_index.
     base = tmp_path / "src"

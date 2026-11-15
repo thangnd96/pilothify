@@ -36,7 +36,7 @@ def test_update_preserves_undispatched_semantic_stamps(tmp_path, monkeypatch, ho
     # and the raw scan corpus. INPUT_PATH is a constant fixture root here.
     block = artifact.content.split("from pilothify.cli import _stamped_manifest_files", 1)[1]
     block = "from pilothify.cli import _stamped_manifest_files" + block.split("print('[pilothify update] Manifest saved.')", 1)[0]
-    # Since #4762 the block reads the scan root from .pilothify_root into INPUT_PATH
+    # Since that fix the block reads the scan root from .pilothify_root into INPUT_PATH
     # above this slice; provide that resolved value directly in the exec scope.
     scope = {"incremental": incremental, "new_extraction": json.loads(extraction_path.read_text(encoding="utf-8")),
              "Path": Path, "save_manifest": save_manifest, "INPUT_PATH": "."}

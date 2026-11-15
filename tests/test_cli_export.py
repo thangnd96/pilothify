@@ -420,7 +420,7 @@ def test_query_uses_pilothify_out_env(tmp_path):
 
 
 def test_extract_writes_to_pilothify_out_env(tmp_path):
-    """#1423: `pilothify extract` honours PILOTHIFY_OUT for where it WRITES, not only
+    """`pilothify extract` honours PILOTHIFY_OUT for where it WRITES, not only
     where readers look — previously it hardcoded pilothify-out/ and ignored the
     override. Code-only corpus, so no LLM backend is needed."""
     (tmp_path / "m.py").write_text("def a():\n    return b()\n\n\ndef b():\n    return 1\n")
@@ -434,7 +434,7 @@ def test_extract_writes_to_pilothify_out_env(tmp_path):
     assert (tmp_path / "custom-out" / "manifest.json").exists()
     # The default dir must NOT be created when the override is set.
     assert not (tmp_path / "pilothify-out").exists(), "extract ignored PILOTHIFY_OUT and wrote pilothify-out/"
-    # Manifest keys are relative to the scan root (portable) — #1417.
+    # Manifest keys are relative to the scan root (portable) — .
     keys = list(json.loads((tmp_path / "custom-out" / "manifest.json").read_text()).keys())
     assert keys == ["m.py"], keys
 
@@ -634,7 +634,7 @@ def test_extract_no_cluster_marks_parallel_links_as_multigraph(tmp_path):
     assert data.get("multigraph") is True
 
 
-# Regression test for #934 - cluster-only crashes when pilothify-out/ doesn't exist
+# cluster-only crashes when pilothify-out/ doesn't exist
 
 def test_cluster_only_creates_output_dir_when_missing(tmp_path):
     """cluster-only must not crash with FileNotFoundError when pilothify-out/ is absent."""
@@ -658,7 +658,7 @@ def test_cluster_only_creates_output_dir_when_missing(tmp_path):
 
 
 def test_cluster_only_graph_in_pilothify_out_writes_beside_it(tmp_path):
-    """#1747 Case 2: `cluster-only --graph <elsewhere>/pilothify-out/graph.json`
+    """Case 2: `cluster-only --graph <elsewhere>/pilothify-out/graph.json`
     must write GRAPH_REPORT.md and the re-clustered graph beside that graph, not
     into a stray pilothify-out/ in the CWD."""
     project = tmp_path / "project"
@@ -677,7 +677,7 @@ def test_cluster_only_graph_in_pilothify_out_writes_beside_it(tmp_path):
 
 
 def test_extract_out_does_not_pollute_corpus(tmp_path):
-    """#1747 Case 1: `extract <corpus> --out <elsewhere>` must not leave a stray
+    """Case 1: `extract <corpus> --out <elsewhere>` must not leave a stray
     pilothify-out/ (cache, stat-index) inside the scanned corpus."""
     corpus = tmp_path / "corpus"
     corpus.mkdir()
@@ -693,7 +693,7 @@ def test_extract_out_does_not_pollute_corpus(tmp_path):
     assert not (corpus / "pilothify-out").exists()           # corpus untouched
 
 
-# Regression test for #1027 - cluster-only must remap labels via node overlap
+# cluster-only must remap labels via node overlap
 
 def test_cluster_only_persists_analysis_sidecar(tmp_path):
     """cluster-only must refresh .pilothify_analysis.json alongside graph.json.
@@ -730,7 +730,7 @@ def test_cluster_only_remaps_labels_to_previous_cids(tmp_path):
     .pilothify_labels.json keeps tracking the same conceptual communities after
     re-clustering. Without the remap call, Leiden's size-descending cid order
     re-applies labels by raw index and they silently misalign with cluster
-    contents. Mirror of the watch/update fix from #822.
+    contents. Mirror of the watch/update fix from that fix.
     """
     out = _make_graph(tmp_path)
     graph_json = out / "graph.json"
@@ -858,7 +858,7 @@ def test_export_html_no_community_data_at_all_still_succeeds(tmp_path):
     assert r.returncode == 0, r.stderr
 
 
-# ── #2386: sidecar exists but is STALE, not just absent ──────────────────────
+# ── sidecar exists but is STALE, not just absent ──────────────────────
 # update/watch advance graph.json's per-node community attribute but never
 # regenerate .pilothify_analysis.json, so it can describe an earlier
 # clustering pass while still being present. That looked identical to a
@@ -933,7 +933,7 @@ def test_export_html_detects_stale_sidecar_with_same_nodes_different_partition(t
 
 
 def test_graph_json_node_ids_are_portable_across_checkout_paths(tmp_path):
-    """#1789: the committed graph.json's node ids must be relative to the scan
+    """The committed graph.json's node ids must be relative to the scan
     root — not embed the absolute path — so the same repo yields identical ids
     on any machine/checkout and leaks no local username/home."""
     def _build(root: Path):
@@ -957,7 +957,7 @@ def test_graph_json_node_ids_are_portable_across_checkout_paths(tmp_path):
 
 
 def test_cluster_only_reports_failure_when_write_is_refused(tmp_path):
-    """The #479 shrink guard can refuse to overwrite graph.json. cluster-only
+    """The shrink guard can refuse to overwrite graph.json. cluster-only
     still printed "graph.json updated" and exited 0, and it had already written
     GRAPH_REPORT.md and the labels for the clustering it then discarded.
     Contributed by @aniJani."""
@@ -984,7 +984,7 @@ def test_cluster_only_reports_failure_when_write_is_refused(tmp_path):
 
 
 def test_cluster_only_happy_path_exits_zero(tmp_path):
-    """Guard for the #2522 reordering: the normal re-cluster still succeeds."""
+    """Guard for the reordering: the normal re-cluster still succeeds."""
     _make_graph(tmp_path)
     r = _run(["cluster-only", ".", "--no-viz"], tmp_path)
     assert r.returncode == 0, r.stderr
@@ -993,7 +993,7 @@ def test_cluster_only_happy_path_exits_zero(tmp_path):
 
 
 def test_cluster_only_preserves_parallel_edges(tmp_path):
-    """#3999: cluster-only reloads graph.json into a simple Graph (one edge per
+    """Cluster-only reloads graph.json into a simple Graph (one edge per
     node pair) to re-cluster, then used to write THAT back out, silently
     dropping a second edge (e.g. imports + calls) between a pair that stayed
     connected by the other. Community is a node attribute; re-clustering must
@@ -1023,7 +1023,7 @@ def test_cluster_only_preserves_parallel_edges(tmp_path):
 
 
 def test_to_json_original_links_drops_only_a_dangling_endpoint(tmp_path):
-    """#3999: original_links writes back every original link verbatim,
+    """original_links writes back every original link verbatim,
     except one whose endpoint no longer exists in G."""
     from pilothify.build import build_from_json
     from pilothify.cluster import cluster
@@ -1054,7 +1054,7 @@ def test_to_json_original_links_drops_only_a_dangling_endpoint(tmp_path):
 
 
 def test_cluster_only_warns_when_labeling_flags_are_ignored(tmp_path):
-    """#2534 case 1: with a saved .pilothify_labels.json the reuse branch never
+    """Case 1: with a saved .pilothify_labels.json the reuse branch never
     calls the LLM, so --backend/--model/--batch-size used to be silently
     ignored while exiting 0. Reuse stays a success (exit 0), but the ignored
     flags must be named on stderr."""
@@ -1069,7 +1069,7 @@ def test_cluster_only_warns_when_labeling_flags_are_ignored(tmp_path):
 
 
 def test_cluster_only_reuse_without_labeling_flags_stays_quiet(tmp_path):
-    """Control for the #2534 case-1 warning: plain reuse prints no flag warning."""
+    """Control for the case-1 warning: plain reuse prints no flag warning."""
     _make_graph(tmp_path)
     r = _run(["cluster-only", ".", "--no-viz"], tmp_path)
     assert r.returncode == 0, r.stderr
@@ -1096,7 +1096,7 @@ def _init_git_repo(path: Path, message: str) -> str:
 
 
 def test_cluster_only_preserves_built_at_commit_from_other_repo_cwd(tmp_path):
-    """#2534 case 4: cluster-only re-clusters an EXISTING graph, so the
+    """Case 4: cluster-only re-clusters an EXISTING graph, so the
     extract-time built_at_commit must survive — running it from a DIFFERENT
     repo used to re-stamp graph.json with that repo's HEAD."""
     target = tmp_path / "target"
@@ -1121,7 +1121,7 @@ def test_cluster_only_preserves_built_at_commit_from_other_repo_cwd(tmp_path):
 
 
 def test_cluster_only_preserves_built_at_commit_from_non_repo_cwd(tmp_path):
-    """#2534 case 4: from a cwd that is not a git repo at all, the stamp must
+    """Case 4: from a cwd that is not a git repo at all, the stamp must
     still be preserved — not dropped."""
     target = tmp_path / "target"
     commit_x = _init_git_repo(target, "init target")
@@ -1145,7 +1145,7 @@ def test_query_command_header_names_the_graph(tmp_path):
     """End-to-end: the CLI `query` command must actually wire the resolved graph
     path into the header. The header logic is unit-tested in
     test_query_names_its_graph.py, but only a real subprocess run proves the CLI
-    call site passes graph_path through (the wiring that was the point of)."""
+    call site passes graph_path through (the wiring that was the point of the fix)."""
     _make_graph(tmp_path)
     r = _run(["query", "Transformer"], tmp_path)
     assert r.returncode == 0, r.stderr
@@ -1156,7 +1156,7 @@ def test_query_command_header_names_the_graph(tmp_path):
 
 
 def test_query_command_names_a_graph_outside_the_cwd(tmp_path):
-    """The #2789 scenario: querying an explicit graph that sits outside the CWD
+    """The scenario: querying an explicit graph that sits outside the CWD
     must show it in full so the operator can tell the answer came from elsewhere."""
     elsewhere = tmp_path / "elsewhere"
     elsewhere.mkdir()
@@ -1171,7 +1171,7 @@ def test_query_command_names_a_graph_outside_the_cwd(tmp_path):
 
 
 def test_cluster_only_preserves_parallel_edges_across_an_id_remap(tmp_path):
-    """#3999 completion: cluster-only reloads graph.json through build_from_json,
+    """Completion: cluster-only reloads graph.json through build_from_json,
     which rewrites a legacy/pre-migration node id to its canonical stem
     (_semantic_id_remap). The preserved original_links must track the remapped
     id and still carry BOTH parallel edges — not be silently dropped because
@@ -1213,7 +1213,7 @@ def test_cluster_only_preserves_parallel_edges_across_an_id_remap(tmp_path):
 
 
 def test_to_json_declares_multigraph_when_original_links_have_parallel_edges(tmp_path):
-    """#4500: to_json restored original_links (which may hold parallel edges) while node_link_data derived "multigraph": false from the simple
+    """to_json restored original_links (which may hold parallel edges) while node_link_data derived "multigraph": false from the simple
     in-memory graph. The flag must match the links actually written."""
     from pilothify.build import build_from_json
     from pilothify.cluster import cluster
@@ -1244,7 +1244,7 @@ def test_to_json_declares_multigraph_when_original_links_have_parallel_edges(tmp
 
 
 def test_to_json_keeps_multigraph_false_without_parallel_edges(tmp_path):
-    """#4500: the flag repair must not flip graphs that have no parallel edges."""
+    """The flag repair must not flip graphs that have no parallel edges."""
     from pilothify.build import build_from_json
     from pilothify.cluster import cluster
     from pilothify.export import to_json
@@ -1270,7 +1270,7 @@ def test_to_json_keeps_multigraph_false_without_parallel_edges(tmp_path):
 
 
 def test_to_obsidian_lists_every_parallel_relation(tmp_path):
-    """#4500 follow-up: graph.json preserves parallel edges and is reloaded as a
+    """Follow-up: graph.json preserves parallel edges and is reloaded as a
     MultiGraph, but the vault note's Connections list went through
     ``edge_data()``, which returns only the FIRST parallel edge. A pair joined by
     both `imports` and `calls` therefore lost one relation from the exported
@@ -1307,7 +1307,7 @@ def test_to_obsidian_lists_every_parallel_relation(tmp_path):
 
 
 def test_cluster_only_accepts_file_mention_folded_into_ast_twin(tmp_path):
-    """#4389 follow-up: a saved document mention of a file folds into that
+    """Follow-up: a saved document mention of a file folds into that
     file's AST node on reload. That is one node, not a lost one, so cluster-only
     must write instead of refusing."""
     out = tmp_path / "pilothify-out"

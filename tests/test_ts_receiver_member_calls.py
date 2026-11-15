@@ -1,6 +1,6 @@
 """TS/JS receiver-typed member calls beyond `this.field`.
 
-The #1316 resolver handled `this.injectedField.method()`. This adds two receiver
+The resolver handled `this.injectedField.method()`. This adds two receiver
 tiers whose type is statically known but was previously dropped, so
 `affected <method>` silently under-reported:
 
@@ -207,7 +207,7 @@ def test_class_fields_the_table_cannot_type_emit_no_edge(tmp_path):
 
 
 def test_class_field_of_an_unimported_type_emits_no_edge(tmp_path):
-    # The #2553 origin gate still applies: `Svc` here is not the local class.
+    # The origin gate still applies: `Svc` here is not the local class.
     calls, _ = _calls(tmp_path, {
         "svc.ts": _SVC,
         "k.ts": ('import type { Svc } from "external-pkg";\n'

@@ -17,7 +17,7 @@ emits `indirect_call` from inside the same kind of nested closure.
 
 Out of scope here: a `for (const x of xs)` loop variable not wrapped in a
 `variable_declarator` is a separate, pre-existing gap in the same shadow-set
-computation, already addressed by #1985 — not retested here to avoid
+computation, already addressed — not retested here to avoid
 overlapping that diff.
 """
 import os

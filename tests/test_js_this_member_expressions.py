@@ -1,6 +1,6 @@
 """`this.X = function` members in every enclosing-function form.
 
-#1322's fix captured `this.X = fn` only when the enclosing function was a
+the fix captured `this.X = fn` only when the enclosing function was a
 function *declaration*. Function-expression forms — assigned to a const, an
 arrow, an IIFE, or a callback argument (the AngularJS service pattern) —
 silently dropped every member, leaving e.g. an AngularJS frontend opaque
@@ -70,7 +70,7 @@ def test_angular_service_registration_members_survive(tmp_path, monkeypatch):
 
 
 def test_callback_locals_do_not_become_nodes(tmp_path, monkeypatch):
-    """The #1077 guard is untouched: a const inside a callback stays local."""
+    """The guard is untouched: a const inside a callback stays local."""
     _, labels = _labels(
         tmp_path, monkeypatch,
         "callIt(function(){ const helper = new Set(); this.run = function(){ return helper; }; });\n",

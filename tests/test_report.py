@@ -31,7 +31,7 @@ def test_report_contains_corpus_check():
 
 
 def test_report_surfaces_unclassified_files():
-    """#3511: detect() already tracks files it saw but could not classify
+    """detect() already tracks files it saw but could not classify
     (no supported extension), but nothing surfaced them -- a corpus that is
     mostly an unsupported language got the same "well covered" verdict as
     one that was actually extracted."""
@@ -54,7 +54,7 @@ def test_report_omits_unclassified_line_when_none():
 
 
 def test_report_surfaces_the_unclassified_warning_next_to_the_count():
-    """#2942: a bare count reads as routine even when it is most of the
+    """A bare count reads as routine even when it is most of the
     corpus. When detect() decided the share was large enough to warn about,
     the report must say so right in the Corpus Check section, not bury it."""
     G, communities, cohesion, labels, gods, surprises, detection, tokens = make_inputs()
@@ -113,7 +113,7 @@ def test_report_shows_raw_cohesion_scores():
 
 
 def test_report_header_does_not_embed_host_absolute_path():
-    """#2628 / #2598: the header must not bake the generator host absolute path
+    """The header must not bake the generator host absolute path
     into GRAPH_REPORT.md — it labels with the project directory basename so the
     same graph produces the same bytes on any machine."""
     G, communities, cohesion, labels, gods, surprises, detection, tokens = make_inputs()

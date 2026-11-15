@@ -156,7 +156,7 @@ def test_pruning_every_file_leaves_an_empty_graph(tmp_path):
 
 
 def test_sweeping_an_orphan_does_not_trip_the_shrink_guard(tmp_path):
-    """The #479 shrink guard raises on unexplained node loss. Swept orphans are
+    """The shrink guard raises on unexplained node loss. Swept orphans are
     source-less, so they must be treated as explained: build_merge completes
     (does not raise) and returns the pruned graph with the orphan gone."""
     # build_merge itself runs the guard; this pruning both a file AND sweeping

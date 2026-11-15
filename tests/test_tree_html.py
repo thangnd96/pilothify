@@ -1,6 +1,6 @@
 """Tests for pilothify tree / tree_html.build_tree.
 
-#2534 case 3: `tree --root <path>` that matches NO source_file used to silently
+Case 3: `tree --root <path>` that matches NO source_file used to silently
 flatten the whole hierarchy (every file attached flat to the root) while the CLI
 still printed "wrote ..." and exited 0 — source_file paths are stored
 repo-relative, so an absolute --root never matched. A zero-match explicit root

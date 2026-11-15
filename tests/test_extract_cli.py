@@ -140,7 +140,7 @@ def test_extract_default_noise_alone_has_no_ignore_summary(monkeypatch, tmp_path
 def test_extract_exits_nonzero_when_ast_extraction_raises(
     monkeypatch, tmp_path, capsys
 ):
-    """#2445: an AST-pass failure on a fresh build must not be presented as a
+    """An AST-pass failure on a fresh build must not be presented as a
     successful empty corpus (exit 0 + 0-node graph.json)."""
     corpus = tmp_path / "corpus"
     corpus.mkdir()
@@ -177,7 +177,7 @@ def test_extract_exits_nonzero_when_ast_extraction_raises(
 def test_extract_allow_partial_continues_past_ast_failure(
     monkeypatch, tmp_path, capsys
 ):
-    """#2445 complement: --allow-partial opts back into the best-effort path —
+    """Complement: --allow-partial opts back into the best-effort path —
     the run continues, and a graph built from the surviving (semantic) pass is
     written with exit 0."""
     corpus = _make_corpus(tmp_path)  # main.go + README.md
@@ -348,7 +348,7 @@ def test_extract_succeeds_when_at_least_one_chunk_completes(
 def test_incremental_partial_run_preserves_untouched_semantic_hash(
     monkeypatch, tmp_path
 ):
-    """#1948 caller-side guard: an incremental run that only re-dispatches the
+    """Caller-side guard: an incremental run that only re-dispatches the
     CHANGED subset must not blank semantic_hash for live-but-untouched files.
 
     clear_semantic must be derived from what was actually SENT to the backend
@@ -421,7 +421,7 @@ def test_incremental_partial_run_preserves_untouched_semantic_hash(
 
 
 def test_truncated_doc_semantic_hash_is_cleared_for_requeue(monkeypatch, tmp_path):
-    """#1948 x #1950 interaction: a doc stamped complete on a prior run that
+    """Interaction with the partial-stamp fix: a doc stamped complete on a prior run that
     TRUNCATES (partial) this run must have its stale semantic_hash cleared, so
     detect_incremental re-queues it — not inherit the old hash and look
     unchanged. Partial files are dropped by _stamped_manifest_files, so they
@@ -472,8 +472,8 @@ def test_truncated_doc_semantic_hash_is_cleared_for_requeue(monkeypatch, tmp_pat
 
 
 def test_manifest_stamps_freshly_extracted_semantic_docs(monkeypatch, tmp_path):
-    """#1897: fresh extraction returns nodes with ROOT-RELATIVE source_file,
-    while the #933 manifest filter compared them against detect()'s ABSOLUTE
+    """Fresh extraction returns nodes with ROOT-RELATIVE source_file,
+    while the manifest filter compared them against detect()'s ABSOLUTE
     paths — so `f in _sem_extracted` was always False and every freshly
     extracted doc was dropped from the manifest (only code/zero-node files
     survived). Both sides must be resolved against the scan root; a genuinely
@@ -532,7 +532,7 @@ def test_manifest_stamps_freshly_extracted_semantic_docs(monkeypatch, tmp_path):
 
 
 def test_stamped_manifest_files_normalizes_both_sides(tmp_path):
-    """Unit test for the #1897 helper: relative (fresh) and absolute (cache-hit)
+    """Unit test for the helper: relative (fresh) and absolute (cache-hit)
     source_file values must both match detect()'s absolute file lists; docs with
     no valid output (or edge-only output) are filtered; code files pass through untouched."""
     from pilothify.cli import _stamped_manifest_files
@@ -566,7 +566,7 @@ def test_stamped_manifest_files_normalizes_both_sides(tmp_path):
 
 
 def test_stamped_manifest_files_counts_hyperedge_only_docs(tmp_path):
-    """#1920: a doc whose only chunk output is a hyperedge (3+ nodes sharing a
+    """A doc whose only chunk output is a hyperedge (3+ nodes sharing a
     concept) is valid output — the semantic cache persists it per source_file —
     so it must be stamped. Before the fix the stamping loop only inspected
     ``nodes``/``edges``, leaving such a doc unstamped and re-queued forever."""
@@ -594,7 +594,7 @@ def test_stamped_manifest_files_counts_hyperedge_only_docs(tmp_path):
 
 
 def test_manifest_stamps_hyperedge_only_docs(monkeypatch, tmp_path):
-    """#1920 end-to-end: a fresh extraction whose only output for a doc is a
+    """End-to-end: a fresh extraction whose only output for a doc is a
     hyperedge stamps that doc's semantic_hash, so it is not re-dispatched."""
     import json
 
@@ -633,7 +633,7 @@ def test_manifest_stamps_hyperedge_only_docs(monkeypatch, tmp_path):
     )
 
 
-# --- #1894: --force and deep-mode dispatch over a warm cache -----------------
+# --- --force and deep-mode dispatch over a warm cache -----------------
 
 def _recording_extractor(calls):
     """extract_corpus_parallel stand-in that records each dispatch."""
@@ -662,7 +662,7 @@ def _run_extract(monkeypatch, argv):
 
 
 def test_extract_mode_deep_dispatches_over_warm_cache(monkeypatch, tmp_path):
-    """#1894 repro: over a warm manifest + warm standard semantic cache,
+    """Repro: over a warm manifest + warm standard semantic cache,
     `extract --mode deep` was a silent no-op — the incremental gate dispatched
     zero files before the cache was ever consulted, and the cache key ignored
     mode anyway. Deep must re-dispatch on the first deep run (deep namespace
@@ -843,7 +843,7 @@ def test_extract_codeonly_succeeds_without_api_key(monkeypatch, tmp_path):
 
 
 def test_missing_manifest_code_only_preserves_semantic_layer(monkeypatch, tmp_path):
-    """#1925: `pilothify extract --code-only` with a MISSING manifest.json must
+    """`pilothify extract --code-only` with a MISSING manifest.json must
     not degrade to a full scan that discards the committed semantic layer. An
     existing graph.json is a sufficient incremental baseline, so doc/paper/image
     nodes (excluded by --code-only, not deleted) are preserved; a genuinely
@@ -1117,7 +1117,7 @@ def test_pathless_postgres_extract_initializes_empty_detection(
 # ---------------------------------------------------------------------------
 # a newly-excluded file's nodes must be pruned from graph.json on the
 # next incremental extract even when the manifest never listed the file (the
-# pre-#1897 state every 0.9.16 graph is in), so the manifest-diff prune set
+# state every graph from before that fix is in), so the manifest-diff prune set
 # (`manifest - corpus`) can never see it.
 # ---------------------------------------------------------------------------
 
@@ -1152,7 +1152,7 @@ def _run_extract(monkeypatch, argv):
 def test_incremental_extract_prunes_newly_excluded_file_not_in_manifest(
     monkeypatch, tmp_path
 ):
-    """Seed a graph with nodes for x.py, drop x.py from the manifest (pre-#1897
+    """Seed a graph with nodes for x.py, drop x.py from the manifest (older
     manifests never listed excluded/omitted files), exclude x.py via
     .pilothifyignore, re-run extract: x.py's nodes must be gone even though it
     was never on the deleted list."""
@@ -1172,7 +1172,7 @@ def test_incremental_extract_prunes_newly_excluded_file_not_in_manifest(
         "seed extract must produce nodes for x.py"
     )
 
-    # Simulate the pre-#1897 manifest state: x.py was never manifest-listed,
+    # Simulate the older manifest state: x.py was never manifest-listed,
     # so `manifest - corpus` can never flag it.
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest = {k: v for k, v in manifest.items() if "x.py" not in k}
@@ -1201,7 +1201,7 @@ def test_incremental_extract_prunes_newly_excluded_file_not_in_manifest(
 def test_incremental_extract_prunes_excluded_file_listed_in_manifest(
     monkeypatch, tmp_path
 ):
-    """Post-#1897 state: the excluded file IS manifest-listed. It must be
+    """Newer state: the excluded file IS manifest-listed. It must be
     pruned from graph.json AND dropped from the manifest, and stay
     settled on a further run."""
     import json
@@ -1426,7 +1426,7 @@ def test_success_and_unchanged_unaffected(monkeypatch, tmp_path, capsys):
 
 
 def test_poisoned_manifest_is_healed(monkeypatch, tmp_path, capsys):
-    """A manifest poisoned BEFORE the #2543 fix (live hash stamped, file absent
+    """A manifest poisoned BEFORE the fix (live hash stamped, file absent
     from graph.json) must be re-queued and healed by the next run."""
     import json
     import pilothify.extract as extractmod
@@ -1470,10 +1470,10 @@ def test_poisoned_manifest_is_healed(monkeypatch, tmp_path, capsys):
 
 
 def test_declined_by_design_file_is_not_requeued_every_run(monkeypatch, tmp_path, capsys):
-    """#2879: a file the extractor declines by design (data JSON, etc.) is
-    stamped yet has zero nodes — the same shape the #2543 heal re-queues. Its
+    """A file the extractor declines by design (data JSON, etc.) is
+    stamped yet has zero nodes — the same shape the heal re-queues. Its
     manifest row carries ``ast_empty: true`` so the heal leaves it alone; a
-    pre-#2879 manifest (no marker) re-queues it once, then settles."""
+    older manifest (no marker) re-queues it once, then settles."""
     import json
     import pilothify.extract as extractmod
 
@@ -1503,7 +1503,7 @@ def test_declined_by_design_file_is_not_requeued_every_run(monkeypatch, tmp_path
         )
         assert "0 re-extracted" in out_text, f"run {run} must be a no-op: {out_text}"
 
-    # Pre-#2879 manifest: strip the marker. The heal re-queues once, the re-run
+    # Older manifest: strip the marker. The heal re-queues once, the re-run
     # restamps the marker, and the run after that settles — a one-cycle migration.
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     for entry in manifest.values():
@@ -1523,7 +1523,7 @@ def test_declined_by_design_file_is_not_requeued_every_run(monkeypatch, tmp_path
 
 
 def test_cache_check_prompt_file_scopes_hits_to_that_prompt(monkeypatch, tmp_path, capsys):
-    """#1939: cache-check --prompt-file only counts entries produced by that same
+    """Cache-check --prompt-file only counts entries produced by that same
     extraction prompt, so an upgraded prompt reports a miss (re-extract) rather
     than replaying the older vintage."""
     from pilothify.cache import save_semantic_cache
@@ -1549,10 +1549,10 @@ def test_cache_check_prompt_file_scopes_hits_to_that_prompt(monkeypatch, tmp_pat
     assert "Cache: 0 hit, 1 miss" in capsys.readouterr().out
 
 
-# --- #2927: zero-node / edge-only semantic retry and manifest healing --------
+# --- zero-node / edge-only semantic retry and manifest healing --------
 
 def test_edge_only_semantic_extraction_not_stamped_and_retried(monkeypatch, tmp_path):
-    """#2927 end-to-end: a semantic extraction where a dispatched doc produces
+    """End-to-end: a semantic extraction where a dispatched doc produces
     edges but zero nodes must NOT be cached or stamped into manifest.json, so
     subsequent incremental runs re-dispatch and retry the file."""
     import json
@@ -1651,7 +1651,7 @@ def test_edge_only_semantic_extraction_not_stamped_and_retried(monkeypatch, tmp_
 
 
 def test_stale_poisoned_manifest_semantic_source_healed(monkeypatch, tmp_path, capsys):
-    """#2927 healing: a manifest poisoned BEFORE #2927 (carrying a live semantic_hash
+    """Healing: a manifest poisoned BEFORE that fix (carrying a live semantic_hash
     for a semantic file with zero nodes/hyperedges in graph.json) is healed by
     re-queuing the file on an incremental extract."""
     import json

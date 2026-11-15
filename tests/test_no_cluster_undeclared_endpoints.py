@@ -72,7 +72,7 @@ def test_finalize_raw_graph_endpoints_matches_build_from_json():
 
 
 def test_finalize_raw_graph_endpoints_drops_edge_still_missing_relation(capsys):
-    """#4809: raw graph writes must enforce the same relation invariant as the builder."""
+    """Raw graph writes must enforce the same relation invariant as the builder."""
     from pilothify.build import finalize_raw_graph_endpoints
 
     data = {
@@ -157,7 +157,7 @@ def test_finalize_raw_graph_endpoints_keeps_an_ambiguous_alias_unresolved():
 
 
 def test_finalize_raw_graph_endpoints_rejects_a_cross_language_alias():
-    """#4941: an alias claimed by exactly one file is still the wrong answer
+    """An alias claimed by exactly one file is still the wrong answer
     when that file is in a different language than the edge naming it.
 
     A Dart file's bare `PunchType` reference, left dangling because the real
@@ -197,7 +197,7 @@ def test_finalize_raw_graph_endpoints_rejects_a_cross_language_alias():
 def test_extract_no_cluster_resolves_a_framework_import_like_the_clustered_path(
     tmp_path: Path,
 ):
-    """#4670: the raw and the clustered write path must agree on the import target."""
+    """The raw and the clustered write path must agree on the import target."""
     pytest.importorskip("tree_sitter_c")
 
     root = tmp_path / "r"

@@ -39,7 +39,7 @@ def _assert_no_slug(result: dict, slug: str) -> None:
 
 
 def test_module_level_dispatch_indirect_call_source_is_canonical(tmp_path):
-    """#2231: a module-TOP-LEVEL dispatch table (`HANDLERS = {'a': handle_a}`)
+    """A module-TOP-LEVEL dispatch table (`HANDLERS = {'a': handle_a}`)
     records the FILE node as the raw_call caller. The emitted indirect_call
     edge's source must be the canonical file node id, not the id minted from
     the absolute input path."""
@@ -66,7 +66,7 @@ def test_module_level_dispatch_indirect_call_source_is_canonical(tmp_path):
 
 
 def test_bash_source_incremental_target_canonicalizes(tmp_path):
-    """#2243 (bash): `source ./b.sh` mints the target from the resolved
+    """(bash): `source ./b.sh` mints the target from the resolved
     absolute path. On an incremental run (only the sourcing script in the
     batch) the target_file stamp must still canonicalize it to the same id the
     full scan produces, with no tmp-root slug."""
@@ -116,7 +116,7 @@ def test_bash_source_incremental_target_canonicalizes(tmp_path):
 
 
 def test_tsx_nested_handler_calls_source_is_canonical(tmp_path):
-    """#2262: a .tsx component with a JSX-returning nested arrow component
+    """A .tsx component with a JSX-returning nested arrow component
     defined BEFORE its handlers used to be parsed with the plain TypeScript
     grammar; tree-sitter's error recovery floated the nested handlers to top
     level, minting `calls` edge SOURCES from the absolute path — ids that own

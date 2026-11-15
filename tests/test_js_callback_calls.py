@@ -7,12 +7,12 @@ the `helperA()` call was lost. The fix tracks each TOPMOST closure in such an
 initializer under the const's nid, so its calls flow through the normal
 machinery (import-evidence gate included).
 
-The composition test guards the #2552/#2553 coupling: the newly-walked callback
+The composition test guards the coupling: the newly-walked callback
 body feeds member calls into `_resolve_typescript_member_calls`, whose origin
 gate must keep a third-party-typed receiver from fabricating an edge to
 an unrelated local class.
 
-#2568: the const-literal branch unioned ALL
+The const-literal branch unioned ALL
 sibling closures' params/locals under the one const nid, so a name that is a
 LOCAL in sibling closure A wrongly suppressed a real `indirect_call` to that
 same name in sibling closure B. The fix scopes each closure's bindings to its
@@ -68,8 +68,8 @@ def test_callback_body_call_is_not_double_counted(tmp_path):
 
 
 def test_callback_member_call_is_origin_gated(tmp_path):
-    # Coupling guard: #2552 makes the callback body visible to the member-call
-    # resolver; #2553's origin gate must then block the name-only `Repo` match
+    # Coupling guard: the callback fix makes the callback body visible to the member-call
+    # resolver; the origin gate must then block the name-only `Repo` match
     # (third-party type) while the import-evidenced helperA() call resolves.
     calls, lbl, r = _extract(tmp_path, {
         "helpers.ts": _HELPERS,
@@ -147,7 +147,7 @@ def test_shadow_and_reference_split_across_siblings(tmp_path):
 
 
 def test_multi_closure_direct_calls_still_captured(tmp_path):
-    # #2552 guard for the multi-closure shape: a direct call inside the first
+    # guard for the multi-closure shape: a direct call inside the first
     # of two sibling closures still yields a `calls` edge from the const.
     calls, _, _ = _extract(tmp_path, {
         "helpers.ts": _HELPERS,

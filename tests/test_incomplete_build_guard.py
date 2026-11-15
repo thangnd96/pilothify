@@ -1,7 +1,7 @@
 """Tests for the incomplete-build shrink-guard on `pilothify extract`.
 
 A full build writes the graph with `to_json(..., force=True)`, which bypasses the
-#479 shrink guard. When this run's extraction was incomplete (an AST pass crashed
+Shrink guard. When this run's extraction was incomplete (an AST pass crashed
 or some semantic chunks failed), forcing the write can silently overwrite a good
 complete graph with a smaller partial one. The build now drops back to the shrink
 guard (force=False) on an incomplete run — unless `--allow-partial` is passed —
@@ -150,7 +150,7 @@ def test_no_cluster_incomplete_build_refuses_to_shrink(tmp_path, monkeypatch, ca
     # --force: the non-incremental raw-dump path, where the shrink guard is the
     # only thing standing between a partial 1-node extraction and the existing
     # complete 5-node graph. (Incremental runs merge the existing graph forward
-    # first — #2169 — so a partial run no longer shrinks there; see below.)
+    # first — so a partial run no longer shrinks there; see below.)
     import json
     graph = _arm_no_cluster(monkeypatch, tmp_path, extra_argv=["--force"])
 
@@ -166,7 +166,7 @@ def test_no_cluster_incomplete_build_refuses_to_shrink(tmp_path, monkeypatch, ca
 def test_no_cluster_incremental_incomplete_build_carries_existing_nodes(
     tmp_path, monkeypatch
 ):
-    """#2169: an INCREMENTAL --no-cluster run merges the existing graph forward,
+    """An INCREMENTAL --no-cluster run merges the existing graph forward,
     so even an incomplete extraction does not shrink the graph — the existing
     nodes are carried and this run's partial chunk is added, no guard refusal."""
     import json
@@ -199,7 +199,7 @@ def test_no_cluster_incomplete_build_fails_closed_on_malformed_existing_graph(
 ):
     """A present-but-unparseable existing graph.json (corrupt or mid-write) could
     be hiding a complete graph, so an incomplete --no-cluster build must refuse
-    to overwrite it — matching to_json's #479 fail-closed handling, not the
+    to overwrite it — matching to_json's fail-closed handling, not the
     fail-open 'proceed when we can't count' path. --force: the non-incremental
     raw-dump path (the incremental path fails even earlier, at the forward
     merge — see the test below)."""
@@ -218,7 +218,7 @@ def test_no_cluster_incomplete_build_fails_closed_on_malformed_existing_graph(
 def test_no_cluster_incremental_malformed_existing_graph_refuses_merge(
     tmp_path, monkeypatch, capsys
 ):
-    """#2169: an incremental --no-cluster run must hard-fail on an unparseable
+    """An incremental --no-cluster run must hard-fail on an unparseable
     existing graph.json (build_merge's message) instead of raw-dumping this
     run's chunks over it."""
     graph = _arm_no_cluster(monkeypatch, tmp_path)

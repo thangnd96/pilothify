@@ -50,7 +50,7 @@ def test_normal_semantic_remap_still_works():
     assert isinstance(remap, dict)
 
 
-# --- #1917: _semantic_id_remap must be idempotent (no id accretion) ---
+# --- _semantic_id_remap must be idempotent (no id accretion) ---
 
 def test_semantic_id_remap_is_idempotent_when_stem_contains_legacy_stem():
     """A file whose parent dir name equals its stem (.claude/CLAUDE.md ->

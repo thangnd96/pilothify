@@ -4,7 +4,7 @@
 resolves to the interface's own `.GetWithDataSource()` requirement, because that
 is what the call site names. The concrete `Provider.GetWithDataSource()` is a
 separate node, and nothing joins the two, so a directed walk stops at the
-interface — the Go twin of the C# gap #3003 closed.
+interface — the Go twin of the C# gap closed.
 
 C# and Swift feed `pilothify.interface_dispatch` with the `implements` edges
 their extractors read off a declaration. Go has no such declaration: a type

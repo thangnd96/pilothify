@@ -1,4 +1,4 @@
-"""Regression tests for issue #1094: to_obsidian / to_canvas must cap filenames
+"""Regression tests: to_obsidian / to_canvas must cap filenames
 to stay under the 255-byte filesystem limit, instead of crashing with
 OSError ENAMETOOLONG on long node labels."""
 import networkx as nx

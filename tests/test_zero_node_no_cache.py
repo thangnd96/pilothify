@@ -1,4 +1,4 @@
-"""#1666 — an extractable source file that yields zero nodes must not be cached,
+"""An extractable source file that yields zero nodes must not be cached,
 and must be surfaced.
 
 Every supported file produces at least a file node, so a zero-node result is

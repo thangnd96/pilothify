@@ -1,4 +1,4 @@
-"""Tests for issue #3405: Python nested-function extraction + lexical-scope-aware local call resolution."""
+"""Tests: Python nested-function extraction + lexical-scope-aware local call resolution."""
 import pytest
 from pathlib import Path
 

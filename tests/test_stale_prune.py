@@ -1,4 +1,4 @@
-"""#2210: incremental extract's graph-layer prune must not evict ALIVE files.
+"""Incremental extract's graph-layer prune must not evict ALIVE files.
 
 _stale_graph_sources compared stored graph source_file spellings against the
 current scan with a raw string membership test: (a) no NFC/NFD normalization,
@@ -81,7 +81,7 @@ def test_genuinely_deleted_source_still_pruned(tmp_path):
 
 
 def test_alive_but_ignored_source_is_pruned(tmp_path):
-    """#1909 must keep working: an alive file excluded by ignore rules is
+    """Must keep working: an alive file excluded by ignore rules is
     provably excluded, so its nodes ARE pruned."""
     docs = tmp_path / "docs"
     docs.mkdir()

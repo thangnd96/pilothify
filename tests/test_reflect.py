@@ -480,7 +480,7 @@ def test_cli_save_result_rejects_bad_outcome(tmp_path):
 
 def test_cli_save_result_reads_answer_from_file(tmp_path):
     """--answer-file lets callers pass a long/multiline answer via a file instead
-    of a fragile inline arg (Windows/PowerShell quoting), #1502."""
+    of a fragile inline arg (Windows/PowerShell quoting)."""
     ans = tmp_path / "answer.txt"
     ans.write_text("line one\nline two with a \"quote\"\n", encoding="utf-8")
     r = _run(["save-result", "--question", "how does auth work?",

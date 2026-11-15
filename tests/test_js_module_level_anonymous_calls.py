@@ -1,15 +1,14 @@
 """Calls made directly inside a module-level anonymous closure, with no
-enclosing NAMED function anywhere, must not be dropped (#3124, residual of
-#1740).
+enclosing NAMED function anywhere, must not be dropped (a residual case).
 
-#1740 fixed calls inside an anonymous callback by attributing them to the
+Fixed calls inside an anonymous callback by attributing them to the
 enclosing NAMED function. That still leaves the case where the nearest
 enclosing scope is itself anonymous -- `it("...", async () => { ... })` is
 exactly this shape, and it hits test files hardest since that is the
-idiomatic way to write one. #1740's own report text named the intended
+idiomatic way to write one. the own report text named the intended
 fallback ("not attributed to the enclosing function, not to the module
 node") but the module-node half was never implemented; this closes it by
-attributing such calls to the file node, mirroring the #3408 fix that
+attributing such calls to the file node, mirroring the fix that
 already does this for `this.X = fn` member assignments found in the same
 kind of statement.
 
@@ -57,7 +56,7 @@ def test_same_file_call_inside_anonymous_top_level_closure_is_captured(tmp_path)
 
 
 def test_nested_anonymous_closures_both_attribute_to_the_file_node(tmp_path):
-    # The exact repro shape from #3124: an anonymous callback (`it(...)`)
+    # The exact repro shape from that fix: an anonymous callback (`it(...)`)
     # containing ANOTHER anonymous callback (`register(...)`) whose body
     # makes the real call. Neither has a named enclosing function anywhere.
     calls, _, _ = _extract(tmp_path, {
@@ -75,7 +74,7 @@ def test_nested_anonymous_closures_both_attribute_to_the_file_node(tmp_path):
 
 
 def test_named_enclosing_function_case_is_unaffected(tmp_path):
-    # #1740's own fix must keep working unchanged: a call inside an anonymous
+    # the own fix must keep working unchanged: a call inside an anonymous
     # callback that DOES have a named enclosing function attributes to that
     # function, not to the file node.
     calls, _, _ = _extract(tmp_path, {

@@ -153,7 +153,7 @@ _NS_AB = {
 
 def test_namespace_using_directive_disambiguates_receiver_type(tmp_path):
     """`Svc` exists in namespaces A and B; a caller file `using A;` must bind an
-    `A.Svc`-typed receiver to A.Svc.Do — before #1620 the corpus-wide bare-name
+    `A.Svc`-typed receiver to A.Svc.Do — before that fix the corpus-wide bare-name
     ambiguity made the resolver bail (missing edge)."""
     calls, r = _calls(tmp_path, {
         **_NS_AB,
@@ -280,7 +280,7 @@ def test_this_field_receiver_resolves(tmp_path):
 
 
 def test_null_conditional_field_receiver_resolves(tmp_path):
-    """#3797: `_s?.Save()` is a conditional_access_expression, not a
+    """`_s?.Save()` is a conditional_access_expression, not a
     member_access_expression. It used to fall through to the raw-text split,
     which typed the receiver as `_s?` (nothing), so the call was dropped."""
     calls, r = _calls(tmp_path, {
@@ -455,7 +455,7 @@ def test_unresolved_base_poisons_inherited_member_lookup(tmp_path):
 
 
 def test_cross_method_name_reuse_does_not_poison(tmp_path):
-    """#2299 corpus: `var item = items[i]` (untypable) in RunIndexed must not
+    """Corpus: `var item = items[i]` (untypable) in RunIndexed must not
     poison the explicitly typed `Item item` parameter in RunOne."""
     calls, r = _calls(tmp_path, {
         "Item.cs": (
@@ -552,7 +552,7 @@ def test_file_scoped_namespace_receiver_resolves(tmp_path):
 
 
 def test_method_chained_off_new_expression_resolves(tmp_path):
-    """#1770: a method invoked directly on a `new X(...)` object-creation
+    """A method invoked directly on a `new X(...)` object-creation
     expression (no intermediate variable) must still emit a calls edge to the
     constructed type's method — the fluent `new X(...).M()` pattern."""
     calls, r = _calls(tmp_path, {
@@ -692,7 +692,7 @@ def test_switch_arm_pattern_receiver_resolves(tmp_path):
 
 
 # ── Lexically-scoped receiver typing ──────────────────────────────────
-# The #2346 harvest of `out var x` (untypable) rode the #2299 method-wide
+# The harvest of `out var x` (untypable) rode the method-wide
 # poison rule: ANY None-typed binding of a name wiped a correctly typed
 # same-name binding in a DIFFERENT lexical scope of the same method, dropping
 # true calls edges. Bindings are now scoped by byte range and resolved at the
@@ -701,7 +701,7 @@ def test_switch_arm_pattern_receiver_resolves(tmp_path):
 
 
 def test_static_local_function_param_survives_out_var_reuse(tmp_path):
-    """#2472 corpus: a typed `Target2 shared` local-function parameter must
+    """Corpus: a typed `Target2 shared` local-function parameter must
     keep its calls edges despite an `out var shared` (untypable) elsewhere in
     the enclosing method — while `shared.Gamma()` on the out-var itself stays
     unresolved (`out var` is still untyped: recovering it from the callee's

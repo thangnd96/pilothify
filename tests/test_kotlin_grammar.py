@@ -3,22 +3,22 @@
 PyPI tree-sitter-kotlin 1.x renamed/reshaped several nodes relative to the
 older forks the extractor was written against:
 
-* #2526 — imports are `import` nodes (an `import` keyword + a
+* — imports are `import` nodes (an `import` keyword + a
   `qualified_identifier`; no `path` field), so every Kotlin import edge was
   silently dropped. Fixed by accepting the new node shape (adapted from PR
-  #2531 by @Mustaqeem66) and resolving the written FQN to the real node via
+  By @Mustaqeem66) and resolving the written FQN to the real node via
   the per-file `package_header` declarations, which also unlocks the
   INFERRED -> EXTRACTED import-evidence promotion.
-* #2550 — `com.example.Foo.bar()` parses to a NESTED navigation_expression
+* — `com.example.Foo.bar()` parses to a NESTED navigation_expression
   chain; only the last identifier was kept, the receiver was never captured,
   and the raw_call died in the member-call skip. Fixed by flattening
   all-identifier chains into a `qualified_prefix` resolved against the
   declared packages (exactly-one-candidate guarded).
-* #2551 — the grammar rejects one-line `class C { val x }` bodies; consecutive
+* — the grammar rejects one-line `class C { val x }` bodies; consecutive
   one-liners can dissolve the whole file's parse. Pilothify warns on a file
   extracted through ERROR recovery (language-agnostic, also) and keeps
   class linkage for declarations recovered inside an ERROR span. Since
-  #2610/#2599 the warning fires only on PLAUSIBLE symbol loss (file-node-only
+  The warning fires only on PLAUSIBLE symbol loss (file-node-only
   result or a multiline ERROR region) — tiny fully-recovered errors that
   extract completely stay silent.
 """
@@ -55,7 +55,7 @@ def _find(r, label, id_contains=""):
                 if n["label"] == label and id_contains in n["id"])
 
 
-# ── #2526: import edges ───────────────────────────────────────────────────────
+# ── import edges ───────────────────────────────────────────────────────
 
 _IMPORT_CORPUS = {
     "model/Money.kt": (
@@ -156,7 +156,7 @@ def test_kotlin_aliased_import_resolves_to_original_symbol(tmp_path):
     assert meta.get("alias") == "Cash"
 
 
-# ── #2550: fully-qualified call expressions ──────────────────────────────────
+# ── fully-qualified call expressions ──────────────────────────────────
 
 _FQ_CORPUS = {
     "lib/Lib.kt": (
@@ -243,7 +243,7 @@ def test_kotlin_fq_call_to_ambiguous_name_yields_no_edge(tmp_path):
         "guard must refuse to pick"
 
 
-# ── #1698: object/class qualified member calls across files ─────────────────
+# ── object/class qualified member calls across files ─────────────────
 
 _OBJECT_CALL_CORPUS = {
     "config/Config.kt": (
@@ -328,7 +328,7 @@ def test_kotlin_object_member_call_ambiguous_receiver_yields_no_edge(tmp_path):
         "`Config` exists in two packages — the exactly one candidate guard must refuse to pick"
 
 
-# ── #2551: one-line type bodies + ERROR recovery ─────────────────────────────
+# ── one-line type bodies + ERROR recovery ─────────────────────────────
 
 def test_kotlin_partial_parse_warns_with_file_and_line(tmp_path, capsys):
     # Consecutive one-line class bodies dissolve the whole file's parse in
@@ -360,7 +360,7 @@ def test_kotlin_partial_parse_warns_with_file_and_line(tmp_path, capsys):
 
 def test_kotlin_one_line_class_with_fun_still_extracts(tmp_path, capsys):
     # `class VM { fun f() = 1 }` trips has_error but recovers structurally:
-    # everything must extract. #2610: since the recovery is zero-width and
+    # everything must extract. Since the recovery is zero-width and
     # every symbol is present, the corrected gate (warn only on plausible
     # symbol loss — file-node-only or a multiline ERROR region) stays SILENT;
     # the old has_error-gated warning here was a false positive.
@@ -390,7 +390,7 @@ def test_kotlin_one_line_class_keeps_field_reference(tmp_path):
     assert (c, money) in field_refs
 
 
-# ── #2565: property-initializer calls ────────────────────────────────────────
+# ── property-initializer calls ────────────────────────────────────────
 
 _INIT_CORPUS = {
     "lib/Lib.kt": (
@@ -513,7 +513,7 @@ def test_kotlin_top_level_property_initializer_attributes_to_file(tmp_path):
 
 
 def test_kotlin_fq_initializer_call_resolves_extracted(tmp_path):
-    # Composition with #2550: a fully-qualified constructor call in a property
+    # Composition with the constructor fix: a fully-qualified constructor call in a property
     # initializer flows through walk_calls' qualified_prefix stamping and
     # resolves to the REAL Router node via _resolve_kotlin_qualified_calls.
     r = _extract(tmp_path, {
@@ -542,7 +542,7 @@ def test_kotlin_fq_initializer_call_resolves_extracted(tmp_path):
 
 def test_multiline_kotlin_unchanged(tmp_path, capsys):
     """Golden guard: ordinary multi-line Kotlin produces the same nodes/edges
-    as before — the #2526/#2550/#2551 handling is purely additive — and no
+    as before — the handling is purely additive — and no
     partial-parse warning fires."""
     r = _extract(tmp_path, {
         "Shop.kt": (
@@ -660,7 +660,7 @@ def test_kotlin_object_member_call_survives_incremental_rebuild(tmp_path):
 
 
 def test_kotlin_annotated_inferred_property_keeps_the_file(tmp_path):
-    """#3884: `@Volatile var counter = 0` has an annotation and no explicit type.
+    """`@Volatile var counter = 0` has an annotation and no explicit type.
 
     `line` used to be assigned only when a type node existed, so the annotation
     loop raised UnboundLocalError and _safe_extract dropped every node in the file.
@@ -690,7 +690,7 @@ def test_kotlin_annotated_inferred_property_keeps_the_file(tmp_path):
 
 
 def test_kotlin_annotated_explicit_type_property_still_references(tmp_path):
-    """Control for #3884: an annotation plus an explicit type already worked."""
+    """Control: an annotation plus an explicit type already worked."""
     r = _extract(tmp_path, {
         "Typed.kt": (
             "class Typed {\n"

@@ -1,4 +1,4 @@
-"""#1638 — an unresolved bare npm import must not alias onto an unrelated
+"""An unresolved bare npm import must not alias onto an unrelated
 same-named local file, producing a confident cross-language phantom edge.
 
 `import colors from "tailwindcss/colors"` in a .tsx file used to emit an
@@ -48,7 +48,7 @@ def test_scoped_package_import_is_ref_namespaced():
     assert tgt.startswith("ref")
 
 
-# ── #3595: a package subpath import must resolve to the package root, not the ─
+# ── a package subpath import must resolve to the package root, not the ─
 # whole specifier, so it lands on the same node as a bare import of that
 # package (and the package.json dependency node itself) instead of dangling.
 
@@ -139,7 +139,7 @@ def test_multiple_tsx_files_do_not_all_alias_onto_one_python_file(tmp_path: Path
 
 
 def test_subpath_import_does_not_dangle_like_a_bare_import(tmp_path: Path):
-    """The reporter's exact repro for #3595: a package subpath import
+    """The reporter's exact repro: a package subpath import
     ("next/image") produced no edge at all, while a bare import of the same
     package ("next") resolved fine, so a file that only ever imports
     subpaths came out fully disconnected from the framework it depends on."""

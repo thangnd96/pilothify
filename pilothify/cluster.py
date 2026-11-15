@@ -261,7 +261,7 @@ def cluster(
         to drop them from clustering entirely (they still appear in the
         graph and in `/pilothify path`/`explain` output — only partitioning
         is affected). Overridden by ``PILOTHIFY_AMBIGUOUS_SCALE`` env var
-        when that is set to a parseable float. See #4199.
+        when that is set to a parseable float.
     """
     if G.number_of_nodes() == 0:
         return {}

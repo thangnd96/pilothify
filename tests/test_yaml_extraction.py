@@ -116,7 +116,7 @@ def test_unsafe_yaml_tag_does_not_execute(tmp_path):
 
 
 def test_cloudformation_intrinsic_tags_do_not_fail_the_whole_file(tmp_path):
-    """#5071: SafeLoader has no constructor for CloudFormation/SAM's short-form
+    """SafeLoader has no constructor for CloudFormation/SAM's short-form
     intrinsic tags (!Ref, !Equals, ...), so a template using any of them used to
     raise ConstructorError and produce zero nodes for the whole file, even
     though nothing about the tag itself is unsafe. The tagged value's own

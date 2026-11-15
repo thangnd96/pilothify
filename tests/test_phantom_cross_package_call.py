@@ -1,4 +1,4 @@
-"""#1659 — a JS/TS call with no local definition and no import must not bind to
+"""A JS/TS call with no local definition and no import must not bind to
 a same-named export in an unrelated package that was never imported.
 
 JS/TS modules have no implicit cross-module scope: a call into another file is
@@ -8,7 +8,7 @@ so on a monorepo a package that exports generically-named symbols (`*Schema`,
 `validate`, ...) appeared depended-on by packages that import nothing from it.
 
 The fix gates JS/TS cross-file call attribution on import evidence; other
-languages keep the #1553 single-candidate resolution (headers, autoload,
+languages keep the single-candidate resolution (headers, autoload,
 same-package implicit scope legitimately call across files with no import).
 """
 from __future__ import annotations
@@ -79,7 +79,7 @@ def test_same_file_call_unaffected(tmp_path: Path) -> None:
 
 def test_non_js_single_candidate_cross_file_still_resolves(tmp_path: Path) -> None:
     # The gate is JS/TS-only. Ruby (autoload, no require) legitimately calls a
-    # lone same-named function across files without an import — keep the #1553
+    # lone same-named function across files without an import — keep the
     # single-candidate resolution for it.
     _write(tmp_path / "helper.rb", "def transform(data)\n  data.upcase\nend\n")
     _write(tmp_path / "main.rb", "def handle(v)\n  transform(v)\nend\n")

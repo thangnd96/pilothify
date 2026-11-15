@@ -1,6 +1,6 @@
 """Hollow, unparseable and omitting chunks must count as incomplete.
 
-The #479 shrink guard is bypassed (force=True) on a run that is classified
+The shrink guard is bypassed (force=True) on a run that is classified
 as complete. `_extraction_incomplete` tracked hard failures only — a crashed
 pass, a chunk that raised. A chunk that came back hollow after every retry,
 or as invalid JSON, or that simply omitted some of its files does not raise:
@@ -80,7 +80,7 @@ def test_a_chunk_that_omitted_files_arms_the_shrink_guard(monkeypatch, tmp_path,
 
 
 def test_an_omission_with_no_truncation_gets_the_coverage_note(monkeypatch, tmp_path, capsys):
-    """#4101: when every omitted file came back from a chunk that was NOT
+    """When every omitted file came back from a chunk that was NOT
     truncated or hollow, the message must say so explicitly and point at
     --token-budget, rather than the bare "a re-run will retry them" framing
     that reads as transient when retrying the same chunk size reproduces the
@@ -95,7 +95,7 @@ def test_an_omission_with_no_truncation_gets_the_coverage_note(monkeypatch, tmp_
 
 
 def test_a_truncated_run_does_not_get_the_coverage_note(monkeypatch, tmp_path, capsys):
-    """Control: when a chunk DID come back truncated/hollow, the #4101 note
+    """Control: when a chunk DID come back truncated/hollow, the note
     must stay silent — that case already has a correct, different cause."""
     _record_force(monkeypatch)
     _arm(monkeypatch, tmp_path, partial=("GUIDE.md",))

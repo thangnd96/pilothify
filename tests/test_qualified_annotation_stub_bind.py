@@ -1,4 +1,4 @@
-"""Regression for #4269: a qualified external annotation must not bind to an
+"""A qualified external annotation must not bind to an
 unrelated private local class through the stub-rewire underscore collision.
 
 `def read_body(response: httpx.Response)` names an external type. A private

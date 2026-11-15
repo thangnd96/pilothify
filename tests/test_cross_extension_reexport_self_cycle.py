@@ -67,8 +67,8 @@ def test_cross_ext_reexport_target_is_the_sibling_node(tmp_path: Path):
     foo_ts = _node_id_by_label(result, "foo.ts")
     foo_mjs = _node_id_by_label(result, "foo.mjs")
     # The scheme stays as-is: extension dropped from the base stem, siblings salted
-    # apart by source path. The fix must NOT make node ids extension-aware (#1814
-    # Option A rejected).
+    # apart by source path. The fix must NOT make node ids extension-aware (that
+    # option was rejected).
     assert foo_ts == "foo_ts_foo"
     assert foo_mjs == "foo_mjs_foo"
 

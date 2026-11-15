@@ -3,7 +3,7 @@
 The incremental merge path hardcoded `dedup=True`, so fuzzy dedup always ran
 over the COMBINED node set (existing graph + new chunk). On a large graph a
 small diff could therefore collapse pre-existing nodes belonging to files the
-diff never touched, and the #479 shrink guard — the one thing that would have
+diff never touched, and the shrink guard — the one thing that would have
 caught it — is deliberately skipped while dedup is on, because fuzzy merging
 shrinks the graph legitimately. There was no way to opt out from the CLI.
 """

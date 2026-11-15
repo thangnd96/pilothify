@@ -43,7 +43,7 @@ def test_install_default_claude(tmp_path):
 
 
 def test_install_survives_a_winerror_17_replace(tmp_path, monkeypatch):
-    """#3508: installing SKILL.md failed on some Windows setups with WinError
+    """Installing SKILL.md failed on some Windows setups with WinError
     17 ("cannot move to a different disk drive") from `os.replace`, even with
     the temp file and destination in the same directory on the same drive.
     WinError 17 is a plain OSError, not PermissionError, so the install's
@@ -74,7 +74,7 @@ def test_install_survives_a_winerror_17_replace(tmp_path, monkeypatch):
 
 
 def test_install_claude_md_honors_claude_config_dir(tmp_path, monkeypatch):
-    """#2694: with CLAUDE_CONFIG_DIR set, the always-on registration lands in
+    """With CLAUDE_CONFIG_DIR set, the always-on registration lands in
     $CLAUDE_CONFIG_DIR/CLAUDE.md — not the default ~/.claude/CLAUDE.md, which the
     old code mutated regardless of the relocated profile."""
     from pilothify.__main__ import install
@@ -133,7 +133,7 @@ def _deny_writes_to(target: Path, monkeypatch):
 
 
 def test_install_survives_unwritable_claude_md(tmp_path, monkeypatch, capsys):
-    """#3474: a read-only ~/.claude/CLAUDE.md must not abort the install.
+    """A read-only ~/.claude/CLAUDE.md must not abort the install.
 
     install() copies the skill files first and registers the always-on block
     afterwards, so an unguarded write left a half-completed install plus a
@@ -163,7 +163,7 @@ def test_install_survives_unwritable_claude_md(tmp_path, monkeypatch, capsys):
 
 
 def test_install_survives_unwritable_codebuddy_md(tmp_path, monkeypatch, capsys):
-    """#3474 (same shape): an unwritable CODEBUDDY.md must not abort the install."""
+    """(same shape): an unwritable CODEBUDDY.md must not abort the install."""
     from pilothify.__main__ import install
 
     home = tmp_path / "home"
@@ -204,7 +204,7 @@ def test_install_claude_md_success_output_unchanged(tmp_path, monkeypatch, capsy
 @pytest.mark.skipif(sys.platform == "win32", reason="symlinks need admin rights on Windows")
 @pytest.mark.parametrize("existing", [True, False], ids=["existing-target", "new-target"])
 def test_install_claude_md_names_the_symlink_target_it_wrote(tmp_path, monkeypatch, capsys, existing):
-    """#3805: a symlinked ~/.claude/CLAUDE.md gets the block written into the
+    """A symlinked ~/.claude/CLAUDE.md gets the block written into the
     file it points to, so the output must name that file too. It used to print
     only the link path, and the rules file elsewhere changed without a word."""
     from pilothify.__main__ import install
@@ -231,7 +231,7 @@ def test_install_claude_md_names_the_symlink_target_it_wrote(tmp_path, monkeypat
 
 @pytest.mark.skipif(sys.platform == "win32", reason="symlinks need admin rights on Windows")
 def test_uninstall_claude_md_names_the_symlink_target_it_edited(tmp_path, capsys):
-    """#3805, removal side: the project-scoped cleanup edits the symlink target too."""
+    """Removal side: the project-scoped cleanup edits the symlink target too."""
     from pilothify.install import _remove_claude_skill_registration
 
     (tmp_path / ".claude").mkdir()
@@ -248,7 +248,7 @@ def test_uninstall_claude_md_names_the_symlink_target_it_edited(tmp_path, capsys
 
 
 def test_install_claude_md_does_not_skip_on_an_unrelated_mention_of_the_word(tmp_path, monkeypatch):
-    """#3668: the idempotency guard used to be a bare `"pilothify" in content`
+    """The idempotency guard used to be a bare `"pilothify" in content`
     substring check, so any pre-existing mention of the word anywhere in the
     file (a note to self, an unrelated project instruction) was wrongly
     treated as "already registered" and the real block never got written."""
@@ -276,7 +276,7 @@ def test_install_claude_md_does_not_skip_on_an_unrelated_mention_of_the_word(tmp
 
 
 def test_install_claude_md_refreshes_a_stale_registration_block(tmp_path, monkeypatch):
-    """#3668: a previously-installed block that has since been hand-edited (or
+    """A previously-installed block that has since been hand-edited (or
     predates a skill-path change) must be refreshed on re-install, not
     silently left stale because the bare word "pilothify" is still present."""
     from pilothify.__main__ import install
@@ -302,7 +302,7 @@ def test_install_claude_md_refreshes_a_stale_registration_block(tmp_path, monkey
 
 
 def test_register_always_on_block_writes_without_newline_translation(tmp_path, monkeypatch):
-    """#3668: Path.write_text opens in text mode, which on Windows turns a
+    """Path.write_text opens in text mode, which on Windows turns a
     pre-existing bare-LF file's WHOLE content into CRLF just to append a few
     lines. newline="" must be passed so no translation happens. The bug
     itself is only observable on Windows, so this checks the call was made
@@ -659,7 +659,7 @@ def test_claude_hook_is_shell_agnostic(tmp_path):
     _install_claude_hook(tmp_path)
     hooks = _json.loads((tmp_path / ".claude" / "settings.json").read_text())["hooks"]["PreToolUse"]
     matchers = {h["matcher"] for h in hooks}
-    assert {"Bash|Grep", "Read|Glob"} <= matchers  # Grep in the search matcher: #1986
+    assert {"Bash|Grep", "Read|Glob"} <= matchers  # Grep in the search matcher
     for h in hooks:
         cmd = h["hooks"][0]["command"]
         for token in ("$(", "case ", "[ -f", "&&", "||", ";;", "echo '"):
@@ -672,7 +672,7 @@ def test_claude_hook_install_idempotent_and_replaces_old_bash_hook(tmp_path):
     from pilothify.__main__ import _install_claude_hook
     settings_path = tmp_path / ".claude" / "settings.json"
     settings_path.parent.mkdir(parents=True)
-    # Pre-seed a legacy bash-style pilothify hook (the thing  shipped before).
+    # Pre-seed a legacy bash-style pilothify hook (the thing older releases shipped).
     settings_path.write_text(_json.dumps({"hooks": {"PreToolUse": [
         {"matcher": "Bash", "hooks": [{"type": "command",
          "command": "[ -f pilothify-out/graph.json ] && echo '{...}' || true"}]},
@@ -935,7 +935,7 @@ def test_agents_uninstall_no_op_when_not_installed(tmp_path, capsys):
 
 
 def test_remove_marker_section_matches_exact_heading_only(tmp_path):
-    """#2062: the strip helper must match pilothify's own `## pilothify` heading
+    """The strip helper must match pilothify's own `## pilothify` heading
     exactly, never a substring inside a user's `### pilothify` H3."""
     from pilothify.install import _remove_marker_section
     m = "## pilothify"
@@ -961,7 +961,7 @@ def test_remove_marker_section_matches_exact_heading_only(tmp_path):
 
 
 def test_agents_uninstall_preserves_user_h3_pilothify_heading(tmp_path):
-    """#2062 end-to-end: uninstall strips pilothify's own H2 section but leaves a
+    """End-to-end: uninstall strips pilothify's own H2 section but leaves a
     user-authored `### pilothify` H3 (and everything else) byte-intact."""
     agents_md = tmp_path / "AGENTS.md"
     agents_md.write_text(
@@ -982,7 +982,7 @@ def test_agents_uninstall_preserves_user_h3_pilothify_heading(tmp_path):
 
 
 def test_uninstall_untouched_when_only_user_h3_present(tmp_path, capsys):
-    """#2062: a file with only a user `### pilothify` H3 (pilothify never installed)
+    """A file with only a user `### pilothify` H3 (pilothify never installed)
     must be left byte-identical, not stripped."""
     agents_md = tmp_path / "AGENTS.md"
     original = "# My rules\n\n### pilothify\n\nHand-written. Do not touch.\n"
@@ -1053,7 +1053,7 @@ def test_uninstall_all_removes_the_global_opencode_plugin(tmp_path, monkeypatch)
 
 
 def test_opencode_plugin_reminder_has_no_backticks(tmp_path):
-    """The bash reminder string must not contain backticks or $(...) (regression test for).
+    """The bash reminder string must not contain backticks or $(...) (regression test).
 
     The plugin prepends `echo "<reminder>" ; <cmd>` to the user's shell command.
     Backticks or $() inside the reminder trigger command substitution
@@ -1530,7 +1530,7 @@ def test_gemini_install_merges_existing_gemini_md(tmp_path):
 
 
 def test_gemini_install_writes_gemini_md_without_newline_translation(tmp_path, monkeypatch):
-    """#3668: same CRLF issue as _register_always_on_block, here in the
+    """Same CRLF issue as _register_always_on_block, here in the
     GEMINI.md write. Path.write_text opens in text mode, which on Windows
     would turn a pre-existing bare-LF GEMINI.md's WHOLE content into CRLF
     just to merge in a few lines. Checks the call was made correctly rather
@@ -1689,7 +1689,7 @@ def test_uninstall_all_removes_amp_user_skill(tmp_path, monkeypatch):
 
 
 def test_hermes_skill_destination_windows_uses_localappdata():
-    """#1403: on Windows, Hermes scans %LOCALAPPDATA%\\hermes\\skills, so the global
+    """On Windows, Hermes scans %LOCALAPPDATA%\\hermes\\skills, so the global
     skill must land there — not ~/.hermes/skills (the POSIX path)."""
     from pilothify.__main__ import _platform_skill_destination
     with patch("pilothify.__main__.platform.system", return_value="Windows"), \
@@ -1727,7 +1727,7 @@ def _cli_dispatched_commands() -> set[str]:
 
 
 def test_codex_hook_command_is_a_real_cli_subcommand(tmp_path):
-    """#2165: the PreToolUse command in .codex/hooks.json must be a command the CLI
+    """The PreToolUse command in .codex/hooks.json must be a command the CLI
     dispatches, so a renamed subcommand can never leave a permanently dead hook.
 
     `hook-check` is intentionally a no-op on Codex (Codex Desktop rejects
@@ -1771,7 +1771,7 @@ def test_hook_commands_quote_a_spaced_resolved_exe(tmp_path, monkeypatch):
     POSIX): unquoted, the shell word-splits the command at the first space and
     the guard can never fire.
 
-    The claude and gemini hooks already quoted since their #522 fix; codex was
+    The claude and gemini hooks already quoted since their fix; codex was
     missed. shlex parsing proves the old unquoted codex form failed:
     ``shlex.split("C:/Program Files/.../pilothify.EXE hook-check")`` starts at
     ``'C:/Program'`` instead of the exe.
@@ -1816,7 +1816,7 @@ def test_hook_commands_quote_a_spaced_resolved_exe(tmp_path, monkeypatch):
         assert _is_pilothify_hook_command(command), command
 
 
-# --- #3129: project-scoped installs must not embed a machine-absolute path ----
+# --- project-scoped installs must not embed a machine-absolute path ----
 #
 # `--project` writes hook config that the installer then tells the user to
 # commit ("Add to version control: git add ..."). An exe path resolved from the

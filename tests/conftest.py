@@ -84,7 +84,7 @@ def _cold_stat_index(monkeypatch):
     The stat index (pilothify/cache.py) is a process-wide cache keyed by scan
     root. Across the full suite thousands of roots are hashed in one process, so
     a warm index left by an earlier test can serve a stale file hash to the next
-    test's no-change gate and make a rebuild skip re-extraction (#3989, which
+    test's no-change gate and make a rebuild skip re-extraction (which
     says library callers crossing roots in one process must use a fresh process
     per root — a real `pilothify update`/extract always does). Resetting to the
     cold init state makes each test behave like that fresh process."""

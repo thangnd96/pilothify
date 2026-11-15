@@ -202,7 +202,7 @@ def test_resolution_survives_incremental_rebuild(tmp_path: Path):
     """The cross-file alias must stay resolved on the real `pilothify update` /
     watch path, where the unchanged target module arrives as a resolution-context
     node. This only holds if the `_elixir_module` marker rides through the
-    context builder's allow-list -- the exact path #3566's own test bypassed."""
+    context builder's allow-list -- the exact path the own test bypassed."""
     from pilothify.watch import _rebuild_code
 
     corpus = tmp_path / "corpus"

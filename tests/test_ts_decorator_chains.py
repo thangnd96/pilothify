@@ -1,4 +1,4 @@
-"""#4711: a decorator whose expression is a call chain keeps its edge.
+"""A decorator whose expression is a call chain keeps its edge.
 
 tree-sitter-typescript 0.23.2 cannot parse a member access on a call in
 decorator position: `@Link().toMany()`, with or without the surrounding

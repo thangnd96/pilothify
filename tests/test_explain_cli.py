@@ -176,7 +176,7 @@ def test_explain_connection_shows_call_site_line(monkeypatch, tmp_path, capsys):
     assert "state.py" in out and "L56" in out
 
 
-# --- #2009: high-degree nodes must not silently hide the cut connections ------
+# --- high-degree nodes must not silently hide the cut connections ------
 
 def _write_high_degree_graph(tmp_path, n_callers=30, files=None):
     """A node with n_callers callers, spread across `files` (default: 3
@@ -210,7 +210,7 @@ def test_explain_truncation_notice_present_for_high_degree_node(monkeypatch, tmp
 
 
 def test_explain_groups_cut_callers_by_file_instead_of_dropping_them(monkeypatch, tmp_path, capsys):
-    """#2009: past the top-20 cutoff, the remaining callers must still be
+    """Past the top-20 cutoff, the remaining callers must still be
     accounted for — grouped by file with counts — instead of vanishing
     behind a bare '... and N more'. No caller may be lost silently: the
     per-file counts in the aggregation must sum back to the cut total."""
@@ -233,7 +233,7 @@ def test_explain_groups_cut_callers_by_file_instead_of_dropping_them(monkeypatch
 
 def test_explain_no_grouping_section_when_under_cutoff(monkeypatch, tmp_path, capsys):
     """Regression guard: nodes at or below the 20-connection cutoff keep the
-    pre-#2009 output byte-for-byte (no new section, no behavior change)."""
+    older output byte-for-byte (no new section, no behavior change)."""
     p = _write_high_degree_graph(tmp_path, n_callers=5)
     out = _run(monkeypatch, p, "hub", capsys)
     assert "Grouped by file:" not in out
@@ -241,7 +241,7 @@ def test_explain_no_grouping_section_when_under_cutoff(monkeypatch, tmp_path, ca
 
 
 def test_explain_grouping_boundary_at_exactly_21_vs_20_connections(monkeypatch, tmp_path, capsys):
-    """Pin the exact `> 20` cutoff itself. The other #2009 tests use 30 and 5
+    """Pin the exact `> 20` cutoff itself. The other tests use 30 and 5
     connections, both comfortably clear of the edge — nothing here fails if a
     future refactor shifts the boundary by one. One node at exactly 21
     connections (one past the cutoff) must show the grouped section with
@@ -347,7 +347,7 @@ def test_explain_matches_within_one_file_are_not_ambiguous(monkeypatch, tmp_path
 
 
 def test_explain_path_scoped_symbol_resolves_the_ambiguous_case(monkeypatch, tmp_path, capsys):
-    """#3485: the ambiguity message suggests retrying with "the repo-relative
+    """The ambiguity message suggests retrying with "the repo-relative
     path", but a bare path resolves to the FILE node, not the symbol, so
     that retry either finds nothing or the wrong thing. `path::Symbol`
     restricts the label match to the given file, so the same query that

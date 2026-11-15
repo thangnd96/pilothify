@@ -17,7 +17,7 @@ def test_cpp_enum_specifier_members_are_extracted(tmp_path):
     nodes. `enum_specifier` was missing from the C++ class_types, so the enum
     type and all of its enumerators produced no nodes at all — the whole type
     vanished. Each enumerator must become a node with a `case_of` edge (parity
-    with Java #1719 / Swift / Scala enums).
+    with Java / Swift / Scala enums).
     """
     p = tmp_path / "colors.hpp"
     p.write_text(

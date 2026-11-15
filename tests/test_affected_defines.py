@@ -1,4 +1,4 @@
-"""#4288 — affected <Symbol> must reach callers through its defining file.
+"""Affected <Symbol> must reach callers through its defining file.
 
 Dart/Flutter (and Python, Go, and other file-module languages) extract a class
 or function as a symbol node with a ``defines`` edge from its source file.
@@ -27,7 +27,7 @@ def _dart_style_graph():
     ``database_wrapper.dart`` declares ``DatabaseWrapper``, and ``app.dart``
     imports the wrapper file via a package URI (here collapsed to a direct
     file-level import for the unit test; the import-resolution half is
-    covered by #2570).
+    covered).
     """
     g = nx.DiGraph()
     g.add_node(

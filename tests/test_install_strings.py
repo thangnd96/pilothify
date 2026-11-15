@@ -49,7 +49,7 @@ _INSTALL_TEXTS: dict[str, str] = {
 def test_every_install_surface_recommends_pilothify_query():
     """All ten install surfaces must point the assistant at `pilothify query`
     as the first action for codebase questions. This is the load-bearing
-    fix for issue #580 — the alternative (reading GRAPH_REPORT.md) costs
+    fix — the alternative (reading GRAPH_REPORT.md) costs
     ~10x more tokens per question and made the project worse-than-baseline
     in real Claude Code sessions."""
     missing: list[str] = []
@@ -66,7 +66,7 @@ def test_no_install_surface_demands_reading_the_full_report_first():
     """The pre-fix instructions told assistants to read GRAPH_REPORT.md as
     their first action for codebase questions. The new policy demotes the
     report to a fallback; any phrasing that puts reading the report BEFORE
-    other actions for codebase questions is a regression of issue #580.
+    other actions for codebase questions is a regression of.
 
     Uses regex patterns instead of literal strings so a future revert that
     rephrases ("MUST read", "Always consult", "first task is to open ...")

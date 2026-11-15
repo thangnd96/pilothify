@@ -473,7 +473,7 @@ def test_owner_evidence_survives_an_edge_that_already_exists():
 
     The resolver skips an edge that is already there, but the document has still
     cited that symbol, so the evidence must stay on record for a later method
-    mention in the same document (review finding on the PR).
+    mention in the same document (a review finding).
     """
     from pilothify.markdown_resolution import resolve_markdown_mentions
 

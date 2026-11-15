@@ -472,7 +472,7 @@ def to_wiki(
         # Never delete a file this run produced. The fold map is one-to-one only
         # because _unique_slug dedups on casefold(); this exact-name check keeps
         # that promise even if a future slug rule drifts from the fold rule again
-        # (: two current Unicode labels, only one fold key, one article lost).
+        # (two current Unicode labels, only one fold key, one article lost).
         if old_article.name in produced:
             continue
         wanted = produced_by_fold.get(old_article.name.casefold())

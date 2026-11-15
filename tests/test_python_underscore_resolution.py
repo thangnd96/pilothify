@@ -26,7 +26,7 @@ def _rationale_free_nodes(result: dict) -> list[dict]:
 
 
 def test_leading_underscore_method_collision_both_extracted(tmp_path: Path) -> None:
-    """#3302's exact repro: both methods survive as distinct nodes."""
+    """the exact repro: both methods survive as distinct nodes."""
     path = _write_py(tmp_path, '''
         class Adapter:
             def _get_connection(self, url):

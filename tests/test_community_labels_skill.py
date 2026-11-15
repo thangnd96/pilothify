@@ -10,7 +10,7 @@ Two guards:
    fragments they render from): the Step-5 / post-labels code block — the one
    that builds the curated ``labels = LABELS_DICT`` dict — must re-export
    ``pilothify-out/graph.json`` with ``community_labels=labels``. This locks the
-   #2490 fix so a future template edit cannot silently drop the kwarg again.
+   Fix so a future template edit cannot silently drop the kwarg again.
 """
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ def test_to_json_community_labels_kwarg_writes_community_name():
 
 
 def test_to_json_without_labels_kwarg_writes_no_community_name():
-    """Omitting the kwarg is the #2490 bug shape: no node carries community_name."""
+    """Omitting the kwarg is the bug shape: no node carries community_name."""
     G, communities = _two_community_graph()
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "graph.json"

@@ -424,8 +424,8 @@ def _rebuild_lock(out_dir: Path, *, blocking: bool = False):
         fh.close()
         # Signal "rebuild done" by removing the lock file. Only the holder
         # unlinks; a non-acquiring caller leaves the existing lock in place.
-        # The fcntl branch above already did this (order matters there,
-        # #4273); this covers msvcrt and the no-fcntl-no-match fallback.
+        # The fcntl branch above already did this (order matters
+        # there); this covers msvcrt and the no-fcntl-no-match fallback.
         if acquired and fcntl is None:
             with contextlib.suppress(OSError):
                 lock_path.unlink()
@@ -517,7 +517,7 @@ def _pilothify_root_marker_value(watch_path: Path) -> str:
     runs with that same CWD anyway.
 
     That assumption breaks when ``PILOTHIFY_OUT`` itself is an absolute,
-    shared location (the multi-worktree / shared-output setup from):
+    shared location (the multi-worktree / shared-output setup):
     the same marker file is then reachable from any worktree's CWD, not just
     the one that wrote it, so a relative value silently resolves against
     whichever worktree happens to be reading it instead of the one that was
@@ -649,7 +649,7 @@ class _StoredSourcePaths:
                     if self._anchors_stored_sources(existing, resolved):
                         self.existing_source_root = resolved
                     else:
-                        # In the #2603 hook path watch_path is the absolute
+                        # In the hook path watch_path is the absolute
                         # marker, so project_root == watch_root == the bad
                         # marker and the first candidate also fails to anchor;
                         # Path.cwd() (the repo root a post-commit hook runs from)
@@ -1349,7 +1349,7 @@ def _reconcile_existing_graph(
                 "changed?). Add them to .pilothifyignore if the exclusion is intentional."
             )
 
-        # #4896 follow-up: an extractor upgrade can mint an AST node with
+        # follow-up: an extractor upgrade can mint an AST node with
         # exactly the ID of a saved independently evidenced semantic node.
         # Pure ID-based replacement below would silently replace its rationale,
         # author, and capture information, and _check_shrink would miss it
@@ -1417,7 +1417,7 @@ def _reconcile_existing_graph(
         # re-extracted (extract_targets, via rebuilt_source_identities) — NOT
         # every AST node under watch_root: a semantic-backed doc is excluded
         # from extract_targets, so its existing AST layer is not
-        # regenerated this run and dropping it would be data loss (#2333,
+        # regenerated this run and dropping it would be data loss (
         # COEXIST — the AST and semantic layers of a file coexist).
         # Incremental extraction owns only nodes from rebuilt or deleted
         # sources. Semantic-tier nodes (per _is_ast_tier) remain preserved.
@@ -1609,7 +1609,7 @@ def _canonical_graph_for_compare(graph_data: dict) -> dict:
     canonical = dict(graph_data)
     canonical.pop("built_at_commit", None)
     # A missing "directed" key means the same thing as "directed": false
-    # everywhere else in the codebase (#2342's --no-cluster path only started
+    # everywhere else in the codebase (the --no-cluster path only started
     # writing the key once it began inheriting it from the existing graph).
     # Normalise so an old graph.json without the key doesn't register as
     # "changed" against a freshly-written candidate that now carries
@@ -2396,7 +2396,7 @@ def _rebuild_code(
         code_files = [Path(f) for f in detected['files']['code']]
 
         # `pilothify extract` has surfaced files it saw but could not
-        # classify since #1692; this update/watch rebuild path never did,
+        # classify since that fix; this update/watch rebuild path never did,
         # so a corpus in a language with no extractor (no supported
         # extension or shebang) rebuilt "successfully" with those files
         # silently absent from the graph. Same wording as the extract path.
@@ -2550,7 +2550,7 @@ def _rebuild_code(
         # re-quick-scanned, and any AST layer it already carries coexists and
         # is preserved rather than regenerated (COEXIST); the
         # quick-scan stays as a fallback for docs with no semantic layer (the
-        # no-LLM doc-structure feature, #09b33b7) and for brand-new docs the
+        # no-LLM doc-structure feature) and for brand-new docs the
         # graph has never seen. These docs stay in ``code_files`` so
         # corpus membership (fail-closed deletion evidence) and the
         # shrink accounting below still cover them — a previously-bloated
@@ -2578,7 +2578,7 @@ def _rebuild_code(
                 #. "code" is included too: the semantic pass
                 # legitimately mints code-typed nodes for symbols surfaced from
                 # WITHIN a doc (llm.py `_bind_node_evidence`), and it cannot be
-                # confused with a pre-#1865 marker-less AST code node — those are
+                # confused with a older marker-less AST code node — those are
                 # sourced from code files, which never intersect ast_doc_files
                 # below, whereas the AST quick-scan of a doc only ever mints
                 # "document" nodes (extractors/markdown.py). "image" stays out.
@@ -2619,7 +2619,7 @@ def _rebuild_code(
         if changed_paths is not None:
             code_set = {Path(os.path.abspath(p)) for p in code_files}
             # semantic-backed docs are never AST-quick-scanned; their
-            # semantic nodes are the sole representation. Mirroring #1865's
+            # semantic nodes are the sole representation. Mirroring the earlier
             # tier-scoped edge rule at the node level, they also must NOT
             # enter extract_targets (hence rebuilt/node-evicted identities) on
             # an incremental rebuild, or their semantic nodes would be wiped.
@@ -2678,7 +2678,7 @@ def _rebuild_code(
             #. They remain in code_files for corpus membership and
             # shrink accounting, but because they are not extract targets the
             # full-rebuild AST ownership rule (scoped to
-            # rebuilt_source_identities, #2333 COEXIST) leaves their existing
+            # rebuilt_source_identities COEXIST) leaves their existing
             # AST heading layer intact alongside the semantic layer.
             extract_targets = [p for p in code_files if p not in semantic_doc_files]
 
@@ -2880,7 +2880,7 @@ def _rebuild_code(
             """detected["files"] minus this run's failed AST sources.
 
             Only the STAMPED set shrinks; scan_corpus at the save sites stays
-            the raw detect output so #1908 pruning is unaffected.
+            the raw detect output so excluded-file pruning is unaffected.
 
             The JS/TS resolution inputs detect() skips by name are stamped under
             their own bucket so the no-change gate can compare their content on

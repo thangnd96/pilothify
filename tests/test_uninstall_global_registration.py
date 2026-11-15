@@ -107,7 +107,7 @@ def test_uninstall_removes_the_registration_from_claude_config_dir(project, tmp_
 
 
 def test_a_project_scoped_uninstall_leaves_the_global_registration(project):
-    """#2215: a project-scoped uninstall keeps the global skill, so its
+    """A project-scoped uninstall keeps the global skill, so its
     registration must stay too."""
     install(platform="claude")
 

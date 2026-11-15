@@ -23,7 +23,7 @@ def test_dict_members_coerced_via_canonical_nodes_key(capsys):
         "nodes": [_node("a_ts"), _node("b_ts")],
         "edges": [],
         "hyperedges": [
-            # the #2486 repro shape: object members mixed with bare ids,
+            # the repro shape: object members mixed with bare ids,
             # including a duplicate that must dedupe after coercion
             {"id": "h_flow", "nodes": [{"id": "a_ts"}, "b_ts", {"id": "a_ts"}]},
         ],

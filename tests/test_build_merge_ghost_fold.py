@@ -1,4 +1,4 @@
-"""#4955: build_merge's #479 guard and to_json's write guard must not count
+"""build_merge's guard and to_json's write guard must not count
 the intentional ghost folds of build_from_json as drops.
 """
 import json
@@ -39,7 +39,7 @@ def test_semantic_duplicates_are_not_folded_when_dedup_off(tmp_path):
     assert len(_merge(tmp_path, disk).nodes) == 2
 
 
-def test_ghost_with_its_own_rationale_is_kept(tmp_path):  # #4896
+def test_ghost_with_its_own_rationale_is_kept(tmp_path):  # extractor-upgrade case
     G = _merge(tmp_path, [
         _n("src_client", "client.py", "src/client.py", "L1"),
         _n("plan_client", "src/client.py", "docs/plan.md", rationale="why"),
@@ -85,14 +85,14 @@ def test_ghost_fold_map_is_not_written_to_graph_json(tmp_path):
 # --- build_merge(dedup=False): intentional folds are not unexplained drops ---
 
 def test_same_file_same_label_twin_is_not_an_unexplained_drop(tmp_path):
-    # #1145, the issue's first case
+    # the issue's first case
     G = _merge(tmp_path, [_n("src_client", "client.py", "src/client.py", "L1"),
                           _n("client_py", "client.py", "src/client.py")])
     assert set(G.nodes) == {"src_client"}
 
 
 def test_document_naming_a_file_is_not_an_unexplained_drop(tmp_path):
-    # #3344, the issue's second case
+    # the issue's second case
     G = _merge(tmp_path, [_n("src_client", "client.py", "src/client.py", "L1"),
                           _n("plan_client", "src/client.py", "docs/plan.md")])
     assert set(G.nodes) == {"src_client"}

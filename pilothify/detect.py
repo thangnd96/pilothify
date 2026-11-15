@@ -1078,7 +1078,7 @@ _JS_SNAPSHOT_TEST_ROOTS = frozenset({"__tests__", "__test__"})
 
 # Platforms whose project-scope skills dir is one level below the hidden dir
 # (install.py: kilo -> .config/kilo/skills; pi wrote .pi/agent/skills before
-# #5011 and projects installed then still carry it).
+# and projects installed then still carry it).
 _NESTED_SKILL_HOLDERS = frozenset({(".pi", "agent"), (".config", "kilo")})
 
 # Single files `pilothify install` writes whole into a project: the
@@ -1119,7 +1119,7 @@ def _has_coverage_artifacts(d: "Path") -> bool:
 
     ``coverage`` is a legitimate package name (a Python package, a Go/Rust module,
     a domain namespace), so pruning it by name alone silently drops real source —
-    an entire 5-module package in #2339, with its dependents left in the graph so
+    an entire 5-module package, with its dependents left in the graph so
     queries still returned plausible neighbours. Prune it only on real evidence,
     mirroring the ``snapshots``/``env`` gating: a coverage report
     file, or an Istanbul/lcov HTML report subtree.
@@ -1151,7 +1151,7 @@ def _has_build_output_markers(d: "Path") -> bool:
     codebases — ``adapter/out/`` and ``port/out/`` hold the entire outbound
     layer (persistence adapters, entities, outbound ports) — so pruning it by
     name alone silently drops an architectural layer from the graph: 196 of
-    655 .java files on the #3347 corpus, exit code 0, no warning. Prune only
+    655 .java files on the corpus, exit code 0, no warning. Prune only
     on real generated-output evidence, mirroring the ``env``/``coverage``/
     ``snapshots`` gating: the IntelliJ ``out/production``
     layout, a Next.js static-export ``_next/`` tree, or compiled artifacts in
@@ -1671,7 +1671,7 @@ def _load_dir_own_ignore(d: Path, *, gitignore: bool = True) -> list[tuple[Path,
     .gitignore is read first and .pilothifyignore last, so .pilothifyignore
     patterns (including `!` negations) win on conflict via last-match-wins;
     adding a .pilothifyignore can only ever exclude MORE, never re-include a
-    .gitignore-excluded file (#945 kept: a dir with only a .gitignore still
+    .gitignore-excluded file (kept: a dir with only a .gitignore still
     gets sensible defaults).
 
     Shared by `_load_pilothifyignore` (ancestor chain, loaded once before the
@@ -2582,7 +2582,7 @@ def _looks_absolute(key: str) -> bool:
     ``C:\\...``/UNC key loaded on POSIX) is wrongly judged relative, and
     :func:`_to_absolute_from_storage` then joins it onto ``root`` instead of
     leaving it alone — silently producing a nonsense path rather than the
-    unreachable-but-at-least-recognizable foreign one (#1964 review: a
+    unreachable-but-at-least-recognizable foreign one (review: a
     manifest genuinely can move between platforms, per this module's own
     "mix of call sites/versions" scope).
     """
@@ -2766,7 +2766,7 @@ def _previous_checkout_absolute_keys(
 
     A key is a candidate only when :func:`_to_relative_for_storage` keeps it
     absolute against ``storage_root`` (a sibling row that becomes relative,
-    including #3785, is not a candidate). Candidates that share one directory
+    including the incremental-subfolder case, is not a candidate). Candidates that share one directory
     prefix are a previous checkout when that group has at least two keys. One
     absolute key is an include row and stays. ``storage_root is None`` yields
     an empty set.
@@ -2847,7 +2847,7 @@ def save_manifest(
 
     ``ast_empty``: code files the AST extractor declined by design this
     run (data JSON, etc.) — stamped as up-to-date yet contributing zero nodes.
-    Marks their row ``ast_empty: true`` so the #2543 heal can tell an intentional
+    Marks their row ``ast_empty: true`` so the heal can tell an intentional
     empty from a poisoned stamp and stop re-queuing them. Preserved across
     incrementals for unchanged rows; dropped once a file starts producing nodes.
     """

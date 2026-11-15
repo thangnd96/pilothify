@@ -342,7 +342,7 @@ def _csharp_pre_scan_name_collisions(
     `Pair` / `_Pair` each mint ONE id. ``add_node`` keeps the first declaration
     and drops the second; the dropped method's calls are credited to the
     survivor, and a type's members hang off the other type. This is
-    the Python #3302 collision in C#; the outcome is the same rule
+    the Python collision in C#; the outcome is the same rule
     (``_underscore_salted_nid``).
 
     Returns ``(type_groups, member_groups, member_ids)``: the first two are
@@ -4242,10 +4242,10 @@ def _csharp_method_receiver_types(
     is the class field/property base scope; ``_csharp_scoped_receiver_type``
     resolves a call site against them by byte offset. C# scoping is per-method,
     so a name rebound in a DIFFERENT method never affects this one —
-    and, since #2472, an untypable binding (``out var x``) in one lexical scope
+    and, since that fix, an untypable binding (``out var x``) in one lexical scope
     no longer wipes a same-named typed binding in a sibling or nested scope
     (a ``static`` local-function parameter, a declaration in the other branch
-    of an ``if``), the regression the #2346 declaration-expression harvest
+    of an ``if``), the regression the declaration-expression harvest
     exposed under the old method-wide poison rule.
 
     A receiver_type is stamped iff exactly one binding is lexically visible at
@@ -4761,7 +4761,7 @@ def _js_value_is_require(value_node, source: bytes) -> bool:
     """True only when `value_node` is a literal `require(...)` call (or
     `require(...).x`). `_find_require_call` matches any `identifier(...)` callee,
     so the module-scope binding guard must name-check the callee; otherwise it
-    also suppresses real `const x = factory()` nodes and breaks #2604/#2552
+    also suppresses real `const x = factory()` nodes and breaks two earlier fixes
    ."""
     call = _find_require_call(value_node)
     if call is None:
@@ -4914,7 +4914,7 @@ def _scan_js_nested_function_declarations(
     arrow / function expressions, so a `function` declared inside an arrow
     callback (`useEffect(() => { function h(){} })`) or inside an arrow-defined
     component (`const Panel = () => { function handleClick(){} }`, the React
-    idiom that motivated #2653) is captured too. Anonymous closures themselves
+    idiom that motivated it) is captured too. Anonymous closures themselves
     are not noded — they are attributed to the nearest enclosing named scope,
     which is *parent_nid*.
     """
@@ -5123,7 +5123,7 @@ def _js_scan_member_assignments(
     the owner is the file node (the enclosing function is anonymous: an IIFE
     or a callback argument, e.g. an AngularJS ``.service(...)`` body).
     ``api.X = fn`` members attach to the object-literal binding declared in
-    the same body, exactly as before — the scope proof that keeps the #1077
+    the same body, exactly as before — the scope proof that keeps the
     phantom-god-node guard intact.
     """
     object_bindings: dict[str, object] = {}
@@ -5308,9 +5308,9 @@ def _js_extra_walk(node, source: bytes, file_nid: str, stem: str, str_path: str,
                     # entries and this closure has no named owner to seed one.
                     # `it("...", async () => { register(...) })` is exactly
                     # this shape: the nearest enclosing scope is anonymous, so
-                    # #1740's "attribute to the enclosing function" fix never
+                    # the "attribute to the enclosing function" fix never
                     # applies and nothing is emitted, not even to the file
-                    # node #1740 itself named as the fallback. Attribute calls
+                    # node the earlier fix itself named as the fallback. Attribute calls
                     # here to the file node instead, mirroring the member
                     # assignment attribution just above -- a nested member
                     # function's own body is appended with its own real id by
@@ -5529,7 +5529,7 @@ def _js_extra_walk(node, source: bytes, file_nid: str, stem: str, str_path: str,
                         # Simple exported identifiers are part of the module API
                         # regardless of initializer shape. Keep other scalar noise suppressed.
                         if name_node is not None and name_node.type == "object_pattern" and is_exported:
-                            # #2604 Class 2: `export const { auth, handlers } =
+                            # Class 2: `export const { auth, handlers } =
                             # NextAuth(config)` (NextAuth v5's own documented
                             # boilerplate; next-intl's createNavigation() is the
                             # same shape) used to fall through to the generic
@@ -5591,7 +5591,7 @@ def _js_extra_walk(node, source: bytes, file_nid: str, stem: str, str_path: str,
                             # walk_calls never descended into it and its calls
                             # were dropped. Track each TOPMOST closure in the
                             # initializer under the const's nid; nested closures
-                            # are reached by the #1630 closure descend with the
+                            # are reached by the closure descend with the
                             # same caller, so appending them too would
                             # double-walk. `_tracked_body_ids` picks these up,
                             # so the descend skips them (no double-count).
@@ -5753,7 +5753,7 @@ def _csharp_extra_walk(node, source: bytes, file_nid: str, stem: str, str_path: 
         # `enum_declaration` is in C#'s class_types, so the enum type is a node
         # but its members were not, leaving the type a leaf: "which value does
         # this consumer branch on" had no answer. Java has emitted a node per
-        # `enum_constant` with a `case_of` edge since #1719, Kotlin since #1738,
+        # `enum_constant` with a `case_of` edge since that fix, Kotlin since that fix,
         # and Swift does the same for `enum_entry`; C# reaches the members
         # through the same walk, so this is the Java shape applied here.
         name_node = node.child_by_field_name("name")
@@ -5909,7 +5909,7 @@ def _scala_extra_walk(node, source: bytes, file_nid: str, stem: str, str_path: s
     (`case Add(x: Int, y: Int)`); both carry the case name as an `identifier`
     child. Without this the enum type is a class-like container whose members
     were never emitted, leaving the type a leaf. This is the Scala parity of
-    Java #1719 (enum_constant), Kotlin #1738 (enum_entry), and Swift.
+    Java (enum_constant), Kotlin (enum_entry), and Swift.
 
     Case constructor parameter types (`Add(x: Int)`) and per-case `extends`
     arguments are not linked; the case node and its case_of edge are the fix
@@ -6029,7 +6029,7 @@ def _cpp_extra_walk(node, source: bytes, file_nid: str, stem: str, str_path: str
     (`enumerator_list`) is walked with the enum as parent. Each member is an
     `enumerator` node (`Red`, `Green = 2`) whose name is its `name` field
     (an `identifier`). Without this the enum type is a memberless leaf. This is
-    the C++ parity of Java #1719 (enum_constant), Swift, and Scala.
+    the C++ parity of Java (enum_constant), Swift, and Scala.
 
     A namespace- or file-scope alias (`using X = ...;`, `typedef ... X;`) also
     gets a type node contained by the file, so a type reference to it lands on
@@ -6080,7 +6080,7 @@ def _php_extra_walk(node, source: bytes, file_nid: str, stem: str, str_path: str
     cases (`case Hearts = 'H';`) nest in the `enum_declaration_list` body as
     `enum_case` nodes that nothing handled — they were dropped, leaving the enum a
     caseless leaf. Each case carries its name in a `name` field. Emit a node plus a
-    `case_of` edge per case, the PHP parity of Java #1719 (enum_constant), Swift,
+    `case_of` edge per case, the PHP parity of Java (enum_constant), Swift,
     Scala, and C++.
     """
     if node.type == "enum_case" and parent_class_nid:
@@ -6219,7 +6219,7 @@ def _first_parse_error_line(root) -> int:
 def _first_multiline_error_line(root) -> int:
     """1-based line of the first ERROR that spans more than one line.
 
-    The #2551 warning gate selects on a multiline region (or a total loss), so
+    The warning gate selects on a multiline region (or a total loss), so
     that region is the actionable location. Earlier single-line recoveries can
     sit far above it: in a decorator-heavy TS file, `@(Link().toMany())` errors
     on line 14 but keeps every symbol, while the multiline chain on line 33 is
@@ -7184,7 +7184,7 @@ def _extract_generic(
     # maps scope_nid -> {bare_func_name -> nested_func_nid}
     lexical_nids_by_scope: dict[str, dict[str, str]] = {}
     # JS/TS only: per-BODY locals for sibling closures tracked under a
-    # single const nid by the #2552 branch (`const h = wrapper(cb1, cb2)`).
+    # single const nid by the branch (`const h = wrapper(cb1, cb2)`).
     # Keyed by id(body) — like receiver_types_by_body — and fed to the per-body
     # walk_calls as extra_locals, so each closure sees only its own
     # params/locals instead of a shared union that over-suppresses siblings.
@@ -7969,7 +7969,7 @@ def _extract_generic(
                 # `include`/`extend`/`prepend <Const>` in the class/module body ->
                 # a `mixes_in` edge to the module. The module usually lives
                 # in another file, so defer resolution to the cross-file Ruby
-                # resolver (reusing the #1634 candidate logic and the #1640 module
+                # resolver (reusing the candidate logic and the module
                 # nodes as targets). Only bare/namespaced constant arguments count;
                 # `extend self`, `include some_var`, etc. are skipped.
                 _rb_body = _find_body(node, config)
@@ -8306,7 +8306,7 @@ def _extract_generic(
             # in csharp_field_types, _csharp_method_receiver_types could not type
             # the receiver either, so calls through it (`bar.Baz()`) lost their
             # calls edge as well. The Scala class_parameters branch directly
-            # above is the analogue; Kotlin's is #2063. Grammar note: the list is
+            # above is the analogue; Kotlin has its own. Grammar note: the list is
             # an UNNAMED child of the declaration, so child_by_field_name(
             # "parameters") returns None and the children must be scanned.
             if config.ts_module == "tree_sitter_c_sharp" and t in (
@@ -8667,7 +8667,7 @@ def _extract_generic(
             # `_count` and `Count` normalize to the same id, and emitting both
             # would hand the node to whichever the parser reached first — in
             # practice the private backing field, hiding the public member behind
-            # it. See #3006 for the follow-up.
+            # it. for the follow-up.
             prop_node_name = node.child_by_field_name("name")
             if prop_node_name is not None:
                 property_name = _read_text(prop_node_name, source)
@@ -8800,7 +8800,7 @@ def _extract_generic(
         if (config.ts_module == "tree_sitter_kotlin"
                 and t == "anonymous_initializer"):
             # `init { ... }` has no node of its own, so its calls had no source
-            # to attach to. Hand the block to walk_calls the way #2565
+            # to attach to. Hand the block to walk_calls the way the earlier fix
             # does a property initializer, with the same owner: the enclosing
             # class, or the file node for a nested one.
             initializer_nodes.append((parent_class_nid or file_nid, node))
@@ -8809,7 +8809,7 @@ def _extract_generic(
         if (config.ts_module == "tree_sitter_kotlin"
                 and t == "property_declaration"):
             # Field-type references stay class-gated: top-level properties keep
-            # their pre-#2565 (no-references) behavior unchanged.
+            # their older (no-references) behavior unchanged.
             if parent_class_nid:
                 # the annotation loop below also reads `line`. An annotated
                 # property with an inferred type has no type node, so assigning
@@ -8875,8 +8875,8 @@ def _extract_generic(
                         add_edge(parent_class_nid, target_nid, "references", line, context=ctx)
                     if prop_type is None and role == "type":
                         prop_type = ref_name
-            # #1356 Stage 1: walk the initializer so a constructor call
-            # (`let vm = VM()`) produces a calls edge. #1356 Stage 2a: when the
+            # Stage 1: walk the initializer so a constructor call
+            # (`let vm = VM()`) produces a calls edge. Stage 2a: when the
             # property has no type annotation, infer its type from the
             # constructor so `vm.update()` later resolves to VM.
             pending_factory: tuple[str, str] | None = None
@@ -8892,7 +8892,7 @@ def _extract_generic(
                             # stash the label-only binding for corpus-side
                             # resolution against make's plain return type.
                             pending_factory = _swift_factory_call(child, source)
-                # #1604 Stage 2b: `let x = Type.shared` (or any `Type.staticProp`)
+                # Stage 2b: `let x = Type.shared` (or any `Type.staticProp`)
                 # binds x to Type via a static-member access, which is a
                 # navigation_expression, not a constructor call. Infer x's type from
                 # the uppercase head so later `x.method()` calls resolve to Type. This
@@ -9191,7 +9191,7 @@ def _extract_generic(
                         # Overloads share a name, so they minted one id and
                         # every later overload vanished into the first.
                         # The first declaration keeps the plain id; each other
-                        # signature gets its own, salted like #3302/#4415.
+                        # signature gets its own, salted like that fix.
                         csharp_sig, csharp_sig_meta = _csharp_method_signature(node, source)
                         group = csharp_overloads.setdefault(func_nid, {})
                         if group and csharp_sig not in group:
@@ -9498,7 +9498,7 @@ def _extract_generic(
                             add_edge(func_nid, target_nid, "references", line, context=ctx)
                         if param_type is None and role == "type":
                             param_type = ref_name
-                    # #1356 Stage 2a: record param name -> type (flat per-file
+                    # Stage 2a: record param name -> type (flat per-file
                     # table; later params with the same name win, which is fine
                     # for the depth-1 member-call resolution we do).
                     if param_type:
@@ -9788,8 +9788,8 @@ def _extract_generic(
                     # `class_body`. The function branch never recurses into
                     # bodies and object_creation_expression is not a class_type,
                     # so the anonymous class's methods — and every call inside
-                    # them — got no nodes at all (the Java/Groovy twin of Kotlin
-                    # #2347). Scan this body for anonymous classes without
+                    # them — got no nodes at all (the Java/Groovy twin of the
+                    # Kotlin fix). Scan this body for anonymous classes without
                     # crossing a nested method/lambda boundary and without
                     # descending into a found one, then emit an owner node per
                     # anonymous class and walk its class_body like the class
@@ -10664,7 +10664,7 @@ def _extract_generic(
                 # PHP `new Foo(...)` keeps the class in a bare name/qualified_name
                 # child (no field), so the generic call path never names it and a
                 # class a method only constructs stayed unlinked - the PHP twin of
-                # Java's #1373 and C#'s #2997. The types this loses are the ones
+                # Java's and C#'s. The types this loses are the ones
                 # handed straight to something else (`$bus->dispatch(new Cmd(...))`).
                 # A qualified `new \App\Bar()` names the last segment, matching how
                 # the PHP namespace pass keys classes; `new $cls()` is dynamic and
@@ -10679,7 +10679,7 @@ def _extract_generic(
             elif config.ts_module == "tree_sitter_c_sharp" and node.type == "object_creation_expression":
                 # `new Foo(...)` keeps the constructed type in the `type` field, so
                 # the invocation path below never sees it and a type a method only
-                # constructs stays unlinked — the C# twin of the Java gap in #1373.
+                # constructs stays unlinked — the C# twin of the Java gap.
                 # Types reached solely through a method body are exactly the ones
                 # this misses: message classes handed straight to a bus
                 # (`Send(new OrderPlaced { ... })`) and locally built collaborators.
@@ -10832,8 +10832,8 @@ def _extract_generic(
                 # `member_access_expression`'s `name` `generic_name` (member
                 # call); the fallback path uses raw text and never sees the
                 # structured type-arg list. The class declaration's
-                # field_declaration case is closed by the parallel fix in
-                # #2913; this branch covers what that PR deliberately left
+                # field_declaration case is closed by a parallel fix;
+                # this branch covers what that fix deliberately left
                 # out.
                 if fn_node is not None:
                     call_tal = None
@@ -11461,8 +11461,8 @@ def _extract_generic(
                             rc_entry["php_scoped"] = is_scoped_call
                         # C#: tag the raw_call so _resolve_csharp_member_calls claims
                         # it, and stamp the receiver's type from the method's SCOPED
-                        # bindings by the call's byte offset (#1609, per-method since
-                        # #2299, position-aware since #2472). `this.field.M()` is
+                        # bindings by the call's byte offset (per-method, and
+                        # position-aware since a later fix). `this.field.M()` is
                         # covered too: member_receiver is the bare field name, and
                         # class fields/properties are the base scope.
                         if config.ts_module == "tree_sitter_c_sharp":
@@ -12015,7 +12015,7 @@ def _extract_generic(
     # Export the per-file field->type tables for the corpus member-call
     # resolvers: a field declared on a superclass in ANOTHER file can
     # only be typed once the whole graph is visible. Keyed by class label +
-    # source_file, never by node id - ids are rewritten by the #1529 remap
+    # source_file, never by node id - ids are rewritten by the remap
     # passes and the cache portability rewrite, which is exactly how the
     # id-keyed ObjC table went stale.
     _field_table_export = [

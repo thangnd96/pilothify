@@ -1,8 +1,8 @@
 """Line-ending preservation for the install/uninstall markdown writers.
 
-#3741 stopped the always-on registration and the Gemini writer from translating
+Stopped the always-on registration and the Gemini writer from translating
 line endings on *write* by passing ``newline=""``. But those paths, and every
-other md writer listed in #4360, still read through ``Path.read_text``, which
+other md writer listed, still read through ``Path.read_text``, which
 opens in universal-newline mode and folds every ``\\r\\n`` to ``\\n`` before the
 merge happens. A later plain ``write_text`` then re-emitted the platform
 default, so a read-modify-write normalised the WHOLE file: on Windows an LF file

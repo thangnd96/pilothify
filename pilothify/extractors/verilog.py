@@ -373,7 +373,7 @@ def extract_verilog(path: Path) -> dict:
                         # Defined in another file: emit a SOURCELESS stub so the
                         # corpus-level rewire collapses it onto the real
                         # definition. A sourced stub bakes this file's path into
-                        # the id and blocks the rewire — the #1402 phantom
+                        # the id and blocks the rewire — the phantom
                         # duplicate the other extractors avoid the same way.
                         tgt_nid = _make_id(inst_type)
                         if tgt_nid not in seen_ids:

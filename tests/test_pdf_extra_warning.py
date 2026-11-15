@@ -51,7 +51,7 @@ def _reset_failed_warned(monkeypatch):
 
 
 def test_extract_pdf_text_unreadable_pdf_warns(tmp_path: Path, capsys, _reset_failed_warned):
-    """#4527: a PDF pypdf cannot read still returns "", but must say so on
+    """A PDF pypdf cannot read still returns "", but must say so on
     stderr instead of looking exactly like a PDF with no text."""
     pytest.importorskip("pypdf")
     pdf = tmp_path / "broken.pdf"

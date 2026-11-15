@@ -1,4 +1,4 @@
-"""#4199 regression — AMBIGUOUS edges must not pull independent clusters together.
+"""Regression — AMBIGUOUS edges must not pull independent clusters together.
 
 Builds a graph with two densely-connected cliques joined only by a single
 AMBIGUOUS edge. Pre-fix (ambiguous_scale=1.0) Leiden/Louvain can fuse them
@@ -21,7 +21,7 @@ def _two_cliques_joined_by_ambiguous() -> nx.Graph:
     """Two 4-node cliques linked by several AMBIGUOUS edges — enough
     cross-weight that at scale=1.0 Leiden/Louvain fuses them, while
     scale=0.5 (default) demotes the glue below modularity's threshold.
-    This is the exact pathology in #4199 (several AMBIGUOUS 'conceptually
+    This is the exact pathology (several AMBIGUOUS 'conceptually
     _related_to' edges accumulate until the two end-doc clusters merge).
     """
     G = nx.Graph()
@@ -54,7 +54,7 @@ def _edge_weight_sum(G: nx.Graph, confidence: str) -> float:
 def test_default_scale_demotes_ambiguous_weight(monkeypatch):
     """Property: AMBIGUOUS edges in the partitioning input must be
     weighted strictly less than they are on the raw graph when the
-    default scale (0.5) is active. Captures the actual #4199 fix
+    default scale (0.5) is active. Captures the actual fix
     at the mechanism level, independent of Leiden's partition choice
     (which varies with resolution + fixture tuning)."""
     monkeypatch.delenv("PILOTHIFY_AMBIGUOUS_SCALE", raising=False)
@@ -104,7 +104,7 @@ def test_env_override_parses_valid_float(monkeypatch):
 
 def test_env_override_ignored_when_malformed(monkeypatch):
     """A non-float env value must not crash cluster(); argument default
-    is used. #4199 explicitly spec'd fail-soft parsing."""
+    is used. The spec explicitly asked for fail-soft parsing."""
     monkeypatch.setenv("PILOTHIFY_AMBIGUOUS_SCALE", "not-a-number")
     G = _two_cliques_joined_by_ambiguous()
     communities = cluster(G, ambiguous_scale=0.5)

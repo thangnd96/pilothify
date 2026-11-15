@@ -1,4 +1,4 @@
-"""#1686 - a wedged local Ollama request must not multiply --api-timeout by the
+"""A wedged local Ollama request must not multiply --api-timeout by the
 SDK's 6 transient-error retries into a ~20min block. Ollama defaults to 0 SDK
 retries so the timeout is the effective wall-clock bound; an explicit
 PILOTHIFY_MAX_RETRIES still wins.

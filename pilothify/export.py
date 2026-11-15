@@ -253,7 +253,7 @@ def _git_head(cwd: "str | Path | None" = None) -> str | None:
 
 # Sentinel: an existing graph.json is present and non-empty but cannot be parsed
 # into a node count (corrupt, mid-write, or structurally wrong). The caller must
-# fail CLOSED on this — the same way to_json's #479 guard refuses to overwrite
+# fail CLOSED on this — the same way to_json's guard refuses to overwrite
 # such a file — because we cannot prove the new graph isn't a silent shrink.
 MALFORMED_GRAPH = object()
 
@@ -268,9 +268,9 @@ def existing_graph_node_count(path: "str | Path"):
         replace an empty/oversized file);
       - :data:`MALFORMED_GRAPH` when the file is present and non-empty but
         unparseable — the caller must treat this as fail-closed (refuse to
-        overwrite), mirroring to_json's #479 handling of a corrupt/mid-write file.
+        overwrite), mirroring to_json's handling of a corrupt/mid-write file.
 
-    The raw ``--no-cluster`` write path uses this to apply the same #479 shrink
+    The raw ``--no-cluster`` write path uses this to apply the same shrink
     guard that :func:`to_json` applies inline for the clustered path.
     """
     p = Path(path)
@@ -301,7 +301,7 @@ def existing_graph_node_count(path: "str | Path"):
 
 
 def to_json(G: nx.Graph, communities: dict[int, list[str]], output_path: str, *, force: bool = False, built_at_commit: str | None = None, community_labels: dict[int, str] | None = None, original_links: "list[dict] | None" = None) -> bool:
-    # Drop #3774 accounting before any write. Extract pops these first; every
+    # Drop the build-accounting keys before any write. Extract pops these first; every
     # other caller of to_json (the documented build_merge persist path) does not.
     from pilothify.build import take_dedup_remap, take_shrink_accounting
     # The guard below reads it; it is removed here so node_link_data cannot
@@ -349,7 +349,7 @@ def to_json(G: nx.Graph, communities: dict[int, list[str]], output_path: str, *,
                     # mid-write): we cannot verify the new graph is not a silent
                     # shrink. Fail SAFE — refuse rather than overwrite. A
                     # fail-OPEN here (the prior behavior) is the silent data-loss
-                    # path #479 exists to prevent: a transiently unreadable
+                    # path once exists to prevent: a transiently unreadable
                     # graph.json would let a partial rebuild clobber a good one.
                     import sys as _sys
                     print(
@@ -495,7 +495,7 @@ def to_json(G: nx.Graph, communities: dict[int, list[str]], output_path: str, *,
         # data loss; warn loudly so the wipeout is attributable. We still write
         # the graph's truth rather than preserving the stale set — resurrecting
         # hyperedges whose members may no longer exist would reintroduce the
-        # dangling-member shape #1916 removed.
+        # dangling-member shape once removed.
         _prev_hyperedges = None
         try:
             if existing_path.exists():
@@ -527,7 +527,7 @@ def to_json(G: nx.Graph, communities: dict[int, list[str]], output_path: str, *,
         graph_metadata["pilothify_version"] = pilothify_version
     # Fallback provenance comes from the repo the graph is being written INTO
     # (output_path lives in <target>/pilothify-out/), never the shell's cwd —
-    # the same cwd-anchoring mistake #2316 fixed for `update`.
+    # the same cwd-anchoring mistake fixed for `update`.
     commit = built_at_commit if built_at_commit is not None else _git_head(Path(output_path).resolve().parent)
     if commit:
         data["built_at_commit"] = commit

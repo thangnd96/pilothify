@@ -91,7 +91,7 @@ def extract_zig(path: Path) -> dict:
         # directly under the enum_declaration. The recurse into the enum body
         # only emitted its methods, so the members were dropped and the enum was
         # left a memberless leaf. Emit a node plus a `case_of` edge per member,
-        # the Zig parity of Java #1719 / Swift / Scala enums. A tagged union
+        # the Zig parity of Java / Swift / Scala enums. A tagged union
         # (`union(enum) { circle: f64, point }`) is the same shape — its fields are
         # the discriminant cases — so it gets the same treatment. The gate keeps a
         # bare `struct`/`union`'s typed data fields (which share the container_field

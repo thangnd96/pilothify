@@ -37,7 +37,7 @@ from pilothify.extractors.base import _read_source_text
 # two lists drifted as DOC_EXTENSIONS grew — .qmd, .skill and .html were
 # documents that never got sliced, so a 38k-character one reached the model as
 # its first 20k with no warning and no partial marker. .yaml/.yml are
-# intentionally NOT here: they are code, not documents (reclassified in),
+# intentionally NOT here: they are code, not documents (reclassified later),
 # and never reach the semantic pass.
 # ``tests/test_oversized_document_slicing.py`` pins the relationship so a future
 # addition to DOC_EXTENSIONS fails loudly instead of quietly losing content.

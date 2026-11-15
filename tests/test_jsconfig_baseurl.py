@@ -89,7 +89,7 @@ def test_tsconfig_baseurl_without_paths_also_resolves(tmp_path):
 
 
 def test_declared_paths_alias_still_wins_over_baseurl(tmp_path):
-    # Guards #1269: a declared alias must not be shadowed by the baseUrl
+    # Guard: a declared alias must not be shadowed by the baseUrl
     # fallback. "@mods/Widget.js" must resolve via paths to real/Widget.js,
     # NOT to <baseUrl>/@mods/Widget.js.
     _write(tmp_path / "jsconfig.json",
@@ -129,7 +129,7 @@ def test_declared_directory_prefix_alias_still_wins(tmp_path):
 
 
 def test_tsconfig_paths_alias_unchanged(tmp_path):
-    # Pre-existing #1269 behavior, green before and after this change: a
+    # Pre-existing behavior, green before and after this change: a
     # tsconfig paths alias resolves relative to baseUrl.
     _write(tmp_path / "tsconfig.json",
            '{\n  "compilerOptions": {\n'

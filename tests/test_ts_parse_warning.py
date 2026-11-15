@@ -1,4 +1,4 @@
-"""#2610/#2599: the #2551 partial-parse warning must not fire on VALID TS/TSX.
+"""The partial-parse warning must not fire on VALID TS/TSX.
 
 tree-sitter-typescript (0.23.x) sets ``has_error`` on tiny, fully-recovered
 errors in code ``tsc`` accepts — a ``&`` inside a JSX string attribute, or a

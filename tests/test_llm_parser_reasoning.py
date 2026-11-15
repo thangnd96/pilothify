@@ -1,4 +1,4 @@
-"""#2882: reasoning-first models narrate before they answer.
+"""Reasoning-first models narrate before they answer.
 
 `nvidia/nemotron-*`, gemma and friends reply with a chain of thought and only
 then emit the JSON — sometimes bare, sometimes fenced, sometimes after a fence
@@ -142,7 +142,7 @@ def test_string_list_sketch_does_not_shadow_the_real_answer():
     """A reasoning sketch that lists ids as bare strings (`{"nodes": ["A","B"]}`)
     has truthy arrays but no node/edge objects. Gating on the raw value would let
     it win and then sanitize to empty, shadowing the real fragment that follows
-    and re-triggering the #2880 hollow-response bisection. The sanitized-content
+    and re-triggering the hollow-response bisection. The sanitized-content
     gate must demote the sketch and return the real answer."""
     raw = (
         "Planning the graph. First a rough sketch of what I will emit:\n"

@@ -88,7 +88,7 @@ def test_richness_counts_content_not_placement():
 
 
 def test_provenance_beats_a_richer_sourceless_stub():
-    """#3775: source_file/source_location are in _RICHNESS_IGNORED_KEYS, so
+    """source_file/source_location are in _RICHNESS_IGNORED_KEYS, so
     a stub with no real location could out-score and replace a genuine,
     located declaration purely on incidental field count. The issue's own
     exact repro."""
@@ -114,7 +114,7 @@ def test_provenance_beats_a_richer_sourceless_stub():
 def test_richness_still_decides_when_both_sides_have_provenance():
     """The provenance tiebreak must only activate when the two sides
     disagree on having a source_file -- when both (or neither) have one,
-    the existing #3372 richness-then-length ordering is unchanged."""
+    the existing richness-then-length ordering is unchanged."""
     rich = _rich()
     shallow = _shallow()
     assert rich["source_file"] and shallow["source_file"], (
@@ -126,7 +126,7 @@ def test_richness_still_decides_when_both_sides_have_provenance():
 
 
 def test_located_record_beats_a_richer_source_file_only_stub():
-    """Review finding on #3775: source_location is richness-ignored too, so
+    """Review finding: source_location is richness-ignored too, so
     two source-bearing candidates could still be ordered by field count
     alone, letting a record with a source_file but no source_location (the
     codebase genuinely emits source_location: None, see

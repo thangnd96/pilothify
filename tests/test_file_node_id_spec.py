@@ -1,4 +1,4 @@
-"""Regression tests for issue #1033: AST file-level node IDs must match the
+"""Regression tests: AST file-level node IDs must match the
 skill.md `{parent_dir}_{stem}` spec (one parent level, no extension) so AST and
 semantic extraction produce the SAME node for a file instead of two disconnected
 ghosts.

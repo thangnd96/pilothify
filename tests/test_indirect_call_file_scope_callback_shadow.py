@@ -1,7 +1,7 @@
 """A parameter of a file-scope anonymous callback must shadow same-named
 functions elsewhere in the corpus.
 
-#3124 walks the body of a closure passed in a module-level call statement
+Walks the body of a closure passed in a module-level call statement
 (`items.forEach(function (value) { ... })`, AngularJS `.controller(...)`,
 `it("...", () => { ... })`) under the file node, but did not register the
 closure's own params/locals for that walk. A parameter passed on as a call
@@ -61,7 +61,7 @@ def test_a_sibling_callbacks_param_does_not_shadow(tmp_path):
 
 def test_param_of_a_callback_inside_a_test_block_is_not_a_reference(tmp_path):
     # The inner arrow is itself an expression statement inside the `it`
-    # callback, so the #3124 branch tracks it as its own body too.
+    # callback, so the branch tracks it as its own body too.
     src = (
         "describe('d', () => {\n"
         "  it('t', async () => {\n"

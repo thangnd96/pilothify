@@ -316,7 +316,7 @@ def test_pilothifyignore_bom_then_comment(tmp_path):
 
 def test_nested_gitignore_utf8_bom(tmp_path):
     """A BOM'd .gitignore below the scan root (loaded live during the walk,
-    #1206 path) must also have its first pattern honored."""
+    Path) must also have its first pattern honored."""
     sub = tmp_path / "sub"
     sub.mkdir()
     (sub / ".gitignore").write_bytes(b"\xef\xbb\xbf*.log\n")
@@ -635,8 +635,8 @@ def test_gitignore_nested_negation_overrides_broader_root_rule(tmp_path):
 
 def test_nested_ignore_overrides_git_info_exclude_and_root(tmp_path):
     """Precedence across all three sources: a nested `.gitignore` `!` re-include
-    outranks both a root `.gitignore` and `.git/info/exclude` (lowest, from
-    #1810), while an info/exclude-only file with no re-include stays out."""
+    outranks both a root `.gitignore` and `.git/info/exclude` (lowest),
+    while an info/exclude-only file with no re-include stays out."""
     (tmp_path / ".git" / "info").mkdir(parents=True)
     (tmp_path / ".git" / "info" / "exclude").write_text("*.py\n")
     (tmp_path / ".gitignore").write_text("keep.py\n")           # root also excludes it
@@ -984,7 +984,7 @@ def test_detect_converts_google_workspace_shortcuts_when_enabled(tmp_path, monke
 
 
 def test_detect_office_sidecar_survives_a_gitignored_output_dir(tmp_path, monkeypatch):
-    """#3504: the documented .gitignore advice puts pilothify-out/ (and so
+    """The documented .gitignore advice puts pilothify-out/ (and so
     pilothify-out/converted/, where Office sidecars land) inside a gitignored
     tree. The ignore check exists to keep USER files out of the scan, not to
     filter output this same pass just produced from an already-admitted
@@ -1090,7 +1090,7 @@ def test_detect_skips_coverage_dir_by_lcov_info(tmp_path):
 
 
 def test_detect_keeps_coverage_code_namespace(tmp_path):
-    """#2339: a coverage/ dir holding real modules and no coverage artefacts is a
+    """A coverage/ dir holding real modules and no coverage artefacts is a
     legitimate package name, not a generated report, and must NOT be pruned.
 
     Pruning it by name dropped an entire production package while leaving its
@@ -1110,7 +1110,7 @@ def test_detect_keeps_coverage_code_namespace(tmp_path):
 
 
 def test_collect_files_keeps_coverage_code_namespace(tmp_path):
-    """#2339 as reported: collect_files returned [] for a real coverage package,
+    """As reported: collect_files returned [] for a real coverage package,
     both when it is the walk target and when it is reached through the repo root.
     A genuine report dir alongside it must still be skipped."""
     from pilothify.extract import collect_files
@@ -1184,7 +1184,7 @@ def test_detect_skips_snapshots_dir(tmp_path):
 
 
 def test_detect_keeps_snapshots_code_namespace(tmp_path):
-    """#1666: a bare snapshots/ dir with no .snap files is a legit code namespace
+    """A bare snapshots/ dir with no .snap files is a legit code namespace
     (e.g. Rails app/services/snapshots/) and must NOT be pruned as a JS artefact."""
     svc = tmp_path / "app" / "services" / "snapshots"
     svc.mkdir(parents=True)
@@ -1210,7 +1210,7 @@ def test_detect_skips_storybook_static_dir(tmp_path):
     assert any("Button.tsx" in f for f in all_files)
 
 
-# --- #873: dot dirs allowed, framework caches blocked ---
+# --- dot dirs allowed, framework caches blocked ---
 
 def test_detect_allows_github_dir(tmp_path):
     """Files inside .github/ (workflows etc.) are now indexed."""
@@ -1291,7 +1291,7 @@ def test_detect_skips_pilothify_own_cache(tmp_path):
     assert any("app.py" in f for f in all_files)
 
 
-# --- #882: gitignore parent-exclusion rule for ! re-includes ---
+# --- gitignore parent-exclusion rule for ! re-includes ---
 
 def test_anchored_root_wildcard_negation_reincludes_subtree(tmp_path):
     """`/*` stays at the root, so `!/src/` makes the subtree walkable."""
@@ -1623,7 +1623,7 @@ def test_negation_does_not_disable_directory_pruning(tmp_path, monkeypatch):
     assert not any("junk.py" in p for p in all_files)
 
 
-# Regression tests for #1087 - anchored patterns must not match basename deep in tree
+# anchored patterns must not match basename deep in tree
 
 def test_anchored_dir_not_matched_at_depth(tmp_path):
     """/inbox/ must not match src/inbox/ — only inbox/ at the anchor root."""
@@ -1762,7 +1762,7 @@ def test_detect_preserves_unrelated_parent_ignores_inside_scan_root(tmp_path):
     assert "lib.js" not in file_names
 
 
-# Tests for #1235 - memoise _is_ignored/_eval results via a per-detect() cache
+# memoise _is_ignored/_eval results via a per-detect() cache
 
 def test_is_ignored_cache_matches_uncached_results(tmp_path):
     """A shared _cache must not change _is_ignored results, including negation.
@@ -2045,7 +2045,7 @@ def test_string_matcher_preserves_pattern_forms(tmp_path):
     assert not _is_ignored(tmp_path / "sub", tmp_path, patterns)
 
 
-# Regression tests for #920 - sensitive pattern misses underscore-prefixed names
+# sensitive pattern misses underscore-prefixed names
 def test_sensitive_flags_api_token_txt():
     assert _is_sensitive(Path("api_token.txt"))
 
@@ -2069,13 +2069,13 @@ def test_sensitive_does_not_flag_passwords_py():
 
 
 def test_sensitive_does_not_flag_ruby_code_modules():
-    # #1666 exact cases: Rails source modules with keyword-ish names must survive.
+    # exact cases: Rails source modules with keyword-ish names must survive.
     assert not _is_sensitive(Path("app/models/device_token.rb"))
     assert not _is_sensitive(Path("app/controllers/api/v1/passwords_controller.rb"))
 
 
 def test_sensitive_still_flags_data_secret_stores():
-    # #1666 guard: the exemption is ONLY for real source code, not data/config
+    # guard: the exemption is ONLY for real source code, not data/config
     # formats — credentials.json / oauth_token.json / secrets.yaml are the secret
     # stores Stage 3 must keep catching (even though .json routes through CODE).
     assert _is_sensitive(Path("credentials.json"))
@@ -2116,7 +2116,7 @@ def test_sensitive_token_config_yaml():
     assert _is_sensitive(Path("token_config.yaml"))
 
 
-# ── #1943: Stage 1 dir check gets the same source carve-out as Stage 3 ──
+# ── Stage 1 dir check gets the same source carve-out as Stage 3 ──
 # secrets/ and credentials/ are as often real source packages (Go
 # internal/secrets, a credentials/ service module) as credential stores.
 # Genuine programming-language source beneath them must be graphed; data and
@@ -2125,12 +2125,12 @@ def test_sensitive_token_config_yaml():
 # dropping everything with no carve-out.
 
 def test_sensitive_does_not_flag_source_under_secrets_dir():
-    # #1943 exact cases: real source under ambiguous dir names survives.
+    # exact cases: real source under ambiguous dir names survives.
     assert not _is_sensitive(Path("internal/secrets/vault.go"))
     assert not _is_sensitive(Path("app/services/credentials/manager.py"))
 
 def test_sensitive_still_flags_data_under_secrets_dir():
-    # #1943 guard: the carve-out is ONLY for real source — data/config files
+    # guard: the carve-out is ONLY for real source — data/config files
     # under ambiguous dirs remain flagged, whatever their nesting depth.
     assert _is_sensitive(Path("secrets/db.json"))
     assert _is_sensitive(Path(".secrets/token.yaml"))
@@ -2158,7 +2158,7 @@ def test_sensitive_dir_carveout_does_not_bypass_name_screens():
 
 
 def test_sensitive_dir_carveout_still_drops_tfvars_values_store():
-    # #1943 follow-up: genuine source under secrets/ is rescued, but .tfvars is
+    # follow-up: genuine source under secrets/ is rescued, but .tfvars is
     # Terraform's canonical values store (real secrets), not source — it stays
     # dropped, while the real code file beside it is kept.
     assert _is_sensitive(Path("secrets/prod.tfvars"))
@@ -2194,7 +2194,7 @@ def test_sensitive_flags_plural_tokens_txt():
     assert _is_sensitive(Path("tokens.txt"))
 
 
-# ── Issue #933: failed-chunk files must not be frozen in manifest ─────────────
+# ──: failed-chunk files must not be frozen in manifest ─────────────
 
 def test_save_manifest_skips_semantic_hash_for_files_without_cache(tmp_path):
     """Files in failed chunks have no semantic cache entry; save_manifest must
@@ -2231,11 +2231,11 @@ def test_save_manifest_skips_semantic_hash_for_files_without_cache(tmp_path):
 
 
 def test_save_manifest_clear_semantic_erases_stale_hash_for_omitted_file(tmp_path):
-    """#1948: a file stamped in an earlier run, then omitted from ``files`` on
+    """A file stamped in an earlier run, then omitted from ``files`` on
     a later run (LLM dropped its chunk retry), must not keep surviving
     with its stale semantic_hash from the prior run — the seed loop copies
     the on-disk row verbatim otherwise, and detect_incremental(kind='semantic')
-    reports it unchanged, silently defeating the #1890 retry promise."""
+    reports it unchanged, silently defeating the retry promise."""
     import json
 
     doc = tmp_path / "docs" / "doc.md"
@@ -2268,7 +2268,7 @@ def test_save_manifest_clear_semantic_erases_stale_hash_for_omitted_file(tmp_pat
 
 
 def test_save_manifest_clear_ast_blanks_both_hashes_for_failed_extra(tmp_path):
-    """#2543: AST failure (missing optional extra) must blank both hashes so
+    """AST failure (missing optional extra) must blank both hashes so
     the next extract re-queues the file without deleting pilothify-out/."""
     import json
 
@@ -2324,7 +2324,7 @@ def test_save_manifest_without_filter_unchanged_for_code(tmp_path):
     manifest = json.loads(Path(manifest_path).read_text())
     assert str(py) in manifest
     assert manifest[str(py)]["ast_hash"] != ""
-# Regression tests for #945 - .gitignore fallback when no .pilothifyignore exists
+# .gitignore fallback when no .pilothifyignore exists
 
 def test_gitignore_fallback_when_no_pilothifyignore(tmp_path):
     """When no .pilothifyignore exists, .gitignore patterns are honored."""
@@ -2377,7 +2377,7 @@ def test_pilothifyignore_negation_overrides_gitignore(tmp_path):
     assert not any("main.py" in f for f in code)  # still excluded
 
 
-# Regression tests for #947 - .worktrees/ skipped and --exclude flag
+# .worktrees/ skipped and --exclude flag
 
 def test_detect_skips_worktrees_dir(tmp_path):
     """Files inside .worktrees/ are never indexed."""
@@ -2405,7 +2405,7 @@ def test_detect_skips_nested_worktrees_dir(tmp_path):
     assert not any("worktrees" in f for f in code)
 
 
-# Regression tests for #4057 - pilothify's own installed skill folder is not project content
+# pilothify's own installed skill folder is not project content
 
 def _all_detected(result) -> list[str]:
     return as_posix_list(f for files in result["files"].values() for f in files)
@@ -2482,7 +2482,7 @@ def test_detect_keeps_skills_pilothify_source_layouts(tmp_path):
 
 # Files pilothify only adds its own section or entry to. They belong to the
 # user, so they stay in the corpus (how to treat pilothify's section in the
-# instruction files is an open question on #4057).
+# instruction files is an open question).
 _USER_FILES_PILOTHIFY_EDITS = {
     "AGENTS.md", "CLAUDE.md", ".claude/CLAUDE.md", "GEMINI.md", "CODEBUDDY.md",
     ".github/copilot-instructions.md",
@@ -2903,7 +2903,7 @@ def test_shebang_interpreter_env_vs_assignment_before_interpreter(tmp_path):
     assert classify_file(script) == FileType.CODE
 
 
-# --- #777: portable manifest paths ------------------------------------------
+# --- portable manifest paths ------------------------------------------
 # When ``root`` is supplied, the on-disk manifest stores forward-slash
 # relative keys so a committed ``pilothify-out/`` round-trips across machines
 # and CI runners. In-memory the keys are still absolute, so internal callers
@@ -2989,7 +2989,7 @@ def test_load_manifest_passes_through_legacy_absolute_keys(tmp_path):
 
 
 def test_load_manifest_prefers_the_more_recently_seen_duplicate(tmp_path):
-    """#1964: a manifest written across a mix of call sites — some passing
+    """A manifest written across a mix of call sites — some passing
     root (relative keys), some not (an outdated installed skill runbook,
     for one) — can end up with both an absolute and a relative key for the
     same file, each carrying different data. load_manifest must keep
@@ -3030,7 +3030,7 @@ def test_load_manifest_prefers_the_more_recently_seen_duplicate(tmp_path):
 
 
 def test_load_manifest_collapses_a_relative_key_with_a_dot_dot_segment(tmp_path):
-    """Review finding on #1964: _to_absolute_from_storage joined a relative
+    """Review finding: _to_absolute_from_storage joined a relative
     key onto the resolved root with a plain Path '/' , which never collapses
     a '..' segment the way .resolve() does. A relative key like
     'sub/../foo.py' (the kind of format mismatch this function exists to
@@ -3059,7 +3059,7 @@ def test_load_manifest_collapses_a_relative_key_with_a_dot_dot_segment(tmp_path)
 
 
 def test_to_absolute_from_storage_recognizes_a_foreign_platform_absolute_key(tmp_path):
-    """Review finding on #1964: Path.is_absolute() only recognizes the
+    """Review finding: Path.is_absolute() only recognizes the
     CURRENT platform's own syntax, so a manifest genuinely moved between
     platforms (this module's own stated scope) could carry a key like
     'C:/Users/x/foo.py' or '\\\\server\\share\\foo.py' loaded on POSIX, or
@@ -3084,7 +3084,7 @@ def test_to_absolute_from_storage_recognizes_a_foreign_platform_absolute_key(tmp
 
 
 def test_to_absolute_from_storage_keeps_a_foreign_key_in_its_own_syntax(tmp_path):
-    """Review finding on #1964: a foreign-platform absolute key went through
+    """Review finding: a foreign-platform absolute key went through
     os.path.normpath, which applies the CURRENT platform's rules -- on
     Windows '/home/u/foo.py' became '\\\\home\\\\u\\\\foo.py', which POSIX
     cannot read back. Dot segments must still collapse, but under the
@@ -3100,7 +3100,7 @@ def test_to_absolute_from_storage_keeps_a_foreign_key_in_its_own_syntax(tmp_path
 
 
 def test_save_manifest_relativize_step_collapses_seeded_duplicates(tmp_path, monkeypatch):
-    """#1964: the same collapse must happen on the WRITE side too. If the
+    """The same collapse must happen on the WRITE side too. If the
     seeded rows hold two keys for a file untouched by this save that
     relativize to the same stored key, the relativize step must not silently
     keep the stale one just because it happens to iterate last.
@@ -3219,7 +3219,7 @@ def _rewrite_manifest_keys_nfd(manifest_path):
 
 
 def test_manifest_nfc_keys_survive_macos_path_forms(tmp_path):
-    """#2221 (portable/relative-key manifest): a manifest whose keys were
+    """(portable/relative-key manifest): a manifest whose keys were
     written in NFD (macOS os.walk form) must still match an NFC scan, so
     --update reports nothing new/changed/deleted instead of re-extracting
     the whole corpus.
@@ -3260,7 +3260,7 @@ def test_manifest_nfc_keys_survive_macos_path_forms(tmp_path):
 
 
 def test_manifest_nfc_keys_legacy_absolute(tmp_path):
-    """#2221 exact repro: legacy manifest saved WITHOUT root (absolute keys),
+    """Exact repro: legacy manifest saved WITHOUT root (absolute keys),
     then rewritten to NFD. Before the load_manifest/detect_incremental NFC
     normalization, every file looked simultaneously new AND deleted on
     --update.
@@ -3372,7 +3372,7 @@ def test_convert_office_file_does_not_rewrite_existing_sidecar(tmp_path, monkeyp
 
 
 def test_convert_office_file_sidecar_name_stable_across_checkouts(tmp_path, monkeypatch):
-    """#2059: the sidecar name must depend on the scan-root-RELATIVE path, not the
+    """The sidecar name must depend on the scan-root-RELATIVE path, not the
     absolute checkout location, so the same tracked file in two clones/worktrees
     produces the same sidecar name (no unbounded duplicates when pilothify-out/ is
     committed). Also verifies the no-root fallback matches the explicit form."""
@@ -3428,7 +3428,7 @@ def test_convert_office_file_outside_root_falls_back(tmp_path, monkeypatch):
 
 
 def test_detect_office_conversion_respects_cache_root(tmp_path, monkeypatch):
-    """#2787: detect() with cache_root must write converted sidecars under
+    """detect() with cache_root must write converted sidecars under
     cache_root/PILOTHIFY_OUT/converted, leaving the scanned corpus untouched, while
     keeping the sidecar filename hash anchored to the scan root."""
     monkeypatch.setattr(detect_mod, "docx_to_markdown", lambda p: "# Spec\nConverted specification text.")
@@ -3471,7 +3471,7 @@ def test_detect_office_conversion_respects_cache_root(tmp_path, monkeypatch):
 
 
 def test_detect_incremental_respects_cache_root(tmp_path, monkeypatch):
-    """#3847: detect_incremental had no cache_root parameter at all, unlike
+    """detect_incremental had no cache_root parameter at all, unlike
     detect(), so an incremental extract run with a --out destination outside
     the scan root fell back to anchoring the word-count stat index at the
     scan root itself — leaking pilothify-out/cache/stat-index.json into the
@@ -3506,7 +3506,7 @@ def test_detect_incremental_respects_cache_root(tmp_path, monkeypatch):
 
 
 def test_detect_keeps_env_source_dirs(tmp_path):
-    """#2058: a real source directory named env/ or *_env/ with no virtualenv
+    """A real source directory named env/ or *_env/ with no virtualenv
     markers must be indexed, not silently pruned as a false-positive venv."""
     src_env = tmp_path / "src_env"
     (src_env / "env").mkdir(parents=True)
@@ -3524,7 +3524,7 @@ def test_detect_keeps_env_source_dirs(tmp_path):
 
 
 def test_detect_still_prunes_real_env_venv(tmp_path):
-    """#2058: an env/ dir that IS a real virtualenv (has markers) is still pruned,
+    """An env/ dir that IS a real virtualenv (has markers) is still pruned,
     and the pruned dir is recorded in the traceable pruned_noise_dirs bucket."""
     venv = tmp_path / "env"
     (venv / "lib").mkdir(parents=True)
@@ -3542,7 +3542,7 @@ def test_detect_still_prunes_real_env_venv(tmp_path):
 
 
 def test_detect_prunes_venv_names_without_markers(tmp_path):
-    """#2058 must not loosen the unambiguous names: venv/.venv/*_venv are still
+    """Must not loosen the unambiguous names: venv/.venv/*_venv are still
     pruned by name alone (no markers needed)."""
     for name in ("venv", ".venv", "my_venv"):
         d = tmp_path / name
@@ -3572,7 +3572,7 @@ def test_detect_prunes_venv_names_without_markers(tmp_path):
 def test_nested_pilothify_out_prunes_only_configured_path(
     tmp_path, configured_out, absolute, symlink_target
 ):
-    """#2273: a nested output basename must not prune same-named source dirs."""
+    """A nested output basename must not prune same-named source dirs."""
     import json
     import subprocess
     import sys
@@ -3693,7 +3693,7 @@ def test_unclassified_warning_silent_under_the_fraction_threshold(tmp_path):
 
 
 def test_pilothifyinclude_is_inert_and_not_unclassified(tmp_path, capsys):
-    """#2112: .pilothifyinclude support was removed (dead since).
+    """.pilothifyinclude support was removed (dead for several releases).
 
     A leftover .pilothifyinclude must not error, must not surface in the
     unclassified list, and must not change which real files are indexed.
@@ -3766,7 +3766,7 @@ def test_nested_gitignore_star_does_not_ignore_outside_its_dir(tmp_path):
     """A nested .gitignore containing a bare `*` (auto-written by e.g. the
     hypothesis library into .hypothesis/) must ignore ONLY that directory's
     contents — matching it against root-relative paths ignored the entire
-    corpus (detect() returned 0 files on a real repo). Regression for #1873."""
+    corpus (detect() returned 0 files on a real repo). Regression."""
     (tmp_path / "README.md").write_text("# hello")
     (tmp_path / "main.py").write_text("x = 1")
     hyp = tmp_path / ".hypothesis"
@@ -4211,10 +4211,10 @@ def test_detect_incremental_exclusion_stable_across_runs(tmp_path):
     assert inc2["excluded_files"] == []
 
 
-# ── #3785: Multi-directory manifest scoping and out-of-root deletion filter ──
+# ── Multi-directory manifest scoping and out-of-root deletion filter ──
 
 def test_detect_incremental_subfolder_ignores_out_of_root_manifest_entries(tmp_path):
-    """#3785: detect_incremental() on a subfolder must ignore manifest entries
+    """detect_incremental() on a subfolder must ignore manifest entries
     belonging to other subdirectories or parent directories, neither reporting
     them as deleted nor as excluded."""
     workspace = tmp_path / "workspace"
@@ -4241,7 +4241,7 @@ def test_detect_incremental_subfolder_ignores_out_of_root_manifest_entries(tmp_p
 
 
 def test_detect_incremental_cross_subfolder_shared_manifest(tmp_path):
-    """#3785: Sequential runs on distinct subfolders against a shared manifest
+    """Sequential runs on distinct subfolders against a shared manifest
     must preserve each other's entries so neither run clobbers the other or
     reports false deletions."""
     workspace = tmp_path / "workspace"
@@ -4272,10 +4272,10 @@ def test_detect_incremental_cross_subfolder_shared_manifest(tmp_path):
     assert inc_b2["new_files"]["code"] == []
 
 
-# ── #2838: manifest seen timestamps preserved for unchanged entries ──
+# ── manifest seen timestamps preserved for unchanged entries ──
 
 def test_save_manifest_unchanged_file_preserves_seen(tmp_path):
-    """#2838: save_manifest preserves existing seen timestamp for unchanged entries."""
+    """save_manifest preserves existing seen timestamp for unchanged entries."""
     import json
     a = tmp_path / "a.py"
     a.write_text("x = 1\n", encoding="utf-8")
@@ -4295,7 +4295,7 @@ def test_save_manifest_unchanged_file_preserves_seen(tmp_path):
 
 
 def test_save_manifest_changed_file_updates_seen(tmp_path):
-    """#2838: save_manifest assigns a new seen timestamp when file content changes."""
+    """save_manifest assigns a new seen timestamp when file content changes."""
     import json
     import time
     a = tmp_path / "a.py"
@@ -4317,7 +4317,7 @@ def test_save_manifest_changed_file_updates_seen(tmp_path):
 
 
 def test_save_manifest_noop_skips_disk_write(tmp_path):
-    """#2838: save_manifest does not rewrite manifest.json when payload is identical."""
+    """save_manifest does not rewrite manifest.json when payload is identical."""
     a = tmp_path / "a.py"
     a.write_text("x = 1\n", encoding="utf-8")
     manifest_path = Path(tmp_path / "pilothify-out" / "manifest.json")
@@ -4335,7 +4335,7 @@ def test_save_manifest_noop_skips_disk_write(tmp_path):
 
 
 def test_save_manifest_ast_kind_noop_then_change(tmp_path):
-    """#2838's literal path: `pilothify update` calls save_manifest with kind='ast'.
+    """the literal path: `pilothify update` calls save_manifest with kind='ast'.
     A no-op re-run must leave the manifest byte-identical; a real edit must update it."""
     import json
     a = tmp_path / "a.py"
@@ -4372,7 +4372,7 @@ def test_save_manifest_corrupt_existing_manifest_still_writes(tmp_path):
     assert "a.py" in raw and isinstance(raw["a.py"]["seen"], (int, float))
 
 
-# ── #2106: sensitive-filter over-match (prose/source rescued, real secrets kept) ──
+# ── sensitive-filter over-match (prose/source rescued, real secrets kept) ──
 
 @pytest.mark.parametrize("path", [
     "wiki/privacy-tokens.md",          # reporter's own hub node
@@ -4395,8 +4395,8 @@ def test_sensitive_filter_indexes_topic_prose_and_source(path):
     ".env", "id_rsa", "credentials.json", "server.pem", "certs/server.key",
     "secrets.md", "passwords.md", "token.md", "token.txt", "api_token.json",
     "service-account.json",                # a downloaded GCP key file
-    ".npmrc", ".pypirc", "secring.gpg", ".git-credentials",   # #2106 newly-caught
-    "Secrets/creds.json", "SECRETS/db.json", "ID_RSA",        # #2106 case variants
+    ".npmrc", ".pypirc", "secring.gpg", ".git-credentials",   # newly-caught
+    "Secrets/creds.json", "SECRETS/db.json", "ID_RSA",        # case variants
     "secrets/prod.tfvars", "credentials/id_rsa",
 ])
 def test_sensitive_filter_still_excludes_real_secrets(path):
@@ -4441,12 +4441,12 @@ def test_sensitive_bare_plural_tokens_still_flagged_outside_prose():
 def test_sensitive_design_token_source_files_indexed(path):
     """Genuine design-token source files (.dart/.ts) are graphable source and
     exempt from the generic-keyword drop regardless of the bare/plural rules
-    above — they were the headline repro in #3527."""
+    above — they were the headline repro."""
     from pilothify.detect import _is_sensitive
     assert not _is_sensitive(Path(path))
 
 
-# ── #2232 / #2184: committed dotenv templates (.env.example etc.) are graphable ──
+# ── committed dotenv templates (.env.example etc.) are graphable ──
 
 @pytest.mark.parametrize("path", [
     ".env.example",

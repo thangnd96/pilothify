@@ -216,7 +216,7 @@ def _imports(result: dict, name: str) -> list[str]:
 
 
 def test_a_use_lands_on_the_declaration_without_an_annotation(tmp_path: Path):
-    """#4439: the import reached `Invoice` only when a type annotation left a
+    """The import reached `Invoice` only when a type annotation left a
     sourceless node for the rewire. Constructing the type left the edge on a
     bare `invoice`, which build then minted as an external stub tied with it."""
     result = _extract(tmp_path, {
@@ -245,7 +245,7 @@ def test_a_use_from_another_crate_does_not_land_on_a_same_named_declaration(tmp_
     assert _imports(result, "user.rs") == ["command", "file", "io", "serialize"]
 
 
-# --- #4564: a `use` rooted at a child mod declared in the same scope ---
+# --- a `use` rooted at a child mod declared in the same scope ---
 
 _CHILD = {"src/lib.rs": "pub mod model;\n", "src/model/item.rs": "pub struct Invoice(pub u64);\n"}
 
@@ -262,7 +262,7 @@ def _decl(result: dict, label: str, suffix: str) -> str:
     "pub mod item;\npub use item::{self as items, Invoice};\n",     # `self` needs a valid form
 ], ids=["plain", "use_first", "pub_crate", "rename", "self_alias_group"])
 def test_a_use_rooted_at_a_child_mod_lands_on_the_declaration(tmp_path: Path, model: str):
-    """#4564: `item::Invoice` next to `mod item;` named no node for the rewire, so the
+    """`item::Invoice` next to `mod item;` named no node for the rewire, so the
     edge dangled on a bare `invoice` that build then minted as an external stub."""
     result = _extract(tmp_path, {**_CHILD, "src/model.rs": model})
     imports = _imports(result, "model.rs")
@@ -271,7 +271,7 @@ def test_a_use_rooted_at_a_child_mod_lands_on_the_declaration(tmp_path: Path, mo
 
 
 def test_the_issue_repro_builds_without_an_external_stub(tmp_path: Path):
-    """The symptom of #4564, end to end: build minted an `external` stub `invoice`
+    """The symptom of that fix, end to end: build minted an `external` stub `invoice`
     that tied with the declaration in `affected` and `explain`."""
     _write(tmp_path, {**_CHILD, "src/model.rs": "mod item;\npub use item::Invoice;\n"})
     graph = _build(tmp_path)

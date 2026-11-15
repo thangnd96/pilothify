@@ -1,4 +1,4 @@
-"""Regression tests for issue #1095: TypeScript inheritance capture.
+"""Regression tests: TypeScript inheritance capture.
 
 Two gaps on v0.8.26:
   1. `interface A extends B` produced no `inherits` edge (walker only looked at

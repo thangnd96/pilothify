@@ -1,6 +1,6 @@
 """`definition_file` is portable, like its sibling `source_file`.
 
-The #2990 decl/def merge stamps `definition_file` from the implementation's
+The decl/def merge stamps `definition_file` from the implementation's
 then-absolute `source_file` — and nothing ever relativized it. graph.json
 shipped `"source_file": "src/Foo.h"` beside
 `"definition_file": "/home/ci/build/.../src/Foo.cpp"`: a path no other

@@ -13,7 +13,7 @@ def _inline_links(text):
     URLs. The target is yielded VERBATIM.
 
     This used to `urllib.parse.unquote` it, which is why
-    `test_wiki_links_resolve_to_real_files` passed all the way through #2597:
+    `test_wiki_links_resolve_to_real_files` passed all the way through that bug:
     the emitted target was `_make_id%28%29.md` while the file on disk was
     `_make_id().md`, and decoding in the helper papered over exactly the
     mismatch the guard exists to catch. The link and the filename must be the
@@ -198,7 +198,7 @@ def test_community_article_truncation_notice(tmp_path):
     assert "and 5 more nodes" in article
 
 
-# Regression tests for #925 - cross-community links always empty when node attrs lack community
+# cross-community links always empty when node attrs lack community
 def test_cross_community_links_without_node_community_attrs(tmp_path):
     """Cross-community links must work even when nodes have no 'community' attribute."""
     G = nx.Graph()
@@ -226,7 +226,7 @@ def test_god_node_article_community_without_node_attr(tmp_path):
     assert "[Core Logic](Core_Logic.md)" in article
 
 
-# Regression tests for #936 - stale community node IDs crash to_wiki after dedup/re-extract
+# stale community node IDs crash to_wiki after dedup/re-extract
 
 def test_to_wiki_drops_stale_community_nodes(tmp_path):
     """Stale node IDs in communities dict are silently dropped without crash."""
@@ -559,7 +559,7 @@ def test_wiki_links_use_collision_suffixed_slug(tmp_path):
         assert (tmp_path / t).exists(), t  # ...and every target is a real file
 
 
-# Regression tests for #3032 / #3033 - two articles whose labels are *identical*
+# two articles whose labels are *identical*
 # (not merely case-variant, as above) each get their own file, so the index has
 # to link each row to the file that row's article was actually written to.
 
@@ -612,7 +612,7 @@ def test_index_links_same_labelled_god_nodes_to_own_articles(tmp_path):
 
 def test_index_links_every_article_written(tmp_path):
     """Every article `to_wiki` writes must be reachable from the index. This is
-    the general form of #3032/#3033: any row that resolves its target by label
+    the general form of that fix: any row that resolves its target by label
     rather than by the slug the article was written under leaves a real file
     with no way in."""
     G = nx.Graph()

@@ -101,7 +101,7 @@ def test_resolve_cross_file_raw_calls_skips_member_calls() -> None:
 
 def test_resolve_cross_file_raw_calls_skips_ambiguous_duplicate_labels() -> None:
     """Two genuine NON-test defs of the same name: the god-node guard must still
-    hold even with the #1553 tie-breakers, because neither the non-test filter
+    hold even with the tie-breakers, because neither the non-test filter
     nor path proximity yields a unique winner (stays closed)."""
     per_file = [
         {

@@ -65,7 +65,7 @@ def test_watched_extensions_includes_images():
     assert ".jpg" in _WATCHED_EXTENSIONS
 
 def test_watched_extensions_excludes_noise():
-    # .json is now indexed (bash/JSON extractors added in)
+    # .json is now indexed (bash/JSON extractors were added)
     assert ".json" in _WATCHED_EXTENSIONS
     assert ".sh" in _WATCHED_EXTENSIONS
     assert ".pyc" not in _WATCHED_EXTENSIONS
@@ -75,7 +75,7 @@ def test_watched_extensions_excludes_noise():
 # --- _batch_triggers_rebuild / _batch_needs_llm_flag: watch dispatch gating ---
 
 def test_batch_doc_only_deletion_triggers_rebuild(tmp_path):
-    """#2580: deleting ONLY doc files while `pilothify watch` runs must trigger
+    """Deleting ONLY doc files while `pilothify watch` runs must trigger
     an immediate full rebuild (eviction needs no LLM), not just the
     needs_update flag deferred to the next code event."""
     gone = tmp_path / "docs" / "x.md"
@@ -117,7 +117,7 @@ def test_batch_mixed_deletion_and_modified_doc(tmp_path):
     assert _batch_needs_llm_flag(batch) is True
 
 def test_doc_only_deletion_full_rebuild_evicts_md_nodes(tmp_path):
-    """End-to-end pin for #2580: the full rebuild the watcher now triggers on
+    """End-to-end pin: the full rebuild the watcher now triggers on
     a doc-only deletion actually evicts the deleted .md's nodes."""
     from pilothify.watch import _rebuild_code
 
@@ -142,7 +142,7 @@ def test_doc_only_deletion_full_rebuild_evicts_md_nodes(tmp_path):
 
 
 def test_post_merge_style_unscoped_rebuild_heals_a_resurrected_node(tmp_path):
-    """#2418: the pilothify merge driver union merges graph.json, which can
+    """The pilothify merge driver union merges graph.json, which can
     resurrect a node for a symbol that was deleted on one side of the merge.
     A rebuild SCOPED to an unrelated changed file (what the commit hook
     runs) must NOT heal it -- the resurrected symbol's own file was never
@@ -183,8 +183,8 @@ def test_post_merge_style_unscoped_rebuild_heals_a_resurrected_node(tmp_path):
 
 
 def test_rebuild_code_reports_unclassified_files(tmp_path, capsys):
-    """#3511: `pilothify extract` has surfaced files it saw but could not
-    classify (no supported extension/shebang) since #1692; the update/watch
+    """`pilothify extract` has surfaced files it saw but could not
+    classify (no supported extension/shebang) since that fix; the update/watch
     rebuild path never did, so a corpus mostly in an unsupported language
     (e.g. Lean, per the report) rebuilt "successfully" with those files
     silently absent and nothing said about it."""
@@ -202,7 +202,7 @@ def test_rebuild_code_reports_unclassified_files(tmp_path, capsys):
 
 
 def test_rebuild_code_warns_loudly_when_most_of_the_corpus_is_unclassified(tmp_path, capsys):
-    """#2942: a bare count reads as routine even when it is most of the
+    """A bare count reads as routine even when it is most of the
     corpus. The update/watch rebuild path must carry detect()'s louder
     warning through to its own console output, same as `pilothify extract`."""
     corpus = tmp_path / "corpus"
@@ -457,7 +457,7 @@ def test_rebuild_lock_non_blocking_still_yields_false_while_msvcrt_lock_is_conte
 
 
 def test_pilothify_root_preserves_relative_when_invoked_with_relative_path(tmp_path, monkeypatch):
-    """#777: ``.pilothify_root`` stores the user-supplied path (``.``), not the
+    """``.pilothify_root`` stores the user-supplied path (``.``), not the
     resolved absolute, so a committed ``pilothify-out/.pilothify_root`` is
     portable across clones and CI runners."""
     from pilothify.watch import _rebuild_code
@@ -478,10 +478,10 @@ def test_pilothify_root_preserves_relative_when_invoked_with_relative_path(tmp_p
 def test_pilothify_root_is_resolved_when_pilothify_out_is_shared_and_absolute(
     tmp_path, monkeypatch
 ):
-    """#3375: when PILOTHIFY_OUT is an absolute, shared location (the
-    multi worktree setup from #686), the same marker file is reachable from
+    """When PILOTHIFY_OUT is an absolute, shared location (the
+    multi worktree setup from that fix), the same marker file is reachable from
     any worktree's CWD, not just the one that wrote it. Preserving a raw
-    relative value there, as #777 does for the default, git portable case,
+    relative value there, as that fix does for the default, git portable case,
     would make the marker resolve against whichever worktree happens to read
     it later instead of the one that was actually scanned. It must be
     written as an absolute path in this case."""
@@ -507,7 +507,7 @@ def test_pilothify_root_still_preserves_relative_when_pilothify_out_is_relative(
     tmp_path, monkeypatch
 ):
     """Companion to the fix above: an ordinary, relative PILOTHIFY_OUT (the
-    default, no #686 shared output configured) must keep the #777 behaviour
+    default, no shared output configured) must keep the behaviour
     of preserving the caller supplied relative path, so this fix only
     changes the shared output case and does not regress the common one."""
     from pilothify.watch import _rebuild_code
@@ -527,7 +527,7 @@ def test_pilothify_root_still_preserves_relative_when_pilothify_out_is_relative(
 
 
 def test_rebuild_code_writes_community_name(tmp_path):
-    """#1808: `pilothify update` / _rebuild_code must forward community_labels to
+    """`pilothify update` / _rebuild_code must forward community_labels to
     to_json, so graph.json nodes carry a human-readable community_name (hub-derived
     for a code-only rebuild) — not just a numeric community id. Before the fix,
     _rebuild_code called to_json without community_labels, so the labels a
@@ -641,7 +641,7 @@ def test_rebuild_code_drops_labels_whose_community_changed(tmp_path):
 
 
 def test_rebuild_keeps_label_on_majority_overlap(tmp_path, monkeypatch):
-    """#2298: an update that adds one node to a community keeps the saved name
+    """An update that adds one node to a community keeps the saved name
     when the previous members are still a strict majority of the new set."""
     import json
     from pilothify.watch import _rebuild_code
@@ -700,7 +700,7 @@ def test_rebuild_keeps_label_on_majority_overlap(tmp_path, monkeypatch):
 
 
 def test_rebuild_code_keeps_hub_fallback_labels_out_of_the_tracked_file(tmp_path):
-    """#3334: a from-empty rebuild (a fresh clone, a new worktree, any CI job
+    """A from-empty rebuild (a fresh clone, a new worktree, any CI job
     with no prior pilothify-out/) names every community by its deterministic
     hub, but that name is not something anyone reviewed or asked to commit.
     Writing it into the same tracked file as genuinely curated names meant a
@@ -1004,9 +1004,9 @@ def test_html_recovery_succeeds_when_stale_marker_cleanup_fails(
 
 
 def test_update_rebuilds_with_nested_star_gitignore(tmp_path):
-    """#1880: `pilothify update` must not emit 0 nodes (and then refuse to
+    """`pilothify update` must not emit 0 nodes (and then refuse to
     overwrite) just because the source tree has a nested `.gitignore` with a
-    broad pattern. This was the 0.9.15 symptom of the #1847/#1873 subtree-scoping
+    broad pattern. This was the 0.9.15 symptom of the subtree-scoping
     bug: a nested bare `*` zeroed the re-scan, update built 0 nodes, and the
     shrink-guard refused. With scoping fixed the rebuild sees the real files."""
     import json
@@ -1035,9 +1035,9 @@ def test_update_rebuilds_with_nested_star_gitignore(tmp_path):
 
 
 def test_update_discovers_newly_added_files_and_dirs(tmp_path):
-    """#1837: after an initial build, a plain `pilothify update` (full re-scan, no
+    """After an initial build, a plain `pilothify update` (full re-scan, no
     change-list) must discover brand-new files AND new directories. The reported
-    silent no-op was the #1873 nested-gitignore scoping bug zeroing the re-scan;
+    silent no-op was the nested-gitignore scoping bug zeroing the re-scan;
     this pins the build -> add -> update -> discovered sequence the earlier test
     (single build) did not cover, with a nested `*` scratch dir as a guard."""
     import json
@@ -1067,7 +1067,7 @@ def test_update_discovers_newly_added_files_and_dirs(tmp_path):
 
 
 def test_rebuild_honors_persisted_excludes(tmp_path):
-    """#1886: `--exclude` recorded at extract time must survive into update/watch/
+    """`--exclude` recorded at extract time must survive into update/watch/
     hook rebuilds. Before the fix only the initial scan applied the excludes, so
     the first rebuild silently re-indexed the excluded paths. _rebuild_code now
     reads the persisted build config and re-applies them."""
@@ -1236,7 +1236,7 @@ def test_rebuild_code_deleted_cwd_uses_pilothify_repo_root(tmp_path, monkeypatch
 
 
 def test_rebuild_code_evicts_nodes_from_deleted_files(tmp_path):
-    """#1007: pilothify update (_rebuild_code with no changed_paths) must remove
+    """Pilothify update (_rebuild_code with no changed_paths) must remove
     nodes and edges from files deleted since the last run."""
     import json
     from pilothify.watch import _rebuild_code
@@ -1293,7 +1293,7 @@ def _add_unrelated_semantic_pair(graph_path):
 def test_rebuild_code_preserves_hyperedges_for_rebuilt_surviving_source(
     tmp_path, changed_paths
 ):
-    """#1755: AST-only updates must not drop semantic hyperedges whose members survive."""
+    """AST-only updates must not drop semantic hyperedges whose members survive."""
     from pilothify.watch import _rebuild_code
 
     corpus = tmp_path / "corpus"
@@ -1344,7 +1344,7 @@ def test_rebuild_code_preserves_hyperedges_for_rebuilt_surviving_source(
 def test_rebuild_code_preserves_semantic_edges_from_reextracted_doc(
     tmp_path, changed_paths
 ):
-    """#1865: AST-only updates must not evict semantic edges whose source_file
+    """AST-only updates must not evict semantic edges whose source_file
     is a re-extracted document; only that source's AST-tier edges are replaced."""
     from pilothify.watch import _rebuild_code
 
@@ -1545,7 +1545,7 @@ def test_rebuild_code_prunes_renamed_ast_backed_document(tmp_path):
 
 
 def test_rebuild_code_evicts_removed_symbol_from_surviving_file(tmp_path):
-    """#1116: pilothify update (_rebuild_code with no changed_paths) must prune a
+    """Pilothify update (_rebuild_code with no changed_paths) must prune a
     symbol removed from a file that still exists — and its inbound call edge —
     without dropping genuine semantic nodes that share the surviving file."""
     import json
@@ -1615,7 +1615,7 @@ def test_rebuild_code_evicts_removed_symbol_from_surviving_file(tmp_path):
 
 
 def test_rebuild_code_preupgrade_marker_less_node_one_cycle_lag(tmp_path):
-    """#1118 backward-compat: a graph.json built before #1116 has no `_origin`
+    """Backward-compat: a graph.json built before that fix has no `_origin`
     markers. On the first `pilothify update` after upgrading, a symbol removed
     from a surviving file is NOT pruned that cycle — its old node carries no
     marker, so the new drop-rule skips it. This is a deliberate one-cycle lag
@@ -1635,7 +1635,7 @@ def test_rebuild_code_preupgrade_marker_less_node_one_cycle_lag(tmp_path):
     def labels(d):
         return {n["label"] for n in d.get("nodes", [])}
 
-    # Simulate a pre-#1116 graph: strip every `_origin` marker, then inject a
+    # Simulate a older graph: strip every `_origin` marker, then inject a
     # stale AST node for a symbol no longer present in a.py's source — also
     # marker-less, exactly as a pre-upgrade graph would carry it.
     for n in data["nodes"]:
@@ -1697,7 +1697,7 @@ def _rebuild_lock_holder_for_test(out_dir, name, hold, q):
 
 @pytest.mark.skipif(sys.platform == "win32", reason="#4273 is a POSIX flock/unlink race")
 def test_rebuild_lock_unlink_does_not_let_a_third_caller_in_while_a_waiter_holds(tmp_path):
-    """#4273: flock() locks the open file's inode, not the path. Unlinking the
+    """flock() locks the open file's inode, not the path. Unlinking the
     path on release used to let a blocked waiter end up holding the lock on
     an orphaned inode while a later caller opened the (recreated) path fresh
     and acquired an unrelated, never-locked inode immediately — two holders
@@ -1737,7 +1737,7 @@ def test_rebuild_lock_unlink_does_not_let_a_third_caller_in_while_a_waiter_holds
 
 
 def test_rebuild_lock_blocks_concurrent_process(tmp_path):
-    """#3881: concurrent processes cannot acquire the rebuild lock simultaneously."""
+    """Concurrent processes cannot acquire the rebuild lock simultaneously."""
     import subprocess
     out = tmp_path / "pilothify-out"
     with _rebuild_lock(out) as outer:
@@ -1868,7 +1868,7 @@ def test_watch_handler_honors_pilothifyignore(tmp_path, monkeypatch):
 def test_watch_non_linux_handler_accepts_events_without_watched_entry(
     tmp_path, monkeypatch
 ):
-    """#5075: macOS and Windows keep the recursive schedule, so their handler
+    """macOS and Windows keep the recursive schedule, so their handler
     must accept file events even though the manual `watched` map is empty."""
     import threading
 
@@ -2012,7 +2012,7 @@ def test_check_shrink_allows_no_existing_data():
 
 
 def test_check_shrink_allows_shrink_within_rebuilt_sources(capsys):
-    """#1116: a symbol removed from a re-extracted file is a legitimate shrink —
+    """A symbol removed from a re-extracted file is a legitimate shrink —
     every lost node belongs to a rebuilt source, so the write proceeds (no --force)."""
     existing = {"nodes": [
         {"id": "a", "source_file": "m.py", "_origin": "ast"},
@@ -2107,7 +2107,7 @@ def test_check_shrink_allows_growth():
 
 
 def _masked_semantic_loss():
-    """#2229: AST growth plus a new sourceless stub hides one lost rationale id.
+    """AST growth plus a new sourceless stub hides one lost rationale id.
 
     The total rises (4 → 7). The semantic count stays at 2 because pathlib_Path
     fills the slot. src/app.ts is rebuilt and is not deleted, so a rebuilt-set
@@ -2155,7 +2155,7 @@ def _masked_semantic_loss():
 
 
 def test_check_shrink_refuses_lost_semantic_id_when_total_grows(capsys):
-    """#2229: a larger total must not write away a saved rationale id."""
+    """A larger total must not write away a saved rationale id."""
     saved, new = _masked_semantic_loss()
     assert len(new["nodes"]) > len(saved["nodes"])
     ok = _check_shrink(False, saved, new, rebuilt_sources={"src/app.ts"})
@@ -2312,7 +2312,7 @@ def test_rebuild_code_prunes_deleted_file_nodes(tmp_path):
 
 
 def test_rebuild_code_accepts_repo_relative_changed_path_for_subdir_root(tmp_path):
-    """#1348: git-hook paths are repo-root-relative even when the graph root is a subdir."""
+    """Git-hook paths are repo-root-relative even when the graph root is a subdir."""
     from pilothify.watch import _rebuild_code
 
     src = tmp_path / "src"
@@ -2564,7 +2564,7 @@ def test_rebuild_code_incremental_rename_preserves_symlink_source_path(tmp_path)
     assert "linked/second.py" in sources
 
 
-# --- #1059: pending-changes queue prevents commit drops under lock contention ---
+# --- pending-changes queue prevents commit drops under lock contention ---
 
 
 def test_queue_and_drain_pending_round_trip(tmp_path):
@@ -2618,7 +2618,7 @@ def test_queue_pending_noop_on_empty_list(tmp_path):
 
 
 def test_rebuild_code_queues_on_lock_contention(tmp_path, monkeypatch, capsys):
-    """#1059: when the rebuild lock is held, an incremental hook must queue
+    """When the rebuild lock is held, an incremental hook must queue
     its changed_paths to .pending_changes and print 'queued' instead of
     silently dropping the change set."""
     from pilothify.watch import _rebuild_code, _rebuild_lock, _PENDING_FILENAME
@@ -2652,7 +2652,7 @@ def test_rebuild_code_queues_on_lock_contention(tmp_path, monkeypatch, capsys):
 
 
 def test_rebuild_code_merges_pending_on_acquire(tmp_path, monkeypatch):
-    """#1059: the process that acquires the lock must drain .pending_changes
+    """The process that acquires the lock must drain .pending_changes
     and pass the merged change set to the inner rebuild call."""
     from pilothify import watch as watch_mod
 
@@ -2691,7 +2691,7 @@ def test_rebuild_code_merges_pending_on_acquire(tmp_path, monkeypatch):
 
 
 def test_rebuild_code_drains_late_arrivals(tmp_path, monkeypatch):
-    """#1059: after the primary rebuild, the lock-holder must loop and drain
+    """After the primary rebuild, the lock-holder must loop and drain
     any paths queued by hooks that arrived mid-rebuild."""
     from pilothify import watch as watch_mod
     from pilothify.watch import _rebuild_code as orig_rebuild
@@ -2728,7 +2728,7 @@ def test_rebuild_code_drains_late_arrivals(tmp_path, monkeypatch):
 
 
 def test_rebuild_code_full_corpus_skips_pending_queue(tmp_path, monkeypatch):
-    """#1059: changed_paths=None means a full-corpus rebuild — the queue
+    """changed_paths=None means a full-corpus rebuild — the queue
     must not be touched on the failure path because there is nothing
     incremental to preserve."""
     from pilothify import watch as watch_mod
@@ -2761,7 +2761,7 @@ def test_rebuild_code_full_corpus_skips_pending_queue(tmp_path, monkeypatch):
 
 
 def test_rebuild_code_full_request_queues_marker_on_contention(tmp_path, capsys):
-    """#4274: a full-corpus request that loses the lock must leave a
+    """A full-corpus request that loses the lock must leave a
     .pending_full marker instead of being dropped behind a 'queued' log."""
     from pilothify.watch import _rebuild_code, _rebuild_lock, _PENDING_FULL_FILENAME
 
@@ -2776,7 +2776,7 @@ def test_rebuild_code_full_request_queues_marker_on_contention(tmp_path, capsys)
 
 
 def test_rebuild_code_empty_change_set_does_not_claim_queued(tmp_path, capsys):
-    """#4274: 'changes queued' is printed only when something was queued."""
+    """'changes queued' is printed only when something was queued."""
     from pilothify.watch import _rebuild_code, _rebuild_lock, _PENDING_FILENAME
 
     out = tmp_path / "pilothify-out"
@@ -2790,7 +2790,7 @@ def test_rebuild_code_empty_change_set_does_not_claim_queued(tmp_path, capsys):
 
 
 def test_rebuild_code_holder_runs_queued_full_pass(tmp_path, monkeypatch):
-    """#4274: a full request queued while an incremental rebuild holds the
+    """A full request queued while an incremental rebuild holds the
     lock must make the holder run one more full pass before releasing."""
     from pilothify import watch as watch_mod
     from pilothify.watch import _rebuild_code as orig_rebuild
@@ -2815,7 +2815,7 @@ def test_rebuild_code_holder_runs_queued_full_pass(tmp_path, monkeypatch):
 
 
 def test_rebuild_code_full_pass_upgrades_from_queued_marker(tmp_path, monkeypatch):
-    """#4274: an incremental holder that finds a full marker already queued
+    """An incremental holder that finds a full marker already queued
     runs a full rebuild instead of its incremental one."""
     from pilothify import watch as watch_mod
     from pilothify.watch import _rebuild_code as orig_rebuild
@@ -2839,7 +2839,7 @@ def test_rebuild_code_full_pass_upgrades_from_queued_marker(tmp_path, monkeypatc
 
 
 def test_rebuild_code_full_rebuild_drains_late_arrivals(tmp_path, monkeypatch):
-    """#4274: incremental work queued after a full rebuild walked the corpus
+    """Incremental work queued after a full rebuild walked the corpus
     must be applied by that rebuild's holder before it releases the lock."""
     from pilothify import watch as watch_mod
     from pilothify.watch import _rebuild_code as orig_rebuild
@@ -2934,11 +2934,11 @@ def test_rebuild_code_still_evicts_when_excluded_file_is_also_deleted(tmp_path):
     assert "login()" in labels
 
 
-# ── #2495: `pilothify update` purges newly-ignored files that still exist ───────
+# ── `pilothify update` purges newly-ignored files that still exist ───────
 
 
 def test_update_prunes_newly_pilothifyignored_file(tmp_path, monkeypatch, capsys):
-    """#2495: a file added to .pilothifyignore while still on disk must be purged
+    """A file added to .pilothifyignore while still on disk must be purged
     from the graph by a full `pilothify update` — nodes, edges, and hyperedges —
     instead of being preserved forever by the fail-closed keep. The legitimate
     shrink passes without --force/PILOTHIFY_FORCE, unchanged in-corpus files stay
@@ -2996,7 +2996,7 @@ def test_update_prunes_newly_pilothifyignored_file(tmp_path, monkeypatch, capsys
 
 
 def test_update_still_prunes_deleted_file_with_ignore_rules_present(tmp_path):
-    """Regression guard for #2495: routing ignore-rule evidence through the
+    """Regression guard: routing ignore-rule evidence through the
     corpus sweep must not weaken plain deletion eviction while unrelated ignore
     rules exist."""
     from pilothify.watch import _rebuild_code
@@ -3021,7 +3021,7 @@ def test_update_still_prunes_deleted_file_with_ignore_rules_present(tmp_path):
 def test_update_keeps_alive_file_dropped_from_corpus_without_ignore_rule(
     tmp_path, monkeypatch, capsys
 ):
-    """#1795 retained under #2495: evicting an alive file now requires POSITIVE
+    """Retained: evicting an alive file now requires POSITIVE
     evidence — a live ignore rule matching it. A file that leaves the corpus for
     any other reason (filter regression, extractor loss) stays preserved, with
     the fail-closed message."""
@@ -3059,7 +3059,7 @@ def test_update_keeps_alive_file_dropped_from_corpus_without_ignore_rule(
 
 
 def test_update_evicts_semantic_nodes_from_newly_ignored_non_ast_source(tmp_path, capsys):
-    """#2495 extends #2051: a non-AST source (.txt) whose semantic nodes evict on
+    """Extends the eviction test: a non-AST source (.txt) whose semantic nodes evict on
     disk absence must also evict when the file is alive but newly matched by a
     .pilothifyignore rule."""
     from pilothify.watch import _rebuild_code
@@ -3095,8 +3095,8 @@ def test_update_evicts_semantic_nodes_from_newly_ignored_non_ast_source(tmp_path
 
 
 def test_gitignore_eviction_gated_on_full_rebuild(tmp_path, capsys):
-    """#2495 policy split: a .gitignore-only match is preserved fail-closed on an
-    incremental rebuild (#1795's motivating case — a deliberately-graphed
+    """Policy split: a .gitignore-only match is preserved fail-closed on an
+    incremental rebuild (the motivating case — a deliberately-graphed
     .gitignore'd tree survives the hook path), but an explicit full
     `pilothify update` honors it and purges the file."""
     from pilothify.watch import _rebuild_code
@@ -3135,7 +3135,7 @@ def test_gitignore_eviction_gated_on_full_rebuild(tmp_path, capsys):
 
 
 def test_pilothifyignore_eviction_applies_to_incremental_rebuilds(tmp_path, capsys):
-    """#2495 policy split, other half: a .pilothifyignore match is unambiguous
+    """Policy split, other half: a .pilothifyignore match is unambiguous
     graph-level intent and evicts on the incremental (hook) path too."""
     from pilothify.watch import _rebuild_code
 
@@ -3161,7 +3161,7 @@ def test_pilothifyignore_eviction_applies_to_incremental_rebuilds(tmp_path, caps
     assert "newly-ignored file(s)" in capsys.readouterr().out
 
 
-# --- #1915: semantic-backed docs must not be double-represented by the AST quick-scan ---
+# --- semantic-backed docs must not be double-represented by the AST quick-scan ---
 
 
 _SEMANTIC_GUIDE_IDS = {"guide_doc", "auth_flow", "session_model"}
@@ -3255,7 +3255,7 @@ def _seed_semantic_doc_graph_concept_only(corpus):
 
 
 def test_rebuild_code_semantic_doc_not_double_represented_on_full_rebuild(tmp_path):
-    """#1915: a full _rebuild_code must not AST-quick-scan a doc whose semantic
+    """A full _rebuild_code must not AST-quick-scan a doc whose semantic
     (LLM) nodes already represent it. Before the fix the quick-scan minted
     heading nodes ON TOP of the preserved semantic nodes, representing every
     doc twice (~4x bloated graph vs the CLI update path)."""
@@ -3281,7 +3281,7 @@ def test_rebuild_code_semantic_doc_not_double_represented_on_full_rebuild(tmp_pa
 def test_rebuild_code_concept_only_semantic_doc_not_double_represented_on_full_rebuild(
     tmp_path,
 ):
-    """#1954: a doc represented ONLY by concept/rationale nodes (no
+    """A doc represented ONLY by concept/rationale nodes (no
     file_type=="document" node) must also be recognized as semantic-backed
     and skipped by the AST quick-scan — not just docs with a "document" node."""
     from pilothify.watch import _rebuild_code
@@ -3311,7 +3311,7 @@ def test_rebuild_code_concept_only_semantic_doc_not_double_represented_on_full_r
 def test_rebuild_code_incremental_preserves_semantic_doc_nodes_and_edges(
     tmp_path, changed
 ):
-    """#1915: an incremental rebuild whose change set includes a semantic-backed
+    """An incremental rebuild whose change set includes a semantic-backed
     doc must not wipe the doc's semantic nodes or their edges — re-extraction
     owns only a source's AST tier (node-level mirror of 's edge rule)."""
     from pilothify.watch import _rebuild_code
@@ -3352,9 +3352,9 @@ def test_rebuild_code_incremental_preserves_semantic_doc_nodes_and_edges(
 def test_rebuild_code_incremental_preserves_concept_only_semantic_doc_nodes_and_edges(
     tmp_path, changed
 ):
-    """#1954: incremental analogue — a concept/rationale-only semantic doc
+    """Incremental analogue — a concept/rationale-only semantic doc
     must not lose its nodes/edges nor get AST-quick-scanned on an incremental
-    rebuild, mirroring the #1915 doc-node case above."""
+    rebuild, mirroring the doc-node case above."""
     from pilothify.watch import _rebuild_code
 
     corpus = tmp_path / "corpus"
@@ -3386,8 +3386,8 @@ def test_rebuild_code_incremental_preserves_concept_only_semantic_doc_nodes_and_
 
 
 def test_rebuild_code_quick_scans_doc_without_semantic_nodes(tmp_path):
-    """#09b33b7 guard: a doc with NO semantic layer still gets the AST
-    quick-scan so no-LLM corpora keep their heading structure — #1915's
+    """Guard: a doc with NO semantic layer still gets the AST
+    quick-scan so no-LLM corpora keep their heading structure — the
     semantic-supersedes-AST rule must not regress the fallback."""
     from pilothify.watch import _rebuild_code
 
@@ -3409,7 +3409,7 @@ def test_rebuild_code_quick_scans_doc_without_semantic_nodes(tmp_path):
 
 
 def test_rebuild_code_quick_scans_markdown_classified_as_paper(tmp_path):
-    """#4750: a .md that detect() classifies as a paper (arXiv id, "arxiv",
+    """A .md that detect() classifies as a paper (arXiv id, "arxiv",
     an Abstract heading) is still Markdown. The AST-only rebuild must
     quick-scan it like any other doc instead of giving it zero nodes, while a
     PDF paper (no AST extractor) stays out of the rebuild."""
@@ -3438,7 +3438,7 @@ def test_rebuild_code_quick_scans_markdown_classified_as_paper(tmp_path):
 
 @pytest.mark.parametrize("incremental", [False, True])
 def test_rebuild_code_does_not_quick_scan_semantic_backed_paper_markdown(tmp_path, incremental):
-    """#4750 x #1915: a paper-classified .md that already carries a semantic
+    """A paper-classified .md that already carries a semantic
     (LLM) layer must not get an AST heading layer on top once papers enter the
     quick-scan. Its semantic nodes stay the sole representation, on a full and
     on an incremental rebuild."""
@@ -3480,12 +3480,12 @@ def test_rebuild_code_does_not_quick_scan_semantic_backed_paper_markdown(tmp_pat
 
 
 def test_full_rebuild_preserves_semantic_backed_doc_ast_layer(tmp_path):
-    """#2333 (COEXIST): a doc that carries BOTH an AST heading layer and a
+    """(COEXIST): a doc that carries BOTH an AST heading layer and a
     semantic layer keeps both across a full rebuild. The doc is excluded from
     extract_targets (no re-quick-scan), so its AST nodes are NOT
     regenerated this run — the full-rebuild ownership rule must therefore not
     drop them (it owns only rebuilt sources, not everything in watch_root).
-    Supersedes the pre-COEXIST #1915 self-heal, which deleted the AST layer."""
+    Supersedes the pre-COEXIST self-heal, which deleted the AST layer."""
     from pilothify.watch import _rebuild_code
 
     corpus = tmp_path / "corpus"
@@ -3534,7 +3534,7 @@ def test_full_rebuild_preserves_semantic_backed_doc_ast_layer(tmp_path):
 
 
 def test_full_rebuild_regenerates_docs_with_legacy_unstamped_nodes(tmp_path):
-    """#2334: a legacy heading node without the _origin stamp (pre-0.9.16
+    """A legacy heading node without the _origin stamp (pre-0.9.16
     graph) must not fake a semantic layer — _is_ast_tier's shape fallback
     (source_location "L<n>") classifies it as AST, so the doc stays in
     extract_targets, is re-quick-scanned, and comes back fully re-stamped."""
@@ -3575,7 +3575,7 @@ def test_full_rebuild_regenerates_docs_with_legacy_unstamped_nodes(tmp_path):
 
 
 def test_full_rebuild_drops_stale_ast_for_reextracted_code(tmp_path):
-    """#1116 guard: tier-scoping the full-rebuild ownership rule must
+    """Guard: tier-scoping the full-rebuild ownership rule must
     not stop a genuinely re-extracted code file from shedding its stale AST
     nodes — a renamed function's old symbol node still disappears."""
     from pilothify.watch import _rebuild_code
@@ -3604,7 +3604,7 @@ def test_full_rebuild_drops_stale_ast_for_reextracted_code(tmp_path):
     )
 
 
-# ── #2014: code-typed semantic nodes count as a doc's semantic layer ───────────
+# ── code-typed semantic nodes count as a doc's semantic layer ───────────
 
 _CODE_ONLY_GUIDE_IDS = {"parse_config", "load_settings"}
 
@@ -3648,7 +3648,7 @@ def _seed_semantic_doc_graph_code_only(corpus):
 def test_rebuild_code_code_only_semantic_doc_not_double_represented_on_full_rebuild(
     tmp_path,
 ):
-    """#2014: a doc represented ONLY by code-typed semantic nodes (symbols
+    """A doc represented ONLY by code-typed semantic nodes (symbols
     surfaced from within it) must be recognized as semantic-backed and skipped
     by the AST quick-scan. Before the fix "code" was absent from the semantic
     file_type gate, so the doc was re-AST-scanned — minting heading nodes AND
@@ -3671,10 +3671,10 @@ def test_rebuild_code_code_only_semantic_doc_not_double_represented_on_full_rebu
     )
 
 
-# ── #2051: deleted non-AST sources (docs/papers/images) get evicted ────────────
+# ── deleted non-AST sources (docs/papers/images) get evicted ────────────
 
 def test_rebuild_code_evicts_semantic_nodes_from_deleted_non_ast_source(tmp_path):
-    """#2051: a full `pilothify update` must evict semantic nodes whose non-AST
+    """A full `pilothify update` must evict semantic nodes whose non-AST
     source file (a .txt/.pdf/.png with no code extractor) was deleted from disk.
     The corpus sweep used to skip every sourceless-of-extractor node, so those
     nodes survived forever and were served as authoritative long after the file
@@ -3714,12 +3714,12 @@ def test_rebuild_code_evicts_semantic_nodes_from_deleted_non_ast_source(tmp_path
 
 
 def test_rebuild_code_preserves_remote_source_across_repeated_updates(tmp_path):
-    """#2051 follow-up: a node whose source_file is a URL/virtual scheme
+    """Follow-up: a node whose source_file is a URL/virtual scheme
     (gdoc://, s3://, http://) must survive REPEATED `pilothify update`s. Path
     normalization on the write side collapses the double slash (`gdoc://x` ->
     `gdoc:/x`), so a literal `"://"` guard matched on the first update but missed
     on the second, dropping the node into the disk-absence eviction branch
-    (Path('gdoc:/x').exists() is False) — a data-loss regression from the #2051
+    (Path('gdoc:/x').exists() is False) — a data-loss regression from the
     disk-absence sweep. The scheme is now matched with a regex tolerant of the
     collapse."""
     from pilothify.watch import _rebuild_code, _is_remote_source
@@ -3754,10 +3754,10 @@ def test_rebuild_code_preserves_remote_source_across_repeated_updates(tmp_path):
         assert "remote_doc" in ids, f"remote-source node evicted on update #{i + 1} (#2051 follow-up)"
 
 
-# ── #2056: present-but-unextractable files in a change set are not deletions ───
+# ── present-but-unextractable files in a change set are not deletions ───
 
 def test_rebuild_code_incremental_preserves_present_non_ast_source(tmp_path):
-    """#2056: an incremental rebuild whose change set names a file that exists but
+    """An incremental rebuild whose change set names a file that exists but
     has no AST extractor (a doc/paper/image, or an excluded path) must NOT treat
     it as deleted. The old change-set loop routed any present-but-untracked file
     to _add_deleted_source, evicting its semantic nodes AND flipping
@@ -3790,7 +3790,7 @@ def test_rebuild_code_incremental_preserves_present_non_ast_source(tmp_path):
     )
 
 
-# --- #2251: fail-closed load of the existing graph ---
+# --- fail-closed load of the existing graph ---
 
 
 def _seed_graph_with_semantic_layer(corpus: Path) -> Path:
@@ -3825,7 +3825,7 @@ def _seed_graph_with_semantic_layer(corpus: Path) -> Path:
 def test_rebuild_refuses_overwrite_when_existing_graph_over_size_cap(
     tmp_path, monkeypatch, capsys
 ):
-    """#2251: an existing graph.json over PILOTHIFY_MAX_GRAPH_BYTES could not be
+    """An existing graph.json over PILOTHIFY_MAX_GRAPH_BYTES could not be
     READ, which is not license to overwrite it. The old code swallowed the cap
     ValueError, treated the baseline as empty, and collapsed the graph to
     code-only output."""
@@ -3851,7 +3851,7 @@ def test_rebuild_refuses_overwrite_when_existing_graph_over_size_cap(
 def test_rebuild_refuses_overwrite_when_existing_graph_corrupt(
     tmp_path, capsys, no_cluster
 ):
-    """#2251: unparseable graph.json (e.g. truncated by a crash) must fail the
+    """Unparseable graph.json (e.g. truncated by a crash) must fail the
     rebuild closed on both write paths, not be overwritten as if absent."""
     from pilothify.watch import _rebuild_code
 
@@ -3871,7 +3871,7 @@ def test_rebuild_refuses_overwrite_when_existing_graph_corrupt(
 
 
 def test_rebuild_force_does_not_clobber_unreadable_graph(tmp_path, capsys):
-    """#2251: --force means \"accept a shrink\", not \"overwrite a graph that
+    """--force means \"accept a shrink\", not \"overwrite a graph that
     could not be read\"."""
     from pilothify.watch import _rebuild_code
 
@@ -3889,7 +3889,7 @@ def test_rebuild_force_does_not_clobber_unreadable_graph(tmp_path, capsys):
 
 
 def test_rebuild_readable_graph_still_preserves_semantic_nodes(tmp_path):
-    """Happy-path regression for the #2251 fix: a valid existing graph under the
+    """Happy-path regression for the fix: a valid existing graph under the
     default cap still reconciles — the rebuild succeeds and the semantic layer
     survives an incremental code-only update."""
     from pilothify.watch import _rebuild_code
@@ -3911,10 +3911,10 @@ def test_rebuild_readable_graph_still_preserves_semantic_nodes(tmp_path):
     ), "semantic link must survive an incremental rebuild"
 
 
-# --- #2342: `pilothify update` rebuild must inherit the on-disk directed flag ---
+# --- `pilothify update` rebuild must inherit the on-disk directed flag ---
 
 def test_rebuild_code_inherits_directed_flag_clustered(tmp_path):
-    """#2342: the clustered `pilothify update` rebuild path built the graph via
+    """The clustered `pilothify update` rebuild path built the graph via
     build_from_json(result) with no directed= argument, so it always took the
     directed=False default and silently downgraded an existing directed graph.
     """
@@ -3963,7 +3963,7 @@ def test_rebuild_code_inherits_directed_flag_clustered(tmp_path):
 
 
 def test_rebuild_code_inherits_directed_flag_no_cluster(tmp_path):
-    """#2342, --no-cluster path: candidate_graph_data was built straight from the
+    """--no-cluster path: candidate_graph_data was built straight from the
     raw merged extraction (`result`), which never carries a directed key, so the
     written graph.json silently lost the flag on every no-cluster update."""
     from pilothify.watch import _rebuild_code
@@ -4020,7 +4020,7 @@ def test_rebuild_code_keeps_undirected_graph_undirected(tmp_path):
 
 def test_rebuild_code_fresh_build_defaults_undirected(tmp_path):
     """No existing graph at all (first build via _rebuild_code) must still
-    default to directed=False - #2342's fix only inherits, never invents True."""
+    default to directed=False - the fix only inherits, never invents True."""
     from pilothify.watch import _rebuild_code
 
     corpus = tmp_path / "corpus"
@@ -4034,7 +4034,7 @@ def test_rebuild_code_fresh_build_defaults_undirected(tmp_path):
 
 
 def test_incremental_rebuild_preserves_call_to_unchanged_typescript_target(tmp_path):
-    """#2406: rebuilding a changed caller retains its SHARED DIRECT calls into unchanged files.
+    """Rebuilding a changed caller retains its SHARED DIRECT calls into unchanged files.
 
     Scope here is the shared direct-call pass (a plain `shared()`); member calls
     and indirect_call are covered by the tests at the end of
@@ -4151,7 +4151,7 @@ export function run(): number {
     ), "removed call must not survive as a stale edge"
 
 
-# --- #2406 incremental shared-direct-call resolution helpers -----------------
+# --- incremental shared-direct-call resolution helpers -----------------
 
 def _2406_graph(corpus):
     import json
@@ -4202,7 +4202,7 @@ _2406_CALLER = (
 
 
 def test_incremental_rebuild_drops_call_when_import_is_removed(tmp_path):
-    """#2406: no import evidence => the persisted target must not be resolved."""
+    """No import evidence => the persisted target must not be resolved."""
     from pilothify.watch import _rebuild_code
 
     corpus = _2406_seed(tmp_path, _2406_CALLER)
@@ -4227,7 +4227,7 @@ def test_incremental_rebuild_drops_call_when_import_is_removed(tmp_path):
 
 
 def test_incremental_rebuild_uses_fresh_nodes_when_target_also_changed(tmp_path):
-    """#2406: a changed target's persisted symbols must never win over fresh ones."""
+    """A changed target's persisted symbols must never win over fresh ones."""
     from pilothify.watch import _rebuild_code
 
     corpus = _2406_seed(tmp_path, _2406_CALLER)
@@ -4259,7 +4259,7 @@ def test_incremental_rebuild_uses_fresh_nodes_when_target_also_changed(tmp_path)
 
 
 def test_incremental_rebuild_context_excludes_deleted_target(tmp_path):
-    """#2406: a deleted file cannot remain a resolver target."""
+    """A deleted file cannot remain a resolver target."""
     from pilothify.watch import _rebuild_code
 
     corpus = _2406_seed(tmp_path, _2406_CALLER)
@@ -4281,7 +4281,7 @@ def test_incremental_rebuild_context_excludes_deleted_target(tmp_path):
 
 
 def test_incremental_rebuild_does_not_reparse_unchanged_targets(tmp_path, monkeypatch):
-    """#2406 keeps the incremental contract: only changed files are extracted."""
+    """Keeps the incremental contract: only changed files are extracted."""
     import pilothify.extract as extract_mod
     from pilothify.watch import _rebuild_code
 
@@ -4305,7 +4305,7 @@ def test_incremental_rebuild_does_not_reparse_unchanged_targets(tmp_path, monkey
 
 
 def test_incremental_rebuild_matches_full_rebuild_and_does_not_duplicate(tmp_path):
-    """#2406: full/incremental parity for edges sourced by the changed file."""
+    """Full/incremental parity for edges sourced by the changed file."""
     from pilothify.watch import _rebuild_code
 
     corpus = _2406_seed(tmp_path, _2406_CALLER)
@@ -4327,7 +4327,7 @@ def test_incremental_rebuild_matches_full_rebuild_and_does_not_duplicate(tmp_pat
 
 
 def test_incremental_rebuild_preserves_python_call_to_unchanged_target(tmp_path):
-    """#2406 is language-agnostic: the shared DIRECT cross-file call pass carries it."""
+    """Is language-agnostic: the shared DIRECT cross-file call pass carries it."""
     from pilothify.watch import _rebuild_code
 
     corpus = tmp_path / "corpus"
@@ -4489,7 +4489,7 @@ def test_incremental_rust_generic_self_call_keeps_module_ambiguity(tmp_path):
     assert not has_call()
 
 
-# --- #3567: inherited Ruby calls into unchanged ancestry --------------------
+# --- inherited Ruby calls into unchanged ancestry --------------------
 
 
 def _3567_seed(tmp_path, *, singleton=False, grandparent=False):
@@ -4570,8 +4570,8 @@ def test_incremental_ruby_inherited_call_matches_full_build(
     assert incremental_target.get("source_file") == target_file
 
 
-# --- #2437 / #2438: member + indirect calls into unchanged files -------------
-# The #2406 resolution context now also carries the unchanged corpus's
+# --- member + indirect calls into unchanged files -------------
+# The resolution context now also carries the unchanged corpus's
 # contains/method edges (member-call resolvers) and the persisted
 # `_callable`/`_callable_class` markers (indirect_call guard), so both
 # edge families survive an incremental rebuild exactly like shared direct calls.
@@ -4624,7 +4624,7 @@ def _2438_indirects(graph):
 
 
 def test_incremental_rebuild_preserves_member_call_to_unchanged_target(tmp_path):
-    """#2437: a changed caller keeps its `service.ping()` edge into an unchanged file."""
+    """A changed caller keeps its `service.ping()` edge into an unchanged file."""
     from pilothify.watch import _rebuild_code
 
     corpus = _2437_seed(tmp_path)
@@ -4640,7 +4640,7 @@ def test_incremental_rebuild_preserves_member_call_to_unchanged_target(tmp_path)
 
 
 def test_incremental_rebuild_preserves_indirect_call_to_unchanged_target(tmp_path):
-    """#2438: the persisted `_callable` marker keeps `pool.submit(handler)` resolving."""
+    """The persisted `_callable` marker keeps `pool.submit(handler)` resolving."""
     from pilothify.watch import _rebuild_code
 
     corpus = _2438_seed(tmp_path)
@@ -4656,7 +4656,7 @@ def test_incremental_rebuild_preserves_indirect_call_to_unchanged_target(tmp_pat
 
 
 def test_incremental_rebuild_evicts_removed_member_call(tmp_path):
-    """#2437: removing the member call from the caller must remove the edge —
+    """Removing the member call from the caller must remove the edge —
     the fix regenerates edges from fresh raw_calls, it never preserves stale ones."""
     from pilothify.watch import _rebuild_code
 
@@ -4674,7 +4674,7 @@ def test_incremental_rebuild_evicts_removed_member_call(tmp_path):
 
 
 def test_incremental_rebuild_evicts_member_call_when_target_deleted(tmp_path):
-    """#2437: a deleted callee file must not resurrect through the context edges."""
+    """A deleted callee file must not resurrect through the context edges."""
     from pilothify.watch import _rebuild_code
 
     corpus = _2437_seed(tmp_path)
@@ -4695,7 +4695,7 @@ def test_incremental_rebuild_evicts_member_call_when_target_deleted(tmp_path):
 
 
 def test_incremental_rebuild_evicts_indirect_call_when_target_deleted(tmp_path):
-    """#2438: a deleted callback target must not resurrect through the context nodes."""
+    """A deleted callback target must not resurrect through the context nodes."""
     from pilothify.watch import _rebuild_code
 
     corpus = _2438_seed(tmp_path)
@@ -4716,7 +4716,7 @@ def test_incremental_rebuild_evicts_indirect_call_when_target_deleted(tmp_path):
 
 
 def test_incremental_rebuild_callable_guard_excludes_unchanged_data_symbol(tmp_path):
-    """#2438 keeps the #1566/#2137 guard: a same-named DATA symbol in an unchanged
+    """Keeps the guard: a same-named DATA symbol in an unchanged
     file (`handler = 1`) is not `_callable`, so `pool.submit(handler)` must emit no
     indirect_call on the full build or the incremental one."""
     from pilothify.watch import _rebuild_code
@@ -4733,7 +4733,7 @@ def test_incremental_rebuild_callable_guard_excludes_unchanged_data_symbol(tmp_p
 
 
 def test_incremental_rebuild_legacy_graph_without_callable_markers(tmp_path):
-    """#2438 degradation contract: a graph written before the `_callable` markers
+    """Degradation contract: a graph written before the `_callable` markers
     persisted must not crash the incremental rebuild — the guard fails closed (no
     indirect_call, pre-fix behavior) and the next full rebuild self-heals."""
     import json
@@ -4744,7 +4744,7 @@ def test_incremental_rebuild_legacy_graph_without_callable_markers(tmp_path):
     graph_path = corpus / "pilothify-out" / "graph.json"
     assert _2438_indirects(_2406_graph(corpus)), "indirect-call baseline missing"
 
-    # Simulate a pre-#2438 graph: strip the persisted callability markers.
+    # Simulate a older graph: strip the persisted callability markers.
     legacy = json.loads(graph_path.read_text(encoding="utf-8"))
     for node in legacy.get("nodes", []):
         node.pop("_callable", None)
@@ -4764,7 +4764,7 @@ def test_incremental_rebuild_legacy_graph_without_callable_markers(tmp_path):
 
 
 def test_incremental_member_call_parity_and_idempotency(tmp_path):
-    """#2437: repeated incremental rebuilds neither duplicate the member-call edge
+    """Repeated incremental rebuilds neither duplicate the member-call edge
     nor diverge from a from-scratch build of the same corpus."""
     from pilothify.watch import _rebuild_code
 
@@ -4784,7 +4784,7 @@ def test_incremental_member_call_parity_and_idempotency(tmp_path):
 
 
 def test_incremental_indirect_call_parity_and_idempotency(tmp_path):
-    """#2438: repeated incremental rebuilds neither duplicate the indirect_call edge
+    """Repeated incremental rebuilds neither duplicate the indirect_call edge
     nor diverge from a from-scratch build of the same corpus."""
     from pilothify.watch import _rebuild_code
 
@@ -4803,10 +4803,10 @@ def test_incremental_indirect_call_parity_and_idempotency(tmp_path):
     assert sorted(_2438_indirects(_2406_graph(fresh))) == sorted(incremental)
 
 
-# --- #2603: absolute .pilothify_root must not re-anchor cwd-relative sources ---
+# --- absolute .pilothify_root must not re-anchor cwd-relative sources ---
 
 def test_subfolder_root_marker_preserves_unchanged_nodes(tmp_path, monkeypatch):
-    """End-to-end pin for #2603: a graph built from the repo root scoped to a
+    """End-to-end pin: a graph built from the repo root scoped to a
     subfolder stores source_file relative to the repo root ("src/mod0.py"),
     while the skill writes an ABSOLUTE subfolder path into .pilothify_root.
     _StoredSourcePaths then anchored the stored paths to the subfolder,
@@ -4838,7 +4838,7 @@ def test_subfolder_root_marker_preserves_unchanged_nodes(tmp_path, monkeypatch):
 
     # The skill's Step 1 marker: an absolute path to the SUBFOLDER. The build
     # above wrote the safe relative form; overwrite with the absolute form
-    # that reproduces #2603.
+    # that reproduces the hook-path bug.
     (out / ".pilothify_root").write_text(str(src.resolve()), encoding="utf-8")
 
     # Incremental rebuild the way the post-commit hook calls it: absolute
@@ -4979,7 +4979,7 @@ def _run_watch_with_fake_observer(tmp_path, monkeypatch, fake_observer):
 
 @pytest.mark.skipif(not _watchdog_available(), reason="watchdog not installed")
 def test_watch_schedules_change_only_event_filter(tmp_path, monkeypatch):
-    """#5033: read-only events must be excluded from the kernel inotify mask.
+    """Read-only events must be excluded from the kernel inotify mask.
 
     Without event_filter watchdog asks for IN_OPEN / IN_CLOSE_NOWRITE, and its
     own recursive setup walk overflows the inotify queue on ~4,000 directories.
@@ -5023,7 +5023,7 @@ def test_watch_falls_back_when_watchdog_lacks_event_filter(tmp_path, monkeypatch
 
 @pytest.mark.skipif(not _watchdog_available(), reason="watchdog not installed")
 def test_watch_warns_when_observer_cannot_filter(tmp_path, monkeypatch, caplog):
-    """A silent fallback would let a future watchdog change re-enable #5033."""
+    """A silent fallback would let a future watchdog change re-enable the inotify overflow."""
     import logging
 
     captured = {}
@@ -5123,7 +5123,7 @@ def _ast_reference(source, target, source_file, **extra):
 
 @pytest.mark.parametrize("suffix", [".md", ".mdx", ".qmd", ".skill"])
 def test_markdown_reconcile_links_new_source_to_semantic_target(tmp_path, suffix):
-    """#1915/#1954: a fresh source reaches a semantic-only target."""
+    """A fresh source reaches a semantic-only target."""
     source_file = f"a{suffix}"
     corpus, graph_path = _markdown_reconcile_fixture(
         tmp_path,
@@ -5140,7 +5140,7 @@ def test_markdown_reconcile_links_new_source_to_semantic_target(tmp_path, suffix
 
 
 def test_markdown_reconcile_preserves_ambiguous_target(tmp_path):
-    """#1915/#1954: an authored link must survive target ambiguity."""
+    """An authored link must survive target ambiguity."""
     original = _ast_reference("a_sem", "b_one", "a.md", sentinel="keep")
     corpus, graph_path = _markdown_reconcile_fixture(
         tmp_path,
@@ -5162,7 +5162,7 @@ def test_markdown_reconcile_preserves_ambiguous_target(tmp_path):
 
 
 def test_markdown_reconcile_preserves_ambiguous_source(tmp_path):
-    """#1915/#1954: an authored link must survive source ambiguity."""
+    """An authored link must survive source ambiguity."""
     corpus, graph_path = _markdown_reconcile_fixture(
         tmp_path,
         {"a.md": "[link](b.md)\n", "b.md": "target\n"},
@@ -5183,7 +5183,7 @@ def test_markdown_reconcile_preserves_ambiguous_source(tmp_path):
 
 @pytest.mark.parametrize("suffix", [".md", ".mdx", ".qmd", ".skill"])
 def test_markdown_reconcile_prunes_removed_authored_link(tmp_path, suffix):
-    """#1915/#1954: removing a Markdown link removes its owned AST edge."""
+    """Removing a Markdown link removes its owned AST edge."""
     source_file = f"a{suffix}"
     corpus, graph_path = _markdown_reconcile_fixture(
         tmp_path,
@@ -5281,7 +5281,7 @@ def test_markdown_reconcile_preserves_links_on_extraction_error(
 
 
 def test_markdown_reconcile_keeps_reverse_stored_edge_unchanged(tmp_path):
-    """#1915/#1954: undirected endpoint order must not churn edge data."""
+    """Undirected endpoint order must not churn edge data."""
     corpus, graph_path = _markdown_reconcile_fixture(
         tmp_path,
         {"a.md": "[link](b.md)\n", "b.md": "target\n"},
@@ -5299,7 +5299,7 @@ def test_markdown_reconcile_keeps_reverse_stored_edge_unchanged(tmp_path):
 
 
 def test_markdown_reconcile_prefers_later_canonical_page(tmp_path):
-    """#1915/#1954: a later canonical page replaces a semantic fallback."""
+    """A later canonical page replaces a semantic fallback."""
     corpus, graph_path = _markdown_reconcile_fixture(
         tmp_path,
         {"a.md": "[link](b.md)\n", "b.md": "target\n"},
@@ -5327,7 +5327,7 @@ def test_markdown_reconcile_prefers_later_canonical_page(tmp_path):
 
 
 def test_markdown_reconcile_keeps_existing_semantic_relation(tmp_path):
-    """#1915/#1954: a simple graph must not overwrite a semantic relation."""
+    """A simple graph must not overwrite a semantic relation."""
     semantic_edge = {
         "source": "a_sem",
         "target": "b_sem",
@@ -5348,7 +5348,7 @@ def test_markdown_reconcile_keeps_existing_semantic_relation(tmp_path):
 
 
 def test_markdown_reconcile_uses_legacy_page_fallback(tmp_path):
-    """#1915/#1954: a unique legacy page is a safe target fallback."""
+    """A unique legacy page is a safe target fallback."""
     legacy_page = {
         "id": "legacy_b",
         "label": "b.md",
@@ -5373,7 +5373,7 @@ def test_markdown_reconcile_uses_legacy_page_fallback(tmp_path):
 
 
 def test_markdown_reconcile_distinguishes_same_basename_paths(tmp_path):
-    """#1915/#1954: full relative paths disambiguate equal basenames."""
+    """Full relative paths disambiguate equal basenames."""
     corpus, graph_path = _markdown_reconcile_fixture(
         tmp_path,
         {"one/a.md": "[link](../two/a.md)\n", "two/a.md": "target\n"},
@@ -5392,7 +5392,7 @@ def test_markdown_reconcile_distinguishes_same_basename_paths(tmp_path):
 
 
 def test_markdown_reconcile_does_not_resurrect_a_deleted_target(tmp_path):
-    """#3190: the link text still points at b.md, but b.md was deleted from disk.
+    """The link text still points at b.md, but b.md was deleted from disk.
     The extractor only stamps target_file when the target exists, so reconcile
     must NOT repoint/keep the edge onto the now-stale semantic node — a genuinely
     deleted target does not survive as a dangling reference."""
@@ -5627,7 +5627,7 @@ def test_rebase_relative_source_files_rebases_definition_file(tmp_path):
 
 
 def test_no_cluster_rebuild_survives_a_permission_error_on_replace(tmp_path, monkeypatch):
-    """#2689: on a VMware HGFS shared folder, os.replace over a graph.json
+    """On a VMware HGFS shared folder, os.replace over a graph.json
     read earlier in the same process raises PermissionError even on the same
     drive. The no_cluster incremental rebuild path must fall back instead of
     aborting the whole run."""
@@ -5651,7 +5651,7 @@ def test_no_cluster_rebuild_survives_a_permission_error_on_replace(tmp_path, mon
 
 
 def test_clustered_rebuild_survives_a_permission_error_on_replace(tmp_path, monkeypatch):
-    """Same #2689 fallback requirement for the default (clustered) rebuild
+    """Same fallback requirement for the default (clustered) rebuild
     path, the second of the two watch.py call sites."""
     from pilothify.watch import _rebuild_code
 
@@ -5672,13 +5672,13 @@ def test_clustered_rebuild_survives_a_permission_error_on_replace(tmp_path, monk
     assert "added()" in labels, "the fallback must still land the new content"
 
 
-# ── #3695: fail-closed preserved nodes survive AST ownership & shrink guard ───
+# ── fail-closed preserved nodes survive AST ownership & shrink guard ───
 
 
 def test_full_rebuild_preserves_alive_source_removed_from_detected_corpus(
     tmp_path, monkeypatch, capsys
 ):
-    """#3695 invariant 1: An alive source removed from the detected corpus survives
+    """Invariant 1: An alive source removed from the detected corpus survives
     a full rebuild under fail-closed preservation."""
     from pilothify import detect as detect_mod
     from pilothify.watch import _rebuild_code
@@ -5722,7 +5722,7 @@ def test_full_rebuild_preserves_alive_source_removed_from_detected_corpus(
 def test_ast_ownership_does_not_evict_fail_closed_preserved_node(
     tmp_path, monkeypatch, capsys
 ):
-    """#3695 invariant 1 & 2: AST ownership pass must not evict AST-tier nodes
+    """Invariant 1 & 2: AST ownership pass must not evict AST-tier nodes
     belonging to a source that fail-closed explicitly preserved, even when full_rebuild
     is True and AST ownership filtering evaluates."""
     from pilothify import detect as detect_mod
@@ -5781,7 +5781,7 @@ def test_ast_ownership_does_not_evict_fail_closed_preserved_node(
 
 
 def test_reextracted_source_still_evicts_stale_ast_nodes(tmp_path):
-    """#3695 invariant 2: Genuine re-extracted sources must retain existing AST
+    """Invariant 2: Genuine re-extracted sources must retain existing AST
     ownership behavior, evicting stale AST nodes."""
     from pilothify.watch import _rebuild_code
 
@@ -5818,7 +5818,7 @@ def test_reextracted_source_still_evicts_stale_ast_nodes(tmp_path):
 def test_shrink_involving_fail_closed_sources_does_not_deadlock_shrink_guard(
     tmp_path, monkeypatch, capsys
 ):
-    """#3695 invariant 3: When a shrink occurs on a rebuild that also has fail-closed
+    """Invariant 3: When a shrink occurs on a rebuild that also has fail-closed
     sources, the shrink guard does not deadlock with 'Refusing to overwrite'."""
     from pilothify import detect as detect_mod
     from pilothify.watch import _rebuild_code
@@ -5864,7 +5864,7 @@ def test_shrink_involving_fail_closed_sources_does_not_deadlock_shrink_guard(
     assert "f2()" not in labels
 
 def test_requires_symlinks_rebuild_symlink_worker(requires_symlinks, tmp_path, capsys):
-    """Exercise true OS symlinks for #3695 on platforms supporting them."""
+    """Exercise true OS symlinks on platforms supporting them."""
     from pilothify.watch import _rebuild_code
 
     corpus = tmp_path / "corpus"
@@ -5990,7 +5990,7 @@ def test_rebuild_code_sidecar_writes_are_atomic_and_labels_first(tmp_path, monke
 
 
 def test_full_yaml_rebuild_retains_rich_source_provenance_with_same_basename(tmp_path):
-    """#4896: AST-upgrading same-named YAML files must not lose reviewed
+    """AST-upgrading same-named YAML files must not lose reviewed
     source-specific semantic data, while an evidence-free file twin may fold.
     """
     import json

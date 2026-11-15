@@ -1,4 +1,4 @@
-"""#4447: a code-only ``--update`` must reach the merge with this run's AST in it.
+"""A code-only ``--update`` must reach the merge with this run's AST in it.
 
 The ``--update`` runbook says what the agent does when ``code_only`` is True. This test
 reads that paragraph from the RENDERED skill, runs the blocks the paragraph names (Part A,
@@ -54,7 +54,7 @@ AIDER = Anchors("", _AST, _FAST, _PART_C, "G_existing.update(")  # cwd-relative 
 
 SHARED_HOSTS = ["agents", "amp", "claude", "claw", "codex", "copilot", "droid", "kilo",
                 "kiro", "opencode", "pi", "trae", "vscode", "windows"]
-# shared hosts: add the params back once #4313 lands
+# shared hosts: add the params back once that lands
 HOSTS = [pytest.param("devin", DEVIN, id="devin"), pytest.param("aider", AIDER, id="aider")]
 
 # --- reading the paragraph -----------------------------------------------------------------
@@ -96,7 +96,7 @@ def steps_named(paragraph: str) -> list[str]:
     ("If `code_only` is True: run Step 3A, skip Step 3B (no subagents), then run the Part B fast path, "
      "run Part C, then go straight to merge.", ["A", "B", "C", "merge"]),
     ("If `code_only` is True: run Step 3A, do not run Part C, then go straight to merge.", ["A", "merge"]),
-    # PR #4313's paragraph, verbatim: Part C is named again after the merge, which is not a second run
+    #'s paragraph, verbatim: Part C is named again after the merge, which is not a second run
     ("If `code_only` is True: print `[pilothify update] Code-only changes detected - skipping semantic "
      "extraction (no LLM needed)`, run Step 3A (AST) on the changed files, then follow only Part B's "
      "**Fast path** to overwrite `.pilothify_semantic.json` with an empty result and run Part C to create "
@@ -163,7 +163,7 @@ def _env() -> dict[str, str]:
 
 
 def _run(block: str, proj: Path, *, python_on_stdin: bool = False) -> subprocess.CompletedProcess[str]:
-    # Since #4762 the block reads the scan root from the trusted .pilothify_root
+    # Since that fix the block reads the scan root from the trusted .pilothify_root
     # sidecar instead of a substituted literal; write it as Step 1 would.
     out = proj / "pilothify-out"
     out.mkdir(parents=True, exist_ok=True)

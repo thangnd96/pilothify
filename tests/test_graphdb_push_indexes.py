@@ -1,4 +1,4 @@
-"""#3804: graph DB pushes must index (label, id) before the MERGE upsert loop.
+"""Graph DB pushes must index (label, id) before the MERGE upsert loop.
 
 `push_to_falkordb` / `push_to_neo4j` upsert every node with
 

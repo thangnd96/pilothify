@@ -1,4 +1,4 @@
-"""Regression tests for issue #2862: community tags must survive non-ASCII labels,
+"""Regression tests: community tags must survive non-ASCII labels,
 and the graph-view colour groups must query the tag the notes actually carry."""
 import json
 

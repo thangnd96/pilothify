@@ -1,4 +1,4 @@
-"""Reflective dispatch via getattr string literals — #1566 slice 3.
+"""Reflective dispatch via getattr string literals — slice 3.
 
 ``getattr(obj, "handler")`` names a callable by a string literal; the attribute is
 looked up by that exact name, so it resolves to a callable def of the same label and is
@@ -6,7 +6,7 @@ emitted under ``indirect_call`` (context ``"getattr"``, INFERRED). Only a PLAIN 
 literal is resolvable — a variable, f-string, concatenation, or any expression is dynamic
 and emits nothing.
 
-The scope rule is the INVERSE of the identifier paths (#1565 args, #1566 assignment /
+The scope rule is the INVERSE of the identifier paths (args assignment /
 return): a string is an attribute name, never shadowed by a param/local, so a getattr
 whose name collides with a same-named parameter STILL emits. ``test_..._not_shadowed_by_param``
 pins that — reusing the identifier shadow guard here would be a false NEGATIVE.

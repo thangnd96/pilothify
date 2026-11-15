@@ -1,4 +1,4 @@
-"""#1656 — word counts are cached against each file's stat signature so
+"""Word counts are cached against each file's stat signature so
 detect() doesn't re-parse every unchanged PDF/docx on each run just to size
 the corpus.
 """
@@ -70,7 +70,7 @@ def test_word_count_augments_existing_hash_entry(tmp_path, monkeypatch):
 
 
 def test_file_hash_is_order_independent_across_roots(tmp_path, monkeypatch):
-    """#1989: the stat-index memo must be keyed by the salt (path relative to
+    """The stat-index memo must be keyed by the salt (path relative to
     root) that enters the digest, so the same (file, root) returns the same
     digest regardless of what root was hashed first."""
     import hashlib
@@ -104,7 +104,7 @@ def test_file_hash_is_order_independent_across_roots(tmp_path, monkeypatch):
 
 
 def test_file_hash_ignores_legacy_unsalted_entry(tmp_path, monkeypatch):
-    """A pre-#1989 entry carrying a bare "hash" (no salt) is never trusted."""
+    """A older entry carrying a bare "hash" (no salt) is never trusted."""
     import hashlib
     from pilothify import cache
     monkeypatch.setattr(cache, "_stat_index", {})

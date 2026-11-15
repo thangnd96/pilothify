@@ -11,7 +11,7 @@ true for that split to be behavior-preserving:
   identity — a stale copy or shadowing import would silently diverge),
 - ``LANGUAGE_EXTRACTORS`` maps to that same object (registry identity).
 
-Originally proposed by @Cekaru in #1721 as a per-language check; generalized
+Originally proposed by @Cekaru as a per-language check; generalized
 here to sweep the whole registry so a future move that forgets the facade
 re-export (or re-exports a different object) fails loudly.
 """
@@ -36,7 +36,7 @@ def test_every_registry_extractor_is_reexported_from_facade():
 
 
 def test_terraform_migrated():
-    # The concrete anchor from #1721: extract_terraform lives in its own module,
+    # The concrete anchor from that fix: extract_terraform lives in its own module,
     # and both the facade and the registry point at that one object.
     from pilothify.extractors.terraform import extract_terraform
 

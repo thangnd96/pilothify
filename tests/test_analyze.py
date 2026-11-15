@@ -652,7 +652,7 @@ def _question_diversity_graph():
 
 
 def test_suggest_questions_does_not_starve_later_categories():
-    """#3849: ten ambiguous edges must not hide all other question types."""
+    """Ten ambiguous edges must not hide all other question types."""
     G, communities = _question_diversity_graph()
     questions = suggest_questions(G, communities, {})
     assert len(questions) == 7
@@ -669,7 +669,7 @@ def test_suggest_questions_diversity_preserves_limit_and_candidates(top_n):
     limited = suggest_questions(G, communities, {}, top_n=top_n)
     assert limited == all_questions[:top_n]
     assert sum(q["type"] == "ambiguous_edge" for q in all_questions) == 10
-    # #4199 allows an optional ``low_confidence`` tag on AMBIGUOUS entries;
+    # allows an optional ``low_confidence`` tag on AMBIGUOUS entries;
     # all other required keys must still be present on every question.
     required = {"type", "question", "why"}
     for q in all_questions:

@@ -4,7 +4,7 @@
 matches by filename first, then falls back to a root-key probe. But `$schema`
 was in that probe's key set, and `$schema` is the *defining marker* of a JSON
 Schema -- so every schema document satisfied the probe and got walked in full,
-re-opening the keyword-node explosion #1224 closed for data JSON.
+re-opening the keyword-node explosion closed for data JSON.
 
 One 160 KB contract contributed 362 nodes whose labels were bare schema
 keywords (`description`, `type`, `$ref`, `required`, `properties`), plus ~12

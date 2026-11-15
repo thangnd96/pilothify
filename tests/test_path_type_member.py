@@ -230,8 +230,8 @@ def test_dotted_label_and_non_type_owner_keep_their_old_resolution(tmp_path):
 
 def _file_name_graph(tmp_path) -> Path:
     """A `Utils` type and a `Config` type with a `Json()` member, next to the
-    files `src/utils.py` (its file node carries the directory-qualified label of
-    #2032) and `config.json` (keys only, no file node)."""
+    files `src/utils.py` (its file node carries the directory-qualified label)
+    and `config.json` (keys only, no file node)."""
     return _write_nodes(tmp_path, [
         ("src_utils", "src/utils.py", "src/utils.py", "L1"),
         ("src_utils_helper", "helper()", "src/utils.py", "L3"),

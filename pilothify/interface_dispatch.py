@@ -44,8 +44,8 @@ DISPATCH_RELATION = "dispatches_to"
 
 # Confidence falls as the implementer count grows, snapped to the extraction
 # rubric's discrete INFERRED tiers (0.95/0.85/0.75/0.65/0.55) rather than a
-# continuous function of count, which the rubric has no basis for (#2813
-# forbids inventing precision a formula does not have).
+# continuous function of count, which the rubric has no basis for (the
+# rubric forbids inventing precision a formula does not have).
 _DISPATCH_CONFIDENCE_BY_IMPLEMENTER_COUNT = {1: 0.85, 2: 0.75}
 _DISPATCH_CONFIDENCE_FLOOR = 0.65
 

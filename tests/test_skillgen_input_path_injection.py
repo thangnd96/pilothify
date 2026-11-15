@@ -1,4 +1,4 @@
-"""#3642, #3844: INPUT_PATH substitution into bash commands is a command
+"""INPUT_PATH substitution into bash commands is a command
 injection vector.
 
 INPUT_PATH is a literal placeholder in generated skill files, meant to
@@ -101,7 +101,7 @@ def _skip_unless_bash_python_has_pilothify() -> None:
         pytest.skip("bash has no python3 that can import pilothify (WSL needed on Windows)")
 
 
-# --- #3844: Monolith --watch contract tests ----------------------------------
+# --- Monolith --watch contract tests ----------------------------------
 
 
 @pytest.mark.parametrize("skill_file", MONOLITH_SKILL_FILES)
@@ -225,7 +225,7 @@ def test_step1_still_resolves_a_legitimate_path(tmp_path: Path, skill_file: str)
 
 
 def test_no_generated_skill_substitutes_input_path_into_python_code():
-    """#4762: the Python blocks must never carry a raw, agent-substituted
+    """The Python blocks must never carry a raw, agent-substituted
     INPUT_PATH string literal (``detect(Path('INPUT_PATH'))``, ``root='INPUT_PATH'``,
     ``generate(.., 'INPUT_PATH', ..)``). Such a literal let a scan root whose NAME
     held a quote or ``$()`` break out and run as code. Every block now reads the

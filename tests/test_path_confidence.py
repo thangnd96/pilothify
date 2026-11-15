@@ -123,7 +123,7 @@ def test_hop_without_confidence_makes_path_unknown():
 
 def _two_route_graph():
     """Two equal-length (2-hop) routes A -> C: a strong one via B1 (all
-    EXTRACTED) and a weak one via B2 (an AMBIGUOUS hop). #4881 second half:
+    EXTRACTED) and a weak one via B2 (an AMBIGUOUS hop). Second half:
     the reported confidence must reflect the weakest route, not whichever one
     networkx returns first."""
     def n(nid):

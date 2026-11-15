@@ -1,8 +1,8 @@
 """`pilothify --help` must list user-facing commands that dispatch_command implements.
 
-#3140: the top-level listing in pilothify/__main__.py is hand-maintained and
+The top-level listing in pilothify/__main__.py is hand-maintained and
 drifted from dispatch_command() — prs, provider, and 7 of 8 export formats
-never appeared. Precedent: #2071 / PR #2075 (one usage line + stdout assert).
+never appeared. Precedent: one usage line plus a stdout assert.
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ PYTHON = sys.executable
 
 
 def test_help_lists_prs_provider_and_export_formats():
-    """#3140: `pilothify --help` must advertise prs, provider, and all export formats."""
+    """`pilothify --help` must advertise prs, provider, and all export formats."""
     r = subprocess.run(
         [PYTHON, "-m", "pilothify", "--help"],
         capture_output=True,
@@ -42,7 +42,7 @@ def test_help_lists_prs_provider_and_export_formats():
 
 
 def test_help_lists_every_install_platform():
-    """#4655: the `install [--platform P]` line must advertise every accepted
+    """The `install [--platform P]` line must advertise every accepted
     `--platform` value. It is derived from the same source as `pilothify install`
     usage (`[*_PLATFORM_CONFIG, "gemini", "cursor"]`), so this guards against the
     list silently drifting again (amp, copilot, kilo, kimi, antigravity-windows

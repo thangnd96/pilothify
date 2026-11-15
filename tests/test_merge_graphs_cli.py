@@ -231,7 +231,7 @@ def test_merge_graphs_hyperedges_dedup_on_shared_prefixed_id(tmp_path):
 
 
 def test_merge_graphs_reads_top_level_only_hyperedges(tmp_path):
-    # #2485 skew on the input side: node_link_graph restores only the nested
+    # skew on the input side: node_link_graph restores only the nested
     # graph-attrs slot, so an input whose hyperedges live only at the top
     # level used to lose them entirely.
     a = tmp_path / "alpha" / "pilothify-out" / "graph.json"
@@ -293,7 +293,7 @@ def test_merge_graphs_community_offset_is_byte_reproducible(tmp_path):
     """For a FIXED input order, the offset assignment must be deterministic:
     merging the same inputs twice produces byte-identical output. (Offsets are
     position-dependent by design — reordering inputs may renumber — so this pins
-    only same-order reproducibility, which is what consumers rely on. #3014.)"""
+    only same-order reproducibility, which is what consumers rely on.)"""
     a = tmp_path / "alpha" / "pilothify-out" / "graph.json"
     b = tmp_path / "beta" / "pilothify-out" / "graph.json"
     _write_with_communities(a, [("a0", 0), ("a1", 0), ("a2", 1)])
@@ -307,7 +307,7 @@ def test_merge_graphs_community_offset_is_byte_reproducible(tmp_path):
 
 
 def test_merge_graphs_previous_restores_the_real_merged_community(tmp_path):
-    """#3858: each input numbers its own communities from 0, so a fresh merge's
+    """Each input numbers its own communities from 0, so a fresh merge's
     `community` field is per-source ids with no relation to the previous
     MERGED clustering a labels sidecar was built against. --previous restores
     the real previous merged community (by node id), not the per-source one,
@@ -368,7 +368,7 @@ def test_merge_graphs_previous_drops_community_for_a_new_node(tmp_path):
 
 
 def test_merge_graphs_previous_does_not_resurrect_removed_node(tmp_path):
-    """#4078: --previous restores metadata only for nodes still present."""
+    """--previous restores metadata only for nodes still present."""
     a = tmp_path / "alpha" / "pilothify-out" / "graph.json"
     b = tmp_path / "beta" / "pilothify-out" / "graph.json"
     _write_with_communities(a, [("a0", 0)])

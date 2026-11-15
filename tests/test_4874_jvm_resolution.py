@@ -1,4 +1,4 @@
-"""#4874: Java/Kotlin references must reach the declaration node, not a file or stub.
+"""Java/Kotlin references must reach the declaration node, not a file or stub.
 
 The fixture is the issue's four-file project. The tests split the contract into
 the three reported failures plus controls that must keep passing:

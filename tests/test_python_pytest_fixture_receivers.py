@@ -179,7 +179,7 @@ def test_rebuild_after_the_imported_class_moves_matches_a_full_build(tmp_path: P
     # the class gone from that module both builds leave the fixture call unlinked.
     # (Only the fixture arm's edges are compared: the unchanged conftest's own
     # `CliRunner()` call is not re-resolved on a changed-files rebuild, the
-    # same on 0.9.85, #3570.)
+    # same on 0.9.85.)
     from pilothify.watch import _rebuild_code
 
     files = {

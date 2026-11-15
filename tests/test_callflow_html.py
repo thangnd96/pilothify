@@ -206,7 +206,7 @@ def _write_graph(tmp_path: Path, nodes: list, links: list) -> Path:
 
 
 def test_load_graph_preserves_edge_direction(tmp_path):
-    """#1174/#2487: graph.json is written with "directed": false, so the
+    """Graph.json is written with "directed": false, so the
     node-link parser must be told otherwise or networkx returns an undirected
     Graph and caller->callee orientation becomes arbitrary."""
     from pilothify.callflow_html import generate_call_table_rows, load_graph

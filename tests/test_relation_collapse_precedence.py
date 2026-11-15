@@ -129,7 +129,7 @@ def test_edge_count_is_unchanged_by_the_fix():
 
 
 def test_reverse_direction_guard_still_holds():
-    """#1061: same relation, opposite directions — first-seen direction wins."""
+    """Same relation, opposite directions — first-seen direction wins."""
     G = build_from_json(_extraction([
         _edge("calls", src="a", tgt="b"),
         _edge("calls", src="b", tgt="a"),

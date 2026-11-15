@@ -1,4 +1,4 @@
-"""#3641: `pilothify update`/`extract`/`cluster-only` must pin PYTHONHASHSEED
+"""`pilothify update`/`extract`/`cluster-only` must pin PYTHONHASHSEED
 like the generated git hooks already do.
 
 PYTHONHASHSEED is read once at interpreter startup, so it cannot be fixed by
@@ -61,7 +61,7 @@ def test_reexecs_for_hash_sensitive_commands_when_unset():
 
 
 def test_reexec_does_not_depend_on_argv0_being_a_runnable_script():
-    """#3779: a uv/pip/pipx console-script launcher on Windows is a native
+    """A uv/pip/pipx console-script launcher on Windows is a native
     .exe with no .py content, so `python.exe <that .exe path>` fails
     outright with "can't open file" the moment argv[0] is replayed as a
     script path. Re-execing via `-m pilothify` never touches argv[0] at
@@ -148,7 +148,7 @@ def test_reexec_uses_execvpe_on_posix(monkeypatch):
 
 
 def test_reexec_waits_and_propagates_exit_code_on_windows(monkeypatch):
-    """#3799: on Windows os.exec* spawns a detached process and the parent
+    """On Windows os.exec* spawns a detached process and the parent
     exits at once (sometimes with an access violation), so the caller saw
     the command finish before graph.json was written. The Windows branch
     must run the child synchronously and exit with the child's status."""

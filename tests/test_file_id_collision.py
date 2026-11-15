@@ -1,4 +1,4 @@
-"""#4854: a file node and a declaration inside it must never share an id.
+"""A file node and a declaration inside it must never share an id.
 
 Every fixture states the labels and edges the extractor must produce. The tests
 assert behaviour (which nodes and edges exist, and what references point at),

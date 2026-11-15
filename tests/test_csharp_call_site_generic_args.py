@@ -8,8 +8,8 @@ site (``recv.Do<T>()``, ``services.AddScoped<ISvc, Impl>()``, the
 generic arguments never became nodes. This erased dependency edges silently
 (``affected`` returns a smaller, confident answer rather than an error).
 
-PR #2913 closed the FIELD-position gap (the parallel ``field_declaration``
-handler); this test covers the call-site gap that PR #2913 deliberately left
+Closed the FIELD-position gap (the parallel ``field_declaration``
+handler); this test covers the call-site gap that deliberately left
 for a follow-up. Each case asserts the edge exists (no count) -- absence is
 the bug; counts are an implementation detail.
 """
@@ -163,7 +163,7 @@ def test_type_parameter_in_call_site_arg_is_not_fabricated(tmp_path):
 
 
 def test_call_site_generic_args_appear_in_issue_repro(tmp_path):
-    """End-to-end: the exact two-file repro from #2911 produces all six edges."""
+    """End-to-end: the exact two-file repro from that fix produces all six edges."""
     refs = _refs(tmp_path, {
         "Types.cs": (
             "public interface IAlpha { }\n"
@@ -193,7 +193,7 @@ def test_call_site_generic_args_appear_in_issue_repro(tmp_path):
         ),
     })
     # Call-site positions (5 and 6) -- the field position is covered by the
-    # parallel PR #2913, so we focus on what THIS fix is responsible for.
+    # parallel, so we focus on what THIS fix is responsible for.
     assert (".Call()", "IEpsilon") in refs, (
         "r.Do<IEpsilon>() must link IEpsilon from the Call method"
     )
@@ -226,7 +226,7 @@ def test_call_site_generic_args_appear_in_issue_repro(tmp_path):
     })
     izeta_refs = [tgt for src, tgt, _ctx in all_di_refs if src == ".Di()" and tgt == "IZeta"]
     # The outer IZeta and the inner IZeta (inside Box<...>) are the same
-    # reference relationship at the same location, so since #3251 the two
+    # reference relationship at the same location, so since that fix the two
     # walk occurrences collapse into ONE edge at extraction (they were always
     # collapsed by build, and the raw duplicate tripped
     # diagnose_extraction's exact_duplicate_edges warning). The call-site bug

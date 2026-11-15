@@ -100,7 +100,7 @@ def test_uninstall_keeps_user_commands_and_unrelated_groups(tmp_path, name):
 
 @pytest.mark.parametrize("name", sorted(_INSTALLERS))
 def test_uninstall_survives_a_non_dict_entry(tmp_path, name):
-    """#4359: a plain string in the hook array must not crash uninstall, and must
+    """A plain string in the hook array must not crash uninstall, and must
     be preserved (it is not pilothify's)."""
     install, uninstall, rel, section = _INSTALLERS[name]
     project = tmp_path / "proj"
@@ -119,7 +119,7 @@ def test_uninstall_survives_a_non_dict_entry(tmp_path, name):
 
 
 def test_install_removes_legacy_bash_hook_and_stays_idempotent(tmp_path):
-    """The pre-#522 inline bash guard is still replaced, without duplicating
+    """The older inline bash guard is still replaced, without duplicating
     pilothify's groups on a re-run."""
     project = tmp_path / "proj"
     settings_path = project / ".claude" / "settings.json"

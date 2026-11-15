@@ -169,7 +169,7 @@ def test_file_mention_folded_into_ast_file_node_is_not_lost():
 
 
 def test_rich_semantic_file_mention_is_not_exempt_from_shrink_guard():
-    """#4896: the builder preserves rich cross-file semantics, so the
+    """The builder preserves rich cross-file semantics, so the
     shrink guard must not pretend that a missing one was folded away.
     """
     rich = {**_mention("semantic_doc", "config.php", "notes/plan.md"),
@@ -189,7 +189,7 @@ def test_rich_semantic_file_mention_is_not_exempt_from_shrink_guard():
 
 
 def test_rich_semantics_survive_repeated_build_and_serialization(tmp_path):
-    """#4896: the source-specific rationales must survive cold reloading."""
+    """The source-specific rationales must survive cold reloading."""
     rich_a = {**_mention("sem_a", "config.php", "docs/a.md"),
               "rationale": "First source's unique explanation"}
     rich_b = {**_mention("sem_b", "config.php", "docs/b.yaml"),
@@ -217,7 +217,7 @@ def test_file_mention_matching_two_ast_files_is_still_lost():
 
 def _mixed_saved_graph(tmp_path: Path) -> Path:
     # A saved graph that still holds the mention beside its AST file node,
-    # as reported on #4389 for pilothify 0.9.95.
+    # as an older release left it.
     out = tmp_path / "graph.json"
     out.write_text(json.dumps({
         "directed": False,
@@ -257,7 +257,7 @@ def test_to_json_new_twin_does_not_offset_another_loss(tmp_path, capsys):
 
 
 def test_same_source_yaml_semantic_evidence_survives_new_ast_full_build(tmp_path):
-    """#4896: updating a formerly semantic-only YAML must retain source-specific
+    """Updating a formerly semantic-only YAML must retain source-specific
     rationale even when that exact YAML becomes AST-extractable in newer Pilothify.
     """
     rich = {**_mention("legacy_yaml_id", "automation.yaml", "config/automation.yaml"),
@@ -316,7 +316,7 @@ def test_evidence_free_same_source_file_mention_still_folds():
 
 
 def test_metadata_only_mention_is_not_independent_evidence():
-    """#4896: `metadata` and `captured_at` ride along on ordinary INFERRED
+    """`metadata` and `captured_at` ride along on ordinary INFERRED
     mention ghosts, so they must not count as independent provenance. A ghost
     carrying only those still folds into its AST file-self twin instead of
     surviving as a duplicate."""

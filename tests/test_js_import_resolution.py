@@ -594,7 +594,7 @@ def test_ts_dynamic_import_does_not_create_phantom_cycle(tmp_path: Path):
     # `dynamic_import` edge (like the Svelte/Astro/Vue emitters), not
     # `imports_from`. Otherwise two files that reference each other via one static
     # import + one dynamic import are reported as a phantom circular dependency.
-    # Regression test for #1241.
+    #
     import networkx as nx
 
     from pilothify.analyze import find_import_cycles
@@ -1324,7 +1324,7 @@ def test_ts_type_relationships_and_contexts(tmp_path: Path):
     assert ("run", "Payload", "generic_arg") in reference_contexts
 
 
-# ── #1531: tsconfig path-alias fallback targets ──────────────────────────────
+# ── tsconfig path-alias fallback targets ──────────────────────────────
 
 
 def test_tsconfig_alias_resolves_second_target_when_first_missing(tmp_path: Path):
@@ -1439,7 +1439,7 @@ def test_unresolved_relative_require_uses_stable_ref_target(tmp_path: Path):
     ] + [node["id"] for node in result["nodes"] if checkout in node["id"]]
     assert leaked == []
 
-# ── #927: wildcard tsconfig path patterns ────────────────────────────────────
+# ── wildcard tsconfig path patterns ────────────────────────────────────
 
 
 def test_tsconfig_wildcard_alias_substitutes_captured_path(tmp_path, monkeypatch):
@@ -1604,7 +1604,7 @@ def test_tsconfig_exact_alias_still_resolves(tmp_path: Path):
     assert _has_edge(result, "src/routes/page.ts", "src/config/index.ts")
 
 
-# ── #1529: alias/workspace import targets orphaned by the full-path migration ──
+# ── alias/workspace import targets orphaned by the full-path migration ──
 
 
 def test_alias_import_edge_resolves_with_relative_input_paths(tmp_path, monkeypatch):
@@ -1885,7 +1885,7 @@ def test_alias_import_preserves_owned_same_line_symbol_edge(tmp_path, monkeypatc
     assert all(edge["source"] in node_ids and edge["target"] in node_ids for edge in imports)
 
 
-# --- #1983 (follow-up): alias re-exports THROUGH a barrel ---------------------
+# --- (follow-up): alias re-exports THROUGH a barrel ---------------------
 # The candidates rewrite learns old->canonical symbol forms only from symbols a
 # file DEFINES. A barrel defines nothing, so a re-export/import that resolves to
 # the barrel synthesizes an absolute-prefixed target no rewrite ever learns:
@@ -1947,7 +1947,7 @@ def test_alias_reexport_two_hop_barrel_chain_resolves(tmp_path, monkeypatch):
 
 def test_no_symbol_edge_target_contains_checkout_prefix(tmp_path, monkeypatch):
     """No re_exports/imports target may embed the absolute checkout path —
-    the core complaint of #1983, which barrels still triggered after the
+    the core complaint of that fix, which barrels still triggered after the
     single-hop fix."""
     _barrel_fixture(tmp_path)
     _write(tmp_path / "src/barrel2.ts", "export { formatDate } from '@/lib'\n")
@@ -2014,7 +2014,7 @@ def test_ambiguous_barrel_reexport_chain_does_not_guess(tmp_path, monkeypatch):
     assert _make_id(_file_stem(Path("src/lib/b.ts")), "dup") in reexport_targets
 
 
-# --- #4486: a named import through a barrel ----------------------------------
+# --- a named import through a barrel ----------------------------------
 # The structural extractor names the imported symbol on the barrel itself. The
 # barrel defines nothing, so that edge dangled next to the one resolved to the
 # defining symbol, and build minted it as a phantom external node.
@@ -2078,7 +2078,7 @@ def test_named_import_through_barrel_into_a_package_keeps_its_edge(tmp_path, mon
     assert _make_id(_file_stem(Path("src/lib/deal.ts")), "makeDeal") in targets
 
 
-# ── #3487: the exports-map condition must follow the importer ────────────────
+# ── the exports-map condition must follow the importer ────────────────
 
 
 def _write_workspace_package(root: Path, name: str, exports: dict | str) -> None:
@@ -2093,7 +2093,7 @@ def _write_workspace_package(root: Path, name: str, exports: dict | str) -> None
 
 
 def test_export_types_condition_never_beats_a_real_runtime_target(tmp_path: Path):
-    """#3487 detail 1. `types` points into unbuilt `dist/`, so resolving to it
+    """Detail 1. `types` points into unbuilt `dist/`, so resolving to it
     produces an edge to a node that does not exist — and because that target is
     what got returned, the `default` source beside it was never tried."""
     _write_workspace_package(tmp_path, "@example/pkg-a", {
@@ -2147,7 +2147,7 @@ def test_export_types_loses_even_when_the_declaration_exists(tmp_path: Path):
 
 
 def test_export_react_native_condition_selected_for_native_importer(tmp_path: Path):
-    """#3487 detail 2. `react-native` is a custom condition, so it applies to the
+    """Detail 2. `react-native` is a custom condition, so it applies to the
     importer that opts into it rather than to the package as a whole."""
     _write_workspace_package(tmp_path, "@example/pkg-a", {
         "./Icon": {
@@ -2212,7 +2212,7 @@ def test_export_react_native_condition_ignored_for_web_importer(tmp_path: Path):
 
 
 def test_export_wildcard_target_absent_falls_through_to_platform_sibling(tmp_path: Path):
-    """#3487 detail 3. `./src/controls/*.tsx` names `BottomNav.tsx`, which does
+    """Detail 3. `./src/controls/*.tsx` names `BottomNav.tsx`, which does
     not exist — a bundler reaches `BottomNav.web.tsx` through its platform list,
     and the import must not be dropped for naming a file that was never there."""
     _write_workspace_package(tmp_path, "@example/pkg-a", {
@@ -2342,7 +2342,7 @@ def test_ts_paths_alias_behind_directory_reference_resolves(tmp_path: Path):
 
 
 def test_workspace_main_dist_target_falls_through_to_src_index_when_built(tmp_path: Path):
-    """#3834: A workspace package declaring "main": "./dist/index.js" without exports
+    """A workspace package declaring "main": "./dist/index.js" without exports
     resolves to built dist/index.js if it exists on disk. Because dist/ is outside the
     corpus (build output / ignored), the target node is absent and the edge dropped.
     Resolution must fall through to the source entry point (src/index.ts)."""
@@ -2403,7 +2403,7 @@ def test_workspace_main_dist_target_used_when_no_source_entry_exists(tmp_path: P
     assert _has_edge(result, "apps/web/src/consumer.ts", "packages/pkg-a/dist/index.js")
 
 
-# --- #4485: the same fallback when `exports` names only dist/ -----------------
+# --- the same fallback when `exports` names only dist/ -----------------
 
 
 def _dist_only_exports_package(root: Path, *, built: bool) -> Path:

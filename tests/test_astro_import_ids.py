@@ -1,4 +1,4 @@
-"""Regression tests for #2195: Astro/Svelte regex-rescued imports must not mint
+"""Astro/Svelte regex-rescued imports must not mint
 ghost nodes keyed by the absolute scan path.
 
 The Svelte/Astro/Vue regex-rescue passes used to mint stub TARGET nodes whose id
@@ -8,7 +8,7 @@ alongside the real file node (``src_lib_content``), plus dangling
 ``imports_from`` edges. The static branches also used a naive ``.js``->``.ts``
 suffix swap instead of extension probing, so extensionless specifiers
 (``../../lib/content``) never matched the real ``content.ts`` file and the
-edges carried no ``target_file`` stamp for the #2169 canonicalization pass to
+edges carried no ``target_file`` stamp for the canonicalization pass to
 learn from.
 
 Fixed by routing all five rescue sites through the shared helper, which mirrors
@@ -118,7 +118,7 @@ def test_astro_absolute_inputs_no_ghost_import_nodes(tmp_path):
 
 
 def test_astro_relative_inputs_keep_canonical_ids(tmp_path, monkeypatch):
-    """Relative inputs: the real file node keeps its canonical id — the #1462
+    """Relative inputs: the real file node keeps its canonical id — the
     colliding-id disambiguator must not rename it away because a same-id ghost
     stub was minted (regression guard)."""
     root = _astro_project(tmp_path)

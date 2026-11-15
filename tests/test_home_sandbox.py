@@ -41,7 +41,7 @@ def test_claude_config_dir_escape_hatch_is_cleared():
 def test_global_uninstall_is_captured_by_sandbox(tmp_path, tmp_path_factory):
     """Global skill deletes land inside the sandbox home, never the real one.
 
-    Since #2215, `claude_uninstall(project_dir)` is project-scoped and must NOT
+    Since that fix, `claude_uninstall(project_dir)` is project-scoped and must NOT
     touch the global tree; the global delete now requires either a bare call or
     an explicit `remove_user_skill=True`. Both scopes are exercised here so the
     sandbox is still proven to capture the global delete.

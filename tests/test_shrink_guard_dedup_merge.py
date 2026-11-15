@@ -1,4 +1,4 @@
-"""#4940: the #479 write guard must tell a node that entity dedup folded into a
+"""The write guard must tell a node that entity dedup folded into a
 twin from a node that was lost.
 
 The tests assert on what reaches graph.json and on whether ``to_json`` wrote,

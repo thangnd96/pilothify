@@ -1,4 +1,4 @@
-"""#4413 - Ollama's OpenAI-compatible /v1 endpoint ignores `options`, so the
+"""Ollama's OpenAI-compatible /v1 endpoint ignores `options`, so the
 derived num_ctx never reached the server and prompts were cut to Ollama's
 default context. The ollama backend now uses the native /api/chat endpoint,
 and falls back to /v1 for servers that don't have it.

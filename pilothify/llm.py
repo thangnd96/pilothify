@@ -838,7 +838,7 @@ def _bind_node_evidence(result: dict, text_units: "list[Path | FileSlice]", root
             continue
         src = source_by_path.get(key)
         if src is None:
-            continue  # not dispatched in this call — #1895's out-of-scope domain
+            continue  # not dispatched in this call — the out-of-scope domain
         idents = _label_identifiers(str(n.get("label", ""))) + _label_identifiers(str(n.get("id", "")))
         if not idents:
             continue  # nothing checkable — do not flag
@@ -1096,7 +1096,7 @@ def _sanitize_fragment(parsed: dict) -> dict:
     a nested list where an edge object belongs, or the whole value being a bare
     array/scalar instead of a list. Those entries slip past JSON parsing but
     blow up every downstream consumer that calls ``.get()`` per entry
-    (semantic-cache write and the AST+semantic merge both did — #1631, crashing
+    (semantic-cache write and the AST+semantic merge both did — , crashing
     with ``'list' object has no attribute 'get'`` and discarding all successful
     chunks). Sanitizing here, at the single parse chokepoint, protects the cache
     writer, the adaptive-retry merge, and the CLI merge in one place.
@@ -1279,7 +1279,7 @@ def _parse_llm_json(raw: str) -> dict:
             # — whose arrays are truthy but hold no edge/node objects. Testing
             # the raw value would let that sketch win and then sanitize down to
             # empty, shadowing the real answer that follows and re-triggering the
-            # #2880 hollow-response bisection. Sanitizing first demotes it to the
+            # hollow-response bisection. Sanitizing first demotes it to the
             # empty-fragment tier so the genuine fragment below still wins.
             cand = _sanitize_fragment(parsed)
             if any(cand.get(k) for k in _FRAGMENT_KEYS):
@@ -1331,7 +1331,7 @@ def _bedrock_response_text(resp: dict, default: str = "") -> str:
     ``reasoningContent`` block ahead of the answer, and ``toolUse`` or future
     block types can precede it too. Indexing position 0 therefore yields no text
     at all for those models, which reads downstream as a hollow response and
-    costs the chunk a round of retries before it is failed (before #2880 it was
+    costs the chunk a round of retries before it is failed (before that fix it was
     reclassified as truncation and bisected, which could not converge at all).
     Select on the block's shape instead of its position so this holds
     for any model; a response whose first block is already text is unaffected.
@@ -1852,7 +1852,7 @@ def _claude_cli_error(stdout: str) -> str:
 # to emit the object directly instead of relying on it CHOOSING to honour a
 # "raw JSON only" instruction in the prompt. Item internals stay loose so a
 # valid extraction is never rejected; the `result` envelope field still carries
-# the JSON string, so the parse path is unchanged. See #2076.
+# the JSON string, so the parse path is unchanged.
 _EXTRACTION_JSON_SCHEMA = json.dumps(
     {
         "type": "object",
@@ -1923,7 +1923,7 @@ def _call_claude_cli(user_message: str, max_tokens: int = 8192, *, deep_mode: bo
     # `shutil.which("claude")` returns `claude.ps1`, which `CreateProcess`
     # cannot execute directly — it raises `[WinError 2] The system cannot
     # find the file specified`. `claude.cmd` IS executable by CreateProcess,
-    # so prefer it explicitly on Windows. See issue #1072.
+    # so prefer it explicitly on Windows.
     claude_cmd = "claude"
     if platform.system() == "Windows":
         cmd_path = shutil.which("claude.cmd")
@@ -1949,7 +1949,7 @@ def _call_claude_cli(user_message: str, max_tokens: int = 8192, *, deep_mode: bo
     # attached — what would you like me to do with it?"). That prose parses to
     # zero nodes/edges, so _response_is_hollow flags it and the chunk is
     # retried and then failed rather than extracted (verified against Claude
-    # Code 2.1.197). Before #2880 it was misread as truncation and bisected
+    # Code 2.1.197). Before that fix it was misread as truncation and bisected
     # indefinitely, never converging and never writing graph.json.
     #
     # Putting the full extraction schema plus an explicit imperative in the
@@ -1996,7 +1996,7 @@ def _call_claude_cli(user_message: str, max_tokens: int = 8192, *, deep_mode: bo
     # Claude Code releases increasingly treat a bare file-dump prompt as an
     # agentic task and REPORT the extraction in prose ("Knowledge graph
     # extracted — 21 nodes, 20 edges…") instead of returning it; that parses to
-    # zero nodes and reads as hollow (and before #2880, as truncation
+    # zero nodes and reads as hollow (and before that fix, as truncation
     # to be bisected without ever converging). --json-schema pins the shape regardless of
     # that framing; the user-turn prompt above stays as the fallback for older
     # CLIs that predate the flag.
@@ -2123,7 +2123,7 @@ def _call_bedrock(model: str, user_message: str, max_tokens: int = 8192, *, deep
     # Wire PILOTHIFY_API_TIMEOUT into the botocore read timeout. Without an
     # explicit config, Converse uses botocore's 60s default and a long
     # generation dies with "Read timeout on endpoint URL" no matter what the
-    # env var / --api-timeout is set to — the same gap #1112/#1442 closed for
+    # env var / --api-timeout is set to — the same gap closed for
     # the claude-cli and secondary-dispatch paths, on the last cloud backend.
     client = session.client(
         "bedrock-runtime",
@@ -2874,7 +2874,7 @@ def extract_corpus_parallel(
         "failed_chunks": 0,  # count of chunks that raised — loud failure on chunk errors
     }
     total = len(chunks)
-    # Files whose chunk raised before returning a response. The #1890
+    # Files whose chunk raised before returning a response. The
     # reconciliation below must not describe them as omitted by the model.
     failed_files: set[Path] = set()
 
@@ -3073,14 +3073,14 @@ def extract_corpus_parallel(
     # dispatched against the source_files that actually came back and surface the gap.
     dispatched = {unit_path(f) for chunk in chunks for f in chunk}
 
-    # Out-of-scope node filter. The #1757 cache guard already refuses
+    # Out-of-scope node filter. The cache guard already refuses
     # to WRITE a cache entry for a node whose source_file is a real file that
     # was not dispatched, but the node itself still flowed into the merged
-    # result and landed in graph.json. Mirror the #1757 condition here: resolve
+    # result and landed in graph.json. Mirror the condition here: resolve
     # each source_file against root and drop the node only when it resolves to
     # an existing file (.is_file()) outside the dispatched set — non-file
     # source_files (concepts, model-invented anchors) pass through untouched.
-    # Runs BEFORE the #1890 covered/uncovered reconciliation so that diff
+    # Runs BEFORE the covered/uncovered reconciliation so that diff
     # reflects the post-filter graph.
     def _resolve_against_root(value: "str | Path") -> Path:
         p = Path(value)

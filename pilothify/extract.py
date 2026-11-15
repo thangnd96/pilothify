@@ -212,7 +212,7 @@ _RECURSION_LIMIT = 10_000
 # constructors or coercion functions (e.g. String(x), Number(x), Boolean(x)).
 # Without this filter they become god-nodes accumulating spurious edges from
 # every call site. Filter applied at same-file and cross-file resolution.
-# See issue #726.
+#.
 
 
 def _raise_recursion_limit() -> None:
@@ -978,7 +978,7 @@ def _import_python(
                 edge["_python_import_module"] = raw
                 edge["_python_import_bindings"] = _python_import_bindings(node, source)
             # Stamp the resolved target file (mirroring _import_js) so
-            # the #2169 remap pass can canonicalize this edge's target on an
+            # the remap pass can canonicalize this edge's target on an
             # incremental run where the target file itself is not in the
             # batch — without it the target keeps an absolute-path-derived id
             # that matches no node in the merged graph and dangles.
@@ -1104,7 +1104,7 @@ def _import_js(node, source: bytes, file_nid: str, stem: str, edges: list, str_p
                                     # from, so the id-remap post-pass can repoint a
                                     # target the candidates rewrite never learns —
                                     # a barrel defines no symbols. Transient,
-                                    # stripped at build like the #1814 stamp.
+                                    # stripped at build like the stamp.
                                     "target_file": str(resolved_path),
                                 })
         else:
@@ -1263,7 +1263,7 @@ def _import_kotlin(node, source: bytes, file_nid: str, stem: str, edges: list, s
     # path), optionally followed by `.` `*` (wildcard) or `as` + `identifier`
     # (alias). There is no `path` field. Older forks emit `import_header` with a
     # `path` field or a bare `identifier` child; keep those branches so the
-    # extractor works across grammar generations (#2526, adapted from PR #2531
+    # extractor works across grammar generations (adapted
     # by @Mustaqeem66).
     path_node = node.child_by_field_name("path")
     if path_node is None:
@@ -1552,7 +1552,7 @@ _CPP_CONFIG = LanguageConfig(
     # set of enumerators. Its name and body sit on the same `name`/`body` fields
     # as struct_specifier (type_identifier + enumerator_list), so it gets a node
     # and a body walk; the enumerators are emitted by _cpp_extra_walk (the C++
-    # parity of Java #1719 / Swift / Scala enums). union_specifier is likewise a
+    # parity of Java / Swift / Scala enums). union_specifier is likewise a
     # class-like container with the identical name/body fields (type_identifier +
     # field_declaration_list), so a `union { ... }` becomes a type node with its
     # data members instead of being dropped along with everything it declares.
@@ -1621,7 +1621,7 @@ _CSHARP_CONFIG = LanguageConfig(
     function_types=frozenset({"method_declaration"}),
     import_types=frozenset({"using_directive"}),
     # `object_creation_expression` joins the invocation node so `new Foo(...)`
-    # links the constructing method to Foo, the way Java has since #1373.
+    # links the constructing method to Foo, the way Java has since that fix.
     call_types=frozenset({"invocation_expression", "object_creation_expression"}),
     call_function_field="function",
     call_accessor_node_types=frozenset({"member_access_expression"}),
@@ -1665,7 +1665,7 @@ _SCALA_CONFIG = LanguageConfig(
     # so they need a node and the heritage walk just like classes and objects.
     # Scala 3 `enum` is a class-like container too: it owns methods and a set of
     # cases, so it needs a node and a body walk like the others (its cases are
-    # emitted by _scala_extra_walk, the parity of Java #1719 / Kotlin #1738).
+    # emitted by _scala_extra_walk, the parity of Java / Kotlin).
     # A Scala 3 `given ... with` instance is a class-like container: its `def`s
     # belong to the given instance, not to file scope (where they leak and collide
     # with same-named trait methods). Its body is a `with_template_body`.
@@ -1707,7 +1707,7 @@ _PHP_CONFIG = LanguageConfig(
     # object_creation_expression joins the dispatch set so `new Foo(...)` links
     # the constructing method to Foo (engine has a dedicated PHP branch: the
     # class sits in a bare name/qualified_name child, not a field) - the PHP
-    # twin of Java #1373 / C# #2997.
+    # twin of Java / C#.
     call_types=frozenset({"function_call_expression", "member_call_expression", "scoped_call_expression", "class_constant_access_expression", "object_creation_expression"}),
     static_prop_types=frozenset({"scoped_property_access_expression"}),
     helper_fn_names=frozenset({"config"}),
@@ -2188,7 +2188,7 @@ def _normalize_ts_export_type_star(source: bytes) -> bytes | None:
 def _normalize_ts_import_types(source: bytes, *, tsx: bool = False) -> bytes | None:
     """Rewrite only syntactic TypeScript ``import(...)`` type arguments.
 
-    The first implementation of #3154 used a ``<...>`` regular expression.
+    The first implementation of that fix used a ``<...>`` regular expression.
     In semicolon-less code that expression could span two comparison
     operators, so a *runtime* dynamic import was blanked before parsing.  A
     temporary, byte-preserving mask lets tree-sitter identify the actual
@@ -2540,7 +2540,7 @@ def _rescue_js_dynamic_imports(
                     pass
             # One file depending on one module is one file-level fact, however many
             # call sites defer it. Pre-existing (two module-scope `import('./x')` in one
-            # file already emitted two identical edges on v8), but #2584 routes every
+            # file already emitted two identical edges on v8), but once routes every
             # in-function dynamic import through here too, which would turn an edge case
             # into the common one — a hub module deferred from eight functions of the same
             # file would carry eight identical arrows.
@@ -2730,7 +2730,7 @@ def _emit_rescued_import(
 
     When the resolved target is a real file on disk, mirror ``_import_js``:
     emit ONLY the edge, stamped with ``target_file``, and mint no stub node.
-    The #2169 canonicalization loop in :func:`extract` reads the stamp and
+    The canonicalization loop in :func:`extract` reads the stamp and
     repoints the edge at the real file node's canonical id. Minting a stub
     here would carry an absolute-path-derived id when the input path is
     absolute — a ghost node (e.g. ``private_tmp_..._src_lib_content``)
@@ -2748,7 +2748,7 @@ def _emit_rescued_import(
         "source_file": str(path),
     }
     if resolved_file is not None:
-        # Real file on disk: edge only (no stub node), stamped so the #2169
+        # Real file on disk: edge only (no stub node), stamped so the
         # canonicalization pass repoints it at the real node.
         edge["target_file"] = str(resolved_file)
         result.setdefault("edges", []).append(edge)
@@ -2871,8 +2871,8 @@ def extract_svelte(path: Path) -> dict:
             if not raw:
                 continue
             # Resolution + emit shared with the static pass below: relative
-            # paths and tsconfig aliases probe real on-disk extensions (#716,
-            # #701), and a target that IS a real file emits an edge stamped
+            # paths and tsconfig aliases probe real on-disk extensions,
+            # and a target that IS a real file emits an edge stamped
             # with target_file instead of an absolute-id ghost stub.
             _emit_rescued_import(
                 result, existing_ids, file_node_id, path, raw,
@@ -3015,7 +3015,7 @@ def extract_astro(path: Path) -> dict:
 # `<%`. Only the code bodies and inline `<script>` bodies are JS statements a
 # grammar can read — markup and output expressions are not, so a `.ejs` file fed
 # whole to the JS grammar is one top-level ERROR that loses every symbol (the
-# `.svelte` lesson of #3928).
+# `.svelte` lesson of that fix).
 _EJS_SCRIPT_TAG_RE = _HTML_SCRIPT_TAG_RE
 _EJS_INCLUDE_RE = re.compile(
     r"""<%(?:_|[-=])?\s*include\s*\(\s*['"]([^'"]+)['"]"""
@@ -3109,7 +3109,7 @@ def _emit_ejs_include(
     template's own directory through :func:`_resolve_js_import_path` — which,
     now that ``.ejs`` is a JS resolve extension, appends ``.ejs``/``index.ejs``
     the way EJS itself does. A relative hit is stamped with ``target_file`` so
-    the #2169 canonicalization pass repoints it at the real template node; a
+    the canonicalization pass repoints it at the real template node; a
     bare/views-root include that cannot be resolved keeps a stub node, so the
     edge is never dropped.
     """
@@ -3965,7 +3965,7 @@ def _csharp_string_opener(source: bytes, i: int) -> "tuple[int, int, bool, bool]
 
 
 def _csharp_broken_escape_offsets(source: bytes) -> list[int]:
-    """Offsets of the ``""`` pairs that trigger the #3376 grammar bug.
+    """Offsets of the ``""`` pairs that trigger the grammar bug.
 
     A verbatim interpolated string whose text ends with an interpolation hole,
     then an escaped quote, then the terminator — the ``}`` ``""`` ``"``
@@ -4946,7 +4946,7 @@ def _rewire_unique_stub_nodes(
     csharp_scoped_relations = {"inherits", "implements", "references", "imports"}
 
     def _names_own_builtin_base(edge: dict, stub_id: str, remapped_id: str) -> bool:
-        r"""#2812: `class FooApiException extends \Exception` names PHP's own global
+        r"""`class FooApiException extends \Exception` names PHP's own global
         built-in, so a same-named class defined in another language cannot be what
         it refers to — yet the bare name was scoped by nothing and the unique
         TypeScript `Exception` absorbed the stub, leaving a PHP class inheriting
@@ -5052,13 +5052,13 @@ def _augment_js_reexport_edges(
 def _remap_objc_field_tables(per_file: list, mapping: dict) -> None:
     """Rewrite objc_field_types["tables"] KEYS through an id remap.
 
-    The #2591 field->type tables are the one extractor bucket keyed BY class
-    node id. The #1529 passes rewrote node ids, edge endpoints,
+    The field->type tables are the one extractor bucket keyed BY class
+    node id. The passes rewrote node ids, edge endpoints,
     raw_calls[].caller_nid and swift_extensions[].nid but not these keys, so
     whenever a common absolute prefix was stripped (always via
     `pilothify update <dir>`) the table keys went stale, every
     field_types_by_class.get(cls) missed, and [self.<field> ...] sends
-    resolved to nothing - #2591 was inert through the CLI.
+    resolved to nothing - the fix was inert through the CLI.
     """
     for result in per_file:
         ft = result.get("objc_field_types") if isinstance(result, dict) else None
@@ -6163,7 +6163,7 @@ def _resolve_python_member_calls(
             continue
         cls = next(iter(classes))
         if cls in class_ids:
-            # method_index is list-valued since #4734; resolve the exact-spelled
+            # method_index is list-valued since that fix; resolve the exact-spelled
             # method via _method_of rather than passing the raw candidate list.
             _emit_call(rc["caller_nid"], _method_of(cls, rc["callee"]), rc, inferred=True)
 
@@ -6234,7 +6234,7 @@ def _resolve_typescript_member_calls(
             type_def_nids.setdefault(_key(n.get("label", "")), []).append(n["id"])
 
     method_index: dict[tuple[str, str], str] = {}
-    # Exact member name -> node. `_key` drops `_`/`$`/`#`, and since #4475
+    # Exact member name -> node. `_key` drops `_`/`$`/`#`, and since that fix
     # `updateHash` / `_updateHash` are two nodes of one class, so the exact
     # name is tried first and `_key` stays the fallback.
     method_exact: dict[tuple[str, str], str] = {}
@@ -7232,7 +7232,7 @@ def _resolve_csharp_extension_calls(
       * the extended type must be the receiver's type or one of its resolved
         base types or interfaces;
       * the declaration must accept the call's argument count, using the same
-        ``arity``/``min_arity`` facts #4584 already records (the receiver is one
+        ``arity``/``min_arity`` facts the overload pass already records (the receiver is one
         parameter short of the call);
       * more than one surviving declaration is ambiguous and binds nothing.
 
@@ -7573,7 +7573,7 @@ def _resolve_php_member_calls(
     resolves through a single `inherits` edge from the enclosing class. A
     ``$var::method()`` dynamic scope is left unresolved — PHP has no
     declared-type table for it to resolve against, and guessing would risk the
-    same over-connection the #543/#1219 guard exists to prevent. Every other
+    same over-connection the guard exists to prevent. Every other
     scope is treated as a class reference regardless of case (PHP class and
     method names are case-insensitive) or namespace qualification (a
     fully-qualified ``\App\Models\User::method()`` or ``App\Models\User::``
@@ -10817,7 +10817,7 @@ _DISPATCH: dict[str, Any] = {
 
 # Extensions whose extractor depends on an optional-dependency extra
 # (pyproject [project.optional-dependencies]) and hard-fails without it,
-# rather than falling back like Pascal does. Used by the #1745 warning in
+# rather than falling back like Pascal does. Used by the warning in
 # extract() to tell the user which extra restores the language.
 _EXTRA_FOR_EXTENSION = {
     ".vb": "vbnet",
@@ -10843,7 +10843,7 @@ _EXTRA_FOR_EXTENSION = {
 }
 
 # Substrings an extractor's error carries to classify why a dependency-backed
-# file contributed nothing, used by the #1745 warning in extract(). A grammar
+# file contributed nothing, used by the warning in extract(). A grammar
 # that is present but fails to load must not be reported as missing —
 # the "install the extra" hint would be a no-op.
 _DEP_MISSING_MARKER = "not installed"
@@ -10963,7 +10963,7 @@ def _get_extractor(path: Path, *, sniff_headers: bool = True) -> Any | None:
     """Return the correct extractor function for a file, or None if unsupported.
 
     ``sniff_headers=False`` answers the weaker question "does any extractor own
-    this file" without reading it, for callers that only test for None (the #4978
+    this file" without reading it, for callers that only test for None (the
     reconcile loop). It is NOT interchangeable with the default: a C++ header
     asked this way resolves to extract_c, which loses the class. Never use it to
     pick a grammar for an actual parse.
@@ -11055,7 +11055,7 @@ def _extract_single_file(args: tuple) -> tuple[int, dict]:
     Args:
         args: (index, path_str, root_str, cache_location_str) tuple. ``root``
             anchors hash keys / node ids / the XAML boundary; ``cache_location``
-            is where the cache dir is written, decoupled per #1774. A legacy
+            is where the cache dir is written, decoupled. A legacy
             3-tuple (no cache_location) is still accepted for back-compat.
 
     Returns:
@@ -11548,9 +11548,9 @@ def extract(
                 per_file, root, total, cache_location,
             )
 
-    # Fill any remaining None slots. With the #2444/#2445 handling above this
+    # Fill any remaining None slots. With the handling above this
     # is unreachable; the error marker keeps any regression loud (and out of
-    # the caches/#1666 paths) instead of letting a dropped file masquerade as
+    # the cache paths) instead of letting a dropped file masquerade as
     # a legitimately-empty one.
     for i in range(total):
         if per_file[i] is None:
@@ -11590,7 +11590,7 @@ def extract(
     _failed_sources: list[str] = []
     _failed_seen: set[str] = set()
     # A file the extractor declined by design is stamped (not a failure) yet has
-    # zero nodes in the graph, which is exactly the shape the #2543 heal re-queues
+    # zero nodes in the graph, which is exactly the shape the heal re-queues
     # forever (fixed only the failed-source path). Record them so the
     # manifest can mark the emptiness intentional and the heal can leave them be.
     _skipped_sources: list[str] = []
@@ -11619,7 +11619,7 @@ def extract(
 
     # a file counted as code (extension in CODE_EXTENSIONS) but with no AST
     # extractor wired up (e.g. .ets — there is no ArkTS dispatch) silently
-    # contributes zero nodes. The #1666 warning above deliberately skips these (it
+    # contributes zero nodes. The warning above deliberately skips these (it
     # only fires when an extractor exists), so surface them explicitly, grouped by
     # extension, rather than reporting success as if the language were mapped.
     from pilothify.detect import CODE_EXTENSIONS as _CODE_EXTS
@@ -11642,8 +11642,8 @@ def extract(
 
     # an extractor IS wired up for these files but bailed out because its
     # dependency is missing (e.g. .sql needs tree-sitter-sql from the [sql]
-    # extra). Neither warning above fires — #1666 skips results that carry an
-    # error, #1689 only covers files with no extractor — so the graph builds
+    # extra). Neither warning above fires — skips results that carry an
+    # error only covers files with no extractor — so the graph builds
     # "successfully" while every such file silently contributes nothing.
     # Surface them grouped by extension, naming the extra that provides the
     # dependency when there is one.
@@ -11688,13 +11688,13 @@ def extract(
         _pe = _res.get("parse_errors")
         if not _pe:
             continue
-        # gate the #2551 warning on plausible symbol loss.
+        # gate the warning on plausible symbol loss.
         # tree-sitter-typescript sets has_error on tiny fully-recovered errors
         # (a `&` in a JSX string attr; a semicolon-less `in_*` interface
         # member) that extract completely — stay silent. Warn only when
         # nothing beyond the file node extracted, or an ERROR region
-        # dissolved multiple lines (the genuine #2551 Kotlin one-line-body /
-        # #2520 Luau case). `multiline_error` is absent from pre-fix cached
+        # dissolved multiple lines (the genuine Kotlin one-line-body /
+        # Luau case). `multiline_error` is absent from pre-fix cached
         # results, so those fall back to the file-node-only arm.
         if len(_res.get("nodes", [])) <= 1 or _pe.get("multiline_error"):
             try:
@@ -11725,7 +11725,7 @@ def extract(
             if len(_syntax_error_files) > 5 else ""
         )
         # No issue reference here. This message used to end in "" for
-        # EVERY language, and #2551 is closed and Kotlin-specific ("bundled
+        # EVERY language, is closed and Kotlin-specific ("bundled
         # grammar rejects one-line type bodies"). It was the only lead the
         # message offered, so a reader following it landed on a resolved problem
         # in another language and concluded their own was already tracked
@@ -11738,16 +11738,16 @@ def extract(
         )
 
     # a code file that parses CLEANLY (no parse_errors — distinct from
-    # the #2551/#2599 case just above, where _syntax_error_files already
+    # the case just above, where _syntax_error_files already
     # explains the loss) but yields NOTHING beyond its own bare file node often
     # is a plain data literal the AST extractor has nothing to model
     # (`const BANK = [...]`). It silently entered the graph as a bare,
     # zero-edge node, indistinguishable from a legitimately symbol-free file.
     #
     # Scope this to EXACTLY one node (the unconditional file node, engine.py):
-    # - `== 1`, not `<= 1`, so the 0-node domain stays owned by #1666 (zero
+    # - `== 1`, not `<= 1`, so the 0-node domain stays owned (zero
     #   nodes / retry) and is not double-reported with contradictory advice;
-    # - skip `skipped` (intentional data declines, like) and
+    # - skip `skipped` (intentional data declines) and
     #   no-extractor files (already reports those as unsupported code);
     # - skip empty/whitespace-only files (an empty `__init__.py`, `py.typed`)
     #   — there is nothing to model, so the warning would be pure noise.
@@ -12153,7 +12153,7 @@ def extract(
                 if _new is not None:
                     ext["nid"] = _new
         # objc_field_types["tables"] is keyed BY class node id - the one bucket
-        # the #1529 rewrites missed.
+        # the rewrites missed.
         if contested:
             for _path, result in zip(paths, per_file):
                 _remap_objc_field_tables(
@@ -12271,7 +12271,7 @@ def extract(
             all_edges[:] = deduped_edges
             del edge_key_counts, owned_node_ids, deduped_edges, edge_alias_candidates
 
-    # Repoint symbol-level alias edges that resolve THROUGH a barrel (#1983
+    # Repoint symbol-level alias edges that resolve THROUGH a barrel (a
     # follow-up). The candidates rewrite above learns old→canonical forms only
     # from symbols a file DEFINES; a barrel defines nothing, so a re-export or
     # named import that resolves to one keeps an absolute-prefixed, dangling
@@ -12549,7 +12549,7 @@ def extract(
     # the emitted edges remain sourced by the re-extracted files.
     #
     # Scope: this list feeds the shared direct-call loop below, the
-    # indirect_call callable guard (#2438, via the persisted `_callable` /
+    # indirect_call callable guard (via the persisted `_callable` /
     # `_callable_class` markers), and — together with resolution_context_edges —
     # the member-call resolvers run by run_language_resolvers.
     resolution_nodes = all_nodes
@@ -12650,7 +12650,7 @@ def extract(
     # against the path-resolution/symlink mismatch that makes
     # ``relative_to(root.resolve())`` throw and fall back to a non-matching
     # absolute-derived id — which would spuriously fail import evidence and (with
-    # the #1659 JS/TS gate below) drop a legitimately-imported call.
+    # the JS/TS gate below) drop a legitimately-imported call.
     sf_to_file_nid: dict[str, str] = {}
     for n in resolution_nodes:
         sf = n.get("source_file")
@@ -12755,7 +12755,7 @@ def extract(
         # global name match here would bind a bash call to any same-named function
         # in an unsourced file (an INFERRED phantom edge) and would resolve calls
         # to external commands that merely share a name with a function elsewhere
-        # in the corpus — exactly what #2141 must not do.
+        # in the corpus — exactly what the fix must not do.
         if rc.get("language") == "bash":
             continue
         # A Markdown code span names a symbol, it does not call one. The
@@ -12785,7 +12785,7 @@ def extract(
         # grep found it). Resolve strictly by the qualifier instead — the
         # candidate's file path must match it (see rust_scoped_call_survivors);
         # require exactly one survivor or skip, and never fall through to the
-        # bare-name tie-breakers below, so the #908 guard is preserved.
+        # bare-name tie-breakers below, so the guard is preserved.
         # EXTRACTED because the module is named explicitly in source — same
         # reasoning as the qualified-class-method passes.
         if rc.get("is_scoped_call"):
@@ -12842,8 +12842,8 @@ def extract(
             # An enum member or a field/property is never a valid call target
             # either — not just never what `new X()` constructs. A bare call
             # whose name happens to collide with a same-named enum case (a
-            # delegate-typed field invoked next to an enum sharing its name,
-            # #4245) bound to the case instead of getting no edge/deferring to
+            # delegate-typed field invoked next to an enum sharing its name)
+            # bound to the case instead of getting no edge/deferring to
             # raw_calls resolution that could reject it on its own grounds.
             candidates = [c for c in candidates if c not in _member_nids]
             if rc.get("csharp_new"):
@@ -12998,7 +12998,7 @@ def extract(
             # of the candidates, that named import disambiguates unambiguously.
             # Prefer direct symbol-import matches; fall back to module-import
             # matches only when they too collapse to a single target. Without a
-            # unique evidence-backed pick we skip, preserving the #543 guard
+            # unique evidence-backed pick we skip, preserving the guard
             # against over-connecting common short names (log, execute, find).
             symbol_matches = [c for c in candidates if c in imported_symbols]
             if len(symbol_matches) == 1:
@@ -13022,7 +13022,7 @@ def extract(
                     # real call graph), apply the shared god-node
                     # tie-breakers (non-test preference, then path proximity).
                     # Resolve only if exactly one candidate survives; otherwise
-                    # the #543/#1219 guard still holds and we skip.
+                    # the guard still holds and we skip.
                     # A qualified C# construction (`new Outer.Slot()`) names
                     # which Slot it means, and a proximity guess over the bare
                     # name ignores that: it takes the one Slot nested in a type
@@ -13054,7 +13054,7 @@ def extract(
         # caller's file imports that exact symbol. Module-import evidence (the
         # caller imported some other name from the file defining a same-named
         # class) must NOT count: it used to promote `raise NotImplementedError`
-        # to EXTRACTED against a package class the file never bound (#2945 is
+        # to EXTRACTED against a package class the file never bound (is
         # the same distinction for confidence, this is the binding condition).
         # Without a direct import the name is the builtin, so prefer no edge.
         if (
@@ -13103,7 +13103,7 @@ def extract(
         # `sidecar` shown as depending on `registry-protocol` purely because it
         # exported generically-named symbols). JS/TS modules have no implicit
         # cross-module scope, so leave it unresolved rather than binding by name
-        # alone. Other languages keep the #1553 single-candidate resolution:
+        # alone. Other languages keep the single-candidate resolution:
         # C/C++ headers, Ruby autoload, and same-package implicit scope
         # legitimately call across files without an explicit import. Scoped to
         # direct calls: the indirect_call path above is already conservative
@@ -13223,12 +13223,12 @@ def extract(
     # General backstop closing the absolute-id leak CLASS: any
     # producer that minted an id or edge endpoint as _make_id(<absolute path>)
     # and was reached by no earlier remap (module-top-level raw_calls before
-    # #2231, unstamped edges, regex-rescue stubs #2195, ...) still leaks the
+    # that fix, unstamped edges, regex-rescue stubs, ...) still leaks the
     # machine/scan-path slug here. Instead of pattern-matching only the item's
     # OWN id, LEARN the absolute-derived key forms (as-written and resolved)
     # of every file that appears in the batch from the nodes' source_file, map
     # them to the file's canonical id — _file_node_id(rel) in-root, the
-    # #1899/#2250 "ext" recipe out-of-root — and rewrite every node id and
+    # "ext" recipe out-of-root — and rewrite every node id and
     # edge endpoint through that map. Only absolute-derived ids are renamed to
     # their canonical form; a key already owned by a real (differently-minted)
     # node is never remapped, so no edge is fabricated toward a node it did
@@ -13253,7 +13253,7 @@ def extract(
             # In-root: the same canonical repo-relative form the real file
             # node uses (_file_node_id), so the scan root can never leak into
             # a persisted id. Real file nodes were already remapped by the
-            # #2169 pass, so only leftover absolute-derived ids match below
+            # pass, so only leftover absolute-derived ids match below
             # (belt-and-braces for  regex-rescue stubs and friends).
             canonical_id = _file_node_id(rel)
             new_sf = rel.as_posix()
@@ -13401,7 +13401,7 @@ def extract(
     # (build._norm_source_file keying, _derive_prune_root, dedup, and
     # analyze.find_import_cycles, which matches an edge's source_file against a
     # node's by equality), so two spellings are two different files — the
-    # fragmentation of #683, and the reason the CLI path (which passes an
+    # fragmentation of that fix, and the reason the CLI path (which passes an
     # explicit root) looked correct while the library entry point did not.
     #
     # Safe as a final pass: ids are minted through make_id, which collapses
@@ -13432,7 +13432,7 @@ def extract(
         "failed_sources": _failed_sources,
         # Surfaces files the extractor declined by design (zero nodes but not a
         # failure) so the manifest can mark the emptiness intentional and the
-        # #2543 heal stops re-queuing them every incremental.
+        # heal stops re-queuing them every incremental.
         "skipped_sources": _skipped_sources,
         # Surfaces the actual dispatched source paths so build_merge /
         # merge_raw_extraction know which files were genuinely re-extracted

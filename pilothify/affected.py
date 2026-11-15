@@ -15,8 +15,8 @@ DEFAULT_AFFECTED_RELATIONS = (
     "references",
     "imports",
     "imports_from",
-    # `import('…')` — emitted by the Svelte/Astro/Vue rescue passes and (since
-    # #2575) by plain JS/TS too. Omitting it made every dynamic import
+    # `import('…')` — emitted by the Svelte/Astro/Vue rescue passes and (since a later fix)
+    # by plain JS/TS too. Omitting it made every dynamic import
     # invisible to blast-radius traversal even where the edge WAS in the
     # graph, and dynamic import is precisely how codebases break require
     # cycles, so the missing edges sat under the most load-bearing modules.
@@ -129,7 +129,7 @@ def _prefer_file_node(
     if len(exact_file_nodes) == 1:
         return exact_file_nodes[0]
 
-    # #2032 relabels colliding basenames to their shortest unique path suffix
+    # relabels colliding basenames to their shortest unique path suffix
     # ("alpha/hooks.py"), so neither pass above nor the one below matches a file
     # node whose basename is shared. The label is still a path form of the
     # node's OWN source_file, which is what _is_file_node_label encodes (the

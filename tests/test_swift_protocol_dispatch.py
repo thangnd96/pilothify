@@ -4,7 +4,7 @@
 `.fetch()` requirement, which is what the call site names. The
 conformer's `.fetch()` is a separate node with nothing joining the two, so a
 directed walk stops at the protocol and every chain through an injected
-dependency is cut there — the Swift twin of the C# gap #3003 closed.
+dependency is cut there — the Swift twin of the C# gap closed.
 
 `resolve_swift_protocol_dispatch` links the requirement to every conforming
 method, as long as that conformer owns exactly one method of the same name.

@@ -1,4 +1,4 @@
-"""#2199 — stat-index.json must be portable and self-pruning.
+"""Stat-index.json must be portable and self-pruning.
 
 The on-disk stat index used to key entries by resolved ABSOLUTE path, so a
 corpus reached via a different absolute path (clone, move, second mount) got
@@ -7,7 +7,7 @@ pruned (unbounded growth). In-memory keys stay absolute; only the on-disk
 form is relativized against the key anchor — mirroring the detect manifest's
 _to_relative_for_storage/_to_absolute_from_storage round-trip.
 
-Also covers #2197 (cache.py portion): save_semantic_cache must normalize each
+Also covers the cache.py portion of the Windows path fix: save_semantic_cache must normalize each
 item's source_file (backslashes -> forward slashes, relativize when in-root)
 before persisting, so a fragment carrying an absolute path (Windows detect()
 output) cannot poison the cache.
@@ -140,7 +140,7 @@ def test_deleted_entries_are_pruned_on_flush(tmp_path):
 
 
 def test_legacy_absolute_index_migrates_gracefully(tmp_path, monkeypatch):
-    """A pre-#2199 index keyed by absolute paths still resolves to the right
+    """A older index keyed by absolute paths still resolves to the right
     digest on the unmoved root, and the first flush prunes dead entries and
     rewrites live keys relative (self-heals).
 
@@ -227,7 +227,7 @@ def test_relative_key_wins_over_colliding_legacy_absolute(tmp_path):
 
 
 def test_normalize_path_undoes_the_unc_long_path_prefix(monkeypatch):
-    r"""Since #4925 keys are normalized from the os_long_path() spelling, which
+    r"""Since that fix keys are normalized from the os_long_path() spelling, which
     for a UNC share is ``\\?\UNC\server\share``. Stripping only ``\\?\`` left a
     relative ``UNC\server\...`` key that the flush pruned as missing, so a
     network or WSL share always wrote an empty stat-index.json."""
@@ -240,7 +240,7 @@ def test_normalize_path_undoes_the_unc_long_path_prefix(monkeypatch):
 def test_long_path_spelling_does_not_switch_the_root(tmp_path):
     r"""Files are opened through os_long_path(), which spells the root
     ``\\?\C:\...``. Binding the stat index to that spelling made the plain
-    cache_root that extract() passes look like a second root: a #3989 warning
+    cache_root that extract() passes look like a second root: a warning
     and a mid-run flush on every Windows update."""
     _reset_stat_index()
     f1 = tmp_path / "f1.py"
@@ -255,7 +255,7 @@ def test_long_path_spelling_does_not_switch_the_root(tmp_path):
 
 
 def test_semantic_cache_normalizes_absolute_source_file(tmp_path):
-    """#2197: an item whose source_file is absolute is persisted root-relative
+    """An item whose source_file is absolute is persisted root-relative
     posix, and the caller's dict is not mutated."""
     _reset_stat_index()
     root = tmp_path / "corpus"

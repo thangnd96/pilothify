@@ -1,7 +1,7 @@
-"""After #4634, `class A extends X` with `const X = require('./m')` must inherit
+"""After that fix, `class A extends X` with `const X = require('./m')` must inherit
 the class the required file exports — not a local binding, and not nothing.
 
-#4634 correctly stopped minting a module-scope node for the require binding so
+Correctly stopped minting a module-scope node for the require binding so
 `new X()` no longer shadows the required class. Heritage resolution still went
 through that missing node, so the inherits edge disappeared. The fix records
 CommonJS require bindings (and `module.exports = Name`) as symbol import/export
@@ -117,7 +117,7 @@ def test_renamed_require_extends_follows_default_export(tmp_path: Path):
 
 
 def test_require_new_still_lands_on_required_class(tmp_path: Path):
-    """#4621 / #4634: `new X()` keeps resolving to the required declaration."""
+    """`new X()` keeps resolving to the required declaration."""
     logger = _write(
         tmp_path / "logger.js",
         "function Logger(p) { this.p = p }\n"
@@ -139,11 +139,11 @@ def test_require_new_still_lands_on_required_class(tmp_path: Path):
 
 def test_external_require_binds_locally_unlike_external_esm(tmp_path: Path):
     """An unresolved external require and an unresolved external ESM import differ,
-    and #4688 does not change that. A CJS `const Plugin = require('some-plugin')`
+ does not change that. A CJS `const Plugin = require('some-plugin')`
     binding is a real local name, so `new Plugin()` and `extends Plugin` resolve to
     its node; an ESM `import Plugin from 'some-plugin'` default mints no local node
     and so emits no calls/inherits edge. This CJS/ESM asymmetry for external
-    packages predates #4688 (which only resolves intra-project `./` requires); pin
+    packages predates the require fix (which only resolves intra-project `./` requires); pin
     it so a future change to external-require handling is deliberate.
     """
     cjs = _write(

@@ -1,6 +1,6 @@
 """Types named in a Go package-level `var` initialiser are referenced by the file.
 
-#2360 credits calls in a package-level initialiser to the file, but the types named
+Credits calls in a package-level initialiser to the file, but the types named
 there, in `new(T)`, `new(*pkg.T)` or a composite literal, produced no edge. A file
 holding only a google/wire set (`wire.Bind(new(Iface), new(*Impl))`) then referenced
 nothing and was reported as yielding no symbols.

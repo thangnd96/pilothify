@@ -1,8 +1,8 @@
-"""Regression tests for issue #2167: hook installers must merge into existing
+"""Regression tests: hook installers must merge into existing
 settings/hooks JSON files, never clobber them.
 
 The old behavior fell back to ``settings = {}`` on any parse error (a UTF-8 BOM
-was enough, same class as #2163) and then rewrote the whole file, destroying the
+was enough, same class as that fix) and then rewrote the whole file, destroying the
 user's mcpServers/enabledPlugins/theme/hooks. The fix:
 
 - read with utf-8-sig (BOM-tolerant),
@@ -58,7 +58,7 @@ def _run(tmp_path: Path, installer: str, **kwargs) -> Path:
 
 
 def test_claude_install_preserves_existing_settings(tmp_path):
-    """#2167 core case: every key pilothify does not own must survive install."""
+    """Core case: every key pilothify does not own must survive install."""
     seeded = {
         "mcpServers": {"context7": {"command": "npx", "args": ["context7"]}},
         "enabledPlugins": ["my-plugin@marketplace"],

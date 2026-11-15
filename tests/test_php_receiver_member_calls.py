@@ -2,7 +2,7 @@
 
 The shared cross-file pass skips member calls, and PHP recorded no receiver at all, so
 `$greeter->greet()` on a receiver whose class lives in another file produced no edge —
-the PHP twin of the Swift gap in #1356. Each case below pins one source of the
+the PHP twin of the Swift gap. Each case below pins one source of the
 receiver's type, and the negative cases pin what must stay unresolved: an untyped
 parameter, a union type, a longer chain, and an ambiguous class name.
 """

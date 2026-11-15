@@ -1,4 +1,4 @@
-"""Kernel-level characterization of the inotify overflow behind #5033.
+"""Kernel-level characterization of the inotify overflow behind the watch fix.
 
 These tests exercise the mechanism, not Pilothify's handler. The overflow
 rebuild loop is watchdog 7+ specific (watchdog 6 and older define
@@ -56,7 +56,7 @@ def _drain(fd):
 
 
 def test_default_mask_requests_read_events_but_change_filter_does_not():
-    """#5033 root cause: the default mask asks for IN_OPEN / IN_CLOSE_NOWRITE."""
+    """Root cause: the default mask asks for IN_OPEN / IN_CLOSE_NOWRITE."""
     events = pytest.importorskip("watchdog.events")
     inotify_c = pytest.importorskip("watchdog.observers.inotify_c")
     from pilothify.watch import _watch_event_filter
@@ -143,7 +143,7 @@ def test_read_only_traffic_alone_overflows_the_queue(tmp_path):
 def test_overflow_makes_watchdog_rebuild_the_recursive_watch_tree(
     tmp_path, monkeypatch
 ):
-    """#5033 feedback loop: every overflow re-walks the whole tree."""
+    """Feedback loop: every overflow re-walks the whole tree."""
     _events, inotify, inotify_c = _watchdog7()
     (tmp_path / "a").mkdir()
 

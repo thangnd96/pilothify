@@ -145,7 +145,7 @@ def test_claude_install_upgrades_stale_hook_payload(tmp_path, monkeypatch):
     assert _OLD_HOOK_PAYLOAD_SNIPPET not in new_settings_text, (
         "stale hook payload survived upgrade"
     )
-    # Since #522 the nudge text lives in the `pilothify hook-guard` subcommand, not
+    # Since that fix the nudge text lives in the `pilothify hook-guard` subcommand, not
     # inline in settings.json (so the command parses on Windows). The upgraded hook
     # must therefore route to that shell-agnostic subcommand, and the old bash
     # pipeline must be gone.

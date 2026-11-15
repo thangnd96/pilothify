@@ -1,4 +1,4 @@
-"""Regression test for #2694 (version-stamp half).
+"""(version-stamp half).
 
 `pilothify install --platform X` must only advance `.pilothify_version` for the
 platform whose skill content it actually (re)writes. Previously it also bumped

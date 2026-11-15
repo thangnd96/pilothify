@@ -130,7 +130,7 @@ def _read_tsconfig_aliases(tsconfig: Path, base_dir: Path, seen: set) -> dict[st
     via seen set.
     npm package configs (e.g. @tsconfig/svelte) are skipped since they're not on disk.
     Handles JSONC (comments + trailing commas) which is the default tsconfig format
-    for SvelteKit, NestJS, Vite, T3, Astro, etc..
+    for SvelteKit, NestJS, Vite, T3, Astro, etc.
     """
     if str(tsconfig) in seen:
         return {}
@@ -352,7 +352,7 @@ def _resolve_tsconfig_alias(raw: str, aliases: dict[str, list[str]],
     alias matches. It must not participate in the specificity contest:
     a bare `*` alias would score (1, 0) and so beat a declared non-wildcard
     directory-prefix alias at (2, -len), silently shadowing it and regressing
-    #1269. Unlike the alias path this returns a candidate only when it is a real
+    Unlike the alias path this returns a candidate only when it is a real
     file on disk, so a genuine external package (`import React from 'react'`)
     still resolves to nothing instead of a fabricated <baseUrl>/react edge.
     """
@@ -497,7 +497,7 @@ def _load_workspace_packages(start_dir: Path) -> dict[str, Path]:
 # `types` is LAST. It is a declaration-only condition that normally points into
 # `dist/`, which is build output and not part of the corpus, so letting it win
 # creates an edge to a node that does not exist while the runtime target the
-# source actually lives behind is skipped. This is the order #1308
+# source actually lives behind is skipped. This is the order the earlier fix
 # specified when the exports map was added; the tuple had `types` ahead of
 # `require`/`default` instead.
 _EXPORT_CONDITION_PRIORITY = (
@@ -1108,7 +1108,7 @@ def _disambiguate_colliding_node_ids(
         # whose only difference is a separator-vs-inner-punctuation swap
         # (``a/b/c.md`` vs ``a.b/c.md``, ``foo/bar_baz.md`` vs ``foo_bar/baz.md``)
         # normalize to the SAME salted id and still collide (the residual
-        # of #1504 the 0.9.0 full-path stem didn't reach). When that happens,
+        # the older full-path stem didn't reach). When that happens,
         # append a short stable hash of the *raw* source_key, which IS injective
         # over distinct paths, so the colliders separate. Computed in code from
         # source_file (never trusted from the LLM), so AST↔semantic parity holds.
@@ -1180,7 +1180,7 @@ def _disambiguate_colliding_node_ids(
         # its target salt by the IMPORTER's own source_file mis-points it back at the
         # importer's variant (a self-loop). When the emitter stamped the resolved
         # target file, key the target salt by THAT file so the salt lands on the
-        # correct sibling. Generalizes the #1475 C/ObjC header carve-out (below) to
+        # correct sibling. Generalizes the C/ObjC header carve-out (below) to
         # every language and to re_exports. `pop` it as we consume it: this is the
         # hint's only reader, and its absolute path must not persist into graph.json.
         target_file = edge.pop("target_file", None)
@@ -1870,7 +1870,7 @@ def _apply_symbol_resolution_facts(
             candidate_targets.add(_make_id(str(from_rel_parent.with_suffix(".py"))))
         except ValueError:
             pass
-        # Deliberately NOT adding the package `__init__.py` id form: since #3729,
+        # Deliberately NOT adding the package `__init__.py` id form: since that fix,
         # a legitimate `from pkg import sub` resolves its provisional edge to the
         # real `pkg/__init__.py` node, which is a correct package-dependency edge
         # (the package's __init__ runs on import) and must survive alongside the
@@ -1888,10 +1888,10 @@ def _apply_symbol_resolution_facts(
                 matched_edge = edge
                 break
         # Retract ONLY on a genuine module-collision candidate match. The old
-        # `len(loc_candidates) == 1` blind fallback over-retracted: since #3729 a
+        # `len(loc_candidates) == 1` blind fallback over-retracted: since that fix a
         # legitimately-resolved `from pkg import sub` edge (target `pkg/__init__.py`)
         # is the sole edge at its line and is NOT a collision, so the fallback
-        # would wrongly drop it. A real #3777 phantom always matches by its
+        # would wrongly drop it. A real phantom always matches by its
         # module-file id above, so no fallback is needed.
 
         if matched_edge is not None:
@@ -1911,14 +1911,14 @@ def _apply_symbol_resolution_facts(
     if retracted_edge_ids:
         edges[:] = [e for e in edges if id(e) not in retracted_edge_ids]
 
-    # #2262 producer guard: never emit a `calls` use-edge from a source id
+    # producer guard: never emit a `calls` use-edge from a source id
     # that owns no node. All node appends (ensure_symbol_node, declarations,
     # namespace exports) happened above, so the owned set is complete here.
     # A node-less caller id can never be canonicalized by the extract()
     # remaps (they learn only from nodes), so an absolute-derived one would
     # leak the machine/scan-path slug into the edge source. Reattribute the
     # edge to the caller's FILE node — the true file-level dependency
-    # survives, and the file id is exactly what the #2231 remap
+    # survives, and the file id is exactly what the remap
     # canonicalizes — or drop it when no file node id is available.
     owned = {str(n.get("id")) for n in nodes}
 
@@ -2709,7 +2709,7 @@ def _collect_js_symbol_resolution_facts(paths: list[Path], facts: _SymbolResolut
             if node.type in ("lexical_declaration", "variable_declaration"):
                 # CommonJS `const/let/var X = require('./m')` is an import alias,
                 # not a local declaration. Without a SymbolImportFact here,
-                # `class A extends X` has nothing to resolve through after #4634
+                # `class A extends X` has nothing to resolve through after that fix
                 # stopped minting a shadow binding node.
                 for child in node.children:
                     if child.type != "variable_declarator":
@@ -3237,7 +3237,7 @@ def _resolve_python_namespace_dir(module_name: str, current_path: Path, root: Pa
     ``__init__.py``. ``_resolve_python_module_path`` returns None for it (there is
     no module file to probe), so a package that omits ``__init__.py`` -- which
     ``python -m pkg.mod`` runs without complaint -- had every ``from . import
-    sibling`` dropped whole, and with it every ``sibling.func()`` call the #1883
+    sibling`` dropped whole, and with it every ``sibling.func()`` call the
     module arm would otherwise have resolved: the most-called functions in such a
     repo carried in-degree 0. Mirrors that resolver's walk (relative base, then
     scan root, then sys.path-root ancestors) and returns only a directory that
@@ -3505,10 +3505,10 @@ def _resolve_cross_file_imports(
     node_by_id = {node["id"]: node for node in all_nodes if node.get("id")} if all_nodes else {}
     repointed_from: set[str] = set()
     TYPE_REPOINT_RELATIONS = frozenset({"references", "inherits", "implements", "extends"})
-    # The #3252 repoint below only ever touches an edge whose source_file belongs
+    # The repoint below only ever touches an edge whose source_file belongs
     # to the importing file. Index the edges by source_file once, when the first
-    # file needs it, instead of scanning all of them per file (files x edges,
-    # #4980). Each entry keeps the edge's position in all_edges, so a file's
+    # file needs it, instead of scanning all of them per file (files x edges).
+    # Each entry keeps the edge's position in all_edges, so a file's
     # edges are visited in the same order as before.
     edges_by_source: dict[object, list[tuple[int, dict]]] = {}
     edges_indexed = False
@@ -3981,7 +3981,7 @@ def _merge_decl_def_classes(
     cross-file calls.
 
     This pass runs BEFORE disambiguation and collapses each such id-collision to
-    ONE node — the header (declaration) variant, consistent with the #1475
+    ONE node — the header (declaration) variant, consistent with the
     header_remaps direction — so disambiguation sees a single source_file per id
     and leaves it alone, and the downstream resolvers see ONE definition. Because
     the colliding nodes already share an id, no edge re-pointing is needed: every
@@ -4507,7 +4507,7 @@ def _resolve_java_type_references(
     explicit import are re-pointed to an FQN-labeled sourceless stub the
     bare-label rewire cannot collapse; references with no import/package facts
     are left untouched so the legacy unique-label rewire keeps handling plain
-    same-package/default-package corpora (mirrors the PHP  fix).
+    same-package/default-package corpora (mirrors the PHP fix).
     """
     try:
         import tree_sitter_java as tsjava
@@ -4681,7 +4681,7 @@ def _resolve_java_type_references(
                 # Explicit import with no internal definition: proven EXTERNAL.
                 # Park the edge on an FQN-labeled stub the bare-name rewire
                 # cannot collapse onto a same-named local class (this
-                # is the Java counterpart of the PHP #1923 fix).
+                # is the Java counterpart of the PHP fix).
                 edge["target"] = _external_stub(fqn)
                 repointed_from.add(tgt)
                 continue
@@ -4979,7 +4979,7 @@ def _resolve_php_type_references(
             repointed_from.add(tgt)
         elif explicit and resolved is None:
             # Proven external: park the edge on an FQN-labeled stub the
-            # bare-name rewire cannot collapse (this is the  fix).
+            # bare-name rewire cannot collapse (this is the fix).
             edge["target"] = _external_stub(fqn)
             repointed_from.add(tgt)
         # non-explicit miss: leave the bare stub for the legacy rewire

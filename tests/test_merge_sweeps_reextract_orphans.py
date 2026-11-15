@@ -2,7 +2,7 @@
 
 build_merge drops the old nodes and edges of re-extracted files by source_file.
 A source-less placeholder (an external type like `List`, a namespace node) is
-owned by no file, so it survived with no edges, and the #2807 sweep only ran
+owned by no file, so it survived with no edges, and the sweep only ran
 under prune_sources. Two ways to get there: per-file stubs re-pointed at a shared
 node (upgrade), and an edit that removes a type's last reference.
 """
@@ -64,7 +64,7 @@ def test_shared_placeholder_is_collected_when_its_last_reference_is_edited_away(
 
 
 def test_external_namespace_stub_is_collected(tmp_path):
-    """#2873 import stubs are file_type 'concept' but machine-minted."""
+    """Import stubs are file_type 'concept' but machine-minted."""
     stub = {"id": "system_collections_generic", "label": "system_collections_generic",
             "file_type": "concept", "type": "external", "external": True, "source_file": ""}
     gp = _save(_x([_n("a", "A.cs"), stub],

@@ -46,7 +46,7 @@ def test_class_docstring_extracted(tmp_path):
 
 
 def test_module_docstring_extracted_behind_shebang(tmp_path):
-    """#3312: a leading `#!` shebang comment must not hide the module docstring
+    """A leading `#!` shebang comment must not hide the module docstring
     that follows it — essentially every executable Python script starts with
     one, so this silently dropped module rationale for that whole class of
     file."""
@@ -64,7 +64,7 @@ def test_module_docstring_extracted_behind_shebang(tmp_path):
 
 
 def test_module_docstring_extracted_behind_plain_comment(tmp_path):
-    """#3312: same bug, non-shebang trigger — any ordinary leading comment
+    """Same bug, non-shebang trigger — any ordinary leading comment
     (license header, coding declaration, ...) hid the module docstring."""
     p = tmp_path / "sample.py"
     p.write_text(
@@ -78,7 +78,7 @@ def test_module_docstring_extracted_behind_plain_comment(tmp_path):
 
 
 def test_module_docstring_extracted_behind_multiple_leading_comments(tmp_path):
-    """#3312: a multi-line header (shebang + coding declaration + license) —
+    """A multi-line header (shebang + coding declaration + license) —
     every leading comment must be skipped, not just the first one."""
     p = tmp_path / "sample.py"
     p.write_text(
@@ -94,7 +94,7 @@ def test_module_docstring_extracted_behind_multiple_leading_comments(tmp_path):
 
 
 def test_function_docstring_extracted_behind_leading_comment(tmp_path):
-    """#3312: the same _get_docstring helper serves function/class bodies too —
+    """The same _get_docstring helper serves function/class bodies too —
     a comment as the first line of a function body must not hide its
     docstring either."""
     path = _write_py(tmp_path, '''
@@ -109,7 +109,7 @@ def test_function_docstring_extracted_behind_leading_comment(tmp_path):
 
 
 def test_no_docstring_after_comment_extracts_nothing(tmp_path):
-    """#3312 follow-up: a leading comment with NO docstring after it must not
+    """Follow-up: a leading comment with NO docstring after it must not
     fabricate a rationale node from something else in the body."""
     p = tmp_path / "sample.py"
     p.write_text(
@@ -124,7 +124,7 @@ def test_no_docstring_after_comment_extracts_nothing(tmp_path):
 
 
 def test_non_first_statement_string_not_treated_as_docstring(tmp_path):
-    """#3312 follow-up: a bare string literal that is NOT the first statement
+    """Follow-up: a bare string literal that is NOT the first statement
     (because an assignment precedes it) is not a docstring and must still be
     correctly rejected after the leading-comment skip is added."""
     p = tmp_path / "sample.py"
@@ -269,7 +269,7 @@ def test_generated_file_module_docstring_suppressed(tmp_path):
 
 
 def test_decorated_method_node_id_is_class_qualified(tmp_path):
-    """Regression for #1050: @property / @staticmethod / @classmethod methods
+    """@property / @staticmethod / @classmethod methods
     were emitted with a class-unqualified node id (e.g. ``file_baz``) while the
     rationale walker emitted the class-qualified id (``file_bar_baz``) as the
     docstring's edge target. The mismatch caused ``build_from_json`` to drop
@@ -356,7 +356,7 @@ def test_decorated_method_node_id_is_class_qualified(tmp_path):
             )
 
 
-# ── Regression for #2206: labels must normalize whitespace before truncating ──
+# ── Regression: labels must normalize whitespace before truncating ──
 
 
 def test_long_docstring_label_truncates_on_word_boundary(tmp_path):
@@ -525,7 +525,7 @@ def test_js_adr_in_string_literal_not_extracted(tmp_path):
     assert refs == []
 
 
-# ── Regression for #2206, JS/TS site (shares the fix with the Python site) ────
+# ── Regression, JS/TS site (shares the fix with the Python site) ────
 
 
 def test_js_rationale_label_truncates_on_word_boundary(tmp_path):

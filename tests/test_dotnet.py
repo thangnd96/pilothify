@@ -127,7 +127,7 @@ def test_csproj_project_references():
 
 
 def test_csproj_out_of_root_reference_id_is_portable(tmp_path):
-    """#1899: a ProjectReference to a project OUTSIDE the scan root must not leak
+    """A ProjectReference to a project OUTSIDE the scan root must not leak
     the absolute scan path (including the OS username) into the node id or
     source_file. The out-of-root target gets a portable, `ext_`-namespaced id and
     a walk-up relative source_file rather than the absolute-derived form."""

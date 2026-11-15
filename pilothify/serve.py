@@ -267,7 +267,7 @@ def _is_searchable(term: str) -> bool:
 # because "how does X work" / "how X works" is the most common question phrasing.
 # `get` is likewise a filler verb in questions ("how does X get authorized")
 # that, unfiltered, exact-matches framework hubs such as a NestJS `Get` decorator
-# import with the exact-match bonus; #1602 guards short low-degree leaves,
+# import with the exact-match bonus; once guards short low-degree leaves,
 # not hubs.
 #
 # Non-English question words are just as damaging: in a mostly-English
@@ -1062,14 +1062,14 @@ def _pick_seeds(
     terms by ~1000x (see `_EXACT_MATCH_BONUS` vs. `_SUBSTRING_MATCH_BONUS`).
     The 20%-gap cutoff then silently discards all of those substring-tier
     seeds, so the BFS traversal only ever explores the neighborhood of the one
-    unrelated exact match — see #1445.
+    unrelated exact match —.
 
     When `G` and `best_seed_by_term` are supplied, this guarantees at least one
     seed per distinct query term that has any match at all, so one term's
     incidental collision cannot starve out the others. The per-token winners
     in `best_seed_by_term` are precomputed by `_score_query` (during the same
     traversal that produced `scored`) so this function no longer rescores the
-    graph per term — see #1445 and the `_score_query` docstring. The #1766
+    graph per term — and the `_score_query` docstring. The
     label cap yields to this guarantee only when the term is absent from the
     shared label, since a seeded same-label node then can't cover it.
 
@@ -1145,8 +1145,7 @@ def _pick_seeds(
 
 # Verb-shaped tokens that express the RELATION a query asks about ("who calls
 # X", "what uses Y") rather than a symbol to look up. `_query_terms` keeps them
-# on purpose (a corpus can legitimately define an identifier named `calls`, see
-# #1597), but they must not be handed a guaranteed seed slot in `_pick_seeds`:
+# on purpose (a corpus can legitimately define an identifier named `calls`), but they must not be handed a guaranteed seed slot in `_pick_seeds`:
 # an incidental prefix match (e.g. "calls" prefixing `.callStoreWithAmount()`)
 # would otherwise seat an unrelated decoy as a BFS root. Demotion
 # happens at the `_query_graph_text` call site, so `_score_query`'s ranking —
@@ -1979,9 +1978,9 @@ def _resolve_path_scoped_symbol(G: nx.Graph, path_part: str, symbol_part: str) -
 
     Backs the `path::Symbol` query form: a bare path resolves to the
     FILE node (`_find_node_tiers`'s own `source_exact` tier, which prefers
-    the file over its members once #2032-disambiguated), and a bare symbol
+    the file over its members once disambiguated), and a bare symbol
     name can be ambiguous across files -- the same-named local declaration
-    guard from #3176 exists for exactly that case, and its own suggested
+    guard from that fix exists for exactly that case, and its own suggested
     retry ("the repo-relative path") pointed at a form that resolved to the
     wrong node or nothing at all, since no prior tier combined a path with
     a label. This combines both constraints in one query, so a specific
@@ -2104,7 +2103,7 @@ def _named_nodes(G: nx.Graph, name: str) -> list[str]:
 def _membership_neighbors(G: nx.Graph, nid: str, *, members: bool) -> list[str]:
     """The members of *nid* (``members=True``) or the nodes that own it.
 
-    Direction comes from the edge's `_src`/`_tgt` markers (#2309, and the CLI
+    Direction comes from the edge's `_src`/`_tgt` markers (and the CLI
     loaders that read a graph undirected stamp them on every link), else from
     the stored arc of a directed graph. An undirected edge without markers says
     nothing about which end owns the other, so it is skipped: counting it both
@@ -2364,7 +2363,7 @@ def _find_node_tiers(
             if str(G.nodes[nid].get("source_location", "")) != "L1":
                 continue
             # File-node label is the bare basename OR a directory-qualified form
-            # from the #2032 disambiguation pass (e.g. "process-order/index.ts").
+            # from the disambiguation pass (e.g. "process-order/index.ts").
             lbl = _strip_diacritics(str(G.nodes[nid].get("label") or "")).lower()
             if lbl == query_basename or lbl.endswith("/" + query_basename):
                 preferred.append(nid)
@@ -2517,7 +2516,7 @@ def _query_name_refusal(G: nx.Graph, label: str) -> str | None:
     `query` doubles as keyword search, so a bare term that prefix- or
     substring-matches several labels (`client` -> `AlphaClient`, `BetaClient`) is a
     legitimate exploratory search and must still score, not be refused. Only an
-    EXACT-tier tie (the term is itself the name of two or more nodes, as in #4511's
+    EXACT-tier tie (the term is itself the name of two or more nodes, as's
     `.nonce()`) is a genuinely ambiguous node reference and gets the same refusal
     `explain`/`path` give. Returns the refusal message, or None to fall through to
     scoring. (`explain`/`path`/get_node keep using `_resolve_single_node`, where a

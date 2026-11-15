@@ -1,10 +1,10 @@
 """`affected <path>` must find the file node for a file whose basename is shared.
 
-#4698: a path query resolves through ``source_file``, which matches every node in
+A path query resolves through ``source_file``, which matches every node in
 the file, so resolution ends in ``_prefer_file_node``. Its three passes each
 assume something the graph no longer guarantees:
 
-- the file node's label is the bare basename — false since #2032 relabelled
+- the file node's label is the bare basename — false since that fix relabelled
   colliding basenames to their shortest unique path suffix (``alpha/hooks.py``);
 - the file node is the only node at ``L1`` — false whenever the module's
   docstring (a ``rationale`` node, located on the docstring's own line) or a
@@ -39,7 +39,7 @@ _LLM_ENV_KEYS = (
 def _graph_with_shared_basename(
     *, extra_l1: tuple[str, str, str] | None = None
 ) -> nx.DiGraph:
-    """The nodes #2032's relabel plus the rationale pass leave in the file.
+    """The nodes the relabel plus the rationale pass leave in the file.
 
     ``extra_l1`` is an ``(id, label, file_type)`` second node on line 1, or
     ``None`` for the control where only the file node is on L1.
@@ -98,7 +98,7 @@ def test_shared_basename_with_one_line_definition_on_l1_resolves_file_node():
 
 
 def test_shared_basename_resolves_from_absolute_path(tmp_path):
-    """#2706 made absolute-path seeds repo-relative; the file-node pick must hold."""
+    """Made absolute-path seeds repo-relative; the file-node pick must hold."""
     graph = _graph_with_shared_basename(
         extra_l1=(
             "app_alpha_hooks_rationale_1",

@@ -492,7 +492,7 @@ class TestBuildCommunityLabels:
         assert build_community_labels({"nodes": []}) == {}
 
 
-# ── Windows cp1252 subprocess-decode hardening (decode-side sibling of) ──
+# ── Windows cp1252 subprocess-decode hardening (the decode-side sibling) ──
 
 class TestSubprocessOutputEncoding:
     """prs.py reads gh/git/claude output via subprocess.run(text=True). Without an
@@ -501,7 +501,7 @@ class TestSubprocessOutputEncoding:
     fails: the reader thread raises UnicodeDecodeError, subprocess.run returns
     stdout=None, and the caller then dies on json.loads(None) / None.splitlines().
     Every call must pass encoding="utf-8" so decoding matches Linux/macOS.
-    #1505 fixed the same defect on the llm.py claude-cli subprocess.
+    Fixed the same defect on the llm.py claude-cli subprocess.
     """
 
     _NON_LATIN1 = "docs: add Persian (فارسی) 🏆"
@@ -745,7 +745,7 @@ class TestCmdPrsDetail:
              patch("pilothify.prs.fetch_pr_files", return_value=["src/app.py"]) as mock_diff:
             cmd_prs(["20", f"--graph={graph_file}"])
 
-        # Crucial check for #3824: only PR 20's diff must be fetched, NOT 10 or 30
+        # Crucial check: only PR 20's diff must be fetched, NOT 10 or 30
         assert mock_diff.call_count == 1
         assert mock_diff.call_args[0][0] == 20
         captured = capsys.readouterr()

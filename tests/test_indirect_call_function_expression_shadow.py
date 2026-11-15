@@ -132,7 +132,7 @@ def test_same_named_reference_after_the_expression_still_resolves(tmp_path):
 def test_sibling_function_expression_param_does_not_leak(tmp_path):
     """Two function expressions in one initializer are SEPARATE scopes: the
     first one's parameter must not shadow the second one's body. This is the
-    #2568 shape — several closures registered under one id — reached through
+    Shape — several closures registered under one id — reached through
     the function-expression form rather than the arrow form."""
     r, nid = _extract_js_dir(tmp_path, {"a.js": (
         "function k(x){ return x; }\n"

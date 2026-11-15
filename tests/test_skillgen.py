@@ -136,7 +136,7 @@ def test_lean_core_runs_default_pipeline_with_zero_references():
 
 
 def test_extraction_states_no_api_key_required_for_every_host():
-    """Regression for #1461: every skill body that describes Step 3 extraction must
+    """Every skill body that describes Step 3 extraction must
     state up front that no API key is required, tell the agent never to prompt for or
     block on one, and give a terminal-only (non-subagent) fallback.
 
@@ -352,7 +352,7 @@ def test_codex_uses_compact_extraction_windows_uses_verbose():
 
 
 def test_every_platform_query_has_expansion_and_fallback():
-    """#1325: the unified query reference ships BOTH the vocab-expansion step and
+    """The unified query reference ships BOTH the vocab-expansion step and
     the inline NetworkX fallback to every platform (previously split so no host
     got both — Claude had expansion but no fallback; the rest the reverse)."""
     for key in ("claude", "codex", "windows", "opencode"):
@@ -401,7 +401,7 @@ def _powershell_platform_keys():
 
 
 def test_powershell_hosts_carry_no_bash_only_shell():
-    """#2528: the Windows variant had a PowerShell Step 1 but bash for Steps 2+
+    """The Windows variant had a PowerShell Step 1 but bash for Steps 2+
     (``$(cat ...) -c``, ``rm -f``, ``find ... -delete``, ``2>/dev/null``), so a
     strict-PowerShell host failed at Step 2. Every powershell-shell render must
     now be free of bash-only tokens and carry the here-string stdin invocation."""
@@ -424,7 +424,7 @@ def test_powershell_hosts_carry_no_bash_only_shell():
 
 
 def test_windows_and_posix_cores_have_step_and_2490_parity():
-    """Both shells run the same pipeline: every step heading and the #2490
+    """Both shells run the same pipeline: every step heading and the
     curated-labels re-export line appear in skill.md AND skill-windows.md."""
     claude_core, _ = _platform_artifacts("claude")
     windows_core, _ = _platform_artifacts("windows")
@@ -635,7 +635,7 @@ def test_monoliths_change_only_sanctioned_lines():
     The round-trip (multiset diff vs the pinned v8 blob) must come back clean:
     each added/removed line matches one of the documented sanctioned predicates
     in gen — the enum unification, the unified description, the chunk-cleanup
-    rewrite, the four #1392 runbook fixes, and semantic-cache source
+    rewrite, the four runbook fixes, and semantic-cache source
     scoping. Anything else is drift.
     """
     platforms = gen.load_platforms()
@@ -648,7 +648,7 @@ def test_monoliths_change_only_sanctioned_lines():
 
 
 def test_monoliths_carry_the_1392_runbook_fixes():
-    """The four #1392 data-loss/correctness fixes are present in both monoliths.
+    """The four data-loss/correctness fixes are present in both monoliths.
 
     The round-trip allows these change-classes; this test asserts they are
     actually applied, so a regression that drops a fix fails here even though the
@@ -684,7 +684,7 @@ def test_monoliths_carry_the_1392_runbook_fixes():
 
 
 def test_monoliths_scope_semantic_cache_writes_to_uncached_files():
-    """#1757: generated monoliths pass the dispatched-file allowlist when
+    """Generated monoliths pass the dispatched-file allowlist when
     replacing semantic cache entries."""
     platforms = gen.load_platforms()
     for key in ("aider", "devin"):
@@ -694,7 +694,7 @@ def test_monoliths_scope_semantic_cache_writes_to_uncached_files():
 
 
 def test_generated_runbooks_pass_root_to_save_manifest():
-    """#1417: every save_manifest call in a shipped runbook threads root=.
+    """Every save_manifest call in a shipped runbook threads root=.
 
     Without root=, save_manifest stores absolute path keys, so a clone or move
     breaks --update (every cached file misses and the whole corpus re-extracts).
@@ -760,12 +760,12 @@ def test_always_on_roundtrip_is_byte_faithful():
     """Each always_on/*.md reproduces its former __main__.py constant byte for byte.
 
     This is the load-bearing fidelity check behind the D2-a extraction: the
-    install-string / issue-#580 tests still import the constants from
+    install-string tests still import the constants from
     pilothify.__main__, so the packaged markdown must round-trip exactly or those
     contracts silently change.
     """
     # The guard passes with zero problems: every always-on block reproduces its
-    # frozen baseline, with the agents-md block allowed exactly the #1530
+    # frozen baseline, with the agents-md block allowed exactly the
     # sanctioned substitution recorded in gen.ALWAYS_ON_SANCTIONED_EDITS.
     problems = gen.always_on_roundtrip()
     assert problems == []
@@ -783,7 +783,7 @@ def test_always_on_roundtrip_is_byte_faithful():
         "When the user types `/pilothify`, use the installed pilothify skill or instructions "
         "before doing anything else."
     )
-    # The registry holds the #1530 substitution plus the query-first and graph-diff rules.
+    # The registry holds the substitution plus the query-first and graph-diff rules.
     assert gen.ALWAYS_ON_SANCTIONED_EDITS["_AGENTS_MD_SECTION"] == (
         (old_instruction, new_instruction),
         gen._QUERY_FIRST_EDIT,
@@ -1110,7 +1110,7 @@ def test_agents_audit_baseline_is_amps_v8_body():
 
 
 def test_semantic_cache_calls_pass_prompt_file_for_every_split_host():
-    """#1939: a skill's cache read and write must both name the extraction prompt
+    """A skill's cache read and write must both name the extraction prompt
     they use, or the run replays entries produced by an older prompt (the read) /
     strands its results where the next read won't look (the write).
 
@@ -1159,7 +1159,7 @@ def test_windows_skill_writes_marker_files_without_a_bom():
         "the BOM-less encoding object must be constructed in the windows render"
 
 
-# --- #2225: a partly-read file must never be a permanent, silent loss ----------
+# --- a partly-read file must never be a permanent, silent loss ----------
 #
 # The skill path hands files to subagents, and the Read tool caps a single call at
 # 2000 lines WITHOUT reporting truncation. A subagent that reads only the head of
@@ -1169,7 +1169,7 @@ def test_windows_skill_writes_marker_files_without_a_bom():
 # success, and the manifest recorded the file as done so no later run retried it.
 #
 # These tests execute the emitted python rather than matching its source, per the
-# #2126/#2641 convention that static assertions gave this class of bug no coverage.
+# convention that static assertions gave this class of bug no coverage.
 
 
 def _python_step_bodies(core: str) -> list[str]:
@@ -1197,7 +1197,7 @@ def _step_body(core: str, marker: str) -> str:
 def _substituted(body: str, root: Path) -> str:
     """Apply the substitution the skill still asks the agent to make (SPEC_PATH),
     and simulate Step 1 writing the trusted scan root to .pilothify_root, which the
-    blocks read for INPUT_PATH since #4762 (callers chdir to ``root`` so the
+    blocks read for INPUT_PATH since that fix (callers chdir to ``root`` so the
     relative ``pilothify-out/.pilothify_root`` resolves there)."""
     spec = root / "extraction-spec.md"
     spec.write_text("extraction prompt fixture\n", encoding="utf-8")
@@ -1380,7 +1380,7 @@ def test_a_partly_read_file_is_cached_as_a_miss_so_the_next_update_retries_it(
 
 
 def test_step4_skill_honors_force_flag_on_shrink(tmp_path, capsys, monkeypatch):
-    """#4777: Step 4 must pass force=IS_FORCE to to_json so --force allows shrinking."""
+    """Step 4 must pass force=IS_FORCE to to_json so --force allows shrinking."""
     import json as _json
     import networkx as _nx
     from pilothify.export import to_json

@@ -1,6 +1,6 @@
 """A same-relation edge collision must not erase the losing edge's provenance.
 
-`build_from_json` keeps one edge per pair and relation, and since #3711 the
+`build_from_json` keeps one edge per pair and relation, and since that fix the
 higher-confidence edge wins. The loser used to vanish: an AMBIGUOUS semantic
 duplicate of an INFERRED dispatch edge left no trace in graph.json. The winner
 now carries the loser's confidence / score / file / line in `also_seen`, and

@@ -113,7 +113,7 @@ def test_valid_enum_confidences_are_left_untouched():
 
 
 def test_hyperedge_confidence_folds_the_same_way():
-    """#4495: a hyperedge carries the same confidence/confidence_score pair
+    """A hyperedge carries the same confidence/confidence_score pair
     an edge does, and had no fold of its own."""
     he = {"id": "h1", "nodes": ["a", "b"], "confidence": "high"}
     _fold_confidence(he)
@@ -126,7 +126,7 @@ def test_hyperedge_confidence_folds_the_same_way():
 
 
 def test_build_from_json_normalizes_drifted_confidence_without_warning():
-    """#4495 end to end: a graph carrying the exact warning text from the
+    """End to end: a graph carrying the exact warning text from the
     issue must build silently, with the edge and hyperedge confidence both
     repaired to the enum."""
     extraction = {
@@ -182,7 +182,7 @@ def test_build_from_json_normalizes_without_validation_warnings():
 
 
 def test_node_confidence_folds_the_same_way():
-    """#4529: a node carrying a confidence/confidence_score pair gets the same
+    """A node carrying a confidence/confidence_score pair gets the same
     fold edges and hyperedges already have, instead of passing through the
     build verbatim."""
     drifted = {"id": "a", "label": "A", "confidence": "high"}
@@ -210,7 +210,7 @@ def test_node_without_confidence_is_left_untouched():
 
 
 def test_build_from_json_normalizes_node_confidence():
-    """#4529 end to end: a drifted node confidence reaches the built graph
+    """End to end: a drifted node confidence reaches the built graph
     folded onto the enum, the same as an edge's."""
     extraction = {
         "nodes": [

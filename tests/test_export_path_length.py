@@ -1,7 +1,7 @@
-"""Regression tests for issue #2655: export filename caps must respect the
+"""Regression tests: export filename caps must respect the
 DESTINATION PATH length, not only the per-component NAME_MAX.
 
-#1094 capped export stems at 200 bytes so they stay under the conventional
+Capped export stems at 200 bytes so they stay under the conventional
 255-byte NAME_MAX. That is the correct constraint on POSIX and the wrong one on
 Windows, where the limit applies to the WHOLE path (MAX_PATH = 260 chars
 including the terminating NUL). A 200-byte stem under an ordinary vault

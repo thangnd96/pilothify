@@ -42,7 +42,7 @@ def _is_config_json(path: Path, obj_node, source: bytes) -> bool:
     A JSON Schema is *not* a config manifest. `$schema` sits in the probe's key
     set because configs legitimately carry it, but it is also the defining marker
     of a schema -- so a schema document satisfied the probe and was walked in
-    full, re-opening the keyword-node explosion #1224 closed. One 160 KB
+    full, re-opening the keyword-node explosion closed. One 160 KB
     contract contributed 362 keyword nodes and ~12 schema-only communities. The
     filename branches above run first, so `biome.json`/`renovate.json`/
     `package.json` never depended on the probe; the probe only decides the fate
@@ -235,7 +235,7 @@ def extract_json(path: Path) -> dict:
                         add_edge(parent_nid, ref_nid, "references", line)
 
                 elif parent_key in _DEP_KEYS and val_text.strip():
-                    # Two defects fixed here, both from the #1764 shape:
+                    # Two defects fixed here, both from the shape:
                     #
                     # 1. The edge ran `key_nid -> dep_nid`, and both nodes carry
                     #    the *same label* (the dependency name), so every
@@ -251,7 +251,7 @@ def extract_json(path: Path) -> dict:
                     #    namespacing every other external reference in this file
                     #    applies (J-4). A dependency named `utils`, `colors` or
                     #    `types` could then be collapsed onto a same-named local
-                    #    module by build.py's alias index -- the #1638 failure
+                    #    module by build.py's alias index -- the failure
                     #    mode reached through a different door.
                     #
                     # 3. Moving that edge to the manifest also cut the only link between the
@@ -260,7 +260,7 @@ def extract_json(path: Path) -> dict:
                     #    the code that imports the package landed in different communities
                     #   . `key_nid --declares--> dep_nid` reconnects them, and the
                     #    entry is relabelled `name@range` so the two nodes no longer share a
-                    #    label: a same-label edge is the `react -> react` view #1764
+                    #    label: a same-label edge is the `react -> react` view an earlier fix
                     #    removed, and two `react` nodes made `explain`/`affected`
                     #    ambiguous. The ref node keeps the bare name, which is what
                     #    `import "react"` resolves to. The range is one line, capped at 40

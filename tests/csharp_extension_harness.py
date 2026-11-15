@@ -448,7 +448,7 @@ FIXTURES: dict[str, Fixture] = {
         forbid=["// F1"],
         note="the regular-name guard refuses this binding on purpose",
     ),
-    # The #1609 regression the fail-closed guard prevents: a member call on a type
+    # The regression the fail-closed guard prevents: a member call on a type
     # that declares no such member must not bind to an unrelated same-named method.
     "god_node_control": Fixture(
         files={
@@ -774,7 +774,7 @@ def apply_strategy(
                     continue
 
             if strategy.bare_name:
-                # Control: the pre-#1609 behaviour — resolve a member call by the
+                # Control: the older behaviour — resolve a member call by the
                 # bare method name, ignoring the receiver entirely. Restricted to
                 # a corpus-wide unique name, which is exactly the fallback the
                 # god-node guard removed.

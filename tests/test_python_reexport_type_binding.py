@@ -1,4 +1,4 @@
-"""Regression lock-in for #4262: a cross-module reference to a type defined
+"""Regression lock-in: a cross-module reference to a type defined
 exactly once must bind to that single located definition, not dangle on a
 per-file stub.
 

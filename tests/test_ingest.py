@@ -101,7 +101,7 @@ def test_invalid_outcome_rejected(tmp_path):
 
 
 def test_concurrent_saves_of_the_same_question_do_not_overwrite(tmp_path):
-    """Regression for #3301: a second-granularity stamp plus a 50-char slug is
+    """A second-granularity stamp plus a 50-char slug is
     not unique, so saves in the same second sharing a prefix collapsed into one
     file and the earlier ones were silently lost."""
     from concurrent.futures import ThreadPoolExecutor

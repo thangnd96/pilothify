@@ -104,7 +104,7 @@ def _php_grammar_available(tmp_path) -> bool:
 
 
 def test_php_file_scope_arg_closure_call_resolves_to_the_closure(tmp_path):
-    """#3409 reporter repro: a closure passed as an argument at FILE SCOPE must
+    """Reporter repro: a closure passed as an argument at FILE SCOPE must
     produce a node AND its inner call must attribute to that closure. Uses the
     full extract() pipeline so raw_calls resolve to a real defined target."""
     (tmp_path / "__probe.php").write_bytes(b"<?php\n")

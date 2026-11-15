@@ -1,4 +1,4 @@
-"""#4989: a bare Python builtin must not bind to a same-named package class.
+"""A bare Python builtin must not bind to a same-named package class.
 
 A module that never imports (or otherwise binds) ``NotImplementedError`` is
 referring to ``builtins.NotImplementedError``. The cross-file name-only call

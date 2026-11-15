@@ -348,7 +348,7 @@ def _stamped_manifest_files(
     A file in ``partial_source_files`` DID produce output this run, but only a
     truncated fragment of it, so it is excluded from stamping too — otherwise
     detect_incremental would see it "done" and never re-dispatch it, leaving the
-    incomplete node set live forever on the warm-incremental path. Same #933
+    incomplete node set live forever on the warm-incremental path. Same
     mechanism: leave it unstamped and it is re-queued next run.
 
     ``unverified_semantic_sources``: files whose semantic extraction
@@ -361,7 +361,7 @@ def _stamped_manifest_files(
     root-relative on a fresh extraction while ``files_by_type`` entries are
     absolute (from detect()), so a raw string comparison never matched and
     every freshly-extracted semantic doc was dropped from the manifest.
-    Mirrors the #1890 path normalization in pilothify.llm.
+    Mirrors the path normalization in pilothify.llm.
 
     Hyperedges are counted as output: a chunk whose only result for a
     document is a hyperedge (3+ nodes sharing a concept) is valid output that
@@ -430,7 +430,7 @@ def _handle_unverified_semantic_shrink(
     sem_prompt=None,
     cache_root=None,
 ):
-    """Shared handling for the #3203 unverified-semantic-shrink guard on both the
+    """Shared handling for the unverified-semantic-shrink guard on both the
     raw and clustered write paths (they differ only in where the flag is read
     from — ``merged`` vs ``G.graph``). Always prints the actionable notice.
 
@@ -571,9 +571,9 @@ def _stale_graph_sources(
     detect, so their absence from the corpus is not staleness evidence.
     Relative entries are re-anchored against both the scan root and the
     graph's own output root; only anchors that land inside the scan root
-    count. Since #1941 extracts always store source_file relative to the SCAN
+    count. Since that fix extracts always store source_file relative to the SCAN
     root, so the scan-root anchor is the live one; the out-root anchor stays
-    for graphs written by <=0.9.16, which stored them relative to the OUT root
+    for graphs written by older releases, which stored them relative to the OUT root
     (e.g. ``../project/x.py``).
     ``seen_files`` must be the FULL detect output including unclassified
     files, so nodes from walked-but-unsupported sources (e.g. introspected
@@ -584,7 +584,7 @@ def _stale_graph_sources(
     raw-string membership test misread every accented live file as stale
     (same class as the manifest-layer).
 
-    Fail-closed liveness guard (#2210, mirrors watch.py's excluded-vs-deleted
+    Fail-closed liveness guard (mirrors watch.py's excluded-vs-deleted
     distinction): a source missing from the scan corpus is only pruned when
     the file is gone from disk, or when its exclusion is PROVABLE from the
     same scan that produced ``seen_files`` — ``detection``'s ``ignored`` /
@@ -755,7 +755,7 @@ def _zero_node_stamped_code_sources(
     A file the extractor declines by design (data JSON) is a legitimate
     stamped-but-zero-node row, not a poisoned one. Its manifest row carries
     ``ast_empty: true``; skip those here or the heal re-queues them on every
-    incremental forever. A pre-#2879 manifest lacks the marker, so such a file
+    incremental forever. A older manifest lacks the marker, so such a file
     is re-queued once more, then stamped with it and left alone thereafter.
 
     Membership mirrors the ``source_file`` spellings extracts store (scan-root-relative, forward slash; absolute for out-of-root) and
@@ -781,7 +781,7 @@ def _zero_node_stamped_code_sources(
     except (OSError, RuntimeError):
         root_res = scan_root
     # <out>/pilothify-out/graph.json — legacy relative source_files may be
-    # anchored here instead of the scan root (<=0.9.16).
+    # anchored here instead of the scan root (older releases).
     out_base = graph_path.parent.parent
     try:
         out_base = out_base.resolve()
@@ -838,7 +838,7 @@ def _zero_node_stamped_semantic_sources(
     """Manifest-stamped semantic files (doc/paper/image) with ZERO nodes
     and ZERO hyperedges in the existing graph.json (heal).
 
-    A manifest poisoned before #2927 (edge-only result cached and stamped)
+    A manifest poisoned before that fix (edge-only result cached and stamped)
     keeps reporting the file unchanged forever, freezing it out of the graph.
     Re-queue any unchanged semantic file that has neither nodes nor hyperedges
     in graph.json. If it succeeds, its nodes enter graph.json; if it produces
@@ -1594,7 +1594,7 @@ def _run_hook_guard(kind: str, strict: bool = False) -> None:
             ]
             if not any(tl in _HOOK_SOURCE_EXTS for tl in tails):
                 return
-            # #1840 (a): skip files outside the graph's project. cwd (or
+            # (a): skip files outside the graph's project. cwd (or
             # CLAUDE_PROJECT_DIR, which Claude Code sets) is the project root, since
             # the guard only triggers when graph.json exists relative to cwd. A path
             # candidate that resolves outside that root is out-of-project.
@@ -1678,7 +1678,7 @@ def _run_hook_guard(kind: str, strict: bool = False) -> None:
                 gmtime = os.stat(str(out_path("graph.json"))).st_mtime
             except OSError:
                 return
-            # #1840 (b): stale-for-target -> soften, never block. A checkout
+            # (b): stale-for-target -> soften, never block. A checkout
             # can refresh mtimes without changing the extracted content.
             stale = False
             fp = str(t.get("file_path") or "")
@@ -2506,7 +2506,7 @@ def dispatch_command(cmd: str) -> None:
                     sys.exit(1)
                 direction_flag = "undirected"
         # Directed by default: direction truth exists in every
-        # graph.json (arc order on post-#563 files, _src/_tgt markers on legacy
+        # graph.json (arc order on newer files, _src/_tgt markers on legacy
         # canonicalized files), so respect it unless the caller opts out.
         undirected = direction_flag == "undirected"
         gp = Path(graph_path).resolve()
@@ -3273,7 +3273,7 @@ def dispatch_command(cmd: str) -> None:
         # Mark before graph.json advances. Report/sidecar generation or process
         # interruption must not leave an older HTML looking current.
         html_stale_marker.touch()
-        # The #479 guard can refuse this write, so it goes before the sidecars —
+        # The guard can refuse this write, so it goes before the sidecars —
         # a report and labels describing a clustering graph.json does not contain
         # are worse than no run at all.
         if not to_json(G, communities, str(out / "graph.json"),
@@ -3621,7 +3621,7 @@ def dispatch_command(cmd: str) -> None:
             )
             sys.exit(1)
         # Each input numbers its own communities from 0, so the merged output
-        # carries per-source ids (offset since) that have no relation to
+        # carries per-source ids (offset per source) that have no relation to
         # the previous MERGED clustering .pilothify_labels.json was written
         # against. cluster-only's label-reuse remap reads this file's
         # `community` field as "the previous clustering" and silently mismatches
@@ -3716,8 +3716,8 @@ def dispatch_command(cmd: str) -> None:
         input_node_total = sum(g.number_of_nodes() for g in graphs)
         # nx.compose merges graph attrs with dict.update, so each iteration
         # CLOBBERED the previously accumulated hyperedge list — only the last
-        # input's hyperedges survived (#2484, after @oleksii-tumanov's
-        # diagnosis in PR #1691). Collect every input's prefixed hyperedges
+        # input's hyperedges survived (after @oleksii-tumanov's
+        # diagnosis). Collect every input's prefixed hyperedges
         # and re-attach the union after composing.
         collected_hyperedges: list = []
         # Offset each input's community ids into a shared id space as it is
@@ -4304,7 +4304,7 @@ def dispatch_command(cmd: str) -> None:
         # merge the fuzzy pass runs over the COMBINED node set (existing graph +
         # new chunk), so a small diff merged into a large graph can collapse
         # pre-existing nodes from files the diff never touched. Turning dedup
-        # off also arms build_merge's #479 shrink guard, which is disabled while
+        # off also arms build_merge's shrink guard, which is disabled while
         # dedup is on because fuzzy merging shrinks the graph legitimately.
         no_dedup = False
         google_workspace = False
@@ -4479,13 +4479,13 @@ def dispatch_command(cmd: str) -> None:
             _read_build_excludes as _read_build_ex,
             _read_build_gitignore as _read_build_gi,
         )
-        # #1971 persistence: an explicit --no-gitignore persists False; a later
+        # persistence: an explicit --no-gitignore persists False; a later
         # flag-less `pilothify extract` must NOT clobber it back to True, which
         # would make the git-ignored code silently disappear again (the exact
-        # complaint #1971 is about). Honor the persisted value for THIS run when
+        # complaint that check is about). Honor the persisted value for THIS run when
         # the flag is absent (read before the write below), and write False only
         # when the flag is set — None leaves the setting as-is, mirroring how
-        # #1886 persists --exclude.
+        # persists --exclude.
         _effective_gitignore = False if no_gitignore else _read_build_gi(pilothify_out)
         # An explicit list replaces the persisted one; omission reuses it.
         _effective_excludes = cli_excludes or _read_build_ex(pilothify_out)
@@ -4581,7 +4581,7 @@ def dispatch_command(cmd: str) -> None:
             graph_stale_sources = _stale_graph_sources(
                 existing_graph_path, target, _seen_files, detection=detection
             )
-            # #2543 heal: manifests poisoned BEFORE failed-source unstamping
+            # heal: manifests poisoned BEFORE failed-source unstamping
             # existed carry live hashes for code files whose extraction failed
             # (missing extra, crash) — stamped up-to-date yet absent from
             # graph.json, so the incremental gate skips them forever. Treat
@@ -4600,7 +4600,7 @@ def dispatch_command(cmd: str) -> None:
                     f"(prior failed extraction)"
                 )
                 code_files.extend(Path(p) for p in _healed_sources)
-            # #2927 heal: manifests poisoned BEFORE zero-node semantic cache rejection
+            # heal: manifests poisoned BEFORE zero-node semantic cache rejection
             # existed carry live hashes for semantic files (doc/paper/image) whose
             # extraction produced zero nodes and zero hyperedges (e.g. edge-only).
             # Re-queue any such file so it is re-dispatched and self-heals.
@@ -4902,7 +4902,7 @@ def dispatch_command(cmd: str) -> None:
         # Track whether this run's extraction was incomplete (a whole extractor
         # pass crashed, or some semantic chunks failed). A partial result must not
         # be force-written over a good complete graph — the final write falls back
-        # to the #479 shrink guard unless --allow-partial is set.
+        # to the shrink guard unless --allow-partial is set.
         _extraction_incomplete = False
         # A walk that couldn't fully enumerate the corpus (permission-denied
         # subtree, I/O error) yields a legitimately smaller graph that must not
@@ -4919,7 +4919,7 @@ def dispatch_command(cmd: str) -> None:
             )
 
         # AST extraction on code files. Empty code list (docs-only corpus) is
-        # the issue #698 case — skip cleanly instead of crashing inside extract().
+        # the case — skip cleanly instead of crashing inside extract().
         ast_result: dict = {"nodes": [], "edges": [], "input_tokens": 0, "output_tokens": 0}
         if code_files or (incremental_mode and existing_graph_path.exists()):
             from pilothify.extract import extract as _ast_extract
@@ -4932,7 +4932,7 @@ def dispatch_command(cmd: str) -> None:
             ast_kwargs: dict = {"cache_root": out_root, "root": target, "release_parse_memo": True}
             if cli_max_workers is not None:
                 ast_kwargs["max_workers"] = cli_max_workers
-            # #2437/#2438 (the `pilothify update` twin of watch's  fix): an
+            # (the `pilothify update` twin of watch's fix): an
             # incremental re-scan extracts only the changed code files, so the
             # cross-file resolvers cannot see a callee living in an unchanged
             # file and every changed->unchanged call edge silently vanished on
@@ -5136,7 +5136,7 @@ def dispatch_command(cmd: str) -> None:
         sem_cache_hits = 0
         sem_cache_misses = 0
         # Files served from the semantic cache this run (absolute paths), used
-        # by the #3203 shrink handler to tell a poisoned cached replay from a
+        # by the shrink handler to tell a poisoned cached replay from a
         # fresh under-production.
         _cached_semantic_paths: list[str] = []
         uncached_paths: list[str] = []
@@ -5430,7 +5430,7 @@ def dispatch_command(cmd: str) -> None:
         _failed_ast_sources = list(ast_result.get("failed_sources") or [])
         # code files the extractor declined by design this run. They ARE
         # stamped (not failures) but have zero nodes, so the manifest marks the
-        # emptiness intentional and the #2543 heal stops re-queuing them.
+        # emptiness intentional and the heal stops re-queuing them.
         _ast_empty_sources = list(ast_result.get("skipped_sources") or [])
         _manifest_files = _stamped_manifest_files(
             files_by_type,
@@ -5461,7 +5461,7 @@ def dispatch_command(cmd: str) -> None:
 
         # Full-scan manifest saves prune rows for in-root files that left the
         # scan corpus but still exist on disk. The corpus must be the
-        # RAW detect output (files_by_type), NOT the #933-stamp-filtered
+        # RAW detect output (files_by_type), NOT the stamp-filtered
         # _manifest_files above — pruning to the filtered set would erase
         # failed-chunk/omitted-doc rows and every doc row on --code-only runs.
         _scan_corpus = (
@@ -5483,7 +5483,7 @@ def dispatch_command(cmd: str) -> None:
             # No NetworkX, no community detection, no analysis sidecar.
             # Dedupe nodes (by id) and parallel edges so the raw output matches the
             # clustered path (whose DiGraph collapses both) and stays deterministic
-            # across modes (#1317; node dedup also collapses shared Swift module
+            # across modes (node dedup also collapses shared Swift module
             # anchors emitted per importing file).
             from pilothify.build import (
                 dedupe_edges as _dedupe_edges,
@@ -5604,7 +5604,7 @@ def dispatch_command(cmd: str) -> None:
                     )
             # RT-parity for the raw path: an incomplete build must not force a
             # partial graph over a larger complete one here either. The clustered
-            # path gets this from to_json's #479 guard; this path never calls
+            # path gets this from to_json's guard; this path never calls
             # to_json, so replicate the shrink check against the existing file and
             # exit before the write/manifest unless --allow-partial is set.
             if _extraction_incomplete and not cli_allow_partial:
@@ -5739,7 +5739,7 @@ def dispatch_command(cmd: str) -> None:
                     }
                     _cleared_semantic = _shrink[2]
             except ValueError as exc:
-                # --no-dedup arms build_merge's #479 shrink guard, which refuses
+                # --no-dedup arms build_merge's shrink guard, which refuses
                 # to drop nodes belonging to files this run neither re-extracted
                 # nor pruned. Report the refusal instead of a traceback:
                 # graph.json on disk is untouched, so the old graph is intact.
@@ -5780,7 +5780,7 @@ def dispatch_command(cmd: str) -> None:
         from pilothify.export import backup_if_protected as _backup
         _backup(pilothify_out)
         _invalidate_file_manifest_for_db_graph()
-        # force=True bypasses the #479 shrink guard entirely. A full build
+        # force=True bypasses the shrink guard entirely. A full build
         # legitimately shrinks when files were deleted, so a complete run keeps
         # force=True — EXCEPT:
         #   * extraction was incomplete (a pass crashed or a chunk came back
@@ -5790,7 +5790,7 @@ def dispatch_command(cmd: str) -> None:
         #     --allow-dedup-shrink. --allow-partial does not accept that shrink.
         #
         # Both write paths are guarded for an incomplete extraction: the clustered
-        # path here via to_json's #479 check, and the `--no-cluster` raw-dump path
+        # path here via to_json's check, and the `--no-cluster` raw-dump path
         # above via the same shrink check against the existing file.
         #
         # Trade-off: this reuses to_json's coarse node-count guard, not the
@@ -5832,7 +5832,7 @@ def dispatch_command(cmd: str) -> None:
         # another repo's root stamped the invoker's commit into the target's
         # graph.json — and cluster then propagates that stamp into
         # GRAPH_REPORT.md (keeps the extract-time stamp by design). Same
-        # cwd-anchoring mistake #2316 fixed for watch/update, surviving in the
+        # cwd-anchoring mistake fixed for watch/update, surviving in the
         # extract path.
         from pilothify.watch import _git_head as _gh_target
         _wrote = _to_json(G, communities, str(graph_json_path), force=_force_write,

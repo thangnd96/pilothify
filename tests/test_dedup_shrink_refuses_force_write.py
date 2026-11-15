@@ -1,6 +1,6 @@
 """A complete `pilothify extract` must not force-write a shrink that dedup caused.
 
-A full build sets force=True, and to_json then skips the #479 node-count check.
+A full build sets force=True, and to_json then skips the node-count check.
 Dedup can merge a same-file duplicate and replace graph.json with no message.
 A deleted file is a different shrink: that write still happens.
 `--allow-dedup-shrink` is the only flag that accepts the dedup shrink.

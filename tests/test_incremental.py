@@ -75,7 +75,7 @@ def test_no_incremental_without_manifest(tmp_path):
 
 
 def test_extract_no_cluster_incremental_noop_preserves_existing_graph(tmp_path):
-    """#1347: no-op incremental no-cluster extract must not overwrite graph.json."""
+    """No-op incremental no-cluster extract must not overwrite graph.json."""
     project = tmp_path / "project"
     project.mkdir()
     (project / "app.py").write_text(
@@ -104,7 +104,7 @@ def _edges(graph_json: Path) -> list[dict]:
 
 
 def test_extract_no_cluster_incremental_changed_file_preserves_unchanged_files(tmp_path):
-    """#2169: an incremental --no-cluster extract of ONE changed file must merge
+    """An incremental --no-cluster extract of ONE changed file must merge
     into the existing graph, not overwrite graph.json with just that file's
     chunk — and the changed file's cross-file import edges must keep pointing at
     the unchanged target file's canonical node ids, not dangling
@@ -160,7 +160,7 @@ def test_extract_no_cluster_incremental_changed_file_preserves_unchanged_files(t
     ), after_edges
     # No dangling endpoints on cross-file edges: the changed file's re-extracted
     # imports/re-exports must resolve to the unchanged target's canonical ids,
-    # not absolute-path-derived ghosts (the extract.py half of).
+    # not absolute-path-derived ghosts (the extract.py half of the fix).
     for e in after_edges:
         if e.get("relation") in ("imports_from", "re_exports", "contains", "imports"):
             assert e.get("source") in after_ids, f"dangling source: {e}"
@@ -224,7 +224,7 @@ def test_update_preserves_generic_rust_self_call_to_unchanged_impl(tmp_path):
 
 
 def test_extract_no_cluster_incremental_code_only_preserves_doc_nodes(tmp_path):
-    """#2169: an incremental --code-only --no-cluster run over a mixed corpus
+    """An incremental --code-only --no-cluster run over a mixed corpus
     must carry forward doc-sourced nodes it did not re-extract."""
     proj = tmp_path / "proj"
     proj.mkdir()
@@ -268,8 +268,8 @@ def test_extract_no_cluster_incremental_code_only_preserves_doc_nodes(tmp_path):
 
 
 def test_incremental_python_relative_import_target_canonicalizes(tmp_path):
-    """#2213 (defect 1, shared root with): a Python relative import's
-    imports_from edge must stamp target_file so the #2169 remap canonicalizes
+    """(defect 1, shared root with): a Python relative import's
+    imports_from edge must stamp target_file so the remap canonicalizes
     its target on an incremental extraction where the target file is NOT in
     the batch — instead of leaving an absolute-path-derived dangling id."""
     from pilothify.extract import extract, _make_id
@@ -300,7 +300,7 @@ def test_incremental_python_relative_import_target_canonicalizes(tmp_path):
     assert canonical == "pkg_b", canonical
 
     # Incremental: only the importer is in the batch (b.py unchanged, so the
-    # #2169 merge path re-extracts a.py alone). Same cache/scan root.
+    # merge path re-extracts a.py alone). Same cache/scan root.
     inc = extract([a], cache_root=tmp)
     inc_imports = [
         e for e in inc["edges"]
@@ -321,8 +321,8 @@ def test_incremental_python_relative_import_target_canonicalizes(tmp_path):
 
 
 def test_incremental_md_reference_target_canonicalizes(tmp_path):
-    """#2211: a markdown [link](docs/setup.md) references edge must stamp
-    target_file so the #2169 remap canonicalizes its target on an incremental
+    """A markdown [link](docs/setup.md) references edge must stamp
+    target_file so the remap canonicalizes its target on an incremental
     extraction where the linked doc is NOT in the batch — instead of the
     md->md reference dangling on an absolute-path-derived id and dropping."""
     from pilothify.extract import extract, _make_id
@@ -365,7 +365,7 @@ def test_incremental_md_reference_target_canonicalizes(tmp_path):
 
 
 def test_update_prunes_a_removed_imports_edge(tmp_path):
-    """#1521: when an import is deleted from a file, `pilothify update` must prune
+    """When an import is deleted from a file, `pilothify update` must prune
     the edge it produced — preserving it (keyed only on endpoint membership) left a
     stale edge that drove phantom circular-dependency findings."""
     proj = tmp_path / "proj"
@@ -397,7 +397,7 @@ def test_update_prunes_a_removed_imports_edge(tmp_path):
 
 
 def test_update_preserves_cross_file_imports_and_calls_to_unchanged_file(tmp_path):
-    """#3776: incremental update must resolve symbols defined in unchanged files."""
+    """Incremental update must resolve symbols defined in unchanged files."""
     proj = tmp_path / "proj"
     proj.mkdir()
     (proj / "b.py").write_text("def helper():\n    return 1\n", encoding="utf-8")
@@ -464,7 +464,7 @@ def test_update_preserves_cross_file_imports_and_calls_to_unchanged_file(tmp_pat
 
 
 def test_update_does_not_resurrect_a_dropped_cross_file_edge_via_context(tmp_path):
-    """#3776 negative: the resolution-context index widens the *target* view with
+    """Negative: the resolution-context index widens the *target* view with
     unchanged files, so it must not resurrect an edge the edited file no longer
     warrants. Here b.py (with `helper`) stays unchanged and a.py drops its import
     and call — the a -> b_helper edges must NOT survive just because b_helper is

@@ -296,7 +296,7 @@ def test_claude_install_ships_lean_core_and_references(tmp_path):
     # The full embedded subagent prompt was moved out into the references.
     assert '"file_type":"code|document|paper|image|rationale|concept"' not in body
     # The lean core is materially smaller than the old ~1156-line monolith. The
-    # ceiling has a little headroom for the #4762 per-block `.pilothify_root` reads
+    # ceiling has a little headroom for the per-block `.pilothify_root` reads
     # (one line per Python block) while staying well under the monolith.
     assert len(body.splitlines()) < 820
     # The version stamp covers SKILL.md + references/ together.

@@ -318,7 +318,7 @@ def test_hook_check_no_additionalContext(tmp_path):
     assert result.stderr == ""
 
 
-# ── #1161: background rebuild must not rely on nohup (missing on Git for Windows) ──
+# ── background rebuild must not rely on nohup (missing on Git for Windows) ──
 
 import ast  # noqa: E402
 import re  # noqa: E402
@@ -452,7 +452,7 @@ def _extract_root_resolution(body: str) -> str:
     [("post-commit", _REBUILD_BODY_COMMIT), ("post-checkout", _REBUILD_BODY_CHECKOUT)],
 )
 def test_rebuild_bodies_reject_an_out_of_repo_pilothify_root(name, body, tmp_path, monkeypatch):
-    """#3265: `.pilothify_root` sits inside pilothify-out/, a directory the
+    """`.pilothify_root` sits inside pilothify-out/, a directory the
     documented team workflow says to commit, so its contents are checkout
     controlled. Without a bound, a value planted there by a malicious fork or PR
     (an absolute path outside the repository) would steer the rebuild -- and so
@@ -476,7 +476,7 @@ def test_rebuild_bodies_reject_an_out_of_repo_pilothify_root(name, body, tmp_pat
     [("post-commit", _REBUILD_BODY_COMMIT), ("post-checkout", _REBUILD_BODY_CHECKOUT)],
 )
 def test_rebuild_bodies_honour_an_in_repo_pilothify_root(name, body, tmp_path, monkeypatch):
-    """The legitimate case the #3265 guard must not break: a subdirectory-scoped
+    """The legitimate case the guard must not break: a subdirectory-scoped
     root is still recovered."""
     repo = tmp_path / "repo"
     (repo / "pilothify-out").mkdir(parents=True)
@@ -525,7 +525,7 @@ def test_rebuild_bodies_treat_blank_pilothify_out_as_default(name, body, tmp_pat
 def test_rebuild_bodies_survive_a_pilothify_root_symlink_loop(name, body, tmp_path, monkeypatch):
     """A committed `.pilothify_root` naming a path that resolves through a
     symlink loop (two symlinks pointing at each other) must fall back to the
-    repo top rather than let `Path.resolve()`'s RuntimeError escape the #3265
+    repo top rather than let `Path.resolve()`'s RuntimeError escape the
     guard uncaught -- the guard's own `except OSError` doesn't catch it, since
     a symlink loop is a RuntimeError on this platform, not an OSError."""
     repo = tmp_path / "repo"
@@ -544,7 +544,7 @@ def test_rebuild_bodies_survive_a_pilothify_root_symlink_loop(name, body, tmp_pa
     [("post-commit", _REBUILD_BODY_COMMIT), ("post-checkout", _REBUILD_BODY_CHECKOUT)],
 )
 def test_rebuild_bodies_arm_a_timeout_without_sigalrm(name, body):
-    """Windows has no signal.SIGALRM, so the #791 rebuild timeout never armed
+    """Windows has no signal.SIGALRM, so the rebuild timeout never armed
     there at all. The fallback has to sit in the else-branch of the
     SIGALRM check rather than merely appear somewhere in the body, so that a
     watchdog firing unconditionally or on every platform still fails here."""
@@ -575,7 +575,7 @@ def test_rebuild_bodies_kill_children_before_os_exit(name, body):
     worker mid-task at the moment the watchdog fires is orphaned (reparented to
     PID 1 on POSIX) and keeps running, unsupervised, for as long as whatever it
     was doing takes. A worker stuck in catastrophic regex backtracking (the
-    exact shape #3341 fixed) has been observed surviving 2.5 days that way. The
+    exact shape fixed) has been observed surviving 2.5 days that way. The
     watchdog owns no reference to the pool object (it fires on a separate timer
     thread, unrelated to whichever stack frame currently holds the pool), but
     multiprocessing.active_children() enumerates every live worker process
@@ -687,7 +687,7 @@ def test_installed_hooks_contain_no_nohup(tmp_path):
         assert "start_new_session=True" in text
 
 
-# ── #1385: reject Windows-style hooks paths instead of creating a junk dir ───
+# ── reject Windows-style hooks paths instead of creating a junk dir ───
 
 def _set_hookspath(repo: Path, value: str) -> None:
     subprocess.run(["git", "-C", str(repo), "config", "--local", "core.hooksPath", value],
@@ -723,7 +723,7 @@ def test_posix_custom_hookspath_still_works(tmp_path):
 
 
 def test_hookspath_outside_repo_falls_back_to_default(tmp_path, capsys):
-    """#3869: an absolute core.hooksPath outside the repo must not be created.
+    """An absolute core.hooksPath outside the repo must not be created.
 
     The setting lives in local git config (a zip of .git can carry it; a clone
     does not). hook install used to mkdir that path and write post-commit there.
@@ -741,7 +741,7 @@ def test_hookspath_outside_repo_falls_back_to_default(tmp_path, capsys):
 
 
 def test_hookspath_relative_escape_falls_back_to_default(tmp_path, capsys):
-    """#3869: a relative core.hooksPath that resolves outside the repo is refused."""
+    """A relative core.hooksPath that resolves outside the repo is refused."""
     repo = _make_git_repo(tmp_path / "repo")
     _set_hookspath(repo, "../escaped")
     _hooks_dir(repo)
@@ -855,12 +855,12 @@ def test_probe_prefers_sibling_python_exe_on_windows_layouts():
     assert "/python.exe" in _PYTHON_DETECT
 
 
-# ── #2852: interpreter resolution under uv tool installs ───────────────────
+# ── interpreter resolution under uv tool installs ───────────────────
 
 def _detect_run(tmp_path, home, stub_bin, env_extra=None):
     """Run the emitted _PYTHON_DETECT under a real sh in a controlled
     environment — dead pin, no .pilothify_python, an unparseable launcher first
-    on PATH, and a python3 that cannot import pilothify (#2852's uv-tool
+    on PATH, and a python3 that cannot import pilothify (the uv-tool
     Windows machine reproduced on POSIX) — and report what PILOTHIFY_PYTHON
     resolved to. Behavior of the emitted script, not the source string
     (per the  convention)."""
@@ -892,7 +892,7 @@ def _detect_run(tmp_path, home, stub_bin, env_extra=None):
 
 
 def _broken_uv_machine(tmp_path):
-    """#2852's machine: the only pilothify-importable python lives in the uv
+    """the machine: the only pilothify-importable python lives in the uv
     tool venv; the launcher on PATH is a binary trampoline reached WITHOUT its
     .exe suffix (Git-Bash command -v); ambient python3 cannot import pilothify.
     Returns (home, stub_bin)."""
@@ -926,7 +926,7 @@ def _tool_venv(home, tool, rel, ok):
 
 @pytest.mark.skipif(shutil.which("sh") is None, reason="sh required to run emitted probe chain")
 def test_uv_tool_env_rescues_hook_when_pin_and_launcher_fail(tmp_path):
-    """#2852: `uv tool install` puts pilothify in an isolated venv no ambient
+    """`uv tool install` puts pilothify in an isolated venv no ambient
     python can import, and on Windows the launcher is a binary trampoline with
     no shebang to parse. With the pin dead (git-template hooks, a pin rejected
     by the allowlist, or a venv moved by an upgrade), every earlier probe
@@ -1075,7 +1075,7 @@ def _assert_harness_can_reject(pattern: str, tmp_path) -> None:
     An ACCEPTED verdict only means something if this pattern is capable of
     saying REJECTED. When the candidate never reaches bash intact, every input
     falls through to `*)` and the accept tests pass while testing nothing —
-    which is how #2126's regression guard sat green on Windows while providing
+    which is how the regression guard sat green on Windows while providing
     zero coverage.
     """
     assert _shell_verdict(pattern, "foo;rm -rf /", tmp_path) == "REJECTED", (
@@ -1090,7 +1090,7 @@ def _assert_harness_can_reject(pattern: str, tmp_path) -> None:
     r"C:\Python311\python.exe",
 ])
 def test_file_path_allowlist_accepts_windows_backslash_path(winpath, tmp_path):
-    """#2126: the .pilothify_python FILE allowlist must accept real Windows paths
+    """The .pilothify_python FILE allowlist must accept real Windows paths
     at actual shell runtime. Old pattern rejected them due to bash bracket-escape."""
     pattern = _extract_case_pattern('_FROM_FILE=""')
     _assert_harness_can_reject(pattern, tmp_path)
@@ -1104,7 +1104,7 @@ def test_file_path_allowlist_accepts_windows_backslash_path(winpath, tmp_path):
     r"C:\Users\u\.venv\Scripts\python.exe",
 ])
 def test_shebang_allowlist_accepts_windows_backslash_path(shebang_path, tmp_path):
-    """#2126: the shebang-parsed launcher allowlist had no `:` or `\\` at all, so
+    """The shebang-parsed launcher allowlist had no `:` or `\\` at all, so
     any Windows-style shebang path was unconditionally emptied. Must ACCEPT now."""
     pattern = _extract_case_pattern('PILOTHIFY_PYTHON="" ;;')
     _assert_harness_can_reject(pattern, tmp_path)
@@ -1180,7 +1180,7 @@ def test_checkout_hook_skips_same_head_noop_at_runtime():
     """`git checkout -b` with no start point reports a branch switch (flag=1) but
     passes identical PREV/NEW heads, so the rebuild must short-circuit.
     Prove BEHAVIOR by running the real emitted script under sh up to the guard
-    with a sentinel, not by matching the source string (per the #2126/#2641
+    with a sentinel, not by matching the source string (per the
     convention that static assertions provided zero coverage)."""
     from pilothify.hooks import _CHECKOUT_SCRIPT
     guard = '[ "$PREV_HEAD" = "$NEW_HEAD" ] && exit 0'
@@ -1318,7 +1318,7 @@ def test_toplevel_anchor_runs_from_the_top_when_git_starts_the_hook_in_a_subdir(
         "the linked worktree must still be skipped by the guard"
 
 
-# ── #1907: duplicate keys in .git/config must not trigger spurious warnings ──
+# ── duplicate keys in .git/config must not trigger spurious warnings ──
 
 def _append_duplicate_config_entries(repo: Path) -> None:
     """Append git-legal duplicate keys/sections (as VS Code writes them)."""
@@ -1359,11 +1359,11 @@ def test_hooks_dir_duplicate_config_keys_honor_custom_hookspath(tmp_path, capsys
     assert d == (repo / ".husky").resolve()
 
 
-# ── #1902: hook install must register the graph.json union merge driver ─────
+# ── hook install must register the graph.json union merge driver ─────
 
 def test_install_registers_merge_driver(tmp_path):
     """install() must set merge.pilothify.* via git config and add the
-    .gitattributes line that README/CHANGELOG 0.7.0 document."""
+    .gitattributes line that older docs describe."""
     repo = _make_git_repo(tmp_path)
     result = install(repo)
     res = subprocess.run(
@@ -1425,7 +1425,7 @@ def test_uninstall_removes_merge_driver_keeps_other_attrs(tmp_path):
     "/home/first last/.local/share/uv/tools/pilothify/bin/python",
 ])
 def test_pinned_python_accepts_paths_containing_spaces(exe, monkeypatch):
-    """#2166: a space must not empty the pin.
+    """A space must not empty the pin.
 
     The install-time allowlist had no space, so `sys.executable` under any Windows
     profile whose name contains one (`C:\\Users\\First Last\\...`, or the very common
@@ -1461,7 +1461,7 @@ def test_pinned_python_still_rejects_shell_metacharacters(exe, monkeypatch):
 
 
 def test_merge_driver_quotes_interpreter_with_spaces(tmp_path, monkeypatch):
-    """#2166: git runs the merge driver through a shell, so a pinned path with a
+    """Git runs the merge driver through a shell, so a pinned path with a
     space has to be quoted or the driver splits into two words and never runs."""
     import subprocess
     import sys as _sys
@@ -1482,7 +1482,7 @@ def test_merge_driver_quotes_interpreter_with_spaces(tmp_path, monkeypatch):
 
 
 def test_install_pins_interpreter_path_with_spaces(tmp_path, monkeypatch):
-    """#2166 end to end: the emitted hooks must carry the real interpreter, not ''."""
+    """End to end: the emitted hooks must carry the real interpreter, not ''."""
     import sys as _sys
 
     from pilothify.hooks import install
@@ -1717,13 +1717,13 @@ def test_hook_probes_snap_confined_uv_tool_dirs():
 
 # ── PILOTHIFY_OUT: the shell gates in front of the rebuild must honour it ─────
 #
-# #1423 moved the Python rebuild bodies onto PILOTHIFY_OUT, but the sh that runs
+# moved the Python rebuild bodies onto PILOTHIFY_OUT, but the sh that runs
 # BEFORE them still hardcoded pilothify-out/: post-checkout exited unless a
 # literal pilothify-out/ directory existed, and post-commit's "only graph
 # artifacts changed" filter only recognised pilothify-out/ paths. With the
 # documented override the branch-switch rebuild therefore never launched
 # and a commit touching only the renamed output dir triggered a full rebuild.
-# Behaviour of the emitted script under a real sh, per the #2126/#2641
+# Behaviour of the emitted script under a real sh, per the
 # convention, with the launcher stubbed so the test observes whether the hook
 # REACHES the launch rather than running a rebuild.
 
@@ -2029,7 +2029,7 @@ def test_commit_hook_still_rebuilds_for_a_source_change(tmp_path):
     assert _LAUNCH_LINE in result.stdout, result.stdout
 
 
-# Launcher flags a hook installed before the #2253 fix still carries on disk.
+# Launcher flags a hook installed before the fix still carries on disk.
 _PRE_2253_FLAGS = "0x00000008 | 0x00000200"  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
 
 

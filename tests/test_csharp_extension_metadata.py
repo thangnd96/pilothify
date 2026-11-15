@@ -69,7 +69,7 @@ def test_this_parameter_records_the_extended_type(tmp_path):
     assert meta["extended_type"] == "string"
     assert meta["extended_type_arity"] == 0
     assert "extended_is_type_param" not in meta
-    # Parameter arity keeps its #4584 meaning; the extension call is one short.
+    # Parameter arity keeps its meaning; the extension call is one short.
     assert meta["arity"] == 2
     assert meta["min_arity"] == 0
 

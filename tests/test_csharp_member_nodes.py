@@ -3,7 +3,7 @@
 `_CSHARP_CONFIG` emitted a `references` edge to a member's *type* and no node for
 the member, so C# was the only language with a class-shaped type layer whose
 state was absent from the graph. C++ emits a node per data member with `defines`,
-#2971 is adding the same for C structs, and #2220 gave Swift computed properties
+Is adding the same for C structs, gave Swift computed properties
 nodes. This brings C# to that line.
 
 Properties only, not fields. `ids.normalize_id` casefolds and strips leading
@@ -116,7 +116,7 @@ def test_a_field_alone_makes_no_member_node_but_keeps_its_type_reference(tmp_pat
 
 
 def test_property_type_references_are_kept(tmp_path):
-    # Regression guard for #1591: the member node is additive, the reference to
+    # Regression guard: the member node is additive, the reference to
     # the property's type stays.
     _, r = _extract(tmp_path, {"S.cs": (
         "public class Holder {\n"

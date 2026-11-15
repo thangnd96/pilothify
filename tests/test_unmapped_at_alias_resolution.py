@@ -1,4 +1,4 @@
-"""Regression tests for #3357: unmapped `@/` path alias resolution.
+"""Unmapped `@/` path alias resolution.
 
 When no tsconfig.json or jsconfig.json exists, `@/...` represents an internal
 project-root convention alias. It resolves against project_anchor / "src" / subpath
@@ -21,7 +21,7 @@ def _write(path: Path, text: str) -> Path:
 
 
 def test_3357_minimal_reproduction_no_config_emits_calls_edge(tmp_path: Path, monkeypatch):
-    """Minimal reproduction for #3357:
+    """Minimal reproduction:
 
     - adapter.js exports fn
     - caller.js imports fn from "@/adapter.js"
@@ -131,7 +131,7 @@ def test_nested_importer_flat_layout_resolves_to_root(tmp_path: Path):
 
 
 def test_tsconfig_without_paths_leaves_at_alias_unresolved(tmp_path: Path):
-    """#3125 invariant: when tsconfig.json exists without paths, @/ must NOT resolve."""
+    """Invariant: when tsconfig.json exists without paths, @/ must NOT resolve."""
     _write(tmp_path / "tsconfig.json", json.dumps({"compilerOptions": {"target": "es2020"}}))
     adapter = _write(
         tmp_path / "adapter.js",
@@ -157,7 +157,7 @@ def test_tsconfig_without_paths_leaves_at_alias_unresolved(tmp_path: Path):
     # No symbol import edge
     assert not any(e.get("relation") == "imports" and e.get("source") == "caller" for e in edges)
 
-    # No calls edge (gated by)
+    # No calls edge (gated)
     assert not any(e.get("relation") == "calls" for e in edges)
 
 
@@ -259,7 +259,7 @@ def test_regex_rescue_unmapped_at_alias_resolves(tmp_path: Path):
 
 
 def test_unresolved_at_alias_does_not_infer_call_to_unrelated_definition(tmp_path: Path):
-    """#1659 protection: an unresolved @/ alias must not infer calls to unrelated definitions.
+    """Protection: an unresolved @/ alias must not infer calls to unrelated definitions.
 
     If caller.js imports { missingFn } from "@/does-not-exist.js" and unrelated.js
     happens to export a lone matching function missingFn(), Pilothify must NOT emit

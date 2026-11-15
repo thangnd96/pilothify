@@ -2,7 +2,7 @@
 subprocess argv shape introduced in the hollow-response fix.
 
 These tests cover:
-- The four parser failure modes described in PR #1062
+- The four parser failure modes described
 - Extraction instructions delivered in the user turn (Claude Code >= 2.1)
 - The PILOTHIFY_CLAUDE_CLI_MODEL env-var passthrough
 """

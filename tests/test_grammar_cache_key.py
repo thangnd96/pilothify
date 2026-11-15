@@ -1,4 +1,4 @@
-"""#4236 - the AST cache namespace must include the tree-sitter grammar set:
+"""The AST cache namespace must include the tree-sitter grammar set:
 upgrading a grammar package must invalidate cached extractions produced by
 the old grammar, even when the pilothify version and source files are
 unchanged."""

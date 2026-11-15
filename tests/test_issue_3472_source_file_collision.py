@@ -1,4 +1,4 @@
-"""Tests for issue #3472:
+"""Tests:
 Same file, two path forms: absolute source_file from semantic extraction collides with
 the relative AST id and the semantic node is dropped.
 """

@@ -439,7 +439,7 @@ def extract_rust(path: Path) -> dict:
         if all(is_type for is_type, item_name in items_by_id[nid] if item_name == name)
     )
 
-    # The same scan is the collision census for file-level items (#3302's rule in
+    # The same scan is the collision census for file-level items (the rule in
     # Rust's shape). Distinct names that fold to one id (`fn ignore` / `struct
     # Ignore`, `fn e` / `fn E`) used to keep whichever walk() met first and drop
     # the other, with the dropped item's calls credited to the survivor. Now the
@@ -693,7 +693,7 @@ def extract_rust(path: Path) -> dict:
                             # walked before, so the variants themselves (`Circle`,
                             # `Square`, `Empty`) never became nodes and the enum
                             # was left a memberless leaf. This is the Rust parity
-                            # of Java #1719 / Kotlin #1738 / Swift / Scala enums.
+                            # of Java / Kotlin / Swift / Scala enums.
                             # The variant name is the enum_variant's `identifier`.
                             vname_node = next(
                                 (vc for vc in variant.children

@@ -5,11 +5,11 @@ caller's --min-community-size, while the Knowledge Gaps section counted
 against a hardcoded 3 - beside label text that already printed
 min_community_size. And the "isolated node(s)" figure excludes file,
 concept and rationale nodes without saying so, so a plain degree<=1 recount
-from graph.json never matched it. Also the #2129 residual: "shown" was
+from graph.json never matched it. Also the residual: "shown" was
 total-minus-thin, which counted zero-real-node communities the render loop
 skips.
 
-#3548: fixing the #2129 residual by computing "shown" directly (instead of
+Fixing the residual by computing "shown" directly (instead of
 total-minus-thin) then left "thin" itself undercounting - a `0 <` guard
 excluded a zero-real-node community from "thin" too, so a community the
 render loop also skips went uncounted anywhere. `shown + thin` no longer
@@ -91,7 +91,7 @@ def test_shown_counts_only_what_the_render_loop_renders():
 
 
 def test_shown_plus_thin_equals_total_communities_and_matches_render_count():
-    # The two invariants #3548's own report suggested as a regression check,
+    # The two invariants the own report suggested as a regression check,
     # checked at both thresholds used elsewhere in this file.
     for min_size in (3, 5):
         text = _report(min_size)
@@ -116,7 +116,7 @@ def test_isolated_count_is_auditable_against_the_raw_graph():
 
 
 def test_undocumented_components_omitted_without_a_semantic_layer():
-    """#3801: "undocumented components" only means anything when a semantic
+    """"undocumented components" only means anything when a semantic
     layer (document/paper/image nodes) exists to be undocumented. This
     fixture is code + concept only, so the reason offered for an isolated
     node must not claim a possibility the graph structurally cannot have."""
@@ -128,7 +128,7 @@ def test_undocumented_components_omitted_without_a_semantic_layer():
 
 
 def test_undocumented_components_offered_when_a_semantic_layer_exists():
-    """The flip side of #3801: once the graph has at least one
+    """The flip side of that fix: once the graph has at least one
     document/paper/image node anywhere, "undocumented components" is a real
     possibility again and the reason should still offer it."""
     G, communities = _graph_and_communities()
@@ -143,7 +143,7 @@ def test_undocumented_components_offered_when_a_semantic_layer_exists():
 
 
 def test_community_listing_excludes_rationale_and_concept_nodes():
-    """#3794: the per-community "Nodes (N): ..." listing only excluded file
+    """The per-community "Nodes (N): ..." listing only excluded file
     nodes, so a rationale (docstring-fragment) node and a concept node
     leaked into the rendered list as if they were real code declarations,
     and inflated N by counting them."""
@@ -174,7 +174,7 @@ def test_community_listing_excludes_rationale_and_concept_nodes():
 
 
 def test_contains_only_ast_declarations_are_not_knowledge_gaps():
-    """#4205: TS type aliases / enum members / local consts whose only edge
+    """TS type aliases / enum members / local consts whose only edge
     is the structural contains edge from their own file are working as
     designed, so they must not be reported as weakly-connected gaps."""
     G = nx.Graph()
@@ -201,7 +201,7 @@ def test_contains_only_ast_declarations_are_not_knowledge_gaps():
 
 
 def test_semantic_contains_only_node_still_flags_as_gap():
-    """The #4205 fix must not hide the semantic side of gap detection: a
+    """The fix must not hide the semantic side of gap detection: a
     non-AST node whose only edge is contains stays isolated."""
     G = nx.Graph()
     G.add_node("doc", label="guide.md", file_type="document", source_file="docs/guide.md")

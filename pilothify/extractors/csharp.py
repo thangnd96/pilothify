@@ -295,7 +295,7 @@ class CsharpNameResolver:
     Factored out of ``_resolve_csharp_type_references`` so the member-call pass
     (``_resolve_csharp_member_calls`` in ``pilothify/extract.py``) can type a
     receiver with the same scoping rules the type-reference side already applies
-    (the core of), instead of bailing on any corpus-wide bare-name clash.
+    (the core of the fix), instead of bailing on any corpus-wide bare-name clash.
 
     Built from graph-stamped facts only: the ``(namespace, name)`` type-definition
     index plus the per-file ``using``/alias import edges (each carrying its lexical

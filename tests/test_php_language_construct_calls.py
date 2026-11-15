@@ -6,7 +6,7 @@ call pass resolves that callee by bare name. A reserved word is a legal method
 name since PHP 7, so a class declaring `public function empty()` absorbed every
 `empty(...)` in the corpus: an EXTRACTED edge from a sibling method in the same
 file, and an INFERRED one from every other file through the case-insensitive
-fold. On the Symfony corpus in #3830 one `ParseCollectionPaginator::empty()`
+fold. On the Symfony corpus one `ParseCollectionPaginator::empty()`
 collected ~200 of these from ~150 files.
 
 The filter (`_PHP_LANGUAGE_CONSTRUCTS`) is PHP-local and bare-call-only, the
@@ -170,7 +170,7 @@ def test_member_call_to_construct_named_method_survives(tmp_path):
 
     It is a member_call_expression, not a function_call_expression. Filtering
     by name alone would drop this genuine edge. Kept in one file because
-    cross-file PHP member calls do not resolve yet (the other half of),
+    cross-file PHP member calls do not resolve yet (the other half of the fix),
     so a two-file version would pass or fail for reasons unrelated to this
     filter.
     """

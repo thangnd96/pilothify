@@ -5,7 +5,7 @@
 `Pair` / `_Pair` each minted ONE id. ``add_node`` kept the first declaration
 and dropped the second: the dropped method's calls were credited to the
 survivor, and a dropped type's members hung off the other type. This is the
-Python collision of #3302; C# gets the same rule: a group with exactly one
+Python collision of that fix; C# gets the same rule: a group with exactly one
 name without a leading underscore keeps the plain id on it, every other name
 is salted.
 

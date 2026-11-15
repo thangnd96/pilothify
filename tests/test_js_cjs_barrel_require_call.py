@@ -1,4 +1,4 @@
-"""#5034: a constructor reached through a destructured require of a CommonJS
+"""A constructor reached through a destructured require of a CommonJS
 barrel must resolve to the class in the module the barrel re-exports.
 
 `const { SourceCode } = require('./index')` where `index.js` does

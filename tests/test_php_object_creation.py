@@ -2,7 +2,7 @@
 
 `object_creation_expression` was absent from `_PHP_CONFIG.call_types`, so a
 class a method merely constructs got no edge at all. Java has taken
-`new Foo(...)` as a call since #1373 and C# since #2997; PHP never caught up.
+`new Foo(...)` as a call since that fix and C# since that fix; PHP never caught up.
 On the reporter's Symfony corpus 505 `new X(` sites across 178 classes were
 invisible - worst on message-bus code, where construction IS the control flow
 (`$bus->dispatch(new SomeCommand(...))`: 0 of 22 sites had any edge).

@@ -1,4 +1,4 @@
-"""#4199 regression — AMBIGUOUS questions tagged ``low_confidence`` and
+"""Regression — AMBIGUOUS questions tagged ``low_confidence`` and
 split out of top-N so a flood of noise cannot push real bridges off the
 Suggested Questions list.
 """

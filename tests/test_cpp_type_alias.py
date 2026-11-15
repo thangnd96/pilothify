@@ -177,7 +177,7 @@ def test_a_member_alias_inside_a_conditional_is_still_a_member(tmp_path: Path):
 @pytest.mark.parametrize("decl", ["using Session = int;", "typedef int Session;"])
 def test_a_type_reference_lands_on_the_alias_not_a_function_differing_in_case(
         tmp_path: Path, decl: str):
-    """`Session` and `session()` in one file are two declarations since #4904,
+    """`Session` and `session()` in one file are two declarations since that fix,
     and `Session s;` names the alias, not the function."""
     result = _extract(tmp_path, {"box.cpp": f"{decl}\nvoid session() {{}}\nstruct Holder {{ Session s; }};\n"})
     refs = _pairs(result, "references")

@@ -1,4 +1,4 @@
-"""#2072: Python import resolution must not depend on the scan root.
+"""Python import resolution must not depend on the scan root.
 
 A src-layout project (code under `src/`) used to lose most of its `imports` /
 `imports_from` edges when scanned from the repo root, because absolute imports
@@ -341,7 +341,7 @@ def test_incremental_ambiguous_import_uses_unchanged_python_context(tmp_path):
 
 
 def test_non_python_import_edge_is_not_repointed(tmp_path):
-    """#2072 review: the alias map is Python-only, but a non-Python import edge
+    """Review: the alias map is Python-only, but a non-Python import edge
     whose dangling target coincides with a Python alias must NOT be repointed
     onto a Python file (that would fabricate a cross-language import)."""
     pkg = tmp_path / "src" / "pkg"
@@ -442,7 +442,7 @@ def test_loose_module_directly_under_src_is_not_aliased(tmp_path):
 
 
 def test_ambiguous_import_placeholder_id_is_independent_of_checkout_path(tmp_path):
-    """#5044: the same tree built in two directories must mint the same
+    """The same tree built in two directories must mint the same
     placeholder id for an ambiguous import. The id used to hash the absolute
     source path and the absolute-path-derived importer id, so only the checkout
     location changed it."""

@@ -32,7 +32,7 @@ UNRELATED_CHUNK = {
     "nodes": [{"id": "delta_node", "label": "Delta", "file_type": "concept", "source_file": "notes/d.md"}],
     "edges": [], "hyperedges": [],
 }
-# Under #3477, existing nodes from untouched files are protected from collapsing.
+# Existing nodes from untouched files are protected from collapsing.
 # To test carried hyperedge remapping, the duplicate must arrive via an incoming
 # re-extracted chunk so it folds into the untouched protected survivor `alpha_a`.
 RE_EXTRACTED_CHUNK = {

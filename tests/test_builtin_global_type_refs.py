@@ -1,6 +1,6 @@
 """Builtin-global receiver types must not resolve to same-named user symbols.
 
-#1726: `x: Date; x.getTime()` had its caller bound (by casefolded label) to a
+`x: Date; x.getTime()` had its caller bound (by casefolded label) to a
 user `class DATE` / `const DATE` in another file, inventing phantom
 `references[call]` edges and a false god node. The cross-file CALL resolver
 already skips ECMAScript/Python builtins; `_resolve_typescript_member_calls`
@@ -53,7 +53,7 @@ def test_nonbuiltin_receiver_type_still_resolves(tmp_path):
 
 
 def test_builtin_static_call_does_not_bind_to_user_symbol(tmp_path):
-    # #1726 (static-call shape, credit PR  / @2loch-ness6): `Date.now()` treats
+    # (static-call shape, credit PR  / @2loch-ness6): `Date.now()` treats
     # the capitalized receiver `Date` as a type name; without the builtin guard it
     # binds to a same-spelled user `const DATE`, a false god node. A typed param in
     # the same class arms the cross-file member-call resolver (the real service shape).

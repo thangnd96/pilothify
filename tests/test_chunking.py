@@ -119,7 +119,7 @@ def test_estimate_file_tokens_uses_tiktoken_when_available(tmp_path):
     # Force the tokenizer to be a mock that records calls and returns a known
     # token list, so we can assert the tiktoken path is taken.
     # Match tiktoken's real signature: encode(text, *, disallowed_special=...)
-    # so the #1685 hardening call (disallowed_special=()) reaches the mock.
+    # so the hardening call (disallowed_special=()) reaches the mock.
     fake_encoder = type("E", (), {"encode": staticmethod(lambda s, **kw: [0] * 999)})()
     with patch.object(llm, "_TOKENIZER", fake_encoder):
         n = llm._estimate_file_tokens(f)
@@ -204,7 +204,7 @@ def test_corpus_parallel_sequential_when_max_concurrency_is_one(tmp_path):
 
 
 def test_corpus_parallel_merge_order_is_submission_order_not_completion(tmp_path):
-    """#1632: merged node/edge order must be deterministic (submission order),
+    """Merged node/edge order must be deterministic (submission order),
     not the order chunks' network calls happen to finish. We skew latencies so
     the first-submitted chunk finishes LAST; the merged result must still be in
     file/submission order so graph.json is stable run-to-run."""
@@ -280,7 +280,7 @@ def test_corpus_parallel_continues_after_chunk_failure(tmp_path, capsys):
 
 
 def test_checkpoint_scopes_cache_writes_to_chunk_files(tmp_path):
-    """#1757: the per-chunk incremental checkpoint must not let a chunk's
+    """The per-chunk incremental checkpoint must not let a chunk's
     mis-attributed node clobber another corpus file's semantic cache. A chunk
     processing only A.py that returns a node attributed to B.py must leave B.py's
     existing cache entry untouched. Guards the call site the original fix missed."""
@@ -299,7 +299,7 @@ def test_checkpoint_scopes_cache_writes_to_chunk_files(tmp_path):
     assert before and [n["id"] for n in before["nodes"]] == ["b_real"]
 
     # The chunk dispatches only A.py, but the (untrusted) model result attributes
-    # a stray node to B.py — the #1757 mis-attribution.
+    # a stray node to B.py — the mis-attribution.
     def stray(chunk, **kwargs):
         return {
             "nodes": [
@@ -357,7 +357,7 @@ def test_truncated_chunk_is_cached_partial_and_missed_on_reload(tmp_path):
 
 
 def test_checkpoint_writes_deep_namespace_in_deep_mode(tmp_path):
-    """#1894: the per-chunk checkpoint must follow the run's mode — a
+    """The per-chunk checkpoint must follow the run's mode — a
     deep_mode=True run checkpoints into cache/semantic-deep/, leaving the
     standard cache/semantic/ namespace untouched (and vice versa)."""
     from pilothify.llm import extract_corpus_parallel, _extraction_system
@@ -393,7 +393,7 @@ def test_checkpoint_writes_deep_namespace_in_deep_mode(tmp_path):
 
 
 def test_omitted_documents_are_reconciled_and_warned(tmp_path, capsys):
-    """#1890: a chunk can return a clean, non-empty response that omits some of the
+    """A chunk can return a clean, non-empty response that omits some of the
     documents it was given. Those docs must not vanish silently — the run reports
     them in `uncovered_files` and warns, instead of dropping them with no signal."""
     from pilothify.llm import extract_corpus_parallel
@@ -430,7 +430,7 @@ def test_omitted_documents_are_reconciled_and_warned(tmp_path, capsys):
 def test_files_of_a_failed_chunk_are_not_reported_as_model_omissions(
     tmp_path, capsys, max_concurrency,
 ):
-    """#3616: a chunk that raises never got a model response, so its files must
+    """A chunk that raises never got a model response, so its files must
     not be described as "the model returned a response but omitted them". Only
     files absent from a successful chunk keep that wording; both still land in
     `uncovered_files` so a re-run retries them. Serial and pooled paths alike."""
@@ -472,18 +472,18 @@ def test_files_of_a_failed_chunk_are_not_reported_as_model_omissions(
 
 
 def test_out_of_scope_nodes_are_dropped_from_merged_result(tmp_path, capsys):
-    """#1895: the #1757 cache guard skips the CACHE write for a node attributed
+    """The cache guard skips the CACHE write for a node attributed
     to a real corpus file that was not dispatched, but the node itself still
     flowed into merged["nodes"] and landed in graph.json. The merged result must
     drop such nodes (and edges/hyperedges touching them), warn once, and record
     the count — while keeping in-scope sibling attributions (a node attributed
     to a different dispatched file in the same chunk) and non-file concept
-    source_files, mirroring the #1757 `.is_file()` condition."""
+    source_files, mirroring the `.is_file()` condition."""
     from pilothify.llm import extract_corpus_parallel
 
     a = tmp_path / "A.md"; a.write_text("# a\n")
     c = tmp_path / "C.md"; c.write_text("# c\n")
-    # B.py exists on disk but is NOT dispatched — the #1895 out-of-scope case.
+    # B.py exists on disk but is NOT dispatched — the out-of-scope case.
     b = tmp_path / "B.py"; b.write_text("def b(): pass\n")
 
     def stray(chunk, **kwargs):
@@ -535,7 +535,7 @@ def test_out_of_scope_nodes_are_dropped_from_merged_result(tmp_path, capsys):
 
 
 def test_edge_between_kept_nodes_survives_when_source_file_was_not_dispatched(tmp_path):
-    """#2276: a references edge between two re-extracted pages is kept when the
+    """A references edge between two re-extracted pages is kept when the
     model stamps it with a real file this run did not dispatch, and a node
     attributed to another undispatched file is still dropped."""
     from pilothify.build import build, build_merge
@@ -655,7 +655,7 @@ def test_out_of_scope_drop_count_is_zero_when_all_in_scope(tmp_path, capsys):
 
 
 def test_checkpoint_caches_sliced_document_chunks(tmp_path, capsys):
-    """#1870: the checkpoint's allowlist must resolve a FileSlice to its parent
+    """The checkpoint's allowlist must resolve a FileSlice to its parent
     path (via unit_path), not read a non-existent `.rel`. An oversized doc is
     split into FileSlice units; before the fix each sliced chunk leaked the
     FileSlice object into the allowlist, so save_semantic_cache raised TypeError,
@@ -979,7 +979,7 @@ def test_corpus_parallel_uses_adaptive_retry(tmp_path):
     assert len(result["nodes"]) == 4
 
 
-# ---- #1685: special-token strings in docs must not crash token estimation ----
+# ---- special-token strings in docs must not crash token estimation ----
 
 def test_estimate_file_tokens_handles_tiktoken_special_token(tmp_path):
     """A doc containing a literal tiktoken special token (e.g. <|endoftext|>)

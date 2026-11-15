@@ -1,7 +1,7 @@
-"""build_merge safety rails: the #479 shrink guard rework and
+"""build_merge safety rails: the shrink guard rework and
 root-mismatch prune fallbacks.
 
-- #2497: the original shrink guard compared the new node count against
+- the original shrink guard compared the new node count against
   `existing_nodes` AFTER the replace-on-re-extract rebind had already removed
   the re-extracted sources' old nodes — so it could never fire when it
   mattered, and was skipped outright whenever prune_sources was passed. A
@@ -9,7 +9,7 @@ root-mismatch prune fallbacks.
   The guard now diffs the ON-DISK baseline by node identity (mirroring
   watch._check_shrink) and excuses only losses explained by this run's own
   re-extraction (same tier) or an explicit prune.
-- #2446: with `root` omitted and a non-standard layout (graph.json not under
+- with `root` omitted and a non-standard layout (graph.json not under
   <root>/pilothify-out/), the inferred root was wrong, absolute prune_sources
   matched nothing, and build_merge reported "already clean" while counting
   EVERY prune entry as pruned-from. Now: a derived-root fallback
@@ -60,7 +60,7 @@ def _seed_12(tmp_path: Path) -> Path:
     return gp
 
 
-# ── #2497: identity-based shrink guard ─────────────────────────────────────────
+# ── identity-based shrink guard ─────────────────────────────────────────
 
 def test_legit_prune_driven_reduction_allowed(tmp_path):
     """The guard is now ACTIVE with prune_sources, but a prune-explained loss
@@ -72,7 +72,7 @@ def test_legit_prune_driven_reduction_allowed(tmp_path):
 
 
 def test_legit_replacement_reduction_allowed(tmp_path):
-    """No #1116 false-refuse: a.md re-extracted with fewer symbols (10 -> 7)
+    """No false refusal: a.md re-extracted with fewer symbols (10 -> 7)
     legitimately shrinks 12 -> 9."""
     gp = _seed_12(tmp_path)
     chunk = {"nodes": [_node(i, "a.md") for i in range(7)], "edges": []}
@@ -83,7 +83,7 @@ def test_legit_replacement_reduction_allowed(tmp_path):
 def test_unexplained_loss_blocked(tmp_path, monkeypatch):
     """A build that drops a node from an UNTOUCHED file (neither re-extracted
     nor pruned this run) must raise instead of silently destroying it — the
-    exact failure the dead #479 guard waved through."""
+    exact failure the dead guard waved through."""
     gp = tmp_path / "pilothify-out" / "graph.json"
     _write_graph(
         gp,
@@ -158,7 +158,7 @@ def test_no_existing_graph_path_unchanged(tmp_path):
     assert G2.number_of_nodes() == 0
 
 
-# ── #2446: absolute prune_sources with a wrong/missing inferred root ──────────
+# ── absolute prune_sources with a wrong/missing inferred root ──────────
 
 def test_absolute_prune_custom_layout_derives_root(tmp_path):
     """graph.json directly in <root> (no pilothify-out dir, no marker): the
@@ -176,7 +176,7 @@ def test_absolute_prune_custom_layout_derives_root(tmp_path):
 
 
 def test_absolute_prune_standard_layout_marker_still_prunes(tmp_path):
-    """Regression guard for #1571/#2012: the standard layout with a
+    """Regression guard: the standard layout with a
     .pilothify_root marker keeps working without root=."""
     root = tmp_path / "repo"
     out = root / "pilothify-out"

@@ -134,7 +134,7 @@ def _cleanup_stale_ast_entries(ast_base: Path, current_dir: Path) -> None:
 # release that changes the prompt keeps replaying entries from the older prompt on
 # every unchanged file, silently mixing extraction vintages in one graph.
 # Versioning them by package version (as the AST cache does) would re-bill LLM
-# extraction on every patch release — the reason #1252 deliberately left them
+# extraction on every patch release — the reason they were deliberately left
 # unversioned. Fingerprinting the prompt itself keeps both properties: entries
 # survive releases that don't touch the prompt, and invalidate only when it
 # actually changed. Entries live under cache/semantic/p{fingerprint}/ when the
@@ -191,7 +191,7 @@ def _resolve_prompt_fp(prompt: "str | Path | None" = None,
     path substituted in — passing that path as ``prompt`` would hash the path
     string itself, yielding a fingerprint that is stable, plausible, and tracks
     nothing about the prompt. A silent wrong fingerprint is the exact failure
-    class #1939 is about, so the two are not inferred from each other.
+    class that check is about, so the two are not inferred from each other.
 
     Best-effort: an unreadable ``prompt_file`` falls back to the flat, unattributed
     layout rather than failing the run — a cache is never worth aborting an
@@ -1001,7 +1001,7 @@ def _absolutize_ids_in(payload: dict, path: "str | Path", root: Path) -> None:
     The restored string is assembled by slicing, never by re-normalizing: the
     stored form (``$pilothify-root$_pkg_mod_base``) is a storage encoding, not a valid id,
     and running it back through ``normalize_id`` would drop the marker's ``$``
-    and fuse it into the slug. Entries written before #2257 carry no marker and
+    and fuse it into the slug. Entries written before that fix carry no marker and
     pass through untouched — they are swept anyway, since AST entries live under
     a per-version directory (:func:`cache_dir`).
     """
@@ -1113,7 +1113,7 @@ def load_cached(path: Path, root: Path = Path("."), kind: str = "ast",
     behavior for existing callers).
 
     AST entries written by other pilothify versions — including the legacy
-    flat cache/ layout (pre-0.5.3) and the unversioned cache/ast/ layout —
+    flat cache/ layout and the unversioned cache/ast/ layout —
     are deliberately not consulted: they were produced by a different
     extractor and may be stale.
 
@@ -1706,7 +1706,7 @@ def save_semantic_cache(
         partial_paths = {source_path(path) for path in partial_source_files}
         # A chunk that truncated to an EMPTY parse contributes no grouped items,
         # so its file is absent from by_file and the write loop below would never
-        # stamp it partial — leaving a prior clean slice looking complete (#1950
+        # stamp it partial — leaving a prior clean slice looking complete (the
         # empty-parse gap). Seed an empty group for each named partial file that
         # isn't already present, so the loop merges its existing entry and stamps
         # it partial. Keyed by walked path (deduped against present groups).
@@ -1724,10 +1724,10 @@ def save_semantic_cache(
 
     # Dangling-reference pruning. A node group is skipped by the write
     # loop below when its source_file is not a real file (ghost path) or is
-    # out-of-scope per the #1757 guard — but an edge/hyperedge in an ALLOWED
+    # out-of-scope per the guard — but an edge/hyperedge in an ALLOWED
     # group that references a node id from a skipped group used to be written
     # verbatim, so on replay (check_semantic_cache) it dangled forever (the
-    # #1895 merged-result filter runs AFTER this checkpoint write and is
+    # merged-result filter runs AFTER this checkpoint write and is
     # bypassed entirely on replay). Compute the node ids that will be skipped
     # and drop any to-be-written edge whose endpoint — or hyperedge whose
     # member (whole-hyperedge drop, mirroring) — references one. Gated
@@ -1808,7 +1808,7 @@ def save_semantic_cache(
                 # allow_legacy=False: merging a pre-fingerprint entry into this
                 # write would fuse two prompt vintages inside a single entry and
                 # then stamp the result as current-vintage — the exact mixing
-                # #1939 is about, made unfixable because the entry now claims a
+                # is about, made unfixable because the entry now claims a
                 # prompt that only produced half of it.
                 # allow_partial=True: a file split into slices across chunks
                 # accumulates here; if an earlier slice truncated, keep its nodes
@@ -1880,7 +1880,7 @@ def mark_semantic_cache_partial(
     The semantic cache is deliberately unversioned and content-hash keyed, so a
     degraded extraction — e.g. a document chunk that returned only its
     file-level node — is otherwise replayed as authoritative on every later
-    run. The #3203 shrink guard keeps refusing the graph write while the cache
+    run. The shrink guard keeps refusing the graph write while the cache
     keeps suppressing the LLM call that could heal it, so the corpus is stuck
     until an operator deletes the entry by hand.
 
@@ -1979,8 +1979,8 @@ def scope_semantic_result(
     items without a ``source_file`` pass through. An edge whose own
     ``source_file`` is outside the allowlist is kept when both endpoint ids are
     kept nodes. An edge or hyperedge that survives
-    the scope filter but references a dropped node id is dropped too (#1916
-    mirror), unless that id is also defined by a kept node (duplicate
+    the scope filter but references a dropped node id is dropped too (the
+    same mirror), unless that id is also defined by a kept node (duplicate
     attribution must not be over-pruned).
 
     Path matching shares :func:`_semantic_source_matcher` with

@@ -16,7 +16,7 @@ def _scan_blocks():
     found = []
     for art in gen.render_all(gen.load_platforms()):
         for block in re.findall(r'```bash\n(.*?)```', art.content, re.S):
-            # Since #4762 the scan root is read from the trusted .pilothify_root
+            # Since that fix the scan root is read from the trusted .pilothify_root
             # sidecar, not substituted, so the call takes the INPUT_PATH variable.
             if "result = detect(Path(INPUT_PATH)" not in block and "result = detect_incremental(Path(INPUT_PATH)" not in block:
                 continue
@@ -41,7 +41,7 @@ def test_skill_scan_honors_persisted_options(tmp_path, monkeypatch, art, source)
         (corpus / name).write_text('# sample\n', encoding='utf-8')
     out = tmp_path / 'pilothify-out'
     _write_build_config(out, excludes=['docs/skip.md'], gitignore=False)
-    # Since #4762 the block reads the scan root from the trusted .pilothify_root
+    # Since that fix the block reads the scan root from the trusted .pilothify_root
     # sidecar instead of a substituted literal, so Step 1's write is simulated here.
     (out / '.pilothify_root').write_text(corpus.as_posix(), encoding='utf-8')
     # Match the skill's documented CWD-relative output/manifest layout, with

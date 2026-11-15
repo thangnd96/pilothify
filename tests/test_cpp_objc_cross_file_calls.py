@@ -43,7 +43,7 @@ def _call_edges(result: dict, relations=("calls",)):
 # ── C++ #include survival ─────────────────────────────────────────────
 
 def test_cpp_cross_file_member_call_connects_with_relative_paths(tmp_path):
-    """The headline #1547 fix: a paired class no longer islands — Main.cpp's use of
+    """The headline fix: a paired class no longer islands — Main.cpp's use of
     Foo connects to Foo's method across files. Use RELATIVE input paths (the real
     `pilothify extract .` usage), which is what exposes resolution gaps; an earlier
     absolute-path-only test masked them.
@@ -52,7 +52,7 @@ def test_cpp_cross_file_member_call_connects_with_relative_paths(tmp_path):
     here. It relies on the extract() file-node id-remap, which `continue`s when the
     project `root` isn't symlink-resolved (e.g. macOS /var vs /private/var, worktrees),
     leaving the absolute-derived include target uncanonicalized. That's a known
-    remaining gap tracked on #1547/#1556. The class connection below — the actual
+    remaining gap tracked. The class connection below — the actual
     "connect with other classes" goal — resolves via the type-def index + the merged
     class and is robust to that gap.
     """
@@ -129,7 +129,7 @@ def test_cpp_qualified_member_call_is_extracted(tmp_path: Path):
 
 
 def test_cpp_qualified_call_resolves_to_a_qualified_only_definition(tmp_path: Path):
-    """#2348: a macro heavy class body (Unreal's UCLASS()/GENERATED_BODY()) can
+    """A macro heavy class body (Unreal's UCLASS()/GENERATED_BODY()) can
     defeat the bundled grammar's error recovery badly enough that the in-class
     method declaration is never parsed as a member at all -- the out-of-line
     .cpp definition then has nothing to attach to and the extractor falls back

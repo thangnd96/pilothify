@@ -210,7 +210,7 @@ def test_build_dedup_preserves_semantic_attributes():
     assert node["confidence_score"] == 0.9
 
 
-# --- #878: fuzzy dedup false merges on short/variant labels ---
+# --- fuzzy dedup false merges on short/variant labels ---
 
 def test_dedup_does_not_merge_numeric_variants(tmp_path):
     """Chip SKU variants (ASR1603 vs ASR1605) must not be merged."""
@@ -303,7 +303,7 @@ def test_pass2_winner_union_does_not_pull_in_uncompared_same_label_nodes():
     result_nodes, _ = deduplicate_entities(nodes, [], communities={})
     ids = {n["id"] for n in result_nodes}
     # B must survive as a distinct node: identical label across different
-    # source files is exactly what the #1046/#1178 guards keep separate.
+    # source files is exactly what the guards keep separate.
     assert "sm" in ids, (
         "uncompared cross-file node 'sm' was absorbed via pass-2 winner-union"
     )
@@ -343,7 +343,7 @@ def test_prefix_guard_fires_for_extension_pairs():
         )
 
 
-# ── #1284: numbered siblings + cross-file file-anchored boilerplate ──────────
+# ── numbered siblings + cross-file file-anchored boilerplate ──────────
 
 def test_numeric_tokens_differ_helper():
     """_numeric_tokens_differ compares digit runs as zero-padding-insensitive
@@ -411,7 +411,7 @@ def test_dedup_still_merges_samefile_rationale_duplicates():
     assert len(result_nodes) == 1
 
 
-# ── #1243: JaroWinkler prefix-bonus over-merge (cross-file) ──────────────────
+# ── JaroWinkler prefix-bonus over-merge (cross-file) ──────────────────
 
 def test_dedup_does_not_merge_crossfile_shared_prefix_divergence():
     """Cross-file labels sharing a long prefix but diverging in a distinguishing
@@ -429,7 +429,7 @@ def test_dedup_does_not_merge_crossfile_shared_prefix_divergence():
 
 
 def test_dedup_still_merges_crossfile_true_duplicates():
-    """The #1243 guard only drops the prefix bonus — a genuine cross-file
+    """The guard only drops the prefix bonus — a genuine cross-file
     duplicate (high similarity on Jaro alone) must still merge."""
     nodes = [
         {"id": "g1", "label": "GraphExtractor", "file_type": "concept", "source_file": "a.md"},
@@ -439,7 +439,7 @@ def test_dedup_still_merges_crossfile_true_duplicates():
     assert len(result_nodes) == 1
 
 
-# ── #1504: cross-chunk node ID collision warning ──────────────────────────────
+# ── cross-chunk node ID collision warning ──────────────────────────────
 
 def test_cross_chunk_id_collision_emits_warning(capsys):
     """When two nodes share the same ID but come from different source files
@@ -481,7 +481,7 @@ def test_same_id_same_source_file_no_warning(capsys):
     assert "WARNING" not in captured.err
 
 
-# ── #1857: dedup summary log breakdown ────────────────────────────────────────
+# ── dedup summary log breakdown ────────────────────────────────────────
 
 def test_dedup_summary_prints_fuzzy_count_when_no_exact_merges(capsys):
     """A fuzzy-only run must still report the fuzzy count.
@@ -569,7 +569,7 @@ def test_absolute_source_path_still_defines_id(capsys):
     assert "WARNING" not in capsys.readouterr().err
 
 
-# ── #3352: non-Latin source paths must still define their own id ─────────────
+# ── non-Latin source paths must still define their own id ─────────────
 # _id_prefixes reimplemented id slugification with an ASCII-only regex instead
 # of the canonical normalize_id every real extractor mints an id with, so a
 # path segment made of Korean, CJK, or Cyrillic characters collapsed to
@@ -696,7 +696,7 @@ def test_cross_file_id_collision_does_not_mix_attributes(capsys):
 
 
 def test_semantic_reference_stubs_from_issue_4738_are_namespaced():
-    """#4738: two citing documents can mint an ID derived from a third document.
+    """Two citing documents can mint an ID derived from a third document.
 
     The first two reported collisions have no defining node, so both records
     must survive. The third includes a defining path and must retain the normal
@@ -791,7 +791,7 @@ def test_unmarked_nested_document_collision_keeps_existing_survivor():
 
 
 def test_collision_survivor_is_order_independent():
-    """#1851: definer + same-file relabel + cross-file reference. Across every
+    """Definer + same-file relabel + cross-file reference. Across every
     insertion order the SAME node (source_file AND label) must survive — the
     definer heuristic alone left the label order-dependent among co-definers."""
     import itertools
@@ -822,7 +822,7 @@ def test_bare_file_node_defines_its_own_id():
 def test_defines_id_helper():
     assert _defines_id(_DEFINING)
     assert not _defines_id(_REFERENCING)
-    # Pre-#1504 IDs keyed off the bare filename stem.
+    # Older IDs keyed off the bare filename stem.
     assert _defines_id({"id": "readme_booking_service",
                         "source_file": "module-a/README.md"})
     # A path that is merely a string-prefix of the ID's path does not define it.
@@ -830,8 +830,8 @@ def test_defines_id_helper():
     assert not _defines_id({"id": "docs_intro_foo", "source_file": ""})
 
 
-# ── #2532: lifecycle-aware, environment-stable collision ranking ──────────────
-# Active-vs-archived path markers adapted from @michaelxer's PR #2540, judged on
+# ── lifecycle-aware, environment-stable collision ranking ──────────────
+# Active-vs-archived path markers adapted from @michaelxer's, judged on
 # root-relative segments with a reversed-segment final tiebreak so the survivor
 # cannot flip with path form or checkout location.
 
@@ -855,7 +855,7 @@ def test_lifecycle_penalty_on_relative_segments():
 
 
 def test_archived_path_ranks_below_active_despite_ascii_order():
-    """#2532: `plans/_done` sorts before `plans/in-progress` lexically ('_' < 'i'),
+    """`plans/_done` sorts before `plans/in-progress` lexically ('_' < 'i'),
     so a raw-string tiebreak picks the archived copy — assert the ASCII trap is
     real, then that the rank inverts it."""
     assert _DONE_PLAN["source_file"] < _ACTIVE_PLAN["source_file"]  # the trap
@@ -863,7 +863,7 @@ def test_archived_path_ranks_below_active_despite_ascii_order():
 
 
 def test_active_plan_survives_archived_copy_order_independent():
-    """#2532 reported case: the in-progress copy survives, whichever order the
+    """Reported case: the in-progress copy survives, whichever order the
     colliding nodes arrive in."""
     import itertools
     for perm in itertools.permutations([_DONE_PLAN, _ACTIVE_PLAN]):
@@ -873,7 +873,7 @@ def test_active_plan_survives_archived_copy_order_independent():
 
 
 def test_sourced_node_survives_a_source_less_namesake_order_independent():
-    """#4492: when neither colliding node's own file encodes the id, both read
+    """When neither colliding node's own file encodes the id, both read
     as mere references and tie on the first `_collision_rank` key too. A node
     with no `source_file` at all used to win that tie anyway, since an empty
     reversed path sorts before any real one — the located node told us where
@@ -904,7 +904,7 @@ _DOC_COPY = {"id": "pkg_test_x", "label": "Tests", "file_type": "code",
 @pytest.mark.parametrize("origin", [None, "semantic"], ids=["unstamped", "stamped"])
 @pytest.mark.parametrize("doc_label", ["Tests", "test_x.py (tests)"])
 def test_ast_definer_beats_semantic_definer_order_independent(doc_label, origin):
-    """#4859: when both colliding nodes define the id, the AST node keeps it.
+    """When both colliding nodes define the id, the AST node keeps it.
     A doc label shorter than the code label used to win on label length; the
     longer label is the control that already passed."""
     import itertools
@@ -920,7 +920,7 @@ def test_ast_definer_beats_semantic_definer_order_independent(doc_label, origin)
 
 
 def test_semantic_definer_still_beats_ast_reference():
-    """#4859 boundary: the AST preference only separates two definers. A semantic
+    """Boundary: the AST preference only separates two definers. A semantic
     node that defines the id still outranks an AST node that merely references it."""
     definer = {"id": "pkg_overview", "label": "Overview", "file_type": "document",
                "source_file": "pkg.md", "_origin": "semantic"}
@@ -935,7 +935,7 @@ def test_semantic_definer_still_beats_ast_reference():
 
 
 def test_doc_reextract_keeps_ast_node_with_shared_id(tmp_path):
-    """#4859 end to end: an --update that re-extracts only pkg.md, whose node reuses
+    """End to end: an --update that re-extracts only pkg.md, whose node reuses
     the AST id of pkg/test_x.py, must not take the code node over, and a later
     re-extract of pkg.md without that node must not delete it."""
     import json
@@ -971,7 +971,7 @@ def test_doc_reextract_keeps_ast_node_with_shared_id(tmp_path):
 
 
 def test_extension_twin_ids_ignore_the_ast_preference():
-    """#4859 boundary: x.py and x.html are distinct entities, so which twin keeps
+    """Boundary: x.py and x.html are distinct entities, so which twin keeps
     the bare id must not change because one is AST. A shorter html label keeps it,
     as before."""
     import itertools
@@ -988,7 +988,7 @@ def test_extension_twin_ids_ignore_the_ast_preference():
 
 
 def test_same_file_ast_and_semantic_definers_rank_as_before():
-    """#4859 boundary: the AST preference is only for ids defined from two or more
+    """Boundary: the AST preference is only for ids defined from two or more
     files. An AST node and its semantic enrichment from the same file keep
     the shorter label as before."""
     import itertools
@@ -1003,7 +1003,7 @@ def test_same_file_ast_and_semantic_definers_rank_as_before():
 
 
 def test_cross_file_doc_loses_but_same_file_pair_keeps_its_label():
-    """#4859: a doc from another file loses to the AST node (it won on v8 with an
+    """A doc from another file loses to the AST node (it won on v8 with an
     equally short label), while the AST node and its same-file semantic
     enrichment still rank on label length between themselves."""
     import itertools
@@ -1020,7 +1020,7 @@ def test_cross_file_doc_loses_but_same_file_pair_keeps_its_label():
 
 
 def test_unsplit_extension_twins_rank_as_before():
-    """#4859 boundary: when x.py cannot take its extension-qualified id because
+    """Boundary: when x.py cannot take its extension-qualified id because
     another node already holds it, the twins collapse onto one id, and the
     survivor is chosen exactly as on v8 (here the shorter html label)."""
     import itertools
@@ -1039,7 +1039,7 @@ def test_unsplit_extension_twins_rank_as_before():
 
 
 def test_slug_twin_semantic_definer_ranks_as_before():
-    """#4859 boundary: pkg/service.py and pkg_service.py share a full stem, so an
+    """Boundary: pkg/service.py and pkg_service.py share a full stem, so an
     AST node from one does not outrank a semantic definer from the other."""
     import itertools
     ast = {"id": "pkg_service_run", "label": "run()", "file_type": "code",
@@ -1053,7 +1053,7 @@ def test_slug_twin_semantic_definer_ranks_as_before():
 
 
 def test_semantic_enrichment_is_not_outranked_by_another_files_ast():
-    """#4859 boundary: a file with its own AST definer keeps its #2091 pairing even
+    """Boundary: a file with its own AST definer keeps its pairing even
     when a slug twin from another file also has an AST definer for the id."""
     import itertools
     a = {"id": "pkg_service_run", "label": "run()", "file_type": "code",
@@ -1071,7 +1071,7 @@ def test_semantic_enrichment_is_not_outranked_by_another_files_ast():
 
 
 def test_checkout_dir_lifecycle_name_does_not_mark_paths(tmp_path):
-    """Gap in #2540: markers must be matched on ROOT-RELATIVE segments only. An
+    """Gap: markers must be matched on ROOT-RELATIVE segments only. An
     absolute source_file stored under a checkout directory named `wip` must not
     be scored active by the checkout location — the archived copy still loses."""
     import itertools
@@ -1088,7 +1088,7 @@ def test_checkout_dir_lifecycle_name_does_not_mark_paths(tmp_path):
 
 
 def test_neutral_collision_survivor_is_stable_across_path_forms(tmp_path):
-    """#2532: with no lifecycle markers, the tiebreak must not depend on whether
+    """With no lifecycle markers, the tiebreak must not depend on whether
     either path is stored absolute or repo-relative — one root-relative file
     identity survives across all four form combinations and both insertion
     orders (8 runs)."""
@@ -1130,12 +1130,12 @@ def test_archived_definer_beats_active_reference():
         assert out[0]["source_file"] == "plans/_done/spec.md"
 
 
-# ── #2091 review: attribute-merge correctness (fixes A-D) ─────────────────────
+# ── review: attribute-merge correctness (fixes A-D) ─────────────────────
 
 def test_dedup_gapfill_is_order_independent_with_multiple_losers():
     """(fix A) With 3+ same-ID same-source records, the merged attributes must not
     depend on arrival order — the best loser by collision rank supplies each
-    missing key deterministically, preserving the #1851 order-independence."""
+    missing key deterministically, preserving the order-independence."""
     import itertools
     base = [
         {"id": "f", "label": "f", "file_type": "code", "source_file": "m.py",
@@ -1196,7 +1196,7 @@ def test_dedup_fills_explicit_none_attribute():
     assert result[0].get("source_location") == "L7", "explicit-None must be filled from the loser"
 
 
-# ── #2182: cross-file exact-duplicate concepts must merge ─────────────────────
+# ── cross-file exact-duplicate concepts must merge ─────────────────────
 
 def test_crossfile_identical_concepts_merge_and_rewire():
     """Two `concept` nodes whose labels are byte-identical after _norm() but
@@ -1244,7 +1244,7 @@ _RATIONALE_BOILER = ("Django app config for apps.platform.cards. No business "
 
 
 @pytest.mark.parametrize("a,b", [
-    # #296 narrowed the document/rationale rows here to their boundary case: an
+    # narrowed the document/rationale rows here to their boundary case: an
     # identical label on two nodes that are provably NOT their files' own nodes
     # now merges (that is the bug the concept-only gate was causing). What must
     # still never merge is a file's OWN node, so these two rows now carry the
@@ -1281,11 +1281,11 @@ _RATIONALE_BOILER = ("Django app config for apps.platform.cards. No business "
         "image-basename", "concept-image-mixed", "empty-source-file",
         "low-entropy-concept"])
 def test_crossfile_identical_labels_stay_distinct_for_guarded_types(a, b):
-    """The #2182 cross-file merge requires provenance and high entropy on BOTH
-    sides, and #296 widened its type gate only as far as nodes provably not
+    """The cross-file merge requires provenance and high entropy on BOTH
+    sides, widened its type gate only as far as nodes provably not
     their file's own node. Identical labels must still NOT merge for: a
-    document/rationale node that IS its file's own node (#296, the boundary of
-    #1284's file-anchored guard), code, images sharing a basename in
+    document/rationale node that IS its file's own node (the boundary of
+    the file-anchored guard), code, images sharing a basename in
     different dirs, mixed concept+image pairs, provenance-less nodes,
     and low-entropy generic labels."""
     result_nodes, _ = deduplicate_entities([dict(a), dict(b)], [], communities={})
@@ -1296,7 +1296,7 @@ def test_crossfile_identical_labels_stay_distinct_for_guarded_types(a, b):
 
 
 def test_cross_repo_guard_still_raises():
-    """The cross-repo guard is untouched by #2182: identical concepts from
+    """The cross-repo guard is untouched: identical concepts from
     different repos must still raise, never merge."""
     nodes = [
         {"id": "c1", "label": "Shenzhen International", "file_type": "concept",
@@ -1330,7 +1330,7 @@ def test_crossfile_concept_merge_is_order_independent():
 
 
 def test_crossfile_concept_merge_deterministic_across_hash_seeds():
-    """#2182 determinism, #1753/#2074 precedent: the survivor must not depend on
+    """Determinism precedent: the survivor must not depend on
     PYTHONHASHSEED. pytest fixes the seed per process, so run out-of-process
     with shuffled input."""
     import os
@@ -1381,8 +1381,8 @@ def test_crossfile_concept_merge_is_transitive():
     assert len(result_nodes) == 1
 
 
-# ── #2576: same-file labels differing by a content-word swap ──────────────────
-# Guard adopted from @wilyan09007's PR #2587, hardened: any same-position
+# ── same-file labels differing by a content-word swap ──────────────────
+# Guard adopted from @wilyan09007's, hardened: any same-position
 # distinct-content-word pair blocks (not just exactly one), and the differing
 # tokens are judged by _same_word_variant instead of bare token-level JW.
 
@@ -1420,7 +1420,7 @@ def test_dedup_does_not_merge_samefile_sibling_pipeline_stages():
 
 
 def test_dedup_still_merges_samefile_stopword_insertion():
-    """The pair #1243 was scoped around: swapping a function word is how a
+    """The pair the fix was scoped around: swapping a function word is how a
     restatement of the same entity differs, so a stopword in either differing
     position exempts the pair and the merge still happens."""
     nodes = [
@@ -1436,7 +1436,7 @@ def test_dedup_still_merges_samefile_stopword_insertion():
 def test_dedup_still_merges_samefile_normalization_variants():
     """Punct/case variants norm-equal in one file (pass 1), and a fused
     camelCase symbol vs its spaced spelling (token counts differ, so the
-    #2576 guard defers to whole-label scoring), both still merge."""
+    Guard defers to whole-label scoring), both still merge."""
     nodes = [
         {"id": "am1", "label": "Authentication Manager",
          "file_type": "concept", "source_file": "docs/auth.md"},
@@ -1485,7 +1485,7 @@ def test_dedup_still_merges_single_token_transposition_at_length_boundary():
 
 
 def test_dedup_recovers_samefile_first_letter_typo():
-    """DELTA over #2587: token-level JW scores manager/nanager at 84.92 (the
+    """Delta: token-level JW scores manager/nanager at 84.92 (the
     prefix bonus is zero at position 0), so the PR's bare-JW token test would
     have blocked a genuine typo. The same-length Damerau-Levenshtein<=1 branch
     of _same_word_variant reads it as one word and the merge happens.
@@ -1503,7 +1503,7 @@ def test_dedup_recovers_samefile_first_letter_typo():
 
 
 def test_dedup_does_not_merge_samefile_short_content_word_swap():
-    """DELTA over #2587: pane/plane scores 94.0 on token-level JW, above the
+    """Delta: pane/plane scores 94.0 on token-level JW, above the
     merge threshold, so the PR's bare-JW token test read two distinct short
     words as a typo. Tokens under 6 chars never pass the JW fallback."""
     nodes = [
@@ -1517,7 +1517,7 @@ def test_dedup_does_not_merge_samefile_short_content_word_swap():
 
 
 def test_dedup_does_not_merge_two_position_content_swap():
-    """DELTA over #2587: the PR guard required exactly one differing token, so
+    """Delta: the PR guard required exactly one differing token, so
     a sibling pair that also drifts in a second position (Flow vs Flows) slid
     back to whole-label JW (95.44) and merged. Any same-position distinct
     content-word pair now blocks."""
@@ -1532,7 +1532,7 @@ def test_dedup_does_not_merge_two_position_content_swap():
 
 
 def test_dedup_does_not_merge_samefile_sibling_packages():
-    """#1243's own first example, with the source file its repro used: two
+    """the own first example, with the source file its repro used: two
     dependencies both come from one package.json, so the cross-file scoring
     change never applied to them and they still merged."""
     nodes = [
@@ -1546,7 +1546,7 @@ def test_dedup_does_not_merge_samefile_sibling_packages():
 
 
 def test_dedup_does_not_merge_same_community_dated_doc_slugs():
-    """#1243's fourth example, with the communities its repro used: the pair is
+    """the fourth example, with the communities its repro used: the pair is
     cross-file and scores 87.68 on plain Jaro, but both nodes sit in one
     community and the +5 boost lifts it back to 92.68. Comparing the differing
     tokens (fe/mob) blocks it before the boost applies."""
@@ -1573,7 +1573,7 @@ def test_content_token_swap_helper():
     assert not _content_token_swap("export a read only", "export the read only")
     # A typo leaves the differing token the same word.
     assert not _content_token_swap("graph extractor", "graph extractar")
-    # DELTA over #2587: two differing content-word positions block too (the PR
+    # Delta: two differing content-word positions block too (the PR
     # exempted anything but exactly one).
     assert _content_token_swap("alpha beta gamma", "alpha delta epsilon")
     assert _content_token_swap("customer asset contribution flow handler",
@@ -1599,7 +1599,7 @@ def test_same_word_variant_helper():
     assert not _same_word_variant("colour", "color")
 
 
-# -- #296: cross-file merge for entity nodes typed by their file's extension --
+# -- cross-file merge for entity nodes typed by their file's extension --
 #
 # Reported shape: per-file extraction over a note vault mints one node per
 # mention of the same person/project, and they never merge. Normalization was
@@ -1688,8 +1688,8 @@ def test_dedup_never_merges_a_files_own_node_away():
 
 
 def test_dedup_never_merges_two_files_own_nodes():
-    """Two README.md in different folders are genuinely two documents (#1284's
-    original reasoning), and stay two under #296."""
+    """Two README.md in different folders are genuinely two documents (the
+    original reasoning), and stay two under the cross-file merge."""
     nodes = [
         {"id": "web_readme", "label": "README.md", "file_type": "document",
          "node_kind": "page", "source_file": "web/README.md"},
@@ -1753,7 +1753,7 @@ def _doc(node_id, label, source_file, file_type="document"):
 
 
 def test_exact_pass_keeps_unstamped_documents_across_files(tmp_path, capsys):
-    """The 0.9.66 script: five unstamped document nodes, three source files."""
+    """The original repro: five unstamped document nodes, three source files."""
     from pilothify.build import build_merge
 
     extraction = {"nodes": [
@@ -1812,7 +1812,7 @@ def test_exact_pass_merges_concepts_beside_a_blocked_document():
 
 
 def test_dedup_never_merges_repeated_headings_across_files():
-    """#3094's verification case must keep holding under #296: sibling documents
+    """the verification case must keep holding under the cross-file merge: sibling documents
     that each carry the same `## Decisions` / `## Next steps` sections keep one
     heading node per file, attributed to that file."""
     nodes = [
@@ -1847,7 +1847,7 @@ def test_reads_as_file_entity_trusts_the_node_kind_stamp_only():
     assert _reads_as_file_entity(unstamped)
 
 
-# ── #4281: same stem, different extension keeps both nodes ────────────────────
+# ── same stem, different extension keeps both nodes ────────────────────
 
 def test_same_stem_different_extension_keeps_both_nodes(capsys):
     """x.py and x.html share an extension-stripped stem; neither may be dropped."""
@@ -2020,7 +2020,7 @@ def test_build_from_subdirectory_moves_edges_to_renamed_node(tmp_path, monkeypat
     assert not G.has_edge("firmware_lib_portal", "card_a")
 
 
-# ── #4281: path-dropped doc ids (a/x.md vs b/x.md both mint `x`) ──────────────
+# ── path-dropped doc ids (a/x.md vs b/x.md both mint `x`) ──────────────
 
 def _path_dropped_input():
     """Two docs whose semantic ids dropped the directory: both mint `x`/`x_intro`."""
@@ -2196,7 +2196,7 @@ def test_path_dropped_foreign_reference_edge_is_dropped_by_build(capsys):
             "1 reference(s)") in capsys.readouterr().err
 
 
-# ── #4281: a same-file reference is a mention, not a second document ──────────
+# ── a same-file reference is a mention, not a second document ──────────
 # Repro cases (notes 03-repro): D -> test_path_dropped_through_build,
 # F -> test_path_dropped_foreign_reference_edge_is_dropped_by_build,
 # R, R_labelswap, R_noedge, R_toplevel, G -> the tests below.

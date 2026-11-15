@@ -1,4 +1,4 @@
-"""#1774 — extract() must never write its AST cache into the analyzed source tree.
+"""extract() must never write its AST cache into the analyzed source tree.
 
 The cache is an output. When no cache_root is given it used to default to the
 inferred common parent of the input files — the source tree — so analyzing a

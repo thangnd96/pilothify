@@ -169,7 +169,7 @@ def test_write_text_atomic_windows_permission_fallback(tmp_path, monkeypatch):
 
 
 def test_write_text_atomic_windows_winerror_17_fallback(tmp_path, monkeypatch):
-    """#3508: `os.replace` can raise WinError 17 ("cannot move to a different
+    """`os.replace` can raise WinError 17 ("cannot move to a different
     disk drive") even when src/dst are the same directory on the same drive,
     on some Windows/filesystem combinations. Unlike WinError 5/32, this is a
     plain OSError rather than PermissionError, so the fallback must key off
@@ -199,7 +199,7 @@ def test_os_replace_with_fallback_replaces_a_symlink_destination_in_place(tmp_pa
     following it -- install.py relies on exactly this for managed skill
     symlinks. A naive `shutil.copy2(src, dst)` does the opposite when
     dst is a symlink: opening it for writing follows the link and overwrites
-    its TARGET's content instead. The #3508 fallback must preserve replace's
+    its TARGET's content instead. The fallback must preserve replace's
     semantics, not copy2's, or a Windows quirk that triggers the fallback
     would silently clobber whatever a managed symlink pointed at."""
     from pilothify.paths import os_replace_with_fallback
@@ -303,7 +303,7 @@ def test_write_json_atomic_ensure_ascii_false_preserves_utf8(tmp_path):
 
 
 def test_atomic_replace_temp_name_is_bounded_and_does_not_embed_long_filename(tmp_path, monkeypatch):
-    """Regression #3351: temp filename must not grow with destination filename."""
+    """Regression: temp filename must not grow with destination filename."""
     import tempfile
     from pathlib import Path
     from pilothify.paths import _WINDOWS_MAX_PATH, _atomic_replace
@@ -338,7 +338,7 @@ def test_atomic_replace_temp_name_is_bounded_and_does_not_embed_long_filename(tm
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows MAX_PATH test")
 def test_write_text_atomic_succeeds_near_windows_max_path(tmp_path):
-    """Regression #3351: atomic write to a path at Windows MAX_PATH limit must succeed."""
+    """Regression: atomic write to a path at Windows MAX_PATH limit must succeed."""
     from pilothify.paths import _WINDOWS_MAX_PATH, write_text_atomic
 
     base = str(tmp_path.resolve())

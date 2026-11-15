@@ -1,4 +1,4 @@
-"""#4740: `pilothify update` must not extract when nothing relevant changed.
+"""`pilothify update` must not extract when nothing relevant changed.
 
 _rebuild_code() used to run detect -> extract -> build -> cluster and only then
 compare topology, so a zero-change run still cost minutes and gigabytes. These
@@ -245,7 +245,7 @@ def test_scan_digest_tracks_the_file_set_not_the_contents(built: Path) -> None:
     assert _scan_digest(detect(built)) == before
 
 
-# --- #4748: a stamp may only describe outputs that are fully on disk ----------
+# --- a stamp may only describe outputs that are fully on disk ----------
 #
 # A stamp is a promise that the next run may skip. Writing one over a graph.json
 # that a failed or partial write left behind turns that promise into a stale

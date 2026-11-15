@@ -99,7 +99,7 @@ def test_php_ambiguous_base_disambiguated_by_use(tmp_path: Path):
 
 
 def test_php_aliased_import_edge_shares_target_with_plain_import(tmp_path: Path):
-    """#3421: an `imports` edge for an aliased `use` clause always targeted
+    """An `imports` edge for an aliased `use` clause always targeted
     the bare imported class name (the last segment of the qualified name),
     completely ignoring the alias. A file with a PLAIN `use GuzzleHttp\\Client;`
     and a file with an ALIASED `use GuzzleHttp\\Client as HttpClient;` both
@@ -144,7 +144,7 @@ def test_php_aliased_import_edge_shares_target_with_plain_import(tmp_path: Path)
 def test_php_distinct_aliases_for_same_named_classes_do_not_collapse(tmp_path: Path):
     """The reason an alias exists at all: disambiguating two DIFFERENT
     classes that share a bare name (App\\Models\\Session vs
-    Shopify\\Auth\\Session). Fixing #3421 by preferring the alias for an
+    Shopify\\Auth\\Session). Fixing the import target by preferring the alias for an
     import edge's target must not go too far the other way and collapse
     genuinely different classes onto one node just because they were both
     imported under an alias."""

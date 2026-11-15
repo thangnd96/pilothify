@@ -41,7 +41,7 @@ def _within_tree(ceiling: Path, target: Path) -> bool:
     """True if *target* is *ceiling* or lives beneath it, compared lexically
     (normpath, no filesystem access).
 
-    A ``source`` path built with ``..`` (the ``$VAR/../lib`` idiom, #2596 form 4,
+    A ``source`` path built with ``..`` (the ``$VAR/../lib`` idiom form 4,
     or a ``$(dirname …)`` prefix) must not be allowed to walk up to an arbitrary
     host path: a corpus is attacker-controllable, and both the ``is_file()``
     existence probe and the recorded absolute ``target_file`` on the emitted edge
@@ -594,7 +594,7 @@ def extract_bash(path: Path) -> dict:
                 _prescan_functions(child)
 
     _prescan_functions(root)
-    # Bases for `source "${VAR}/lib/x.sh"` resolution. #2079 always resolved
+    # Bases for `source "${VAR}/lib/x.sh"` resolution. once always resolved
     # the literal suffix against the script's own directory, which is right for the
     # `DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"` idiom but wrong whenever
     # the variable points elsewhere -- e.g. ROOT=".../scripts/.." with a same-named

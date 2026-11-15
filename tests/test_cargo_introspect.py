@@ -458,7 +458,7 @@ tokio_rt = { version = "1", package = "tokio" }
 
 
 def test_cargo_introspect_discovers_a_manifest_in_a_subdirectory(tmp_path):
-    """#3678: a Tauri-style layout keeps Cargo.toml in src-tauri/, not at the
+    """A Tauri-style layout keeps Cargo.toml in src-tauri/, not at the
     scan root. introspect_cargo must find it rather than erroring as if no
     crate existed at all."""
     tauri = tmp_path / "src-tauri"

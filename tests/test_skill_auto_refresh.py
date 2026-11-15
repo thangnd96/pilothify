@@ -1,4 +1,4 @@
-"""#1805: a package upgrade must not leave the installed skills behind.
+"""A package upgrade must not leave the installed skills behind.
 
 `uv tool upgrade pilothify` / `pip install -U pilothify` replace the package
 but not the skill copies under ~/.claude, ~/.codex, ~/.config/opencode, ...;
@@ -124,7 +124,7 @@ def test_a_falsy_opt_out_value_keeps_it_on(monkeypatch):
 
 
 def test_a_newer_skill_is_never_downgraded(capsys):
-    """#1568: installing from an older package would downgrade the skill."""
+    """Installing from an older package would downgrade the skill."""
     dst = _stale("codex", version="999.0.0")
 
     mainmod._refresh_stale_skills()

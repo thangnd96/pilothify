@@ -131,7 +131,7 @@ def _attach_files(
         for n in syms:
             label = n.get("label", n.get("id", "?"))
             # Skip the redundant file-name node pilothify emits (bare basename or
-            # the directory-qualified form from the #2032 disambiguation pass).
+            # the directory-qualified form from the disambiguation pass).
             if n.get("file_type") == "code":
                 from pilothify.build import _is_file_node_label
                 if _is_file_node_label(label, src_file):

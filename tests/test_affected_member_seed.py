@@ -1,4 +1,4 @@
-"""#1669 — affected <Class> must reach callers that bind to the class's method
+"""Affected <Class> must reach callers that bind to the class's method
 nodes (post- method-granularity resolution), by seeding the reverse walk
 with the root's member nodes (one method/contains hop). method/contains stay out
 of the general relation-filtered walk, so no forward noise is added elsewhere.

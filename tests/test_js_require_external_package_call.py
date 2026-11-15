@@ -1,14 +1,14 @@
 """A use through a CommonJS require of an external package must stay visible
 instead of silently losing its edge.
 
-#4621/#4634 stopped minting a local node for a `const X = require('./m')`
+Stopped minting a local node for a `const X = require('./m')`
 binding so it no longer shadowed the class the required file exports, which
 fixed `new X()` for a resolvable local require. But the same guard also
 suppressed the node for a require of an EXTERNAL package (`require('some-
 plugin')`), where there is no required class to redirect to -- the binding
 node was the only thing a caller could ever point at, and suppressing it
-there just dropped the use entirely, a real regression from 0.9.93 (where it
-pointed at the, admittedly wrong, binding node) to 0.9.94 (no edge at all).
+there just dropped the use entirely, a real regression from an older release (where it
+pointed at the, admittedly wrong, binding node) to the next (no edge at all).
 The issue's own "Expected" section asks for the use to stay visible in this
 case specifically: "an edge to the binding, or to an external-package node,
 instead of no edge."
@@ -50,7 +50,7 @@ def test_new_through_an_external_package_require_stays_visible(tmp_path: Path):
 
 
 def test_a_resolvable_require_still_suppresses_its_binding_node(tmp_path: Path):
-    """The #4621/#4634 fix for a LOCAL, resolvable require must be unaffected:
+    """The fix for a LOCAL, resolvable require must be unaffected:
     only an unresolvable (external) specifier keeps its binding node."""
     logger = _write(
         tmp_path / "logger.js",

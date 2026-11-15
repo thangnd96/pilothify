@@ -474,7 +474,7 @@ GIT_DIR=${GIT_DIR:-$(git rev-parse --git-dir 2>/dev/null)}
 
 """ + _WORKTREE_GUARD + _TOPLEVEL_ANCHOR + """
 # CHERRY_PICK_HEAD can't be the skip signal: git leaves it on disk while post-commit
-# runs, so every pick was silenced (same trap as MERGE_HEAD in). For a
+# runs, so every pick was silenced (the same trap as MERGE_HEAD). For a
 # range pick or revert, skip every step but the last and rebuild once from
 # sequencer/head, so a tracked graph.json isn't rewritten between steps. sequencer/ is
 # trusted only when its first todo line is the commit just made; a stale one left by
@@ -1003,7 +1003,7 @@ def _has_merge_attr(content: str) -> bool:
 def _register_merge_driver(root: Path) -> str:
     """Register the graph.json union merge driver in git config + .gitattributes.
 
-    README and CHANGELOG 0.7.0 document `pilothify merge-driver` as being set up
+    Older READMEs document `pilothify merge-driver` as being set up
     by `hook install`, but install never actually registered it. Writes go
     through `git config` (never hand-edit .git/config — in a linked worktree the
     effective config is not at root/.git/config). The interpreter is pinned the

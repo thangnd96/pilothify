@@ -3,8 +3,8 @@
 `enum_declaration` is in `_TS_CONFIG.class_types` with the comment "parity with
 Java/C#", but only the container half was done: the enum type was a node while
 its members were not, leaving the type a leaf. Java has emitted a node per
-`enum_constant` with a `case_of` edge since #1719 and Kotlin since #1738 (both
-from #1700), and Swift does the same for `enum_entry`.
+`enum_constant` with a `case_of` edge since that fix and Kotlin since that fix (both
+from that fix), and Swift does the same for `enum_entry`.
 
 TS spells a member two ways. A bare `Red` is a `property_identifier`; `Green = 5`
 is an `enum_assignment` whose `name` is a `property_identifier`, or a `string`

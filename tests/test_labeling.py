@@ -363,7 +363,7 @@ def test_label_communities_max_communities_caps_total(monkeypatch):
     assert len(captured_cids) == 40
 
 
-# --- #1390: parallel labeling (--max-concurrency) + --batch-size --------------
+# --- parallel labeling (--max-concurrency) + --batch-size --------------
 
 import threading
 import time as _time
@@ -552,7 +552,7 @@ def _two_community_graph(out):
 def test_cluster_commands_render_aggregated_html_above_viz_limit(
     tmp_path, monkeypatch, capsys, command,
 ):
-    """#2853: relabeling a large graph must keep a current aggregated HTML."""
+    """Relabeling a large graph must keep a current aggregated HTML."""
     import pilothify.__main__ as cli
 
     out = tmp_path / "pilothify-out"
@@ -805,7 +805,7 @@ def test_cluster_only_does_not_erase_concurrent_html_after_failure(
 
 
 def test_cluster_only_no_label_does_not_persist_placeholders(tmp_path, monkeypatch):
-    """#2073: --no-label must not write .pilothify_labels.json with 'Community N'
+    """--no-label must not write .pilothify_labels.json with 'Community N'
     placeholders (which the reuse path would then treat as fresh forever). A
     later normal run must produce real (non-placeholder) labels."""
     import pilothify.__main__ as cli
@@ -837,7 +837,7 @@ def test_cluster_only_no_label_does_not_persist_placeholders(tmp_path, monkeypat
 
 
 def test_cluster_only_heals_persisted_placeholder_but_reuses_genuine(tmp_path, monkeypatch):
-    """#2073: an already-polluted sidecar (a placeholder for one community, a
+    """An already-polluted sidecar (a placeholder for one community, a
     genuine label for another) self-heals — the placeholder is replaced by the
     hub name while the genuine label is reused, with no LLM call."""
     import pilothify.__main__ as cli
@@ -906,7 +906,7 @@ def _patch_cluster_only_reuse(monkeypatch):
 
 
 def test_cluster_only_keeps_label_on_majority_membership_overlap(tmp_path, monkeypatch):
-    """#2298: one added node must not replace a saved name when the shared
+    """One added node must not replace a saved name when the shared
     members are a strict majority of both the saved set and the current set.
     A one-node fragment of a large community must not keep that name."""
     from pilothify.cluster import community_member_sigs
@@ -978,7 +978,7 @@ def test_cluster_only_keeps_label_on_majority_membership_overlap(tmp_path, monke
 
 
 def test_cluster_only_keeps_unchanged_label_when_count_changes(tmp_path, monkeypatch):
-    """#2298: with no signature file, a new singleton community must not hub-rename
+    """With no signature file, a new singleton community must not hub-rename
     communities whose membership did not shrink."""
     cli = _patch_cluster_only_reuse(monkeypatch)
 
@@ -1005,7 +1005,7 @@ def test_cluster_only_keeps_unchanged_label_when_count_changes(tmp_path, monkeyp
     assert labels["1"] == "Billing Desk"
 
 
-# ── #2534 case 2: prompt key must not collide with the placeholder sentinel ──
+# ── case 2: prompt key must not collide with the placeholder sentinel ──
 
 
 def test_label_prompt_lines_use_bare_cid_keys():
@@ -1024,7 +1024,7 @@ def test_label_prompt_lines_use_bare_cid_keys():
 
 
 def test_label_cli_drops_sentinel_and_bare_key_echoes(tmp_path, monkeypatch):
-    """#2534 case 2, cli side: an LLM reply that echoes the sentinel
+    """Case 2, cli side: an LLM reply that echoes the sentinel
     ("Community 5") or the bare prompt key ("7") must not survive the filter —
     the deterministic hub labels win — while a real name still overrides."""
     import pilothify.__main__ as cli

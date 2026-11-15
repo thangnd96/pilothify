@@ -8,7 +8,7 @@ set the file declares and the node set it produces disagree, and `merge-graphs`
 fragments the same external module into one node per repo. These tests pin the
 fix: mint a typed external stub node instead, keep it global across repos, and
 never stub a non-import relation (a sourceless external call target stays
-suppressed per #3156).
+suppressed).
 """
 from __future__ import annotations
 

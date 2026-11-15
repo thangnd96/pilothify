@@ -1,4 +1,4 @@
-"""#1631 — a malformed LLM chunk (a stray non-dict entry in edges/nodes) must
+"""A malformed LLM chunk (a stray non-dict entry in edges/nodes) must
 not crash the merge/cache-write and discard all successful chunks.
 
 `sem_result["edges"]` could contain a bare list where an edge object belongs

@@ -1,10 +1,10 @@
-"""Regression tests for #1990 and #1991.
+"""
 
-#1990 — `pilothify extract --out` saves recovery checkpoints in the wrong directory.
+`pilothify extract --out` saves recovery checkpoints in the wrong directory.
          save_semantic_cache must write to cache_root (the --out dir), not root
          (the corpus dir), when they differ.
 
-#1991 — Final semantic-cache save resolves source_file paths against out_root
+Final semantic-cache save resolves source_file paths against out_root
          and silently writes 0 entries when corpus files do not exist there.
          Fixed by passing root=target (corpus), cache_root=out_root to
          save_semantic_cache so source_file resolution and cache placement are

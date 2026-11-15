@@ -562,7 +562,7 @@ def extract_pascal(path: Path) -> dict:
                 # cases. Without this branch declType matched only class/interface/
                 # helper kinds, so the whole enum type AND its values fell through
                 # and were dropped. Emit the type node plus a `case_of` edge per
-                # value — the Pascal parity of Java #1719 / C# / Swift / Scala enums.
+                # value — the Pascal parity of Java / C# / Swift / Scala enums.
                 enum_nid = _make_id(stem, type_name)
                 add_node(enum_nid, type_name, line)
                 add_edge(parent_nid, enum_nid, "contains", line)

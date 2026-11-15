@@ -1,4 +1,4 @@
-"""#2202 - hook reminders arrive in the agent's tool-result stream. Phrased as
+"""Hook reminders arrive in the agent's tool-result stream. Phrased as
 commands ("MANDATORY", "You MUST", "include it in every subagent prompt") they
 read like a prompt injection, and agents flag or ignore them. They must state
 facts instead.

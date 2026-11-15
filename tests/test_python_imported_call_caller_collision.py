@@ -2,7 +2,7 @@
 
 ``make_id`` strips the underscore edges off each part, so ``_main``/``main`` (and
 any ``foo``/``_foo`` pair, e.g. ``invoke_scheduler``/``_invoke_scheduler``) mint
-one plain id. The engine salts the pair apart like #3302 does, keeping the plain
+one plain id. The engine salts the pair apart like that fix does, keeping the plain
 id on the unique public name. The import-aware pass that turns a call on an
 imported symbol into a ``calls`` edge rebuilt the caller id from the bare ``def``
 name instead, so it always landed on ``main()`` — and every call inside
@@ -93,7 +93,7 @@ def test_underscore_sibling_without_collision_is_unchanged(tmp_path):
 
 
 def test_class_field_reference_stays_on_the_class_not_a_method(tmp_path):
-    """The #4994 collision fix must not steal a class member's edge. A class whose
+    """The collision fix must not steal a class member's edge. A class whose
     method is followed by a type-annotated field shares the member-id prefix
     (`classid_methodname`) with the class, but that is a child node, not an
     underscore-collision salt - so the field's type reference must stay on the

@@ -1,4 +1,4 @@
-"""Tests for the Terraform/HCL extractor (pilothify/extract.py, issue)."""
+"""Tests for the Terraform/HCL extractor (pilothify/extract.py)."""
 from __future__ import annotations
 
 from pathlib import Path

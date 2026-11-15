@@ -82,7 +82,7 @@ def test_prefix_graph_rewrites_edge_directional_attributes():
 
 
 def test_prefix_graph_offsets_community_ids():
-    """#3014: every input graph numbers its communities from 0, so a merge
+    """Every input graph numbers its communities from 0, so a merge
     carrying ids across unchanged fuses community 0 of one repo with community
     0 of another into a single meta-node in the aggregated view. An offset must
     shift integer ids into a shared id space and keep the per-repo id in

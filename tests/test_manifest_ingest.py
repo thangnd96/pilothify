@@ -173,7 +173,7 @@ def test_pom_deps_exclude_managed_and_plugin_dependencies(tmp_path):
         "pkg_org_slf4j_slf4j_api", "pkg_org_postgresql_postgresql",
     }
 
-# ── #1377: a package referenced by N manifests is ONE node ───────────────────
+# ── a package referenced by N manifests is ONE node ───────────────────
 
 def test_apm_dependency_collapses_to_single_canonical_node(tmp_path):
     base = tmp_path / "packages"
@@ -212,7 +212,7 @@ def test_malformed_manifest_does_not_crash(tmp_path):
     assert r["nodes"] == [] and r["edges"] == []
 
 
-# ── #2434: Cargo.toml joins pyproject.toml/go.mod/pom.xml as a package manifest ─
+# ── Cargo.toml joins pyproject.toml/go.mod/pom.xml as a package manifest ─
 
 def test_cargo_classifies_as_code_manifest(tmp_path):
     p = _write(tmp_path / "Cargo.toml", '[package]\nname = "x"\n')
@@ -277,7 +277,7 @@ def test_cargo_workspace_inherited_version_does_not_crash(tmp_path):
     assert pkg["label"] == "member" and "version" not in pkg
 
 
-# ── #3806: inherited groupId and ${...} properties in pom.xml ────────────────
+# ── inherited groupId and ${...} properties in pom.xml ────────────────
 
 def test_pom_inherits_groupid_and_resolves_properties(tmp_path):
     _write(tmp_path / "rsc/pom.xml",

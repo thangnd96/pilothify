@@ -82,7 +82,7 @@ def test_same_name_in_different_namespaces_is_not_linked(tmp_path):
 
 def test_two_declarations_inside_one_repo_are_not_linked(tmp_path):
     # A partial class or a same-named type in two files of one repo is not a
-    # cross-repo join, and merging them is #296's question, not this one.
+    # cross-repo join, and merging them is the question, not this one.
     links, _ = _merge(
         tmp_path,
         [

@@ -215,7 +215,7 @@ def test_extract_ejs_unreadable_file_reports_error(tmp_path):
 
 
 def test_extract_ejs_no_longer_reports_missing_extractor(tmp_path, capsys):
-    """The #1689 "no AST extractor" warning must be gone now that `.ejs` is wired."""
+    """The "no AST extractor" warning must be gone now that `.ejs` is wired."""
     tpl = _write(
         tmp_path / "views" / "page.ejs",
         "<% function f() { return 1; } %>\n<p><%= f() %></p>\n",

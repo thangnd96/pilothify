@@ -60,7 +60,7 @@ def test_all_cached_run_reaches_part_c_with_cached_nodes_and_no_stale_chunks(tmp
     b3 = _python_blocks(body, "**Step B3", "#### Part C")
     part_c = _python_blocks(body, "#### Part C", "\n### ")[:1]
     # b3 spans Step B3 (merge) through Step B3.5 (the partial-read coverage
-    # check added in #3987), so the range carries four blocks, not three.
+    # check added), so the range carries four blocks, not three.
     assert len(b0) == 1 and len(b3) == 4 and len(part_c) == 1
 
     corpus = tmp_path / "corpus"
@@ -83,7 +83,7 @@ def test_all_cached_run_reaches_part_c_with_cached_nodes_and_no_stale_chunks(tmp
         json.dumps({"nodes": [{"id": "stale_node", "label": "old", "source_file": "x.md"}],
                     "edges": []}), encoding="utf-8")
 
-    # Since #4762 the blocks read the scan root from the trusted .pilothify_root
+    # Since that fix the blocks read the scan root from the trusted .pilothify_root
     # sidecar instead of a substituted INPUT_PATH literal; simulate Step 1's write.
     (out / ".pilothify_root").write_text(corpus.as_posix(), encoding="utf-8")
     for src in b0 + b3 + part_c:

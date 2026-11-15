@@ -195,7 +195,7 @@ def test_solidity_using_free_function_set_emits_uses_edges(tmp_path):
 @_needs_solidity
 def test_solidity_enum_values_emit_case_of_not_contains(tmp_path):
     """A Solidity enum value is a discriminant case, so it must get a `case_of`
-    edge like every other language with enums (Java #1719, C#, Swift, Rust,
+    edge like every other language with enums (Java, C#, Swift, Rust,
     VB.NET), not the `contains` edge used for real declared members. Solidity
     was routing enum values through the same `contains` path as struct fields.
     The relation also matters to resolution: `case_of` targets are excluded

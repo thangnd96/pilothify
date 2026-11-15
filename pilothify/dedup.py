@@ -175,8 +175,8 @@ def _same_word_variant(x: str, y: str) -> bool:
 
 def _content_token_swap(a: str, b: str) -> bool:
     """True when two equal-token-count labels differ in at least one swapped
-    content word rather than only typos or function words (#2576, adopted
-    from @wilyan09007's PR #2587 and generalized from exactly-one to any
+    content word rather than only typos or function words (adopted
+    from @wilyan09007's and generalized from exactly-one to any
     number of differing positions).
 
     Whole-string scoring cannot separate a legit restatement from a
@@ -338,7 +338,7 @@ def _defines_id(node: dict) -> bool:
 # than an entity mentioned inside it: `page` is the file's own node, `heading`
 # one of its sections. The markdown extractor stamps these precisely because
 # `file_type` cannot carry the distinction, and both are file-anchored in the
-# #1284 sense — two files' `## Decisions` sections are two sections.
+# sense — two files' `## Decisions` sections are two sections.
 #
 # PRODUCER CONTRACT: an extractor that mints a node standing for a *part* of its
 # source file (a section, a sheet, a slide) must stamp one of these. The gate
@@ -648,7 +648,7 @@ def _merge_missing_attributes(survivor: dict, duplicate: dict) -> dict:
         if value is None:
             continue
         # Treat an explicit None on the survivor as absent — the codebase emits
-        # `source_location: None`, and that is exactly the attribute #2091 loses.
+        # `source_location: None`, and that is exactly the attribute once loses.
         if merged.get(key) is None:
             merged[key] = value
     return merged
@@ -1208,7 +1208,7 @@ def deduplicate_entities(
     # Gap-fill each survivor from its SAME-SOURCE losers, applied in deterministic
     # _collision_rank order (best loser first). Merging here — not incrementally in
     # the loop above — keeps the merged attributes independent of chunk arrival
-    # order with 3+ colliding records, preserving the #1851 order-independence
+    # order with 3+ colliding records, preserving the order-independence
     # contract (review).
     for nid, losers in dropped.items():
         survivor = seen_ids[nid]
@@ -1476,12 +1476,12 @@ def deduplicate_entities(
                     score += _COMMUNITY_BOOST
 
                 if score >= _MERGE_THRESHOLD:
-                    # Belt-and-braces (narrowed by): candidates are
+                    # Belt-and-braces (narrowed later): candidates are
                     # norm-unique (`seen_norms` above), so two candidates can
                     # never share a normalized label and this branch is
                     # unreachable today. Retained in case candidate selection
                     # changes. Equal-norm cross-file pairs are handled in Pass 1
-                    # instead, gated to `concept` nodes — the original #1046
+                    # instead, gated to `concept` nodes — the original
                     # rationale (same-named code symbols) was obsoleted by code
                     # being excluded from label matching entirely.
                     if norm_label == neighbor_norm:
@@ -1492,7 +1492,7 @@ def deduplicate_entities(
                     # Pick the winner from the verified pair only. Selecting it
                     # from the union of both normalized-label groups pulls
                     # never-compared nodes (same label, different source_file)
-                    # into the merge, bypassing the #1046/#1178 guards.
+                    # into the merge, bypassing the guards.
                     if protected_set:
                         px = _get_prot(node_id)
                         py = _get_prot(neighbor_id)
@@ -1678,7 +1678,7 @@ def _pick_winner(nodes: list[dict]) -> dict:
     has a ``source_location`` beats one that doesn't (the codebase genuinely
     emits ``source_location: None`` on some records, so this is a real
     distinction, not a hypothetical one — richness ignores it too, the same
-    gap #3775 closed one level up). The location step only counts a
+    gap closed one level up). The location step only counts a
     ``source_location`` when ``source_file`` is also present — a location
     with no file isn't a real provenance signal and must not out-rank a
     fully bare candidate on its own. Each step only changes the outcome

@@ -1,4 +1,4 @@
-"""#1649 — a modified .docx/.xlsx must re-enter --update.
+"""A modified .docx/.xlsx must re-enter --update.
 
 detect_incremental tracks the converted markdown SIDECAR, not the Office
 source. convert_office_file used to early-return whenever the sidecar existed,

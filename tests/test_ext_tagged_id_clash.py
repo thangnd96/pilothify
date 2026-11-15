@@ -1,4 +1,4 @@
-"""#4449: a symbol must not take a same-stem sibling's file id.
+"""A symbol must not take a same-stem sibling's file id.
 
 ``extract()`` renames every file's OLD file-level id (its path WITH the extension,
 ``esquema_x_sql`` for ``esquema/x.sql``) to the canonical one (``esquema_x``). A symbol of

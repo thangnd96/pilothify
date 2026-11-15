@@ -7,7 +7,7 @@ never resolved. `_merge_csharp_partial_class_nodes` collapses the halves onto
 one canonical node, keyed by (assembly, namespace, type path); same-named types
 in other namespaces, non-partial declarations, and nested types under a
 different enclosing chain are left alone. The assembly key is the nearest ancestor dir holding a `*.csproj`/
-`*.fsproj`/`*.vbproj` (: `partial` never fuses across assemblies), with
+`*.fsproj`/`*.vbproj` (`partial` never fuses across assemblies), with
 "" — halves under no project at all, which still merge — as the sentinel.
 """
 from __future__ import annotations
@@ -331,7 +331,7 @@ def _widget_methods_by_assembly(r):
 
 
 def test_same_namespace_partials_in_different_assemblies_not_merged(tmp_path):
-    """#2411: same fully-qualified name under TWO .csproj projects is two
+    """Same fully-qualified name under TWO .csproj projects is two
     genuinely distinct types — never one node with phantom cross-assembly edges."""
     calls, r = _extract(tmp_path, _TWO_ASSEMBLIES)
     widgets, methods = _widget_methods_by_assembly(r)
@@ -352,7 +352,7 @@ def test_same_namespace_partials_in_different_assemblies_not_merged(tmp_path):
 
 
 def test_partial_halves_within_one_csproj_still_merge(tmp_path):
-    """Adding a .csproj must not break the #2332 merge within one project."""
+    """Adding a .csproj must not break the merge within one project."""
     calls, r = _extract(tmp_path, {
         "src/AsmOne/AsmOne.csproj": "<Project Sdk=\"Microsoft.NET.Sdk\"></Project>\n",
         "src/AsmOne/Widget.cs": (

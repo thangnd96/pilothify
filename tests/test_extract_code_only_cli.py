@@ -57,7 +57,7 @@ def test_mixed_repo_without_key_errors_and_points_at_code_only(tmp_path):
 
 
 def test_extract_usage_advertises_code_only(tmp_path):
-    """#2071: --code-only must be discoverable in the extract usage text, not only
+    """--code-only must be discoverable in the extract usage text, not only
     by triggering the no-key error. `pilothify extract` with no path prints usage."""
     r = subprocess.run(
         [PYTHON, "-m", "pilothify", "extract"],
@@ -81,7 +81,7 @@ def _run_relative_out(repo: Path, *extra: str):
 
 
 def test_output_flag_is_alias_of_out(tmp_path):
-    """#2004 part 3: `--output DIR` was silently ignored on extract (output went
+    """Part 3: `--output DIR` was silently ignored on extract (output went
     to the default `<path>/pilothify-out/`). It is now an alias of `--out`."""
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -131,7 +131,7 @@ def test_no_gitignore_indexes_vcs_ignored_code_but_keeps_pilothifyignore(tmp_pat
 
 
 def test_no_gitignore_setting_persists_across_flagless_extract(tmp_path):
-    """#1971 persistence: once --no-gitignore is set, a later flag-less
+    """Persistence: once --no-gitignore is set, a later flag-less
     `pilothify extract` must NOT clobber it back to honoring .gitignore (which
     would make the git-ignored code silently disappear again)."""
     repo = tmp_path / "repo"
@@ -248,7 +248,7 @@ def test_explicit_exclude_replaces_persisted_setting_with_custom_out(tmp_path):
 
 
 def test_extract_names_skipped_sensitive_files(tmp_path):
-    """#2106 traceability: a file dropped by the sensitive-file filter is reported
+    """Traceability: a file dropped by the sensitive-file filter is reported
     by NAME (not just a count), so a wrongly-flagged file is visible."""
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -262,7 +262,7 @@ def test_extract_names_skipped_sensitive_files(tmp_path):
 
 
 def test_code_only_force_preserves_existing_semantic_layer(tmp_path):
-    """#2923 regression: --code-only --force must not drop the existing semantic
+    """Regression: --code-only --force must not drop the existing semantic
     layer. The AST pass is fully replaced (full re-scan, semantic cache reads
     skipped) but the semantic pass is itself skipped, so doc/paper/image nodes
     from graph.json must be carried forward. Before the fix this combination
@@ -333,7 +333,7 @@ def test_code_only_force_preserves_existing_semantic_layer(tmp_path):
 
 
 def test_code_only_force_prunes_removed_semantic_files(tmp_path):
-    """#2923 follow-up: --code-only --force preserves surviving semantic nodes
+    """Follow-up: --code-only --force preserves surviving semantic nodes
     but must still prune semantic nodes for files that have been removed from
     disk (the doc/paper/image tier cannot outlive the corpus it indexes).
     """
@@ -377,7 +377,7 @@ def test_code_only_force_prunes_removed_semantic_files(tmp_path):
 
 
 def test_code_only_force_rescan_re_resolves_tsconfig_paths_and_preserves_semantics(tmp_path: Path):
-    """#3125 regression: `extract --code-only --force` over an existing graph
+    """Regression: `extract --code-only --force` over an existing graph
     must perform a full code/AST re-scan so updated tsconfig paths take effect on
     unchanged .ts files, while preserving the existing semantic layer.
     """

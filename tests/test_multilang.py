@@ -476,7 +476,7 @@ def test_rust_no_cross_crate_spurious_edges():
 
 
 def test_rust_forward_type_reference_resolves_to_local_declaration(tmp_path):
-    """#3782: a struct, enum or trait used above its declaration in the same file
+    """A struct, enum or trait used above its declaration in the same file
     must resolve to that declaration, not to a sourceless stub."""
     p = tmp_path / "engine.rs"
     p.write_text(
@@ -503,8 +503,8 @@ def test_rust_forward_type_reference_resolves_to_local_declaration(tmp_path):
 
 
 def test_rust_forward_reference_prescan_skips_items_that_are_not_nodes(tmp_path):
-    """#3782: only file-level type declarations (struct/enum/trait, and since
-    #4285 `type` aliases and unions) become nodes, so only they may resolve a
+    """Only file-level type declarations (struct/enum/trait, and since
+    `type` aliases and unions) become nodes, so only they may resolve a
     forward reference. A struct declared in a function body, a name declared
     nowhere in the file and a generic type that only an `impl` names produce no
     node of that name here; references to them must keep their sourceless stub
@@ -542,7 +542,7 @@ def test_rust_forward_reference_prescan_skips_items_that_are_not_nodes(tmp_path)
 
 
 def test_rust_forward_reference_resolves_into_an_inline_module(tmp_path):
-    """#3782: the pre-scan reaches the same items walk() does, so a type declared
+    """The pre-scan reaches the same items walk() does, so a type declared
     in an inline `mod` below its use resolves like a use placed after it."""
     p = tmp_path / "nested.rs"
     p.write_text(
@@ -566,7 +566,7 @@ def test_rust_forward_reference_resolves_into_an_inline_module(tmp_path):
 
 
 def test_rust_forward_reference_skips_items_in_const_and_static_initializers(tmp_path):
-    """#3782: walk() never enters a const or static initializer, so a struct
+    """walk() never enters a const or static initializer, so a struct
     declared there is no node; a reference to it keeps its sourceless stub."""
     p = tmp_path / "initializers.rs"
     p.write_text(
@@ -592,7 +592,7 @@ def test_rust_forward_reference_skips_items_in_const_and_static_initializers(tmp
 
 
 def test_rust_forward_reference_to_a_casefold_colliding_type_resolves_to_it(tmp_path):
-    """#3782: ids are casefolded, so `fn handle` (also in an `extern` block),
+    """Ids are casefolded, so `fn handle` (also in an `extern` block),
     `const HANDLE`, `struct HANDLE` or an `impl` for `HANDLE` fold to the id of
     `struct Handle`. Those items now get ids of their own ('s rule), so the
     struct owns its id and a reference above the declarations resolves to it, as
@@ -624,10 +624,10 @@ def test_rust_forward_reference_to_a_casefold_colliding_type_resolves_to_it(tmp_
 
 
 def test_rust_forward_reference_keeps_its_stub_when_a_non_type_shares_the_name(tmp_path):
-    """#3782: `fn Handle()` beside `struct Handle {}` has the type's exact name,
+    """`fn Handle()` beside `struct Handle {}` has the type's exact name,
     so the two still share one node that walk() gives to whichever comes first.
     A reference above the declarations keeps the sourceless stub v8's extractor
-    gives it. A `type HANDLE` alias is a type node of its own since #4285 (the
+    gives it. A `type HANDLE` alias is a type node of its own since that fix (the
     two types are salted apart), so a reference to it lands on it."""
     for name, user, other, label, sourced in (
         ("alias_collision.rs", "fn user(h: HANDLE) {}", "type HANDLE = usize;", "HANDLE", True),
@@ -648,7 +648,7 @@ def test_rust_forward_reference_keeps_its_stub_when_a_non_type_shares_the_name(t
 
 
 def test_rust_forward_reference_resolves_when_no_other_item_shares_the_id(tmp_path):
-    """#3782: the collision rule only withholds a type whose id another item
+    """The collision rule only withholds a type whose id another item
     shares. A function with another name, `#[cfg]` twins of the type itself (one
     node in walk()), an `impl` for the type itself or a method named like the type
     (its id is qualified by the impl) still let the reference above resolve to it."""
@@ -677,7 +677,7 @@ def test_rust_forward_reference_resolves_when_no_other_item_shares_the_id(tmp_pa
 
 
 def test_rust_forward_reference_to_ambiguous_type_name_stays_local(tmp_path):
-    """#3782: when two files declare the same struct, the corpus-level rewire
+    """When two files declare the same struct, the corpus-level rewire
     declines the ambiguous stub, so the reference above the declaration must
     already point at the local struct. Checked cold, then from the warm cache."""
     (tmp_path / "engine_a.rs").write_text(
@@ -701,7 +701,7 @@ def test_rust_forward_reference_to_ambiguous_type_name_stays_local(tmp_path):
 
 
 def test_rust_cross_file_reference_skips_impl_blocks_in_other_files(tmp_path):
-    """#4283: an `impl Thing` block in another file adds a second `Thing` node,
+    """An `impl Thing` block in another file adds a second `Thing` node,
     but only the struct is a declaration. A cross-file reference must bind to
     that declaration instead of being left on a sourceless stub. Checked cold,
     then from the warm cache."""
@@ -727,7 +727,7 @@ def test_rust_cross_file_reference_skips_impl_blocks_in_other_files(tmp_path):
 
 
 def test_rust_cross_file_reference_to_twice_declared_type_keeps_its_stub(tmp_path):
-    """#4283: impl blocks are only skipped in favour of a SINGLE declaration. With
+    """Impl blocks are only skipped in favour of a SINGLE declaration. With
     two real `struct Thing` declarations a cross-file reference has no one
     correct target, so it must stay on its sourceless stub (fail closed)."""
     (tmp_path / "a.rs").write_text("pub struct Thing;\n", encoding="utf-8")
@@ -760,7 +760,7 @@ def _thing_targets_of_make(tmp_path, files):
 
 
 def test_rust_declaration_tiebreak_keeps_stub_beside_another_language(tmp_path):
-    """#4283: `_rust_declaration_count` only tells a Rust declaration from a Rust
+    """`_rust_declaration_count` only tells a Rust declaration from a Rust
     impl block. A same-named TypeScript class is a declaration too, so a Rust
     declaration plus a TS class is still ambiguous and the stub stays."""
     targets = _thing_targets_of_make(tmp_path, {
@@ -772,7 +772,7 @@ def test_rust_declaration_tiebreak_keeps_stub_beside_another_language(tmp_path):
 
 
 def test_rust_declaration_tiebreak_keeps_stub_for_declarations_folded_in_one_node(tmp_path):
-    """#4283: two inline modules declaring `Thing` in one file fold into a single
+    """Two inline modules declaring `Thing` in one file fold into a single
     node with `_rust_declaration_count == 2`. That is two declarations, so an
     impl block elsewhere must not let the reference bind to the folded node."""
     targets = _thing_targets_of_make(tmp_path, {
@@ -840,7 +840,7 @@ def test_sql_finds_tables():
 
 
 def test_sql_create_table_inside_transaction_block():
-    """#2953: DDL wrapped in BEGIN; ... COMMIT; must emit table nodes."""
+    """DDL wrapped in BEGIN; ... COMMIT; must emit table nodes."""
     r = _extract_sql_or_skip("sample_transaction.sql")
     labels = [n["label"] for n in r["nodes"]]
     assert any("alfa" in l for l in labels)
@@ -859,7 +859,7 @@ def test_sql_create_table_inside_transaction_block():
 
 
 def test_sql_create_table_before_do_block_in_transaction(tmp_path):
-    """#3886: with a bare `BEGIN;`, a later `DO $$ ... END $$;` makes the parser
+    """With a bare `BEGIN;`, a later `DO $$ ... END $$;` makes the parser
     read the transaction as a block ending at the DO body's END. Tables inside
     that block were dropped because the top-level loop skipped block nodes.
     """
@@ -915,7 +915,7 @@ def test_sql_no_dangling_edges():
         assert e["source"] in node_ids, f"dangling source: {e['source']}"
 
 def test_sql_create_index_emits_index_node_linked_to_its_table(tmp_path):
-    """#3467: CREATE [UNIQUE] INDEX parsed fine but the walk never dispatched
+    """CREATE [UNIQUE] INDEX parsed fine but the walk never dispatched
     on create_index, so every index was silently dropped."""
     pytest.importorskip("tree_sitter_sql")
     p = tmp_path / "schema.sql"
@@ -1633,7 +1633,7 @@ def test_sql_escaped_double_quote_in_routine_name_is_consumed(tmp_path):
 
 
 def test_sql_cte_is_not_read_as_a_table():
-    """#2577: a name bound by WITH ... AS (...) is scoped to its statement, not a table.
+    """A name bound by WITH ... AS (...) is scoped to its statement, not a table.
 
     Emitting it as a reads_from target minted a bare, sourceless stub carrying no
     schema, file, or language namespace, so a CTE named `levels` or `slug` collided
@@ -1653,7 +1653,7 @@ def test_sql_cte_is_not_read_as_a_table():
     assert (nid["v_roles"], nid["users"]) in {(e["source"], e["target"]) for e in reads}
 
 def test_sql_column_list_cte_is_not_read_as_a_table(tmp_path):
-    """#2577: `WITH levels(a, b) AS (...)` — the name precedes a column list."""
+    """`WITH levels(a, b) AS (...)` — the name precedes a column list."""
     pytest.importorskip("tree_sitter_sql")
     p = tmp_path / "schema.sql"
     p.write_text(
@@ -1669,7 +1669,7 @@ def test_sql_column_list_cte_is_not_read_as_a_table(tmp_path):
     assert not any(e["target"] == "levels" for e in reads)
 
 def test_sql_cte_shadows_same_named_table_within_its_statement(tmp_path):
-    """#2577: inside the declaring statement the CTE shadows a real same-named
+    """Inside the declaring statement the CTE shadows a real same-named
     table (SQL scoping), so v1's FROM binds to the CTE and emits nothing; v2 has
     no CTE in scope and reads the real table. Exactly one deterministic edge."""
     pytest.importorskip("tree_sitter_sql")
@@ -1688,7 +1688,7 @@ def test_sql_cte_shadows_same_named_table_within_its_statement(tmp_path):
     assert reads[0]["target"] == nid["levels"]  # the real, sourced table node
 
 def test_sql_subquery_cte_does_not_suppress_outer_real_table(tmp_path):
-    """#2577 refinement: a WITH inside a subquery is scoped to that subquery
+    """Refinement: a WITH inside a subquery is scoped to that subquery
     only. A statement-wide pre-collect would also swallow the OUTER reference
     to the real `t2`, dropping a true edge — per-subtree scoping keeps it."""
     pytest.importorskip("tree_sitter_sql")
@@ -1708,7 +1708,7 @@ def test_sql_subquery_cte_does_not_suppress_outer_real_table(tmp_path):
     )
 
 def test_php_builtin_base_class_never_inherits_from_cross_language_class(tmp_path):
-    """#2812: `class FooApiException extends \\Exception` names PHP's global
+    """`class FooApiException extends \\Exception` names PHP's global
     built-in. The sourceless stub it mints was unique corpus-wide, so the rewire
     bound it to an unrelated TypeScript `Exception` class and the PHP class
     inherited across languages. No supertype edge may target a TypeScript node."""
@@ -1750,7 +1750,7 @@ def test_php_builtin_base_class_never_inherits_from_cross_language_class(tmp_pat
 
 
 def test_sql_cte_never_binds_to_cross_language_symbol(tmp_path):
-    """#2577: the reported leak — the CTE's sourceless stub was unique corpus-wide,
+    """The reported leak — the CTE's sourceless stub was unique corpus-wide,
     so _rewire_unique_stub_nodes bound it to a same-named symbol from ANOTHER
     language (schema_v_roles -> ui_levels). With the CTE excluded, no reads_from
     edge may target a TypeScript node."""
@@ -1775,7 +1775,7 @@ def test_sql_cte_never_binds_to_cross_language_symbol(tmp_path):
             )
 
 def test_sql_cross_file_fk_resolves_and_never_leaks_scan_path(tmp_path):
-    """#2324: a REFERENCES target defined in ANOTHER file must collapse onto the
+    """A REFERENCES target defined in ANOTHER file must collapse onto the
     real table node (via the sourceless-stub rewire), and no node id or edge
     endpoint may embed the absolute scan path. Before the fix, the fallback
     minted a node-less id under the referencing file's own stem, which with
@@ -1889,7 +1889,7 @@ def test_sql_plpgsql_clean_function_not_double_emitted():
     assert len(ids) == len(set(ids))
 
 def test_sql_quoted_plpgsql_routines_are_recovered():
-    """#2180: quoted identifiers must not defeat the ERROR-node name recovery.
+    """Quoted identifiers must not defeat the ERROR-node name recovery.
 
     Generated PostgreSQL DDL (Supabase-style dumps, for example) quotes every
     identifier: CREATE OR REPLACE FUNCTION "public"."fn"(...). The recovery
@@ -1913,7 +1913,7 @@ def test_sql_quoted_plpgsql_routines_are_recovered():
         assert f'"public"."{name}"()' in labels, f"{name} dropped from a quoted-DDL file (#2180)"
 
 def test_sql_quoted_plpgsql_file_stays_clean():
-    """The #2180 recovery must not add junk, duplicates, or drop the tables."""
+    """The recovery must not add junk, duplicates, or drop the tables."""
     r = _extract_sql_or_skip("sample_plpgsql_quoted.sql")
     labels = [n["label"] for n in r["nodes"]]
     # Tables before and after the unparseable routines still extract.

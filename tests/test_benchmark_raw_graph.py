@@ -1,4 +1,4 @@
-"""#2212: run_benchmark must accept a raw --no-cluster graph.json.
+"""run_benchmark must accept a raw --no-cluster graph.json.
 
 The clustered writer stores edges under "links" (networkx node-link default);
 the raw --no-cluster writer stores them under "edges". Consumers calling

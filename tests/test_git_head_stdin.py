@@ -2,7 +2,7 @@
 
 Under an MCP stdio host, stdin is the protocol pipe. On Windows a git child that
 inherits it blocks, so `graph_stats` stalls on the timeout or hangs. Same class
-as the prs.py isolation in #3318.
+as the prs.py isolation.
 """
 import subprocess
 from unittest.mock import MagicMock, patch

@@ -249,7 +249,7 @@ def test_pg_introspect_composite_fk():
 
 
 def test_pg_introspect_fk_query_avoids_privilege_filtered_view():
-    """#1746: information_schema.referential_constraints only shows constraints
+    """information_schema.referential_constraints only shows constraints
     where the current user has WRITE access to the referencing table (owner or
     a privilege other than SELECT). A read-only introspection role therefore
     gets zero FK rows — while tables/views/routines all still appear, since
@@ -284,7 +284,7 @@ def test_pg_introspect_fk_query_avoids_privilege_filtered_view():
 
 
 def test_pg_introspect_fk_edges_survive_unparseable_function_stubs():
-    """#1854: FK edges must survive routines whose reconstructed DDL the SQL
+    """FK edges must survive routines whose reconstructed DDL the SQL
     grammar cannot parse.
 
     A C-language routine's "body" from information_schema.routines is just the

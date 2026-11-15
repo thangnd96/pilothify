@@ -2,13 +2,13 @@
 
 build_merge backs `pilothify --update`. The regressions covered here:
 
-- #1574 / #5081: it read only nodes+edges from the existing graph.json, never
+- it read only nodes+edges from the existing graph.json, never
   hyperedges, so every incremental update collapsed the graph's hyperedge set
   down to just the re-extracted files'. Now existing hyperedges are carried
   forward, with re-extracted files' replaced (by source_file) and deleted files'
   pruned. The loader also folds the nested ``graph.hyperedges`` slot,
   which node_link_data-only writers emit instead of the top-level key.
-- #1571: when a caller omits `root` (the skill's --update runbook does), absolute
+- when a caller omits `root` (the skill's --update runbook does), absolute
   prune_sources never relativized to match the stored relative source_file keys, so
   deleted files' nodes survived as ghosts. build_merge now infers a fallback root.
 """
@@ -36,7 +36,7 @@ def _he_ids(G) -> set[str]:
     return {h["id"] for h in G.graph.get("hyperedges", [])}
 
 
-# ── #1574: hyperedge preservation ─────────────────────────────────────────────
+# ── hyperedge preservation ─────────────────────────────────────────────
 
 def _seed_two_file_graph(tmp_path):
     root = tmp_path / "corpus"
@@ -144,7 +144,7 @@ def test_update_still_drops_a_hyperedge_the_new_chunk_re_emits(tmp_path):
 
 
 def _seed_full_graph(tmp_path, *, nested_only=False):
-    """The #5081 shape: three files, one hyperedge each, plus a cross-file one."""
+    """The shape: three files, one hyperedge each, plus a cross-file one."""
     root = tmp_path / "corpus"
     root.mkdir()
     graph_path = root / "pilothify-out" / "graph.json"
@@ -188,12 +188,12 @@ def _update_after_editing_b(graph_path, root):
 
 
 def test_update_keeps_unchanged_hyperedges_in_written_graph_json(tmp_path):
-    """#5081 end to end, and the control arm for the nested-slot fix.
+    """End to end, and the control arm for the nested-slot fix.
 
     A full build wrote one hyperedge per unchanged file plus a cross-file one.
     Re-extracting b.md and deleting c.md must leave a.md's, the cross-file
     one, and b.md's fresh version — and write them to BOTH persistence slots.
-    The top-level shape already passes on v8 since #1574; this pins it (and the
+    The top-level shape already passes on v8 since that fix; this pins it (and the
     dual-slot write) so the reported flow cannot regress.
     """
     root, graph_path = _seed_full_graph(tmp_path)
@@ -207,7 +207,7 @@ def test_update_keeps_unchanged_hyperedges_in_written_graph_json(tmp_path):
 
 
 def test_deleted_file_member_is_pruned_from_surviving_hyperedges(tmp_path):
-    """#5081: a deleted file's node must not stay named by a hyperedge that
+    """A deleted file's node must not stay named by a hyperedge that
     survives. The cross-file one keeps its live members; one left with no live
     member is dropped."""
     root, graph_path = _seed_full_graph(tmp_path)
@@ -294,7 +294,7 @@ def test_raw_merge_reads_nested_only_hyperedge_slot(tmp_path):
     assert "he_c" not in ids
 
 
-# ── #1571: root-less prune (absolute deleted paths vs relative node keys) ──────
+# ── root-less prune (absolute deleted paths vs relative node keys) ──────
 
 def test_prune_without_root_removes_ghost_nodes_via_grandparent_fallback(tmp_path):
     root = tmp_path / "corpus"
@@ -363,7 +363,7 @@ def test_prune_matches_across_symlinked_root(tmp_path):
 
 
 def test_reextracted_file_in_prune_sources_is_not_deleted(tmp_path):
-    """#1796: a file present in BOTH new_chunks (re-extracted) and prune_sources
+    """A file present in BOTH new_chunks (re-extracted) and prune_sources
     must be REPLACED, not deleted. The old edit-workflow passed the changed file
     in prune_sources; combined with dedup keeping a same-label node, that used to
     silently delete the freshly re-extracted concept. Replace wins over delete."""
@@ -393,7 +393,7 @@ def test_reextracted_file_in_prune_sources_is_not_deleted(tmp_path):
 
 
 def test_genuine_deletion_still_prunes(tmp_path):
-    """#1796 guard must not break real deletions: a file in prune_sources but NOT
+    """Guard must not break real deletions: a file in prune_sources but NOT
     in new_chunks is still removed."""
     graph_path = tmp_path / "pilothify-out" / "graph.json"
     graph_path.parent.mkdir(parents=True)
@@ -420,10 +420,10 @@ def test_genuine_deletion_still_prunes(tmp_path):
     assert "Widget Cache Design" in labels
 
 
-# ── #2012: form-insensitive prune (absolute node vs relative prune, and back) ──
+# ── form-insensitive prune (absolute node vs relative prune, and back) ──
 
 def test_prune_matches_node_stored_absolute_against_relative_delete(tmp_path):
-    """#2012: a node whose source_file survived in ABSOLUTE form must still be
+    """A node whose source_file survived in ABSOLUTE form must still be
     pruned when the deletion is expressed relative to root. The runbook calls
     build_merge WITHOUT root, so build() does not re-normalize the node's stored
     absolute source_file; the old prune membership test then compared that raw
@@ -456,9 +456,9 @@ def test_prune_matches_node_stored_absolute_against_relative_delete(tmp_path):
 
 
 def test_prune_reextracted_absolute_node_not_deleted(tmp_path):
-    """#1796 protection must hold in absolute-identity space too: a file present
+    """Protection must hold in absolute-identity space too: a file present
     in BOTH new_chunks and prune_sources (in mismatched forms) is REPLACED, not
-    deleted — the #2012 form-insensitive match must not resurrect the delete for
+    deleted — the form-insensitive match must not resurrect the delete for
     a re-extracted file."""
     root = tmp_path / "corpus"
     (root / "pilothify-out").mkdir(parents=True)

@@ -1,6 +1,6 @@
 """The Bash PreToolUse guard nudges toward the graph before grep/find searches.
 
-Since #522 it runs as the shell-agnostic `pilothify hook-guard search` subcommand
+Since that fix it runs as the shell-agnostic `pilothify hook-guard search` subcommand
 (not inline bash), so it works on Windows too. These tests invoke the subcommand
 with crafted stdin JSON and assert it nudges only for a search command when a
 graph exists, and otherwise stays silent and fails open.

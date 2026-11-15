@@ -1063,7 +1063,7 @@ def _is_manifest_stamp_fix_line(line: str) -> bool:
     plus ``clear_semantic``/``scan_corpus``, mirroring the native
     ``pilothify extract`` path. The rooted ``save_manifest`` call itself is
     covered by ``_is_manifest_root_fix_line``; these are the added helper import
-    and derivation lines, plus the single ``#2015`` explanatory comment.
+    and derivation lines, plus the single explanatory comment.
     """
     stripped = line.strip()
     return (
@@ -1082,7 +1082,7 @@ def _is_manifest_stamp_fix_line(line: str) -> bool:
 
 
 def _is_sensitive_reporting_fix_line(line: str) -> bool:
-    """The #2106 change to how a non-empty ``skipped_sensitive`` is reported: the
+    """The change to how a non-empty ``skipped_sensitive`` is reported: the
     skill now lists the skipped file names instead of only a count, so a
     wrongly-flagged source/doc is visible. Both the removed count-only line and
     the added list-the-names line mention ``skipped_sensitive`` is non-empty."""
@@ -1109,7 +1109,7 @@ def _is_shebang_allowlist_fix_line(line: str) -> bool:
     outside ``[!a-zA-Z0-9/_.-]``, but Homebrew installs versioned Python under
     ``python@3.13``, so a valid interpreter path legitimately contains ``@`` and
     detection fell through to a bare ``python3`` that lacked pilothify. ``@`` is now
-    allowed, matching the #473 hooks.py fix; injection chars are still rejected.
+    allowed, matching the hooks.py fix; injection chars are still rejected.
     Both the old (removed) and new (added) allowlist forms match here.
     """
     return "[!a-zA-Z0-9/_." in line
@@ -1163,8 +1163,8 @@ def _is_community_label_export_fix_line(line: str) -> bool:
     persisted nodes shipped without ``community_name`` (only the
     ``.pilothify_labels.json`` sidecar carried the names). Step 5 now imports
     ``to_json`` and re-exports with ``community_labels=labels`` after the curated
-    dict exists, honoring (not forcing past) the #479 shrink-guard — the ``if not
-    wrote:`` / refused-to-shrink lines are already sanctioned by the #1392
+    dict exists, honoring (not forcing past) the shrink-guard — the ``if not
+    wrote:`` / refused-to-shrink lines are already sanctioned by the
     zero-node-guard predicate. The --cluster-only runbook keeps its label-less
     export (its ``labels`` are placeholders at that point) and gains a comment
     saying so. These are the added import, export call, and comment lines.
@@ -1377,7 +1377,7 @@ def _is_update_detect_populate_fix_line(line: str) -> bool:
 
 
 def _is_skip_steps_clarification_line(line: str) -> bool:
-    """Whether a line is part of the #4061 fast-path clarification.
+    """Whether a line is part of the fast-path clarification.
 
     The fast path skips Steps 1-5 for an existing graph, but the following
     paragraph said "Follow these steps in order. Do not skip steps." Both the
@@ -1391,7 +1391,7 @@ def _is_skip_steps_clarification_line(line: str) -> bool:
 
 
 def _is_when_to_build_guidance_line(line: str) -> bool:
-    """Whether a line is part of the #4829 passage on when a graph is worth building.
+    """Whether a line is part of the passage on when a graph is worth building.
 
     The passage is added whole; none of the monoliths' existing lines change.
     """
@@ -1463,7 +1463,7 @@ def monolith_roundtrip(platform: Platform) -> list[str]:
     arbitrary edit (even a blessed one) from drifting them. Sanctioned changes are
     enumerated as predicates in ``_SANCTIONED_MONOLITH_DIFFS``: the file_type enum
     unification, the unified frontmatter description, the chunk-cleanup rewrite,
-    the four #1392 runbook fixes (directed propagation, content-only
+    the four runbook fixes (directed propagation, content-only
     semantic scope, stale-cache unlink, and the zero-node/shrink-guard ordering),
     semantic-cache source scoping, and the hub bypass check.
 
@@ -1530,7 +1530,7 @@ def always_on_roundtrip() -> list[str]:
     constants in __main__.py into packaged markdown. This validator renders each
     block and compares it, byte for byte, against the constant's value in the
     pre-extraction source (ALWAYS_ON_BASELINE_REF). A mismatch means the
-    extraction is not faithful and the install-string / issue-#580 contract would
+    extraction is not faithful and the install-string contract would
     break.
     """
     baseline = _always_on_constants(ALWAYS_ON_BASELINE_REF)

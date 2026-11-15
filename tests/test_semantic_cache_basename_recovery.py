@@ -1,4 +1,4 @@
-"""#2973 — save_semantic_cache must recover a group whose reported
+"""save_semantic_cache must recover a group whose reported
 source_file never resolves to a real file, by an unambiguous basename match
 against the already dispatched allowlist, instead of silently dropping it.
 

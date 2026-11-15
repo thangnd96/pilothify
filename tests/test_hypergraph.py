@@ -138,7 +138,7 @@ def test_attach_hyperedges_skips_entry_without_id():
 
 
 def test_attach_hyperedges_tolerates_id_less_persisted():
-    # Regression for #2775: the semantic extractor emits hyperedges with no `id`
+    # the semantic extractor emits hyperedges with no `id`
     # and build.py persists them verbatim, so a prior graph.json can carry id-less
     # hyperedges. On the next (incremental) run, attach_hyperedges read that
     # persisted set with a hard `h["id"]` and died with `KeyError: 'id'`, writing

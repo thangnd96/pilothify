@@ -1,4 +1,4 @@
-"""Regression tests for Pilothify issue #3430:
+"""Regression tests for Pilothify:
 Loose/namespace-style sibling module imports below scan root.
 """
 from __future__ import annotations
@@ -307,7 +307,7 @@ def test_bare_stdlib_import_does_not_bind_to_same_stem_sibling(tmp_path):
     )
 
     # The import and member call must stay unresolved external in the built graph,
-    # not bound to the same-stem sibling file node (#4261 via the build-side #1504
+    # not bound to the same-stem sibling file node (via the build-side
     # pre-migration stem-alias index).
     G = build_from_json(res, root=str(tmp_path), directed=True)
     edges = _edge_set(G)
@@ -316,7 +316,7 @@ def test_bare_stdlib_import_does_not_bind_to_same_stem_sibling(tmp_path):
 
 
 def test_non_stdlib_sibling_still_repoints_control(tmp_path):
-    """H. Positive control for #4261:
+    """H. Positive control:
     The stdlib guard must not over-reach. A sibling whose name is NOT a stdlib
     module (scripts/greeter.py) still repoints as before.
     """

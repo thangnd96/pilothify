@@ -639,7 +639,7 @@ class TestDart(unittest.TestCase):
         self.assertEqual(nav_edge["target"], "route_home_id_123_type_auth")
 
     def test_source_location_matches_declaration_line(self):
-        """#3365: every declared node must carry its real line, not None."""
+        """Every declared node must carry its real line, not None."""
         code = textwrap.dedent("""\
         class Greeter {
           final String name;
@@ -663,7 +663,7 @@ class TestDart(unittest.TestCase):
         self.assertIsNone(loc_by_label["sample.dart"])
 
     def test_source_location_survives_a_leading_multiline_comment(self):
-        """#3365 trap: blanking a comment must preserve its newline count, or
+        """Trap: blanking a comment must preserve its newline count, or
         every line number after it is undercounted by the comment's height."""
         code = textwrap.dedent("""\
         /*
@@ -682,7 +682,7 @@ class TestDart(unittest.TestCase):
         self.assertEqual(loc_by_label["method"], "L6")
 
     def test_source_location_on_edges_not_just_nodes(self):
-        """#3365 follow-up: edges attributed to a declaration must also carry a
+        """Follow-up: edges attributed to a declaration must also carry a
         line, not just the nodes at either end."""
         code = textwrap.dedent("""\
         class Base {}

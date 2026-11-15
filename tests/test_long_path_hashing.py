@@ -1,4 +1,4 @@
-r"""#1655 — files whose absolute path exceeds Windows MAX_PATH (260) must still
+r"""Files whose absolute path exceeds Windows MAX_PATH (260) must still
 be hashed, or their manifest entry never stabilizes and detect_incremental
 re-flags them as changed on every run.
 
