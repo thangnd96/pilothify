@@ -1,4 +1,4 @@
-"""Packaging guard (#1121 follow-up): the 5 skillgen guards check the *repo tree*,
+"""Packaging guard: the 5 skillgen guards check the *repo tree*,
 not the *built wheel*. A host whose references bundle or always-on block fails to
 match the `package-data` globs would pass `--check`/`--audit-coverage` yet make
 `pilothify install` hard-exit with "not found in package" for real users.
@@ -57,7 +57,7 @@ def _expected_artifacts() -> list[Path]:
 
 @contextmanager
 def _wheel_build_lock():
-    """Serialise wheel builds that share one checkout's ``build/`` dir (#4603).
+    """Serialise wheel builds that share one checkout's ``build/`` dir.
 
     ``python -m build --no-isolation`` runs setuptools in the repo, whose
     default ``build/`` dir is shared by every process on that checkout: two
@@ -97,7 +97,7 @@ def wheel_namelist(tmp_path_factory) -> set[str]:
     if proc.returncode != 0:
         # A wheel build that fails here fails for a packaging reason the guards
         # below exist to catch (or a genuinely broken checkout); skipping hid
-        # exactly that, reporting 133 green skips instead (#4603).
+        # exactly that, reporting 133 green skips instead.
         pytest.fail(f"wheel build failed in this env:\n{proc.stderr[-800:]}")
     wheels = list(out.glob("pilothify-*.whl"))
     assert wheels, "no wheel produced"

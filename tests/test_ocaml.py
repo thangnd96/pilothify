@@ -132,7 +132,7 @@ def test_impl_open_emits_import(tmp_path):
 
 def test_open_stub_is_sourceless(tmp_path):
     # An `open`ed external module must be a SOURCELESS stub so the corpus rewire
-    # can collapse/prune it without baking this file's path into the id (#1402).
+    # can collapse/prune it without baking this file's path into the id.
     r = extract_ocaml(_write(tmp_path, "shapes.ml", IMPL))
     stubs = [n for n in r["nodes"] if n["label"] == "Stdlib"]
     assert stubs and all(n["source_file"] == "" for n in stubs)

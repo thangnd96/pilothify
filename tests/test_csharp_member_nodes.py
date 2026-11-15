@@ -1,4 +1,4 @@
-"""C# properties get a node, like C++ data members (#3006).
+"""C# properties get a node, like C++ data members.
 
 `_CSHARP_CONFIG` emitted a `references` edge to a member's *type* and no node for
 the member, so C# was the only language with a class-shaped type layer whose
@@ -147,7 +147,7 @@ def test_methods_are_still_methods(tmp_path):
 
 def test_case_only_sibling_properties_do_not_duplicate_an_edge(tmp_path):
     # Legal C#, and one id after normalization. Each property gets its own node
-    # (#4415) and one edge, rather than a second edge hung on the first
+    # and one edge, rather than a second edge hung on the first
     # property's node.
     defines, r = _extract(tmp_path, {"S.cs": (
         "public class Odd {\n"

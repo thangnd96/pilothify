@@ -213,7 +213,7 @@ def test_validate_graph_path_default_base_discovers_output_dir(tmp_path):
 def test_validate_graph_path_default_base_honours_pilothify_out_override(tmp_path, monkeypatch):
     """The base=None discovery must honour PILOTHIFY_OUT, not the hardcoded
     'pilothify-out' literal — otherwise a renamed output dir validates against the
-    wrong base or raises spuriously (#1423)."""
+    wrong base or raises spuriously."""
     monkeypatch.setattr("pilothify.security.PILOTHIFY_OUT_NAME", "custom-out")
     monkeypatch.setattr("pilothify.security.PILOTHIFY_OUT", "custom-out")
     out = tmp_path / "custom-out"
@@ -249,7 +249,7 @@ def test_sanitize_label_safe_passthrough():
     assert sanitize_label("extract_python") == "extract_python"
 
 def test_sanitize_label_none_returns_empty():
-    # #1775: a node with source_file=None / label=None (synthetic/aggregate
+    # a node with source_file=None / label=None (synthetic/aggregate
     # nodes, or JSON `null`) must not raise — .get() returns None, not the
     # default, when the key is present-but-null.
     assert sanitize_label(None) == ""

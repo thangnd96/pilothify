@@ -230,7 +230,7 @@ def extract_vbnet(path: Path) -> dict:
                 if member_name is not None:
                     # An enum member is a discriminant case, not a contained
                     # declaration: it gets a `case_of` edge like every other
-                    # language with enums (Java #1719, C#, Swift, Scala, ...),
+                    # language with enums (Java , C#, Swift, Scala, ...),
                     # not the `contains` edge used for real fields. The relation
                     # also matters to resolution — case_of targets are excluded
                     # from `New X()` constructor binding (see _member_nids).

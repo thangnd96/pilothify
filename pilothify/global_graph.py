@@ -21,7 +21,7 @@ def _load_manifest() -> dict:
                 raise ValueError("expected a manifest object with a repos map")
             # Isolate a malformed repo entry instead of discarding every tracked
             # repo: a single bad value should not lose the user's other repos
-            # (#5020). Drop the bad ones, keep the rest, and say which went. Only
+            #. Drop the bad ones, keep the rest, and say which went. Only
             # a non-dict root or repos map is unrecoverable enough to back up.
             bad = sorted(name for name, info in repos.items() if not isinstance(info, dict))
             if bad:
@@ -171,7 +171,7 @@ def global_add(source_path: Path, repo_tag: str) -> dict:
             G.add_edge(u, v, **data)
 
     added = prefixed.number_of_nodes() - len(remap)
-    # A member call parked on a caller node (#3152) may be answered by a repo
+    # A member call parked on a caller node may be answered by a repo
     # already in the global graph, or by this one for a repo added earlier. The
     # pass recomputes its own output, so adding repos one at a time lands where a
     # single merge-graphs of the same inputs would.

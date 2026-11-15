@@ -122,7 +122,7 @@ def test_erlang_local_fun_reference_links_to_the_function(tmp_path):
     pass a callback to `lists:map`, `spawn`, etc. It names exactly one function
     (name + arity), so it must link the caller to it. Only direct calls were
     walked before, so every `fun Name/Arity` reference was dropped from the call
-    graph (#3993)."""
+    graph."""
     source = tmp_path / "worker.erl"
     source.write_text(
         "-module(worker).\n"
@@ -140,7 +140,7 @@ def test_erlang_local_fun_reference_links_to_the_function(tmp_path):
 @_needs_erlang
 def test_erlang_local_fun_reference_respects_arity(tmp_path):
     """Fail-closed: `fun helper/1` must bind only to the arity-1 clause, never to
-    a same-named function of a different arity (#3993)."""
+    a same-named function of a different arity."""
     source = tmp_path / "worker.erl"
     source.write_text(
         "-module(worker).\n"
@@ -159,7 +159,7 @@ def test_erlang_local_fun_reference_respects_arity(tmp_path):
 @_needs_erlang
 def test_erlang_direct_call_stays_a_call_not_indirect(tmp_path):
     """Positive control: a direct call keeps emitting a `calls` edge (not
-    `indirect_call`), unchanged by the fun-reference handling (#3993)."""
+    `indirect_call`), unchanged by the fun-reference handling."""
     source = tmp_path / "worker.erl"
     source.write_text(
         "-module(worker).\n"
@@ -177,7 +177,7 @@ def test_erlang_direct_call_stays_a_call_not_indirect(tmp_path):
 @_needs_erlang
 def test_erlang_call_inside_anonymous_fun_still_captured(tmp_path):
     """Positive control: a direct call made inside an anonymous `fun ... end`
-    body must still be walked and resolved (#3993)."""
+    body must still be walked and resolved."""
     source = tmp_path / "worker.erl"
     source.write_text(
         "-module(worker).\n"

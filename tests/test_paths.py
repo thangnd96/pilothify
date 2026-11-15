@@ -1,4 +1,4 @@
-"""Tests for pilothify.paths — the shared test-path classifier (#1553)."""
+"""Tests for pilothify.paths — the shared test-path classifier."""
 
 from __future__ import annotations
 
@@ -104,7 +104,7 @@ def test_disambiguate_path_proximity_same_dir() -> None:
 # question for a path read out of graph.json: graphs are built in Docker/CI and
 # updated on Windows (and vice versa), so the string in hand may follow the
 # other platform's rules. Getting this wrong bakes an on-disk path into node IDs
-# (#2197, #1789) or joins an absolute path under the scan root.
+# or joins an absolute path under the scan root.
 
 @pytest.mark.parametrize("path", [
     "/home/ci/build/repo/docs/api/README.md",   # POSIX absolute

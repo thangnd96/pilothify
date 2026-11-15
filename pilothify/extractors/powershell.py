@@ -63,7 +63,7 @@ def extract_powershell(path: Path) -> dict:
     })
     # File-scope advanced-function blocks that parse as pseudo-commands rather
     # than named_block nodes; walk() must descend into them to reach nested
-    # function/class/enum statements (#4270).
+    # function/class/enum statements.
     _PS_NAMED_BLOCK_CMDS = frozenset({"begin", "process", "end", "dynamicparam", "clean"})
 
     def _find_script_block_body(node):
@@ -87,7 +87,7 @@ def extract_powershell(path: Path) -> dict:
             # corpus-level rewire can collapse it onto the real definition. A sourced
             # stub here makes _disambiguate_colliding_node_ids bake the referencing
             # file's path (with extension) into the id and blocks the rewire, which is
-            # the phantom-duplicate-node bug (#1402).
+            # the phantom-duplicate-node bug.
             seen_ids.add(nid)
             nodes.append({
                 "id": nid,
@@ -130,7 +130,7 @@ def extract_powershell(path: Path) -> dict:
                     function_bodies.append((func_nid, body, None))
                     # Also walk the body during the main pass so that
                     # Import-Module / dot-source inside functions emit
-                    # file-level imports_from edges (#1331).
+                    # file-level imports_from edges.
                     walk(body, parent_class_nid)
             return
 
@@ -159,7 +159,7 @@ def extract_powershell(path: Path) -> dict:
                     add_node(member_nid, member_name, m_line)
                     # An enum member is a discriminant case, not a declared
                     # field, so it gets `case_of` like every other language with
-                    # enums (Java #1719, C#, Swift, Rust, VB.NET). The relation
+                    # enums (Java , C#, Swift, Rust, VB.NET). The relation
                     # also matters to resolution: `case_of` targets are excluded
                     # from constructor binding, so an enum member named like a
                     # type can no longer be mistaken for one.
@@ -343,7 +343,7 @@ def extract_powershell(path: Path) -> dict:
                     # script_block_expression under command_elements, NOT a real
                     # named_block (those exist only inside a function/scriptblock body).
                     # Descend so nested function/class/enum statements are extracted
-                    # (#4270); without this the command branch returns before the
+                    # without this the command branch returns before the
                     # generic child walk below and the whole block is dropped.
                     for child in node.children:
                         walk(child, parent_class_nid)
@@ -389,7 +389,7 @@ def extract_powershell(path: Path) -> dict:
             # `argument_list` (a bare `$this.Name` property read is a separate
             # `member_access` node with no argument_list, so it never lands here).
             # Only the command form was handled before, so every method call was
-            # dropped from the call graph (#3992).
+            # dropped from the call graph.
             member_node = next((c for c in node.children if c.type == "member_name"), None)
             if member_node is not None:
                 method_name = _read_text(member_node, source)

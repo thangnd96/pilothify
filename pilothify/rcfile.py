@@ -11,7 +11,7 @@ One ``key=value`` per line, ``#`` comments, blank lines ignored. Keys:
 
 ``language.<ext>=<language | .ext>``
     Treat files with extension ``<ext>`` as the named language for
-    classification, extractor dispatch and cross-file resolution (#2961).
+    classification, extractor dispatch and cross-file resolution.
     ``<ext>`` may be written with or without its leading dot; the value is
     either a language name from :data:`LANGUAGE_ALIASES` or an explicit
     extension pilothify already knows (``.php``, ``.pas``, ``.sql``, ...)::
@@ -195,7 +195,7 @@ def load_pilothifyrc(root: Path) -> dict:
 # process (an MCP server, a threaded harness) with different roots, and a shared
 # dict let one scan's `activate_language_overrides` clobber the other's while
 # `effective_suffix`/`classify_file`/`cache_salt` read it — cross-contaminating
-# which extractor a `.inc`/`.m`/`.h` file gets (#2961 review). Each thread now
+# which extractor a `.inc`/`.m`/`.h` file gets (review). Each thread now
 # carries its own overrides. The dominant paths are unaffected: the CLI runs on
 # the main thread, and a spawn pool worker sets its own copy in `_worker_init`
 # on its main thread, the same thread that then runs `_extract_single_file`.

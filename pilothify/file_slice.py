@@ -1,4 +1,4 @@
-"""Intra-file slicing for oversized text documents (#1369).
+"""Intra-file slicing for oversized text documents.
 
 The extraction packer (`_pack_chunks_by_tokens`) treats each file as atomic and
 `_read_files` caps every file at ``_FILE_CHAR_CAP`` characters, so a document
@@ -36,8 +36,8 @@ from pilothify.extractors.base import _read_source_text
 # NOT listed here is silently cut at ``_FILE_CHAR_CAP`` by ``_read_files``. The
 # two lists drifted as DOC_EXTENSIONS grew — .qmd, .skill and .html were
 # documents that never got sliced, so a 38k-character one reached the model as
-# its first 20k with no warning and no partial marker (#2900). .yaml/.yml are
-# intentionally NOT here: they are code, not documents (reclassified in #2214),
+# its first 20k with no warning and no partial marker. .yaml/.yml are
+# intentionally NOT here: they are code, not documents (reclassified in),
 # and never reach the semantic pass.
 # ``tests/test_oversized_document_slicing.py`` pins the relationship so a future
 # addition to DOC_EXTENSIONS fails loudly instead of quietly losing content.
@@ -195,7 +195,7 @@ def expand_oversized_files(
     Files at or below ``max_chars`` (and all non-splittable files) pass through
     unchanged as ``Path``, so behaviour is identical for everything that already
     fit. Precomputed ``FileSlice`` inputs at or below ``max_chars`` pass through
-    unchanged (#5106); oversized slices are further split. Unreadable files
+    unchanged; oversized slices are further split. Unreadable files
     pass through untouched (the reader handles the error).
     """
     raw_out: list["Path | FileSlice"] = []
@@ -237,7 +237,7 @@ def expand_oversized_files(
         try:
             # The CONVERTED text for a PDF, so the boundaries below index the
             # same string read_slice_text will later slice and the prompt will
-            # carry — not the container's bytes (#2906).
+            # carry — not the container's bytes.
             text = unit_source_text(f)
         except OSError:
             raw_out.append(f)
@@ -256,7 +256,7 @@ def expand_oversized_files(
 
     # Re-index only files whose slices were split/expanded, so precomputed
     # slices under the cap pass through completely untouched while re-split
-    # slices avoid index/total collisions (#5106).
+    # slices avoid index/total collisions.
     parent_slice_counts: dict[Path, int] = {}
     for u in raw_out:
         if isinstance(u, FileSlice) and u.path in resplit_parents:
@@ -291,7 +291,7 @@ def read_slice_text(fs: FileSlice) -> str:
 
     Goes through :func:`unit_source_text`, so a PDF slice indexes the extracted
     text rather than the container's bytes — the offsets `expand_oversized_files`
-    computed and the string the prompt carries are then the same string (#2906).
+    computed and the string the prompt carries are then the same string.
     """
     return unit_source_text(fs.path)[fs.start:fs.end]
 
@@ -309,7 +309,7 @@ def bisect_slice(fs: FileSlice) -> tuple[FileSlice, FileSlice] | None:
     # prompt carries: for a PDF that is the extracted text via unit_source_text,
     # not the raw container bytes. Reading the container here (the old behavior)
     # searched for the newline cut in binary coordinates, so a compressed PDF
-    # slice could cut mid-line or past the text end (#2906). Any converter/read
+    # slice could cut mid-line or past the text end. Any converter/read
     # failure means we cannot split, so fall back to None (treated as atomic).
     try:
         text = unit_source_text(fs.path)
@@ -326,7 +326,7 @@ def bisect_slice(fs: FileSlice) -> tuple[FileSlice, FileSlice] | None:
 
 
 def make_full_slice(path: "Path | FileSlice") -> FileSlice | None:
-    """Create a full-range ``FileSlice`` for an eligible splittable text file (#5072).
+    """Create a full-range ``FileSlice`` for an eligible splittable text file.
 
     Returns None for non-splittable files (code, binary, unreadable).
     """
@@ -349,7 +349,7 @@ def is_complete_slice_coverage(
     """True when the given slices cover all of parent without gaps.
 
     Prevents incomplete precomputed slice inputs from being checkpointed or
-    cached as a complete extraction of the parent file (#5106).
+    cached as a complete extraction of the parent file.
     """
     if not slices:
         return False

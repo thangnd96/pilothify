@@ -91,7 +91,7 @@ def _as_repo_relative(query: str, root: Path | None = None) -> str:
 
     An absolute path is anchored to `root` when given — the repo root derived
     from the graph's own location — so a seed resolves regardless of the caller's
-    working directory (#2706: an absolute-path seed previously only matched when
+    working directory (an absolute-path seed previously only matched when
     cwd happened to be the analysed repo root, which no editor or script can
     guarantee). `root` falls back to the current directory to preserve the prior
     behaviour when a caller has no graph location to derive it from.
@@ -137,7 +137,7 @@ def _prefer_file_node(
     # Checked before the L1 fallback because a module docstring (a `rationale`
     # node located on the docstring's line) or a one-line top-level definition
     # can also sit on L1, leaving that fallback with more than one candidate
-    # (#4698).
+    #.
     from pilothify.build import _is_file_node_label
 
     path_file_nodes = [
@@ -174,12 +174,12 @@ def _prefer_file_node(
 def resolve_reference_forms(graph: nx.Graph, query: str) -> str | None:
     """Resolve the reference forms `explain` accepts but `resolve_seed` did not.
 
-    `explain` resolves a `path::Symbol` reference (#3485) and a dotted Python
-    name (`pkg.mod.func` / `pkg.mod:func`, #4366) to a single node; `affected` and
+    `explain` resolves a `path::Symbol` reference and a dotted Python
+    name (`pkg.mod.func` / `pkg.mod:func`) to a single node; `affected` and
     `query --seed` rejected both with "No unique node match" even when `explain`
     resolved the very same string. Following the README's own advice ("use the
     precise ID returned by the graph") therefore forced a caller through
-    `explain` first just to obtain an id (#4792).
+    `explain` first just to obtain an id.
 
     Only the two path-qualified forms are handled here — they carry their own
     disambiguating context, so a match is never a guess. A bare name keeps going
@@ -209,7 +209,7 @@ def resolve_seed(graph: nx.Graph, query: str, root: Path | None = None) -> str |
     if query in graph:
         return query
     # `path::Symbol` and dotted Python names resolve exactly as `explain` does
-    # (#4792); checked before the label tiers, which cannot express them.
+    # checked before the label tiers, which cannot express them.
     qualified = resolve_reference_forms(graph, query)
     if qualified is not None:
         return qualified
@@ -311,10 +311,10 @@ def affected_nodes(
     queue: deque[tuple[str, int]] = deque([(seed, 0)])
     hits: list[AffectedHit] = []
 
-    # #1669: seed the reverse walk with the root's own member nodes (one outward
+    # seed the reverse walk with the root's own member nodes (one outward
     # `method`/`contains` hop). A caller can bind to a class's method node rather
     # than the class node itself (e.g. `Service.call` resolves to the `def
-    # self.call` node, #1634), so those callers are unreachable from the class
+    # self.call` node), so those callers are unreachable from the class
     # otherwise. The member nodes are seeds only (not reported as hits), and
     # `method`/`contains` stay out of the general relation-filtered walk, so this
     # adds no forward noise anywhere else.
@@ -399,7 +399,7 @@ def resolve_seed_outcome(
 
     `affected` printed "No unique node match" and still exited 0, so a script
     could not branch on the outcome the README documents (3 = ambiguous,
-    4 = no match) while `explain` already follows it (#4792). Returns
+    4 = no match) while `explain` already follows it. Returns
     ``(node_id, [])`` on success, ``(None, rivals)`` when the query is the
     ambiguous name of several nodes, and ``(None, [])`` when nothing matched.
     """
@@ -465,12 +465,12 @@ def load_graph(path: Path) -> nx.Graph:
             "Re-run 'pilothify extract' to regenerate it."
         ) from exc
     # Force directed so stored caller→callee direction survives the round-trip;
-    # mirrors serve.py and __main__.py (#1174).
+    # mirrors serve.py and __main__.py.
     raw = {**raw, "directed": True}
     # Normalize the edge key: pilothify's `extract` output uses "edges" while
     # networkx's node_link_data default is "links". Without this, an edges-keyed
     # graph.json raises an uncaught KeyError: 'links' here — every other loader
-    # (__main__.py) already normalizes this (#738; same class as #1198).
+    # (__main__.py) already normalizes this.
     if "links" not in raw and "edges" in raw:
         raw = dict(raw, links=raw["edges"])
     raw = dict(raw, nodes=consumed(raw["nodes"]), links=consumed(raw["links"]))

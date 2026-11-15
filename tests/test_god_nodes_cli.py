@@ -1,4 +1,4 @@
-"""`pilothify god-nodes` CLI subcommand (#2004 part 2).
+"""`pilothify god-nodes` CLI subcommand (part 2).
 
 god_nodes has long been an analyzer + MCP tool + README-advertised capability
 but was never wired as a CLI subcommand, so `pilothify god_nodes` errored with

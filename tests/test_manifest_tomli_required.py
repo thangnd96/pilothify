@@ -1,4 +1,4 @@
-"""Regression tests for missing tomli on Python < 3.11 (#3283)."""
+"""Regression tests for missing tomli on Python < 3.11."""
 from __future__ import annotations
 
 import builtins

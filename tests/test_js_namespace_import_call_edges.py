@@ -1,5 +1,5 @@
 """Tests for resolving call edges through JavaScript and TypeScript namespace imports
-and whole-module CommonJS require (#5114).
+and whole-module CommonJS require.
 """
 from __future__ import annotations
 

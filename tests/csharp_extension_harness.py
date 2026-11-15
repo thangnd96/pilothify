@@ -1,4 +1,4 @@
-"""A/B harness for candidate C# extension-call binding strategies (#4828).
+"""A/B harness for candidate C# extension-call binding strategies.
 
 The issue is a *design* question, not just a bug: binding ``x.Ext()`` to a
 ``this``-parameter method can be done with very different amounts of proof. This

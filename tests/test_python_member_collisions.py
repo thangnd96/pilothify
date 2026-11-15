@@ -1,10 +1,10 @@
 """Python member calls must bind to the method the call spells.
 
-`run` and `_run` are two methods of one class (#3302 gave them separate ids), but
+`run` and `_run` are two methods of one class (gave them separate ids), but
 `_resolve_python_member_calls` keys its method index through `_key`, which strips
 `_` and folds case — so both methods landed on one entry and the later one won.
-The module arm already resolves by the exact name (#4577); the method arms must
-too, the same rule C# (#4415) and TypeScript (review on #4479) already apply.
+The module arm already resolves by the exact name; the method arms must
+too, the same rule C# and TypeScript (review on) already apply.
 """
 from __future__ import annotations
 

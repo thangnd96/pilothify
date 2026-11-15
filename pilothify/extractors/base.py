@@ -15,13 +15,13 @@ from pilothify.ids import make_id
 # extractors/, never back), per MIGRATION.md invariant #4 — the old
 # function-local `import pilothify.extract` + getattr(..., None) was a package ->
 # parent dependency that also failed silently if the module global were renamed
-# (#3666). None outside extract().
+#. None outside extract().
 #
 # A ContextVar rather than a module global: extraction runs concurrently
 # (ThreadPoolExecutor in tests, process pools in production), and a plain
 # global lets overlapping save/restore pairs interleave — the second call
 # saves the first one's root and restores it last, leaving the ambient root
-# set after extract() returns (#4602). ContextVar gives every thread (and
+# set after extract() returns. ContextVar gives every thread (and
 # async task) its own value, so save/restore pairs nest correctly without a
 # lock.
 #
@@ -77,7 +77,7 @@ _LANGUAGE_BUILTIN_GLOBALS: frozenset[str] = frozenset({
     "print", "open", "isinstance", "type", "super", "sorted", "reversed",
     "any", "all", "abs", "round", "next", "iter", "hash", "id", "repr",
     "callable", "getattr", "setattr", "hasattr", "delattr", "vars", "dir",
-    # Swift standard library / Foundation / SwiftUI (#2147). Value-type
+    # Swift standard library / Foundation / SwiftUI. Value-type
     # initializers (Data(x), Int(x), UUID()) and protocol conformance targets
     # appear from virtually every file of a Swift codebase, exactly like the
     # ECMAScript constructors above. String/Date/URL/Error are already listed.
@@ -102,7 +102,7 @@ _LANGUAGE_BUILTIN_GLOBALS: frozenset[str] = frozenset({
 # ``_LANGUAGE_BUILTIN_GLOBALS``. That set is consulted at extraction time for a
 # bare call, where dropping the raw call is correct for a true builtin but also
 # throws away the evidence needed to resolve a legitimate imported class that
-# merely shares a builtin's name (#4989). This set is only consulted after a
+# merely shares a builtin's name. This set is only consulted after a
 # cross-file candidate has been found, and only to require a direct import
 # binding before accepting it: in Python a bare name resolves to the builtin
 # unless the module binds it itself, so `raise NotImplementedError` in a file
@@ -148,7 +148,7 @@ def _file_stem(path: Path) -> str:
 
     The full path (extension dropped) is preserved as path segments; ``make_id``
     later collapses the separators to underscores. Using every segment — not just
-    the immediate parent dir (#1504) — means same-named files in different
+    the immediate parent dir — means same-named files in different
     directories get distinct IDs instead of colliding into one
     last-writer-wins node:
 
@@ -158,12 +158,12 @@ def _file_stem(path: Path) -> str:
     Top-level files keep a bare stem (``setup.py`` -> ``setup``). When passed an
     absolute path the whole path is encoded; the extract() id-remap post-pass
     re-derives the canonical repo-relative form from ``source_file`` so the on-disk
-    location can't leak into the persisted IDs (#502).
+    location can't leak into the persisted IDs.
 
     Returns "" for a path with no name (``Path('.')`` — a source_file that equals
     the scan root, so it has no per-file stem). Guarding here keeps
     ``path.with_suffix("")`` from raising ``ValueError: '.' has an empty name`` and
-    protects every caller, not just ``_semantic_id_remap`` (#1618)."""
+    protects every caller, not just ``_semantic_id_remap``."""
     if not path.name:
         return ""
     return path.with_suffix("").as_posix()

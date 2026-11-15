@@ -230,13 +230,13 @@ def _node_link_payload(data: dict) -> tuple[list, list] | None:
         # Shared loader normalizes the raw writer's "edges" key to "links"
         # before parsing; without it an edges-keyed payload raised
         # KeyError: 'links' and this function silently returned None even
-        # though the shape check above accepts "edges" (#2212).
+        # though the shape check above accepts "edges".
         from pilothify.paths import load_node_link_graph
 
         # Force directed/multigraph so the stored caller->callee direction and
         # parallel edges survive the round-trip; mirrors affected.py,
-        # serve.py and cli.py (#1174) and the directed-view fix for
-        # path/shortest_path (#2487, #2309). graph.json is written with
+        # serve.py and cli.py and the directed-view fix for
+        # path/shortest_path. graph.json is written with
         # "directed": false for backward compatibility, so without this
         # networkx returns an undirected Graph and edge orientation becomes
         # arbitrary -- which silently swaps the Caller and Callee columns of

@@ -1,4 +1,4 @@
-"""Finish member calls that cross a repository boundary in a merged graph (#3152).
+"""Finish member calls that cross a repository boundary in a merged graph.
 
 A single-repo build can only bind ``obj.method()`` when the receiver's type is
 declared in that same build. When the type lives in another repository the
@@ -17,7 +17,7 @@ exactly one declaration in another repo, keeping the single-definition guard the
 single-repo resolvers use: an ambiguous name still fabricates nothing. An ObjC
 class split ``@interface``(.h)/``@implementation``(.m) across repos is the one
 exception — several same-named candidates bind to the sole one that DEFINES the
-selector (#1556), two definitions still being an ambiguity.
+selector, two definitions still being an ambiguity.
 
 Edges only, no node merging or renaming, so the pass composes with the prefixing
 and pruning already in place. Every edge it adds is tagged, and it clears its own
@@ -191,7 +191,7 @@ def _objc_union_definition(
     An ObjC class whose `@interface` (`.h`) and `@implementation` (`.m`) live in
     different repositories surfaces as several same-named candidates that
     ``_merge_decl_def_classes`` folds within a repo but cannot across the boundary
-    (its id embeds the directory, #1556). The candidate that DEFINES the selector —
+    (its id embeds the directory). The candidate that DEFINES the selector —
     an impl in `.m`/`.mm`, or a folded node naming its impl in ``definition_file`` —
     is the target; a bare header declaration is not. Two candidates that both define
     it are two unrelated classes and stay ambiguous, so the single-definition guard
@@ -228,7 +228,7 @@ def link_cross_repo_member_calls(merged: "nx.Graph") -> int:
     # C# parked calls need the same namespace/using visibility check as C# type
     # references. Without it, an unresolved third-party receiver such as
     # `FluentValidation.IValidator` can bind to an unrelated `IValidator` that
-    # happens to be declared in one merged repository (#3360). Build this only
+    # happens to be declared in one merged repository. Build this only
     # when needed; the other parked languages use their existing suffix guard.
     csharp_resolver = None
     if any(

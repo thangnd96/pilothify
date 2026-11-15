@@ -1,8 +1,8 @@
 """ObjC declarations carry the `_callable` / `_callable_class` markers.
 
 Every other extractor stamps its definitions with `_callable` — "a real callable,
-not a same-named data symbol" (#2438) — and narrows a type to `_callable_class`,
-callable only through a constructor (#2137). The generic engine does it for all of
+not a same-named data symbol" — and narrows a type to `_callable_class`,
+callable only through a constructor. The generic engine does it for all of
 them in one place (`extractors/engine.py`, `callable_def_nids` /
 `callable_class_nids`).
 

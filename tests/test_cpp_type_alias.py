@@ -187,7 +187,7 @@ def test_a_type_reference_lands_on_the_alias_not_a_function_differing_in_case(
 
 def test_an_alias_named_after_the_file_extension_is_contained_by_its_file(tmp_path: Path):
     """`using cpp = int;` in `a.cpp` spells the file's own id, so the registry
-    salts the alias's id (#4854); the file must still contain it."""
+    salts the alias's id; the file must still contain it."""
     result = _extract(tmp_path, {"a.cpp": "using cpp = int;\nstruct Box { cpp v; };\n"})
     assert len([n for n in result["nodes"] if n["label"] == "cpp" and n.get("source_file")]) == 1
     assert ("a.cpp", "cpp") in _pairs(result, "contains")

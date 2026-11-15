@@ -1,4 +1,4 @@
-"""A pilothify skip must not end the whole hook (#2986).
+"""A pilothify skip must not end the whole hook.
 
 The generated block is appended to whatever post-commit / post-checkout a
 repo already has, and other tools chain their logic after it. Every skip

@@ -1,6 +1,6 @@
 """Go predeclared functions must not bind to same-named user symbols.
 
-`_LANGUAGE_BUILTIN_GLOBALS` covered JS/TS, Python and Swift (#726, #2147) but
+`_LANGUAGE_BUILTIN_GLOBALS` covered JS/TS, Python and Swift but
 not Go, while `pilothify/extractors/go.py` already consults it when resolving a
 callee. Because the Go resolver looks the callee up by bare name, an unexported
 method that happens to share a builtin's name absorbed every builtin call in

@@ -159,7 +159,7 @@ def test_call_attribution_inside_the_expression_is_unchanged(tmp_path):
     """Adding a type to `function_boundary_types` must not change WHERE calls are
     attributed. Before, a function expression was not a boundary at all, so
     walk_calls recursed in normally; now it takes the boundary branch, which
-    descends explicitly with the enclosing `caller_nid` (#1630/#1740). Both
+    descends explicitly with the enclosing `caller_nid`. Both
     routes must land the call on the enclosing function, not drop it or
     re-parent it."""
     r, nid = _extract_js_dir(tmp_path, {"a.js": (

@@ -1,4 +1,4 @@
-"""Tests for the Terraform/HCL extractor (pilothify/extract.py, issue #187)."""
+"""Tests for the Terraform/HCL extractor (pilothify/extract.py, issue)."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -327,7 +327,7 @@ def test_terraform_sensitive_attribute_values_are_redacted(tmp_path):
     """Attribute values are persisted to graph.json and surfaced to the model,
     so a hardcoded credential must not leak: the VALUE of a secret-named key is
     redacted while the key stays visible, and non-secret keys are untouched
-    (#3644 security follow-up). Redaction recurses into map values too."""
+    (security follow-up). Redaction recurses into map values too."""
     body = """\
 resource "aws_db_instance" "main" {
   identifier    = "prod-db"
@@ -365,7 +365,7 @@ def test_terraform_redact_value_recurses_into_lists():
     """A secret nested inside a list — a list of objects, or a nested list — must
     be redacted, matching the map case. HCL routinely nests objects in tuples
     (`list(object(...))`, dynamic blocks), and recursing into dicts but not lists
-    left those values leaking (#3644 follow-up)."""
+    left those values leaking."""
     from pilothify.extractors.terraform import _redact_value
 
     # list of objects: the secret-named inner key is redacted, ordinary key kept
@@ -382,7 +382,7 @@ def test_terraform_redact_value_recurses_into_lists():
 
 def test_terraform_secret_in_list_of_objects_is_redacted(tmp_path):
     """End-to-end: a `password` inside a tuple-of-objects attribute must not reach
-    the graph verbatim, exactly as it wouldn't inside a map (#3644 follow-up)."""
+    the graph verbatim, exactly as it wouldn't inside a map."""
     body = """\
 resource "aws_x" "y" {
   name = "app"
@@ -456,7 +456,7 @@ def test_terraform_name_value_pair_secret_is_redacted(tmp_path):
     `[{ name, value }]` list) names the secret in the `name` LITERAL, while the
     credential sits under the generic key `value`. Key-name matching never sees
     that signal, so `{ name = "DB_PASSWORD", value = "hunter2" }` reached
-    graph.json verbatim (#3787). Ordinary name/value config stays intact."""
+    graph.json verbatim. Ordinary name/value config stays intact."""
     body = """\
 resource "aws_ecs_task_definition" "app" {
   family = "app"

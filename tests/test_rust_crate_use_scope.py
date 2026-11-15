@@ -8,7 +8,7 @@ unbound; `a::Value` in a workspace where `a` is scanned reaches `a`'s definition
 and not a namesake elsewhere. A stub is only scoped when its file is under a
 Cargo.toml, so each fixture writes one per crate; a manifest-less `.rs` scan
 keeps the old label-only binding, which the rewire flags as INFERRED instead of
-silently presenting it as EXTRACTED (#4699).
+silently presenting it as EXTRACTED.
 """
 from __future__ import annotations
 

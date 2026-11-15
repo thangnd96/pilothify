@@ -1,4 +1,4 @@
-"""Regression tests for the repo-wide HOME sandbox (issue #2168).
+"""Regression tests for the repo-wide HOME sandbox.
 
 The autouse ``_sandbox_home`` fixture in conftest.py must point every
 home-resolution mechanism at a throwaway directory, so installers and
@@ -44,7 +44,7 @@ def test_global_uninstall_is_captured_by_sandbox(tmp_path, tmp_path_factory):
     Since #2215, `claude_uninstall(project_dir)` is project-scoped and must NOT
     touch the global tree; the global delete now requires either a bare call or
     an explicit `remove_user_skill=True`. Both scopes are exercised here so the
-    sandbox (#2168) is still proven to capture the global delete.
+    sandbox is still proven to capture the global delete.
     """
     skill = Path.home() / ".claude" / "skills" / "pilothify" / "SKILL.md"
     skill.parent.mkdir(parents=True)

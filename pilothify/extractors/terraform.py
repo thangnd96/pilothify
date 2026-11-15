@@ -46,7 +46,7 @@ def _redact_value(key: str, value: object) -> object:
     Python lists of dicts. Recursing into dicts but not lists left
     `configs = [{ password = "x" }]` leaking verbatim while the map form
     `config = { password = "x" }` was redacted — the value still reaches
-    graph.json and the MCP query/get_node surface unsanitized (#3644 follow-up).
+    graph.json and the MCP query/get_node surface unsanitized.
     List elements are recursed under the same key: the list branch is only
     reached when `key` is NOT itself sensitive (a sensitive key redacts the whole
     value above), so a scalar element carries no key signal and is returned
@@ -57,7 +57,7 @@ def _redact_value(key: str, value: object) -> object:
         redacted = {k: _redact_value(str(k), v) for k, v in value.items()}
         # Name/value-pair idiom (ECS `environment`/`secrets`, `[{name, value}]`):
         # the secret signal is the `name` literal, not a key, so key matching
-        # alone let `{ name = "DB_PASSWORD", value = "hunter2" }` leak (#3787).
+        # alone let `{ name = "DB_PASSWORD", value = "hunter2" }` leak.
         if any(
             str(k).lower() == "name" and isinstance(v, str) and _SENSITIVE_KEY_RE.search(v)
             for k, v in value.items()

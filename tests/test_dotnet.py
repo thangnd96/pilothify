@@ -48,7 +48,7 @@ def test_sln_project_dependency():
 def test_sln_solution_folder_ids_are_relative(tmp_path):
     """Solution folders are virtual groupings, not files. Their node ids must be
     derived from the folder name only — never the resolved absolute scan path,
-    which would leak the local username into a committed graph.json (#1789)."""
+    which would leak the local username into a committed graph.json."""
     sln = tmp_path / "App.sln"
     sln.write_text(
         'Microsoft Visual Studio Solution File, Format Version 12.00\n'
@@ -520,7 +520,7 @@ def test_xaml_viewmodel_with_non_utf8_codebehind_does_not_crash(tmp_path):
 
 
 def test_csharp_members_in_preprocessor_blocks_are_extracted_and_resolved(tmp_path):
-    """C# preprocessor wrappers must preserve class ownership for members (#2631)."""
+    """C# preprocessor wrappers must preserve class ownership for members."""
     helper = tmp_path / "Helper.cs"
     helper.write_text(
         """namespace Probe.Lib;

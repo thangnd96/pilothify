@@ -25,7 +25,7 @@ def test_global_list_backs_up_wrong_manifest_shape(tmp_path, monkeypatch, capsys
 
 
 def test_global_list_isolates_malformed_repo_entries(tmp_path, monkeypatch, capsys):
-    # A single malformed entry must not discard the user's other repos (#5020):
+    # A single malformed entry must not discard the user's other repos:
     # drop only the bad one, keep the good ones, and do NOT back up the file.
     manifest = tmp_path / "global-manifest.json"
     good = {"source_path": "graph.json", "node_count": 2}

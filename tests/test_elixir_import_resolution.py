@@ -1,4 +1,4 @@
-"""Elixir cross-file alias/import/require/use resolution (#2556).
+"""Elixir cross-file alias/import/require/use resolution.
 
 `extract_elixir` mints a module's own node id with the defining file's stem
 (`_make_id(stem, module_name)`) but an alias/import/require/use target with
@@ -80,7 +80,7 @@ def test_same_file_module_reference_does_not_clobber_contains(tmp_path: Path):
     already `contains` that module, so retargeting it would duplicate the
     file->module pair with a weaker relation and -- in the non-multi build
     graph, where `imports` and `contains` are both specific relations -- clobber
-    the structural `contains` edge (#3603 follow-up guard). Cross-file
+    the structural `contains` edge (follow-up guard). Cross-file
     resolution is covered by the repro test above; here the same-file case must
     fail closed."""
     result = _extract(tmp_path, {
@@ -174,7 +174,7 @@ def test_genuinely_external_module_stays_unresolved(tmp_path: Path):
 def test_nested_module_does_not_capture_foreign_use(tmp_path: Path):
     """A nested `defmodule` is labeled with its bare inner name, so an unrelated
     `use <Name>` / `alias <Name>` from another file must NOT latch onto it
-    (#3603 follow-up guard). Only top-level modules are indexed as targets."""
+    (follow-up guard). Only top-level modules are indexed as targets."""
     result = _extract(tmp_path, {
         "lib/app/application.ex": (
             "defmodule MyApp.Application do\n"

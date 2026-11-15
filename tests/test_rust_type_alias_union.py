@@ -1,4 +1,4 @@
-"""Rust `type` aliases and `union` items are declarations (#4285, item 5).
+"""Rust `type` aliases and `union` items are declarations (item 5).
 
 extract_rust emitted nodes for `struct`, `enum` and `trait` only, so a field,
 parameter or return typed with an alias or a union declared in the same file

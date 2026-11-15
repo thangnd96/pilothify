@@ -64,7 +64,7 @@ def test_resolve_python_module_path_walks_up_to_src_package_root(tmp_path):
 
 
 def test_import_edges_identical_from_root_or_src(tmp_path):
-    """Headline (#2072): the same project yields the same import edges whether
+    """Headline: the same project yields the same import edges whether
     scanned from the repo root or from src/ (modulo the `src_` id prefix)."""
     direct = tmp_path / "direct"
     nested = tmp_path / "nested"

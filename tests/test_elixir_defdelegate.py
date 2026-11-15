@@ -1,4 +1,4 @@
-"""`defdelegate` defines an invocable function in the module (#4132).
+"""`defdelegate` defines an invocable function in the module.
 
 `defdelegate greet(name), to: Greeter` declares a callable `greet` whose body is
 delegated to another module. It has the same `call` head shape as `def`, but was

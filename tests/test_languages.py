@@ -14,7 +14,7 @@ from pilothify.extract import (
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
-# tree-sitter-dm is an optional extra (#1104) - it ships no Linux/Mac wheel, so it
+# tree-sitter-dm is an optional extra - it ships no Linux/Mac wheel, so it
 # is not installed by a default `uv sync`. Skip the .dm/.dme grammar tests when the
 # grammar is absent (.dmi/.dmm/.dmf use no tree-sitter and are always tested).
 import importlib.util as _ilu
@@ -198,7 +198,7 @@ def test_cpp_finds_methods():
 def test_cpp_recovers_doctest_string_named_test_cases():
     """doctest/Catch2 ``TEST_CASE("name")`` uses a string literal where the
     grammar expects an identifier, so tree-sitter-cpp drops the whole test
-    function as an ERROR node (#2594). The regex fallback must recover one
+    function as an ERROR node. The regex fallback must recover one
     callable node per test case, keeping the raw name as the label, without
     losing the surrounding functions the tree-sitter pass still parses.
     """
@@ -227,8 +227,8 @@ def test_cpp_recovers_doctest_string_named_test_cases():
 def test_cpp_string_tests_punctuation_only_names_stay_distinct(tmp_path):
     """A punctuation-only test name normalizes to empty, so a naive
     ``_make_id(stem, name)`` collapses onto the bare file-stem id — colliding
-    with the file namespace and swallowing every later such test under one id
-    (#1899). The guard gives each a distinct line-positional id."""
+    with the file namespace and swallowing every later such test under one id.
+    The guard gives each a distinct line-positional id."""
     f = tmp_path / "punct_tests.cpp"
     f.write_text(
         'TEST_CASE("***") { CHECK(1); }\n'
@@ -1208,7 +1208,7 @@ def test_scala_enum_definition_cases_and_methods(tmp_path):
     `enum_definition` was missing from the Scala class_types, so the enum type,
     all of its cases (`case Red`, `case Add(...)`), and its methods produced no
     nodes at all — the type vanished from the graph. The cases must each become
-    a node with a `case_of` edge (parity with Java #1719 / Kotlin #1738 / Swift).
+    a node with a `case_of` edge (parity with Java  / Kotlin  / Swift).
     """
     f = tmp_path / "color.scala"
     f.write_text(
@@ -1583,12 +1583,12 @@ def test_swift_no_dangling_edges():
     node_ids = {n["id"] for n in r["nodes"]}
     for e in r["edges"]:
         assert e["source"] in node_ids
-        # #1327: targets must resolve to a node too, else build.py prunes the edge.
+        # targets must resolve to a node too, else build.py prunes the edge.
         assert e["target"] in node_ids, f"dangling target {e['target']} ({e['relation']})"
 
 
 def test_swift_imports_survive_build():
-    # #1327: `import Foundation` / `import UIKit` previously emitted edges to bare
+    # `import Foundation` / `import UIKit` previously emitted edges to bare
     # module ids with no backing node, so build.py dropped 100% of Swift imports.
     from pilothify.build import build_from_json
     r = extract_swift(FIXTURES / "sample.swift")
@@ -1597,7 +1597,7 @@ def test_swift_imports_survive_build():
     node_ids = {n["id"] for n in r["nodes"]}
     for e in import_edges:
         assert e["target"] in node_ids  # synthesized module node exists
-    # Imported modules are tagged type=module (anchor nodes, #1327/#1330).
+    # Imported modules are tagged type=module (anchor nodes).
     module_labels = {n["label"] for n in r["nodes"] if n.get("type") == "module"}
     assert {"Foundation", "UIKit"} <= module_labels
     # No private bookkeeping key should leak into output edges.
@@ -1788,7 +1788,7 @@ def test_elixir_guarded_single_clause_is_extracted(tmp_path):
     tree-sitter-elixir wraps `def f(x) when guard` in a `binary_operator`,
     so the head is not a direct `call` child of `arguments`. Multi-clause
     functions survive via an unguarded clause; a single guarded clause
-    was dropped entirely (#3111).
+    was dropped entirely.
     """
     src = tmp_path / "demo.ex"
     src.write_text(
@@ -1997,7 +1997,7 @@ def test_objc_no_dangling_edges():
 def test_objc_resolves_self_method_calls():
     """`[self speak]` inside Dog.fetch must produce a calls edge. The method-body
     second pass was dead code for ObjC because the grammar emits a simple selector
-    as `identifier`, not `selector`/`keyword_argument_list` (#1475)."""
+    as `identifier`, not `selector`/`keyword_argument_list`."""
     r = extract_objc(FIXTURES / "sample.m")
     nid2label = {n["id"]: n["label"] for n in r["nodes"]}
     calls = [nid2label.get(e["target"]) for e in r["edges"] if e["relation"] == "calls"]
@@ -2005,7 +2005,7 @@ def test_objc_resolves_self_method_calls():
 
 
 def test_objc_class_method_labeled_with_plus(tmp_path):
-    """`+ (…)shared` is a class method and must be labeled +shared, not -shared (#1475)."""
+    """`+ (…)shared` is a class method and must be labeled +shared, not -shared."""
     p = tmp_path / "S.m"
     p.write_text("@implementation S\n+ (instancetype)shared { return nil; }\n- (void)go { }\n@end\n")
     labels = {n["label"] for n in extract_objc(p)["nodes"]}
@@ -2013,7 +2013,7 @@ def test_objc_class_method_labeled_with_plus(tmp_path):
 
 
 def test_objc_compound_selector_call_resolves(tmp_path):
-    """A compound message `[self a:x b:y]` resolves to the compound method def (#1475)."""
+    """A compound message `[self a:x b:y]` resolves to the compound method def."""
     p = tmp_path / "V.m"
     p.write_text(
         "@implementation V\n"
@@ -2029,7 +2029,7 @@ def test_objc_compound_selector_call_resolves(tmp_path):
 
 def test_objc_generic_property_type_extracted(tmp_path):
     """`NSArray<Product *> *` must reference the element type Product (and the
-    container NSArray); the generic wrapper made the type invisible before (#1475)."""
+    container NSArray); the generic wrapper made the type invisible before."""
     p = tmp_path / "M.h"
     p.write_text("@interface M : NSObject\n@property (strong) NSArray<Product *> *items;\n@end\n")
     refs = _edge_labels(extract_objc(p), "references", "field")
@@ -2038,7 +2038,7 @@ def test_objc_generic_property_type_extracted(tmp_path):
 
 
 def test_objc_module_import_edge(tmp_path):
-    """`@import Foundation;` / `@import UIKit.UIView;` produce imports edges (#1475)."""
+    """`@import Foundation;` / `@import UIKit.UIView;` produce imports edges."""
     from pilothify.extract import _make_id
     p = tmp_path / "X.m"
     p.write_text("@import Foundation;\n@import UIKit.UIView;\n@implementation X\n@end\n")
@@ -2048,7 +2048,7 @@ def test_objc_module_import_edge(tmp_path):
 
 def test_objc_header_dispatch_routes_objc_not_c(tmp_path):
     """An ObjC `.h` (has @interface) routes to extract_objc; a plain C `.h` stays
-    on extract_c, so C/C++ headers are never hijacked by the sniff (#1475)."""
+    on extract_c, so C/C++ headers are never hijacked by the sniff."""
     from pilothify.extract import _get_extractor, extract_objc as _eo, extract_c as _ec
     objc_h = tmp_path / "AppDelegate.h"
     objc_h.write_text("@interface AppDelegate : NSObject <UIApplicationDelegate>\n@end\n")
@@ -2061,7 +2061,7 @@ def test_objc_header_dispatch_routes_objc_not_c(tmp_path):
 def test_objc_ns_assume_nonnull_macro_does_not_break_parsing(tmp_path):
     """`NS_ASSUME_NONNULL_BEGIN` before `@interface` made tree-sitter-objc fail to
     emit a class_interface node, swallowing the whole interface; blanking the
-    argument-less macro restores it (#1475)."""
+    argument-less macro restores it."""
     p = tmp_path / "AlertManager.h"
     p.write_text(
         "#import <Foundation/Foundation.h>\n"
@@ -2097,7 +2097,7 @@ def test_objc_macro_free_header_unchanged(tmp_path):
 def test_objc_quoted_import_edges_resolve_to_real_nodes(tmp_path):
     """Quoted `#import "X.h"` edges must target the real (disambiguated) file node id,
     not the bare stem, which gets salted away when a `.h`/`.m` pair exists and left
-    the import edge dangling (#1475)."""
+    the import edge dangling."""
     from pilothify.extract import extract
     (tmp_path / "Product.h").write_text("@interface Product : NSObject\n@end\n")
     (tmp_path / "Product.m").write_text("#import \"Product.h\"\n@implementation Product\n@end\n")
@@ -2121,7 +2121,7 @@ def test_objc_quoted_import_edges_resolve_to_real_nodes(tmp_path):
         # No dangling targets...
         assert e["target"] in node_ids, f"dangling import target: {e}"
         # ...and no self-loops: a `.m` importing its own `.h` must resolve to the
-        # header file node, not get salted back to the importing `.m` (#1475).
+        # header file node, not get salted back to the importing `.m`.
         assert e["source"] != e["target"], f"self-loop import edge: {e}"
         # every quoted import targets a header (.h) file node
         assert str(id_to_label.get(e["target"], "")).endswith(".h"), (
@@ -2135,7 +2135,7 @@ def test_objc_quoted_import_edges_resolve_to_real_nodes(tmp_path):
 
 
 def test_objc_alloc_init_emits_type_reference(tmp_path):
-    """`[[Foo alloc] init]` must emit a `references` edge to the project class Foo (#1475)."""
+    """`[[Foo alloc] init]` must emit a `references` edge to the project class Foo."""
     from pilothify.extract import extract
     (tmp_path / "Foo.h").write_text("@interface Foo : NSObject\n@end\n")
     (tmp_path / "Foo.m").write_text("#import \"Foo.h\"\n@implementation Foo\n@end\n")
@@ -2263,7 +2263,7 @@ def test_objc_selector_no_fanout_two_same_named_methods(tmp_path):
 def test_objc_dot_syntax_substring_sibling_exact_match(tmp_path):
     """A substring-colliding sibling must neither be falsely matched nor suppress
     the real match: `self.name` with both `-name` and `-surname` present resolves
-    to `-name` ONLY (exact id, not a `endswith` suffix) (#1475)."""
+    to `-name` ONLY (exact id, not a `endswith` suffix)."""
     p = tmp_path / "Person.m"
     p.write_text(
         "@implementation Person\n"
@@ -2282,7 +2282,7 @@ def test_objc_dot_syntax_substring_sibling_exact_match(tmp_path):
 
 def test_objc_selector_substring_method_exact_match(tmp_path):
     """@selector(doThing) must resolve to `-doThing` exactly, not be suppressed by
-    a substring-colliding `-reallyDoThing` (exact match, not suffix) (#1475)."""
+    a substring-colliding `-reallyDoThing` (exact match, not suffix)."""
     p = tmp_path / "Worker.m"
     p.write_text(
         "@implementation Worker\n"
@@ -2480,7 +2480,7 @@ def test_julia_where_clause_functions_are_extracted(tmp_path):
     """Methods with a `where` clause (long and short form) must be extracted with
     their body calls. The `where` clause wraps the call head in a
     `where_expression`, so the name lookup missed it and the whole method (and its
-    calls) was dropped (#4126)."""
+    calls) was dropped."""
     f = tmp_path / "where.jl"
     f.write_text(
         "function combine(a::Vector{T}, b::Vector{T}) where {T<:Number}\n"
@@ -2505,7 +2505,7 @@ def test_julia_parametric_types_are_extracted(tmp_path):
     """Parametric type definitions (`struct Box{T}`, `abstract type Shape{T}`,
     `struct Sq{T} <: Shape{T}`, `mutable struct M{T,U}`) must be extracted. The
     name sits inside a `parametrized_type_expression`, so the head-name lookup
-    missed it and dropped the type entirely (#4128). A declared type parameter
+    missed it and dropped the type entirely. A declared type parameter
     (`value::T`) must not leak out as a phantom field-type reference node."""
     f = tmp_path / "params.jl"
     f.write_text(
@@ -2940,7 +2940,7 @@ def test_powershell_no_error():
 
 
 def test_powershell_psm1_dispatched_and_extracted(tmp_path):
-    # #1315: .psm1 modules were never indexed — no dispatch entry, no CODE_EXTENSIONS.
+    # .psm1 modules were never indexed — no dispatch entry, no CODE_EXTENSIONS.
     from pilothify.extract import _get_extractor
     mod = tmp_path / "Utils.psm1"
     mod.write_text(
@@ -2964,7 +2964,7 @@ def test_powershell_this_method_call_resolves(tmp_path):
     """`$this.Square(3)` inside a class method is a call to a sibling method and
     must link the two. The invocation parses as an `invokation_expression`, but
     only the bare-command form was walked, so every method call was dropped from
-    the call graph (#3992)."""
+    the call graph."""
     f = tmp_path / "calc.ps1"
     f.write_text(
         "class Calc {\n"
@@ -2979,7 +2979,7 @@ def test_powershell_this_method_call_resolves(tmp_path):
 
 def test_powershell_static_method_call_resolves(tmp_path):
     """The static `[Calc]::Make()` form is also an `invokation_expression` and
-    must resolve to the method (#3992)."""
+    must resolve to the method."""
     f = tmp_path / "calc.ps1"
     f.write_text(
         "class Calc {\n"
@@ -2994,7 +2994,7 @@ def test_powershell_static_method_call_resolves(tmp_path):
 def test_powershell_member_call_does_not_bind_to_free_function(tmp_path):
     """Fail-closed: a method call on an unknown receiver (`$obj.Process()`) must
     NOT bind to a free function that merely shares the name — member calls
-    resolve only to methods (#3992)."""
+    resolve only to methods."""
     f = tmp_path / "calc.ps1"
     f.write_text(
         "function Process { return 1 }\n"
@@ -3011,7 +3011,7 @@ def test_powershell_member_call_does_not_bind_to_free_function(tmp_path):
 
 def test_powershell_command_call_still_resolves(tmp_path):
     """Positive control: the bare-command call path that already worked must
-    keep working (#3992)."""
+    keep working."""
     f = tmp_path / "mod.ps1"
     f.write_text(
         "function Helper { return 1 }\n"
@@ -3219,7 +3219,7 @@ def test_powershell_method_parameter_and_return_type_contexts():
     assert ("Save", "void") in _edge_labels(r, "references", "return_type")
 
 
-# ── PowerShell: Import-Module + dot-source (#1331) ───────────────────────────
+# ── PowerShell: Import-Module + dot-source ───────────────────────────
 
 def test_powershell_import_module_emits_edge():
     """Import-Module Foo at top level emits an imports_from edge."""
@@ -3287,7 +3287,7 @@ def test_powershell_dot_source_inside_function_emits_edge():
     ". '.\\lib.ps1'",               # single-quoted relative path -> string_literal
 ])
 def test_powershell_dot_source_quoted_or_variable_path_emits_edge(tmp_path, line):
-    """Dot-source with a quoted or $PSScriptRoot-based path emits imports_from (#4356)."""
+    """Dot-source with a quoted or $PSScriptRoot-based path emits imports_from."""
     f = tmp_path / "main.ps1"
     f.write_text(line + "\n")
     r = extract_powershell(f)
@@ -3296,7 +3296,7 @@ def test_powershell_dot_source_quoted_or_variable_path_emits_edge(tmp_path, line
 
 
 def test_powershell_script_scope_call_is_recorded(tmp_path):
-    """A call at script scope (outside any function) is attributed to the file (#4356)."""
+    """A call at script scope (outside any function) is attributed to the file."""
     f = tmp_path / "main.ps1"
     f.write_text(
         "function Helper { return 1 }\n"
@@ -3384,7 +3384,7 @@ def test_powershell_using_module_without_extension_keeps_full_name(tmp_path):
     )
 
 
-# ── PowerShell manifest (.psd1) (#1331) ──────────────────────────────────────
+# ── PowerShell manifest (.psd1) ──────────────────────────────────────
 
 def test_powershell_psd1_dispatched():
     """_get_extractor should route .psd1 to extract_powershell_manifest."""
@@ -3465,7 +3465,7 @@ def test_powershell_psd1_no_dangling_edges():
 
 def test_powershell_functions_in_file_scope_begin_block_are_extracted(tmp_path):
     # File-scope begin/process/end blocks parse as pseudo-commands (command_name
-    # 'begin'), not named_block, so functions defined inside them were dropped (#4270).
+    # 'begin'), not named_block, so functions defined inside them were dropped.
     f = tmp_path / "advanced.ps1"
     f.write_text(
         "[CmdletBinding()]\n"
@@ -3553,7 +3553,7 @@ def test_ts_static_template_literal_resolved():
 
 
 def test_js_local_const_does_not_emit_phantom_node(tmp_path):
-    """Local const/let/var inside an arrow callback must NOT emit a node (#1077).
+    """Local const/let/var inside an arrow callback must NOT emit a node.
 
     Previously `_js_extra_walk` recursed into arrow_function bodies and
     emitted a node for every `const x = ...` inside e.g. `describe(() => {})`,
@@ -3583,7 +3583,7 @@ def test_js_local_const_does_not_emit_phantom_node(tmp_path):
 
 
 def test_js_module_level_arrow_produces_node_and_call_edges(tmp_path):
-    """Module-level arrow functions must still emit a node and capture their calls (#1077).
+    """Module-level arrow functions must still emit a node and capture their calls.
 
     The scope guard must not accidentally suppress top-level arrow functions.
     """
@@ -3623,7 +3623,7 @@ def test_ts_local_const_does_not_emit_phantom_node(tmp_path):
 
 def test_ts_constructor_injection_calls_edge(tmp_path):
     """this.repo.findById() in a class with constructor(private repo: IUserRepository)
-    must produce a calls edge from getUser() to findById() (#1316)."""
+    must produce a calls edge from getUser() to findById()."""
     from pilothify.extract import extract
     repo_ts = tmp_path / "repo.ts"
     repo_ts.write_text(
@@ -3664,7 +3664,7 @@ def test_ts_constructor_injection_calls_edge(tmp_path):
 
 
 def test_ts_this_field_receiver_not_same_file_collision(tmp_path):
-    """this.db.query() should NOT match an unrelated query() in the same file (#1316)."""
+    """this.db.query() should NOT match an unrelated query() in the same file."""
     f = tmp_path / "collision.ts"
     f.write_text(
         "function query() { return 'global'; }\n"
@@ -3746,7 +3746,7 @@ def test_ts_injected_field_resolves_to_typed_class_not_same_named_collision(tmp_
 
 def test_ts_injected_field_ambiguous_type_emits_no_edge(tmp_path):
     """If the injected field's type name is ambiguous (two classes named Database),
-    the god-node guard bails — no calls edge rather than a guess (#1316)."""
+    the god-node guard bails — no calls edge rather than a guess."""
     from pilothify.extract import extract
     (tmp_path / "a" ).mkdir()
     (tmp_path / "b").mkdir()
@@ -3792,7 +3792,7 @@ def test_markdown_finds_nested_heading():
     assert any("Database Migration" in l for l in labels)
 
 def test_markdown_skips_fenced_code_blocks():
-    """Fenced code blocks should NOT emit nodes (#1077).
+    """Fenced code blocks should NOT emit nodes.
 
     They were always orphans (single contains edge to parent doc) and
     inflated the disconnected-component count. We still skip over their
@@ -3847,7 +3847,7 @@ def test_markdown_heading_indented_up_to_three_spaces_is_a_heading(tmp_path):
 
 
 def test_markdown_fenced_heading_not_parsed():
-    """A '## heading' inside a fenced block must not produce a heading node (#1077).
+    """A '## heading' inside a fenced block must not produce a heading node.
 
     The fence-toggle skips over fenced contents so interior markdown syntax
     is not misread as document structure.
@@ -3941,7 +3941,7 @@ def test_markdown_no_dangling_edges():
 
 
 def _md_link_fixture(tmp_path):
-    """A hub doc linking to sibling docs, plus those docs (#1376)."""
+    """A hub doc linking to sibling docs, plus those docs."""
     pkg = tmp_path / "packages" / "coding-standards-csharp"
     pkg.mkdir(parents=True)
     (pkg / "index.md").write_text(
@@ -3961,7 +3961,7 @@ def _md_link_fixture(tmp_path):
 
 
 def test_markdown_link_edges_emitted(tmp_path):
-    """Inline/wikilink markdown links to sibling docs become references edges (#1376)."""
+    """Inline/wikilink markdown links to sibling docs become references edges."""
     pkg = _md_link_fixture(tmp_path)
     r = extract_markdown(pkg / "index.md")
     refs = [e for e in r["edges"] if e["relation"] == "references"]
@@ -3975,7 +3975,7 @@ def test_markdown_link_edges_emitted(tmp_path):
 
 
 def test_markdown_link_skips_external_and_images(tmp_path):
-    """External URLs, in-page anchors and images must not produce edges (#1376)."""
+    """External URLs, in-page anchors and images must not produce edges."""
     pkg = _md_link_fixture(tmp_path)
     r = extract_markdown(pkg / "index.md")
     refs = [e for e in r["edges"] if e["relation"] == "references"]
@@ -3986,7 +3986,7 @@ def test_markdown_link_skips_external_and_images(tmp_path):
 
 def test_markdown_link_edges_resolve_to_real_nodes(tmp_path):
     """End-to-end: after extract()'s ID remap, link targets are real doc nodes,
-    so the hub doc gains edges into existing nodes instead of ghost nodes (#1376)."""
+    so the hub doc gains edges into existing nodes instead of ghost nodes."""
     from pilothify.extract import extract
     pkg = _md_link_fixture(tmp_path)
     paths = sorted(pkg.glob("*.md"))
@@ -4062,7 +4062,7 @@ def test_markdown_wikilink_fallback_path_qualified(tmp_path):
 
 def test_markdown_wikilink_vault_relative_to_a_scan_root_below_the_vault(tmp_path):
     """Obsidian writes vault-relative paths, so scanning a folder below the
-    vault meets links that start with that folder's own path (#4559)."""
+    vault meets links that start with that folder's own path."""
     corp = tmp_path / "Vault" / "Projects" / "Corp"
     (corp / "wiki").mkdir(parents=True)
     for name in ("Charlie", "Delta", "Fox"):
@@ -4905,7 +4905,7 @@ def test_systemverilog_instantiation_resolves_to_local_module():
     bare-id phantom duplicate. The instantiation target used an unscoped id
     (`_make_id(name)`) while the definition used `_make_id(stem, name)`, so
     they never matched: the module was split into a real definition node and a
-    sourced phantom that also blocked the corpus-level rewire (#1402 shape)."""
+    sourced phantom that also blocked the corpus-level rewire (shape)."""
     r = extract_verilog(FIXTURES / "sample.sv")
     leaf_nodes = [n for n in r["nodes"] if n["label"] == "leaf"]
     assert len(leaf_nodes) == 1, f"leaf split into duplicates: {leaf_nodes}"
@@ -4992,7 +4992,7 @@ def test_systemverilog_explicit_return_type_function_still_works():
     assert "Resultbuild" not in _labels(r)
 
 
-# ── Header/impl class merge + .h routing (#1547 C++, #1556 ObjC/Swift) ─────────
+# ── Header/impl class merge + .h routing (C++ ObjC/Swift) ─────────
 from pilothify.extract import (
     extract as _extract_corpus,
     _get_extractor,
@@ -5762,7 +5762,7 @@ def test_zig_error_set_members_emit_case_of_nodes(tmp_path):
     whole declaration fell through and BOTH the error type and its members were
     dropped. An error set is a named enumeration of error values — the direct
     parallel of a Zig enum — so emit the type plus a node + `case_of` edge per
-    member identifier, matching the enum handling (and Java #1719 / Swift / Scala).
+    member identifier, matching the enum handling (and Java  / Swift / Scala).
     """
     src = (
         "const FileError = error{ NotFound, PermissionDenied };\n"
@@ -5829,7 +5829,7 @@ def test_zig_tagged_union_variants_emit_case_of_nodes(tmp_path):
     # the data fields must not be minted as member nodes.
     assert not any(src_lbl == "Bare" for src_lbl, _ in case_of)
     assert "float" not in labels
-    # A variant's nested-struct payload is not recursed into (#4074): `rectangle`
+    # A variant's nested-struct payload is not recursed into: `rectangle`
     # is minted as a variant, but its `w`/`h` fields are not, and `rectangle`
     # owns no `case_of` edges of its own.
     assert "w" not in labels
@@ -5913,7 +5913,7 @@ def test_zig_member_call_does_not_cross_resolve_to_a_same_named_free_function(tm
 @_needs_commonlisp
 def test_cl_ids_are_path_qualified_across_directories(tmp_path):
     """Two same-named .lisp files in DIFFERENT directories must mint distinct
-    ids (#1504). The prefix was derived from the bare `path.stem`, so both
+    ids. The prefix was derived from the bare `path.stem`, so both
     `a/sample.lisp` and `b/sample.lisp` minted `sample` / `sample_init`; when
     they land in separate extract batches (what `pilothify update` does) build()
     merges them and one file's nodes are dropped."""
@@ -5933,7 +5933,7 @@ def test_cl_ids_are_path_qualified_across_directories(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Robot Framework (.robot / .resource) - official robot.api parser (#3192)
+# Robot Framework (.robot / .resource) - official robot.api parser
 # ---------------------------------------------------------------------------
 
 @_needs_robot
@@ -6026,7 +6026,7 @@ def test_robot_suite_level_test_template(tmp_path):
 
 def test_robot_curdir_and_execdir_imports_resolve_without_double_prefix():
     # ${CURDIR}/${EXECDIR} already anchor the path; re-joining the source dir
-    # would double it for relative scan paths (bot finding on PR #3211).
+    # would double it for relative scan paths (bot finding on PR).
     # Pure path logic - needs no robotframework install.
     from pathlib import Path as P
     from pilothify.extractors.robot import _resolve_robot_import

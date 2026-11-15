@@ -54,7 +54,7 @@ def _issue_fixture(base: Path) -> list[Path]:
 
 
 def test_swift_cross_file_member_calls_resolve(tmp_path: Path):
-    # #1356: cross-file member calls (recv.method()), static/singleton calls, and
+    # cross-file member calls (recv.method()), static/singleton calls, and
     # a constructor-in-initializer must resolve to the receiver's real definition.
     files = _issue_fixture(tmp_path / "src")
     result = extract(files, cache_root=tmp_path / "cache")
@@ -74,7 +74,7 @@ def test_swift_cross_file_member_calls_have_correct_confidence_and_resolve(tmp_p
     # Instance calls typed via local inference (vm.update(), self.svc.fetch()) are
     # INFERRED; type-qualified static calls (SessionType.staticMethod(),
     # Singleton.shared.method()) name the receiver type explicitly in source, so
-    # they are EXTRACTED, matching the Python qualified-class-method pass (#1533).
+    # they are EXTRACTED, matching the Python qualified-class-method pass.
     # All must land on real definition nodes so build_from_json keeps them.
     files = _issue_fixture(tmp_path / "src")
     result = extract(files, cache_root=tmp_path / "cache")
@@ -194,7 +194,7 @@ def _extension_fixture(base: Path) -> list[Path]:
 
 
 def test_cross_file_extension_does_not_erase_static_calls(tmp_path: Path):
-    # #2538: swift_extensions[].nid is recorded pre-remap, so with absolute input
+    # swift_extensions[].nid is recorded pre-remap, so with absolute input
     # paths the extension merge matched nothing and Singleton kept two definition
     # nodes; the single-definition guard in _resolve_swift_member_calls then
     # dropped every call edge into it. One `extension Singleton {}` in its own

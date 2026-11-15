@@ -1,4 +1,4 @@
-"""Join the same declared type across repositories in a merged graph (#3007).
+"""Join the same declared type across repositories in a merged graph.
 
 `merge-graphs` prefixes every node id with its repo tag, so a contract type that
 two services both declare arrives as two unconnected nodes. In a message-bus

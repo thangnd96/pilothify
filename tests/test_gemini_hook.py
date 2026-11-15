@@ -33,7 +33,7 @@ def test_matcher_and_command_shape():
     h = _gemini_hook()
     assert h["matcher"] == "read_file|list_directory"
     cmd = h["hooks"][0]["command"]
-    # #522: no bare `python` dependency, no embedded quote/backtick soup.
+    # no bare `python` dependency, no embedded quote/backtick soup.
     assert "python -c" not in cmd
     assert "pilothify" in cmd and "hook-guard gemini" in cmd
 

@@ -56,7 +56,7 @@ def _discover_root_manifest(root: Path) -> Path | None:
     A bounded-depth search rather than an unbounded walk: a Tauri app's
     crate lives in src-tauri/, a polyglot repo's in rust/ or crates/, but
     going arbitrarily deep risks matching a vendored or example manifest
-    nested well inside an unrelated dependency (#3678). Reuses the same
+    nested well inside an unrelated dependency. Reuses the same
     noise-directory pruning the AST scanner already applies (venvs, caches,
     node_modules, build output) so those never get searched into. A
     genuinely ambiguous layout with more than one candidate at the same
@@ -116,7 +116,7 @@ def introspect_cargo(root: str | Path) -> dict[str, Any]:
         workspace_dependencies = {}
 
     # Workspace members are resolved relative to the manifest's OWN
-    # directory, not necessarily root_path (#3678: the manifest can live in
+    # directory, not necessarily root_path (the manifest can live in
     # a discovered subdirectory, e.g. src-tauri/).
     manifests = _member_manifest_paths(root_manifest.parent, root_data)
     crates: dict[str, tuple[str, Path, dict[str, Any]]] = {}
@@ -159,7 +159,7 @@ def introspect_cargo(root: str | Path) -> dict[str, Any]:
             # The key `db` is the name used in `use db::…;`; the actual crate
             # published under `[package].name = "internal-storage"` is what
             # `crates` is keyed by. Without honoring `package`, every renamed
-            # workspace-internal dep silently drops its edge (#1858).
+            # workspace-internal dep silently drops its edge.
             real_name = dep_key
             if isinstance(spec, dict):
                 pkg_override = spec.get("package")

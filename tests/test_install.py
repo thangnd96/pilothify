@@ -652,7 +652,7 @@ def test_codebuddy_install_writes_hook(tmp_path):
 
 
 def test_claude_hook_is_shell_agnostic(tmp_path):
-    # #522: the installed PreToolUse hooks must be plain exe invocations, not
+    # the installed PreToolUse hooks must be plain exe invocations, not
     # POSIX bash (which fails on Windows cmd.exe/PowerShell).
     import json as _json
     from pilothify.__main__ import _install_claude_hook
@@ -672,7 +672,7 @@ def test_claude_hook_install_idempotent_and_replaces_old_bash_hook(tmp_path):
     from pilothify.__main__ import _install_claude_hook
     settings_path = tmp_path / ".claude" / "settings.json"
     settings_path.parent.mkdir(parents=True)
-    # Pre-seed a legacy bash-style pilothify hook (the thing #522 shipped before).
+    # Pre-seed a legacy bash-style pilothify hook (the thing  shipped before).
     settings_path.write_text(_json.dumps({"hooks": {"PreToolUse": [
         {"matcher": "Bash", "hooks": [{"type": "command",
          "command": "[ -f pilothify-out/graph.json ] && echo '{...}' || true"}]},
@@ -790,7 +790,7 @@ def test_antigravity_uninstall_project_removes_project_skill_only(tmp_path, monk
     home = tmp_path / "home"
     project = tmp_path / "project"
     project.mkdir()
-    # Global skill lives at ~/.gemini/config/skills/ (per #1079 fix)
+    # Global skill lives at ~/.gemini/config/skills/
     global_skill = home / ".gemini" / "config" / "skills" / "pilothify" / "SKILL.md"
     global_skill.parent.mkdir(parents=True)
     global_skill.write_text("global skill")
@@ -805,7 +805,7 @@ def test_antigravity_uninstall_project_removes_project_skill_only(tmp_path, monk
 
 
 def test_antigravity_global_install_writes_gemini_config_skills(tmp_path, monkeypatch):
-    """Global `pilothify antigravity install` must write to ~/.gemini/config/skills/ (#1079)."""
+    """Global `pilothify antigravity install` must write to ~/.gemini/config/skills/."""
     from pilothify.__main__ import main
     home = tmp_path / "home"
     project = tmp_path / "project"
@@ -824,7 +824,7 @@ def test_antigravity_global_install_writes_gemini_config_skills(tmp_path, monkey
 
 
 def test_antigravity_global_uninstall_removes_gemini_config_skill(tmp_path, monkeypatch):
-    """Global `pilothify antigravity uninstall` must remove from ~/.gemini/config/skills/ (#1079)."""
+    """Global `pilothify antigravity uninstall` must remove from ~/.gemini/config/skills/."""
     from pilothify.__main__ import main
     home = tmp_path / "home"
     project = tmp_path / "project"
@@ -1006,7 +1006,7 @@ def test_opencode_agents_install_writes_plugin(tmp_path):
 
 def test_opencode_global_install_writes_plugin_to_config_dir(tmp_path, monkeypatch):
     """A global install puts the plugin in ~/.config/opencode/plugins, where
-    OpenCode loads global plugins, and writes nothing under the cwd (#3398)."""
+    OpenCode loads global plugins, and writes nothing under the cwd."""
     from pilothify.install import install
 
     cwd = tmp_path / "some-project"
@@ -1053,7 +1053,7 @@ def test_uninstall_all_removes_the_global_opencode_plugin(tmp_path, monkeypatch)
 
 
 def test_opencode_plugin_reminder_has_no_backticks(tmp_path):
-    """The bash reminder string must not contain backticks or $(...) (regression test for #1413).
+    """The bash reminder string must not contain backticks or $(...) (regression test for).
 
     The plugin prepends `echo "<reminder>" ; <cmd>` to the user's shell command.
     Backticks or $() inside the reminder trigger command substitution
@@ -1076,8 +1076,8 @@ def test_opencode_plugin_reminder_has_no_backticks(tmp_path):
 
 
 def test_opencode_plugin_uses_semicolon_not_ampersand(tmp_path):
-    """The reminder must be joined to the user's command with ';', not '&&'
-    (#1646). Windows PowerShell 5.1 rejects '&&' as a statement separator, which
+    """The reminder must be joined to the user's command with ';', not '&&'.
+    Windows PowerShell 5.1 rejects '&&' as a statement separator, which
     broke the first bash command of every OpenCode session on Windows. ';' works
     in PowerShell 5.1, Bash, and POSIX shells."""
     _agents_install(tmp_path, "opencode")
@@ -1089,7 +1089,7 @@ def test_opencode_plugin_uses_semicolon_not_ampersand(tmp_path):
 
 def test_opencode_plugin_default_export_serves_both_runtimes(tmp_path):
     """OpenCode 2 rejects a plugin without a default export that has `id` and
-    `setup()` (#3554). OpenCode 1 reads `server()` from that same export and
+    `setup()`. OpenCode 1 reads `server()` from that same export and
     throws when an export with an `id` lacks it. A plain file in
     .opencode/plugins/ cannot resolve an opencode package either."""
     _agents_install(tmp_path, "opencode")
@@ -1238,7 +1238,7 @@ def test_opencode_plugin_copies_in_two_directories_do_not_collide(tmp_path):
 def test_opencode_agents_install_does_not_register_plugin_in_config(tmp_path):
     """opencode install leaves opencode.json alone. OpenCode loads every file in
     .opencode/plugins/ on its own, and OpenCode 2 reads the bare path older
-    releases registered as an npm package name and fails to install it (#3732)."""
+    releases registered as an npm package name and fails to install it."""
     _agents_install(tmp_path, "opencode")
     assert not (tmp_path / ".opencode" / "opencode.json").exists()
 
@@ -1711,7 +1711,7 @@ def _cli_dispatched_commands() -> set[str]:
 
     `pilothify`'s dispatcher is an `elif cmd == "..."` chain rather than a declarative
     table, so the set is read back out of the source. Used to prove a hook command
-    written by an installer is not a stale/renamed subcommand (#2165).
+    written by an installer is not a stale/renamed subcommand.
     """
     import re
     from pilothify import cli
@@ -1769,7 +1769,7 @@ def test_hook_commands_quote_a_spaced_resolved_exe(tmp_path, monkeypatch):
     """A resolved install path containing spaces must be double-quoted in every
     hook command, whatever shell runs it (Git Bash on Windows, cmd.exe, sh on
     POSIX): unquoted, the shell word-splits the command at the first space and
-    the guard can never fire (#522/#1987 follow-up).
+    the guard can never fire.
 
     The claude and gemini hooks already quoted since their #522 fix; codex was
     missed. shlex parsing proves the old unquoted codex form failed:
@@ -1882,7 +1882,7 @@ def test_project_install_hook_command_is_portable(tmp_path, monkeypatch, platfor
 
 @pytest.mark.parametrize("platform", sorted(_PROJECT_HOOK_FILES))
 def test_user_profile_install_still_resolves_absolute_path(tmp_path, monkeypatch, platform):
-    """The non-project install keeps the resolved path (#522/#1987 behaviour)."""
+    """The non-project install keeps the resolved path (behaviour)."""
     home = tmp_path / "home"
     project = tmp_path / "project"
     project.mkdir()

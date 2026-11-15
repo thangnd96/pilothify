@@ -1,4 +1,4 @@
-"""ARCHITECTURE.md's module table must name symbols that actually exist (#2640).
+"""ARCHITECTURE.md's module table must name symbols that actually exist.
 
 The "Module responsibilities" table is the entry point for library users, and
 AGENTS.md points agents at the docs before the code. It had drifted to document

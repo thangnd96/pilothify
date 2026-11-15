@@ -1,8 +1,8 @@
-"""Rust cross-file `self.method()` resolution (#2234).
+"""Rust cross-file `self.method()` resolution.
 
 The shared cross-file call pass drops every member call (a bare method name
 like ``log`` has no import evidence and collides with any top-level function
-named ``log`` in the corpus, #543/#1219). Every other member-call-heavy
+named ``log`` in the corpus). Every other member-call-heavy
 language has a dedicated recovery pass behind that guard; Rust had none, so
 `self.apply_block()` never produced a `calls` edge unless the caller and the
 method happened to live in the same file.

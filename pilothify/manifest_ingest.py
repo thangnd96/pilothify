@@ -1,4 +1,4 @@
-"""Deterministic package-manifest ingestion (#1377).
+"""Deterministic package-manifest ingestion.
 
 Package manifests (``apm.yml``, ``pyproject.toml``, ``Cargo.toml``, ``go.mod``,
 ``pom.xml``) declare a package and its dependencies. Left to the LLM document path, the same
@@ -44,7 +44,7 @@ _TOMLI_REQUIRED = (
 
 
 def _load_toml_module():
-    """Return a tomllib-compatible module, or raise ImportError (#3283).
+    """Return a tomllib-compatible module, or raise ImportError.
 
     Returning ``None`` used to look identical to a virtual workspace root with
     nothing to emit, so missing ``tomli`` on Python 3.10 silently dropped every

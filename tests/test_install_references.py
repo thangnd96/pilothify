@@ -46,8 +46,8 @@ def _stage_fake_package(root: Path, *, references: "tuple[str, str] | None" = ("
     there instead of moving the real committed bundle out of the on-disk
     package: a killed run (SIGTERM/SIGKILL runs no ``finally`` blocks) used to
     leave the fake bundle in the package, dirtying the checkout, and a second
-    pytest on the same checkout read a package whose bundle was moved away
-    (#4603). With the fake root nothing under the real package is ever touched,
+    pytest on the same checkout read a package whose bundle was moved away.
+    With the fake root nothing under the real package is ever touched,
     so nothing can be left behind.
 
     ``references=None`` stages the malformed-bundle layout instead: a bundle dir
@@ -90,7 +90,7 @@ def fake_bundle(tmp_path):
     "claude" and it has no extra plugin wiring. The fake bundle lives in a
     private package root under ``tmp_path`` and the installer is pointed at it
     via ``pilothify.install.__file__``, so the real on-disk package (and the
-    checkout) is never modified (#4603).
+    checkout) is never modified.
     """
     platform = _FakeBundle("claude")
     platform.pkg_root = _stage_fake_package(tmp_path / "fakepkg")
@@ -221,7 +221,7 @@ def test_hard_fail_when_bundle_dir_present_but_references_missing(tmp_path, monk
 
     The malformed bundle is staged in a throwaway package root
     (``_stage_fake_package(..., references=None)``), so the real package is
-    never modified (#4603).
+    never modified.
     """
     root = _stage_fake_package(tmp_path / "malformedpkg", references=None)
     with _fake_package_file(root):
@@ -429,7 +429,7 @@ def _build_wheel_names(repo_root):
 
     # Serialise with the other `python -m build --no-isolation` builder
     # (test_wheel_packaging): both write the checkout's shared `build/` dir, so
-    # two concurrent pytest runs on one checkout must not build at once (#4603).
+    # two concurrent pytest runs on one checkout must not build at once.
     # Keyed by repo path in the temp dir; fcntl is released by the OS on kill.
     @contextlib.contextmanager
     def _wheel_build_lock():

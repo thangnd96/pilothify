@@ -1,4 +1,4 @@
-"""Tests for the generic `agents` platform and its `skills` alias (#1432).
+"""Tests for the generic `agents` platform and its `skills` alias.
 
 `pilothify install --platform agents` (and the friendly `--platform skills`
 alias) installs the skill to the cross-framework Agent-Skills locations: the
@@ -225,7 +225,7 @@ def test_skills_subcommand_is_the_agents_subcommand(tmp_path):
 
 def test_bare_install_does_not_touch_dot_agents(tmp_path):
     """`pilothify install` (no platform) stays single-platform claude/windows and
-    never populates ~/.agents/skills (the #1432 out-of-scope guarantee)."""
+    never populates ~/.agents/skills (the  out-of-scope guarantee)."""
     home = tmp_path / "home"
     cwd = tmp_path / "cwd"
     home.mkdir()

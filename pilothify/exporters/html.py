@@ -168,7 +168,7 @@ function esc(s) {{
 const nodesDS = new vis.DataSet(RAW_NODES.map((n, i) => ({{
   id: n.id, label: n.label, color: n.color, size: n.size,
   font: n.font, title: n.title,
-  // Fermat/golden-angle spiral seed positions (#3699): spreading nodes out
+  // Fermat/golden-angle spiral seed positions: spreading nodes out
   // before physics runs keeps avoidOverlap from computing near-zero-distance
   // repulsion that blows the BarnesHut recursion into a stack overflow on large
   // graphs. `i` is the map index — physics still settles small graphs identically.
@@ -215,7 +215,7 @@ const network = new vis.Network(container, {{ nodes: nodesDS, edges: edgesDS }},
   edges: {{ smooth: {{ type: 'continuous', roundness: 0.2 }}, selectionWidth: 3 }},
 }});
 
-// Theme toggle (#3894): Light / Dark / System, persisted in localStorage.
+// Theme toggle: Light / Dark / System, persisted in localStorage.
 const THEME_KEY = 'pilothify-theme';
 const themeMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
 let themeLabelColor = '#ffffff';  // matches the per-node font color set in Python
@@ -293,7 +293,7 @@ function focusNode(nodeId) {{
 // inline onclick. A node id/label sourced from a document or a scraped URL
 // (pilothify add) can contain a double-quote; dropping the stringified id
 // unescaped into a quoted onclick both broke every link and allowed a hostile
-// source to inject an event handler into the local report (stored XSS, #1838).
+// source to inject an event handler into the local report (stored XSS).
 // esc() on data-nid keeps the value inside the attribute; the listener reads it
 // back verbatim. Bound to document so it survives the innerHTML rebuild that
 // recreates #neighbors-list on each showInfo().
@@ -469,7 +469,7 @@ def _html_document_title(output_path: str) -> str:
     """Return a portable label for the graph.html <title>.
 
     Tracked artifacts must not embed the generator host absolute path
-    (regression of #433; reported again as #2598 on Windows). Keep from the
+    (regression of ; reported again as  on Windows). Keep from the
     configured output-dir bare name (``pilothify-out`` / ``PILOTHIFY_OUT``
     basename) onward — portable in every case; otherwise fall back to a
     cwd-relative label, and finally the filename only.
@@ -488,7 +488,7 @@ def _html_document_title(output_path: str) -> str:
         parts = parts[1:]
     # Prefer keeping from the output-dir marker onward: portable in every
     # case, whereas a cwd-relative path still leaks host/user segments when
-    # the graph is built from a directory ABOVE the project (#2598 follow-up).
+    # the graph is built from a directory ABOVE the project.
     marker = PILOTHIFY_OUT_NAME
     for i, part in enumerate(parts):
         if part == marker or part.startswith("pilothify-out"):
@@ -639,7 +639,7 @@ def to_html(
             # 9.1.6 bundle: the only non-Element branch is innerText, and the
             # bundle has zero `innerHTML = <var>` sinks). So raw special chars
             # are shown literally and must NOT be html-escaped here or the user
-            # sees `&amp;`/`&lt;` in the tooltip (#3664/#3686). This is the
+            # sees `&amp;`/`&lt;` in the tooltip. This is the
             # #1838 stored-XSS boundary: never pass an HTMLElement as `title`,
             # and do not change the vis-network pin below without re-checking
             # Popup rendering (the test_export version-pin guard enforces this).
@@ -687,7 +687,7 @@ def to_html(
     # Build edges list. Restore original edge direction from _src/_tgt
     # (stashed by build.py for exactly this reason): undirected NetworkX
     # canonicalizes endpoint order, which would otherwise flip the arrow
-    # for `calls` and `rationale_for` in the rendered graph (#563).
+    # for `calls` and `rationale_for` in the rendered graph.
     vis_edges = []
     for u, v, data in G.edges(data=True):
         confidence = data.get("confidence", "EXTRACTED")
@@ -717,7 +717,7 @@ def to_html(
     # element. Escaping only `</` is not enough: an unclosed `<!--` then a later
     # `<script` in a label drive the HTML tokenizer into script-data-double-escaped
     # state, where the real `</script>` no longer closes the tag and the page goes
-    # blank (#4124). `<` round-trips through JSON.parse, so labels render unchanged.
+    # blank. `<` round-trips through JSON.parse, so labels render unchanged.
     def _js_safe(obj) -> str:
         return json.dumps(obj).replace("<", "\\u003c")
 
@@ -738,7 +738,7 @@ def to_html(
         crossorigin="anonymous"></script>
 {_html_styles()}
 <script id="pilothify-theme-init">
-// Apply the saved theme before first paint (#3894). No saved choice keeps the
+// Apply the saved theme before first paint. No saved choice keeps the
 // historical dark look; "system" follows prefers-color-scheme.
 (function () {{
   var pref = null;

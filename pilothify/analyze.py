@@ -37,7 +37,7 @@ def _is_test_or_config_node(G: nx.Graph, node_id: str) -> bool:
 
 # Builtin/mock names that can appear as annotation-derived nodes in pre-existing
 # graphs. Excluded from god-node ranking so they don't displace real abstractions
-# even if they weren't filtered at extraction time (#1147).
+# even if they weren't filtered at extraction time.
 _BUILTIN_NOISE_LABELS = frozenset({
     "str", "int", "float", "bool", "bytes", "bytearray", "complex", "object",
     "True", "False",
@@ -49,7 +49,7 @@ _BUILTIN_NOISE_LABELS = frozenset({
     "Counter", "defaultdict", "OrderedDict", "datetime", "Enum",
     "os", "sys", "re", "json", "io", "abc", "typing",
     # Swift / Foundation / SwiftUI framework symbols and module imports that
-    # otherwise dominate god-node rankings on Swift codebases (#2147)
+    # otherwise dominate god-node rankings on Swift codebases
     "Foundation", "SwiftUI", "UIKit", "AppKit", "Combine",
     "String", "Int", "Double", "Float", "Bool", "Data", "URL", "Date", "UUID",
     "Sendable", "Codable", "Decodable", "Encodable", "Equatable", "Hashable",
@@ -113,7 +113,7 @@ def _is_file_node(G: nx.Graph, node_id: str) -> bool:
         if _is_file_node_label(label, source_file):
             return True
     # Method stub: AST extractor labels methods as '.method_name()'; C# methods
-    # carry their owner for display ('Owner.method_name()', #4883).
+    # carry their owner for display ('Owner.method_name()').
     if label.startswith(".") and label.endswith("()"):
         return True
     from pilothify.extractors.csharp import bare_csharp_method_label
@@ -155,7 +155,7 @@ def god_nodes(G: nx.Graph, top_n: int = 10,
 
     ``exclude_hubs_percentile`` (0-100) suppresses nodes whose degree exceeds
     that percentile of the graph's degree distribution, using the same
-    threshold computation ``cluster()`` applies (#3205) - so the one setting
+    threshold computation ``cluster()`` applies - so the one setting
     suppresses utility hubs in the ranking AND in community resolution,
     instead of only the latter. ``None`` keeps the historical ranking.
     """
@@ -243,7 +243,7 @@ def _is_concept_node(G: nx.Graph, node_id: str) -> bool:
 def _is_contains_only_ast_node(G: nx.Graph, node_id: str) -> bool:
     """AST declarations (type aliases, enum members, local consts, JSON keys)
     whose only edge is the structural `contains` from their declaring file are
-    working as designed, not documentation gaps (#4205)."""
+    working as designed, not documentation gaps."""
     from pilothify.build import _is_ast_tier
     attrs = G.nodes[node_id]
     if not _is_ast_tier(attrs):
@@ -538,7 +538,7 @@ def suggest_questions(
     node_community = _node_community_map(communities)
 
     # 1. AMBIGUOUS edges → unresolved relationship questions.
-    # Tagged ``low_confidence=True`` (#4199): the audit trail stays
+    # Tagged ``low_confidence=True``: the audit trail stays
     # intact but downstream renderers (report.py) move these into a
     # separate "Low-confidence Hints" section so they do not compete
     # with EXTRACTED/INFERRED bridges in the main list.
@@ -722,7 +722,7 @@ def graph_diff(G_old: nx.Graph, G_new: nx.Graph) -> dict:
 
     # A reversed edge (a->b became b->a) keeps its undirected key. Report it as
     # removed + added only when both snapshots carry _src/_tgt and they differ,
-    # so graphs without the markers diff exactly as before (#4067).
+    # so graphs without the markers diff exactly as before.
     reversed_edge_keys = {
         k for k in old_edge_keys & new_edge_keys
         if old_edge_dirs[k] and new_edge_dirs[k] and old_edge_dirs[k] != new_edge_dirs[k]
@@ -809,13 +809,13 @@ def find_import_cycles(
             continue
 
         # Deferred `import(...)` edges are real dependencies but do not form a
-        # hard file-level cycle, so they are excluded from cycle detection (#1241).
+        # hard file-level cycle, so they are excluded from cycle detection.
         # Type-only imports/re-exports (`import type` / `export type ... from`)
         # are erased at compile time - a cycle that closes through one cannot
-        # exist at runtime (#3123). The edge itself stays in the graph.
+        # exist at runtime. The edge itself stays in the graph.
         forward = not data.get("deferred") and not data.get("type_only")
         # An undirected build keeps one edge per file pair, so the other file's
-        # runtime import back is only a stamp on this edge (#4839).
+        # runtime import back is only a stamp on this edge.
         reverse = bool(data.get("reverse_import"))
         if not forward and not reverse:
             continue
@@ -853,7 +853,7 @@ def find_import_cycles(
     # Step 2: Find simple cycles, bounded by length.
     # Pass length_bound so networkx prunes during enumeration rather than
     # enumerating all elementary cycles and post-filtering — avoids exponential
-    # blowup on dense graphs with many long cycles (#1196).
+    # blowup on dense graphs with many long cycles.
     cycles: list[list[str]] = []
     for cycle in nx.simple_cycles(file_graph, length_bound=max_cycle_length):
         if len(cycle) <= max_cycle_length:

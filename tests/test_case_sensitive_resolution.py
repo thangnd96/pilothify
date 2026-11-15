@@ -1,4 +1,4 @@
-"""Cross-file name resolution respects case in case-sensitive languages (#1581).
+"""Cross-file name resolution respects case in case-sensitive languages.
 
 Case is semantic in most languages: `Path` (a class), `PATH` (an env var), and
 `path` (a variable) are distinct. Cross-file resolution used to fold case for every

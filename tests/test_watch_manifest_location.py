@@ -9,7 +9,7 @@ project B from project A therefore wrote B's manifest into A's output dir and
 left B with none.
 
 Because ``save_manifest`` also *reads* that path and full-scan callers pass
-``scan_corpus`` (#1908 pruning), A's own rows were pruned as "not in the scan
+``scan_corpus`` (pruning), A's own rows were pruned as "not in the scan
 corpus" and destroyed — the CWD project loses its incremental baseline too.
 """
 
@@ -167,7 +167,7 @@ def test_built_at_commit_comes_from_the_target_repo(two_projects, monkeypatch):
 
     ``_git_head()`` ran ``git rev-parse HEAD`` with no ``cwd=``, so it read the
     invoking repo. An update of project B from project A stamped A's commit into
-    B's graph.json — provenance that is confidently wrong (cf. #2081).
+    B's graph.json — provenance that is confidently wrong.
     """
     import subprocess
 

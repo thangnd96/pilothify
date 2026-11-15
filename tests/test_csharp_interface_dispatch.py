@@ -1,4 +1,4 @@
-"""C# member-level interface dispatch (#3003).
+"""C# member-level interface dispatch.
 
 `_report.Build()` on an injected `IReport` resolves to `IReport.Build()`, which
 is what the call site names. The implementing `Report.Build()` is a separate

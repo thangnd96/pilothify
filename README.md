@@ -70,8 +70,16 @@ Câu hỏi tiếng Việt: từ có dấu chỉ khớp với label tiếng Việ
 ## Docs nối với code
 
 - **Cùng một mã ở nhiều file** (`BUG-ADM-15-01`, `D-20`, `GR-06`, `ADR-0008`): mỗi file vẫn giữ node của mình, nhưng được nối với nhau bằng cạnh `same_key_as`. `pilothify explain "BUG-ADM-15-01"` trả về node chính thay vì báo nhập nhằng. Mã phải có dấu `-` và có số (`Q5`, `G2` bị bỏ qua vì hay trùng giữa các tài liệu).
-- **Route của handler Spring** (`@RequestMapping`, `@GetMapping`, …) được ghép với prefix ở mức class và lưu ở `attributes.route`, ví dụ `PUT /api/v1/game/cinema/screen`. `query` tìm được theo route, còn `explain` in nó ra. Path dùng hằng số của class khác thì bỏ qua, để không đoán sai.
-- **Docs nhắc tới endpoint** (`PUT /me/social/shares/{postId}`) nối về handler bằng cạnh `references_route`: khớp đủ path là EXTRACTED, khớp phần đuôi và chỉ khớp một path là INFERRED 0,95. Mẫu glob như `/ctrl/**` không nối.
+- **Route của handler** được lưu ở `attributes.route`, ví dụ `PUT /api/v1/game/cinema/screen`. `query` tìm được theo route, còn `explain` in nó ra. Path dùng hằng số hay biến thì bỏ qua, để không đoán sai.
+  - Spring: `@RequestMapping`, `@GetMapping`… ghép với prefix ở mức class.
+  - NestJS: `@Get(':id')`… ghép với `@Controller('users')`.
+  - FastAPI và Flask: `@router.get("/x")`, `@bp.route("/x", methods=[…])`, ghép với `prefix=` của `APIRouter` hoặc `url_prefix=` của `Blueprint` khai báo trong cùng file.
+  - Express, Koa router, Fastify, Hono: `router.get('/x', handler)` và `router.route('/x').get(…)` thành một node route, nối tới handler nếu handler là hàm khai báo trong cùng file. Chỉ áp dụng cho file có import một trong các thư viện đó, nên lời gọi client như `axios.get('/x')` không bị nhận nhầm.
+  - Prefix gắn ở file khác (`include_router`, `app.use('/api', r)`, `setGlobalPrefix`) không biết được, nên route chỉ mang phần của chính nó.
+- **Docs nhắc tới endpoint** (`PUT /me/social/shares/{postId}`) nối về handler bằng cạnh `references_route`:
+  - Khớp đủ path là EXTRACTED.
+  - Khớp phần đuôi theo một trong hai chiều, và chỉ khớp một route, là INFERRED 0,95. Chiều thứ hai là khi route ngắn hơn path trong doc, vì thiếu prefix gắn ở file khác.
+  - Mẫu glob như `/ctrl/**` không nối.
 
 ## Học từ câu trả lời
 

@@ -273,7 +273,7 @@ def test_aliased_import_resolves_member_call(tmp_path):
 
 
 def test_bare_stdlib_import_does_not_bind_to_same_stem_sibling(tmp_path):
-    """G. Stdlib shadow (#4261):
+    """G. Stdlib shadow:
     A loose directory with a sibling named like a stdlib module
     (scripts/logging.py) must NOT capture a bare `import logging` from
     scripts/service.py — that import means the stdlib `logging`, so the edge

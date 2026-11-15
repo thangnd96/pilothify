@@ -2,7 +2,7 @@
 
 A code node the model returns whose symbol name has no evidence in the dispatched
 source is flagged ``verification = "unverified"`` (never dropped). This closes
-the intra-file hallucination gap that ``_out_of_scope`` (#1895) — which only
+the intra-file hallucination gap that ``_out_of_scope`` — which only
 rejects nodes attributed to a file that was NOT dispatched — cannot see.
 """
 
@@ -122,7 +122,7 @@ def test_existing_lower_confidence_is_not_overwritten(tmp_path):
 def test_case_variant_extracted_confidence_is_still_evidence_checked(tmp_path):
     src = tmp_path / "mod.py"
     src.write_text(_SOURCE, encoding="utf-8")
-    # build._fold_confidence (#4529) treats a mis-cased enum value as THE enum
+    # build._fold_confidence treats a mis-cased enum value as THE enum
     # value and corrects its spelling, so `"extracted"` and `"Extracted"` reach
     # graph.json as EXTRACTED — exactly as solid a claim as the uppercase form.
     # Evidence-binding must therefore check them too; a case-sensitive

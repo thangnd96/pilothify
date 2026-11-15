@@ -35,7 +35,7 @@ def extract_dart(path: Path) -> dict:
             # below (including every source_location line number) is only
             # valid if src_clean's line count tracks the original file's.
             # Deleting a multi-line comment outright shifted every later
-            # line number up by the comment's own height (#3365).
+            # line number up by the comment's own height.
             return "\n" * token.count("\n")
         return token
     src_clean = comment_string_pattern.sub(_comment_replace, src)
@@ -164,7 +164,7 @@ def extract_dart(path: Path) -> dict:
         class_name = m.group(1)
         # Anchor on the capture group, not the whole match: the pattern's
         # leading ^\s* makes m.start() land before the blank/indent lines
-        # that precede the declaration, reporting the line too early (#3365).
+        # that precede the declaration, reporting the line too early.
         class_line = _line_at(m.start(1))
         class_nid = _make_id(stem, class_name)
         add_node(class_nid, class_name, line=class_line)

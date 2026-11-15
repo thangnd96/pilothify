@@ -6,7 +6,7 @@ lists but the checkout lacks makes the REFERRING file emit a node whose
 rebuild read that missing path as a deleted source and evicted the node, so the
 unchanged referrer's edge to it dangled and was dropped; a full rebuild of the
 same tree keeps both. The previous scan (manifest.json) is the deletion
-evidence (#1795): a path it never listed cannot have been deleted.
+evidence: a path it never listed cannot have been deleted.
 """
 from __future__ import annotations
 

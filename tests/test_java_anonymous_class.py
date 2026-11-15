@@ -1,4 +1,4 @@
-"""Java/Groovy anonymous-class members (the Java twin of Kotlin #2347).
+"""Java/Groovy anonymous-class members (the Java twin of Kotlin).
 
 `new Runnable() { ... }` keeps its body as a `class_body` hanging off an
 `object_creation_expression`. That node is not a class_type and the function

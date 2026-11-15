@@ -1,4 +1,4 @@
-"""Scala 3 `given ... with` members are scoped to the given, not file scope (#4130).
+"""Scala 3 `given ... with` members are scoped to the given, not file scope.
 
 A `given intShow: Show[Int] with` instance owns its `def`s. They used to leak to
 file scope, where `show` (cased to `_show`) collided with the trait TYPE node

@@ -1,4 +1,4 @@
-"""`merge-graphs` finishes a member call whose receiver type is in another repo (#3152).
+"""`merge-graphs` finishes a member call whose receiver type is in another repo.
 
 A single-repo build binds `obj.method()` only when the receiver's type is declared
 in the same build, so a call into another repository was dropped with the receiver
@@ -110,7 +110,7 @@ def test_a_parked_call_binds_to_the_one_declaration_in_another_repo():
 def test_edge_source_file_is_the_parked_call_site_not_the_caller_node_file():
     # The caller node's source_file is the declaration file (an ObjC caller lives
     # in its `.h`); the call happens in the `.m`. Pairing the call-site line with
-    # the `.h` points past the end of an unrelated file (#3152 issue 3). The parked
+    # the `.h` points past the end of an unrelated file (issue 3). The parked
     # `file` carries the call-site, relativized at extract time.
     parked = [{"callee": "greet", "receiver_type": "Greeter", "lang": "java",
                "line": "L10", "file": "src/App.m"}]

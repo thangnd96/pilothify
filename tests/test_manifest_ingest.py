@@ -99,7 +99,7 @@ def test_manifests_classify_as_code_not_document(tmp_path):
         p = _write(tmp_path / name, "x")
         assert is_package_manifest_path(p)
         assert classify_file(p) is FileType.CODE, name
-    # yaml is now structurally extracted like json (code path) (#2214)
+    # yaml is now structurally extracted like json (code path)
     assert classify_file(_write(tmp_path / "config.yaml", "a: 1")) is FileType.CODE
 
 
@@ -236,7 +236,7 @@ def test_cargo_parses_name_version_and_deps(tmp_path):
 
 def test_cargo_virtual_workspace_manifest_emits_no_package(tmp_path, capsys):
     # A virtual workspace root has no [package] table, so it declares no package
-    # of its own — it must not fabricate a node, and is skipped by design (#3910).
+    # of its own — it must not fabricate a node, and is skipped by design.
     p = _write(tmp_path / "Cargo.toml", '[workspace]\nmembers = ["a", "b"]\n')
     r = extract_package_manifest(p)
     assert _pkg_nodes(r) == []

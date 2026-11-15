@@ -74,7 +74,7 @@ def _astro_paths(root: Path) -> list[Path]:
 
 
 def test_astro_absolute_inputs_no_ghost_import_nodes(tmp_path):
-    """Absolute input paths must not mint absolute-id ghost stubs (#2195)."""
+    """Absolute input paths must not mint absolute-id ghost stubs."""
     root = _astro_project(tmp_path)
     result = extract(_astro_paths(root), cache_root=root)
 
@@ -149,7 +149,7 @@ def test_astro_relative_inputs_keep_canonical_ids(tmp_path, monkeypatch):
 
 
 def test_svelte_absolute_inputs_no_ghost_import_nodes(tmp_path):
-    """Svelte <script> static imports go through the same rescue path (#2195)."""
+    """Svelte <script> static imports go through the same rescue path."""
     root = Path(os.path.realpath(tmp_path))
     _write(
         root / "src/routes/page.svelte",
@@ -187,7 +187,7 @@ def test_astro_unresolved_relative_import_id_still_portable(tmp_path):
     """A rescued import whose target does NOT exist still mints a stub (so the
     edge survives as a hint), but the stub id must be the repo-relative form,
     not the absolute-path slug — the belt-and-braces remap in the
-    relativization pass (#2195)."""
+    relativization pass."""
     root = Path(os.path.realpath(tmp_path))
     _write(
         root / "src/pages/index.astro",

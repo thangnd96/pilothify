@@ -2,6 +2,54 @@
 
 ## Unreleased
 
+## v0.1.4 — 2026-11-15
+
+### Route ngoài Spring
+
+- **NestJS:** `@Get(':id')`… được ghép với `@Controller('users')` và ghi lên
+  method.
+- **FastAPI và Flask:** `@router.get("/x")`, `@bp.route("/x", methods=[…])` được
+  ghép với `prefix=` của `APIRouter` hoặc `url_prefix=` của `Blueprint` khai
+  báo trong cùng file.
+- **Express, Koa router, Fastify, Hono:** `router.get('/x', handler)` và
+  `router.route('/x').get(…)` thành node route, nối tới handler khi handler là
+  hàm trong cùng file. Chỉ áp dụng cho file có import một trong các thư viện
+  đó, nên `axios.get('/x', data)` không bị nhận nhầm.
+- **Doc ghi đủ path vẫn nối được:** khi route ngắn hơn path trong doc vì thiếu
+  prefix gắn ở file khác (`include_router`, `app.use`), `references_route` vẫn
+  khớp theo phần đuôi dài nhất, miễn là duy nhất và có ít nhất 2 đoạn.
+- Cache AST lên schema 45, nên file Python và JS/TS trong cache được trích xuất
+  lại.
+
+### `query` trúng hơn
+
+- Khi một docstring khớp câu hỏi, chính hàm, class hay file nó mô tả được dùng
+  làm điểm xuất phát, với điểm của docstring.
+- Đo bằng `python -m tools.query_eval` (30 câu hỏi về mã nguồn pilothify):
+  - Đáp án là điểm xuất phát: 9 → 11 câu.
+  - Đáp án nằm trong 5 kết quả đầu: 9 → 11 câu.
+  - Đáp án có mặt trong kết quả: 23 → 24 câu.
+  - MRR: 0,211 → 0,248.
+
+### Sửa lỗi
+
+- **Process pool bị tắt oan.**
+  - Gọi từ `python -c`, REPL hoặc test runner thì `__main__` không có file. Khi
+    đó extract vẫn dùng được pool, vì spawn bỏ qua `__main__`; chỉ một
+    `__file__` không tồn tại (như stdin) mới làm pool hỏng.
+  - Trên macOS, lần extract đầu và các lần sau từng cho kết quả khác nhau, vì
+    "chưa chọn start method" bị hiểu là "không phải spawn".
+- **Test watch chập chờn khi chạy song song.** Bộ test vá `time.sleep` cho toàn
+  process. Khi rebuild chờ `git rev-parse` qua `subprocess`, vòng chờ của
+  `subprocess` gọi nhầm hàm giả đó và dừng watch giữa chừng. Giờ test chỉ thay
+  đồng hồ của module watch.
+
+### Dọn dẹp
+
+- Bỏ khoảng 3.600 số issue cũ (`(#1234)`) khỏi comment, docstring và thông báo.
+  Những chỗ số issue chen giữa câu thì giữ nguyên.
+- Đổi tên 9 file test có số issue trong tên.
+
 ## v0.1.3 — 2026-11-15
 
 ### Học từ câu trả lời

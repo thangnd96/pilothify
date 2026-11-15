@@ -1,8 +1,8 @@
 """#4792 — `affected` and `query --seed` rejected the reference forms `explain`
 already resolved, and `affected` exited 0 on an ambiguous or unmatched seed.
 
-`explain` resolves a `path::Symbol` reference (#3485) and a dotted Python name
-(`pkg.mod.func`, #4366) to a single node. `affected` and `query --seed` answered
+`explain` resolves a `path::Symbol` reference and a dotted Python name
+(`pkg.mod.func`) to a single node. `affected` and `query --seed` answered
 "No unique node match" for the very same string, so following the README's own
 advice ("use the precise ID returned by the graph") forced a caller through
 `explain` first merely to obtain an id. `affected` also exited 0 when the query
@@ -59,13 +59,13 @@ def _two_same_named_functions() -> nx.DiGraph:
 
 
 def test_resolve_seed_accepts_path_scoped_symbol():
-    """`path::Symbol` resolves as it does in `explain` (#3485)."""
+    """`path::Symbol` resolves as it does in `explain`."""
     g = _two_same_named_functions()
     assert resolve_seed(g, "pkg/auth/mfa.py::state") == "pkg_auth_mfa_state"
 
 
 def test_resolve_seed_accepts_dotted_python_name():
-    """`pkg.mod.func` resolves as it does in `explain` (#4366)."""
+    """`pkg.mod.func` resolves as it does in `explain`."""
     g = _two_same_named_functions()
     assert resolve_seed(g, "pkg.auth.mfa.state") == "pkg_auth_mfa_state"
 

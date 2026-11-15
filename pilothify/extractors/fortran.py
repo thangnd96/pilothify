@@ -155,7 +155,7 @@ def extract_fortran(path: Path) -> dict:
             # corpus-level rewire can collapse it onto the real definition. A sourced
             # stub here makes _disambiguate_colliding_node_ids bake the referencing
             # file's path (with extension) into the id and blocks the rewire, which is
-            # the phantom-duplicate-node bug (#1402).
+            # the phantom-duplicate-node bug.
             seen_ids.add(nid)
             nodes.append({
                 "id": nid,

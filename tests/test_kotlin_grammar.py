@@ -1,4 +1,4 @@
-"""Kotlin grammar-node-type mismatches (#2526, #2550, #2551).
+"""Kotlin grammar-node-type mismatches.
 
 PyPI tree-sitter-kotlin 1.x renamed/reshaped several nodes relative to the
 older forks the extractor was written against:
@@ -16,7 +16,7 @@ older forks the extractor was written against:
   declared packages (exactly-one-candidate guarded).
 * #2551 — the grammar rejects one-line `class C { val x }` bodies; consecutive
   one-liners can dissolve the whole file's parse. Pilothify warns on a file
-  extracted through ERROR recovery (language-agnostic, also #2520) and keeps
+  extracted through ERROR recovery (language-agnostic, also) and keeps
   class linkage for declarations recovered inside an ERROR span. Since
   #2610/#2599 the warning fires only on PLAUSIBLE symbol loss (file-node-only
   result or a multiline ERROR region) — tiny fully-recovered errors that
@@ -580,9 +580,9 @@ def test_multiline_kotlin_unchanged(tmp_path, capsys):
 
 
 def test_kotlin_companion_member_call_resolves_across_files(tmp_path):
-    """A `companion object` member is attributed to its enclosing class (#2565),
+    """A `companion object` member is attributed to its enclosing class,
     so `Service.create()` in another file resolves to the class's method — the
-    resolver relies on that attribution, so pin it directly (#1698)."""
+    resolver relies on that attribution, so pin it directly."""
     r = _extract(tmp_path, {
         "svc/Service.kt": (
             "package com.demo.svc\n"
@@ -617,8 +617,8 @@ def test_kotlin_object_member_call_survives_incremental_rebuild(tmp_path):
     """The cross-file resolution must hold on the real `pilothify update` / watch
     path, where the unchanged receiver-type file arrives as a resolution-context
     node. This exercises the actual watch context builder — it only works if the
-    `_callable_class` marker and `method` edges ride through its allow-list
-    (#1698). Routes through the real rebuild, not a hand-fed context list."""
+    `_callable_class` marker and `method` edges ride through its allow-list.
+    Routes through the real rebuild, not a hand-fed context list."""
     import json
     from pilothify.watch import _rebuild_code
 
@@ -710,7 +710,7 @@ def test_kotlin_annotated_explicit_type_property_still_references(tmp_path):
 
 def test_kotlin_class_property_annotation_without_explicit_type(tmp_path):
     """A class property with an annotation and an inferred type must not crash
-    with UnboundLocalError ('line' unbound) or drop the file (#3884)."""
+    with UnboundLocalError ('line' unbound) or drop the file."""
     r = _extract(tmp_path, {
         "Repro.kt": (
             "class Repro {\n"
@@ -732,7 +732,7 @@ def test_kotlin_class_property_annotation_without_explicit_type(tmp_path):
 
 
 def test_kotlin_annotation_class_literal(tmp_path):
-    """Annotation argument with Customer::class emits attribute reference (#3835)."""
+    """Annotation argument with Customer::class emits attribute reference."""
     r = _extract(tmp_path, {
         "Order.kt": (
             '@Ann(target = com.example.Customer::class)\n'

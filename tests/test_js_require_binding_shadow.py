@@ -2,7 +2,7 @@
 
 The binding is an import, not a module-scope data binding. A node for it in
 the importing file shadowed the class the required file exports, so `new X()`
-bound to the local node and the required class got no incoming edge (#4621).
+bound to the local node and the required class got no incoming edge.
 """
 from __future__ import annotations
 

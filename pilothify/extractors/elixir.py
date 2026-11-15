@@ -62,7 +62,7 @@ def extract_elixir(path: Path) -> dict:
     # is the file's top level), along with each module's and function's parent.
     call_scope: dict[str | None, list[str]] = {}
     enclosing: dict[str, str | None] = {}
-    # For qualified calls (`Mod.fun()`, #4206): each module's full name, each
+    # For qualified calls (`Mod.fun()`): each module's full name, each
     # scope's `alias` table (same scoping as call_scope) and each module's defs.
     module_names: dict[str, str] = {}
     aliases: dict[str | None, dict[str, str]] = {}
@@ -174,7 +174,7 @@ def extract_elixir(path: Path) -> dict:
 
         tree-sitter-elixir puts the keyword body in the `arguments` node's
         trailing `keywords` child, as the value of the `pair` whose keyword
-        is `do:` (#4207). Returns the value node, or None when the definition
+        is `do:`. Returns the value node, or None when the definition
         uses a `do_block` (or has no keyword body at all).
         """
         if node is None:
@@ -224,7 +224,7 @@ def extract_elixir(path: Path) -> dict:
                 return
             module_nid = _make_id(stem, module_name)
             # Only a top-level module is a safe cross-file resolution target
-            # (#3603 follow-up): a nested `defmodule Supervisor` is labeled with
+            # a nested `defmodule Supervisor` is labeled with
             # its bare inner name and would otherwise capture an unrelated
             # `use Supervisor` from another file. Mark just the top-level ones;
             # the marker rides through incremental rebuilds via the
@@ -292,7 +292,7 @@ def extract_elixir(path: Path) -> dict:
         # `defdelegate name(args), to: Mod` also defines a named, invocable member
         # with the same `call` head shape (its body is delegated, so there is no
         # do-block to walk). It was dropped, so the delegated function was missing
-        # and same-module calls to it dangled (#4132).
+        # and same-module calls to it dangled.
         if keyword in ("def", "defp", "defmacro", "defmacrop",
                        "defguard", "defguardp", "defdelegate"):
             func_name = None
@@ -301,7 +301,7 @@ def extract_elixir(path: Path) -> dict:
                     # tree-sitter-elixir wraps a guarded head
                     # (`def f(x) when guard`) in `binary_operator`;
                     # without unwrapping, a function whose only clause
-                    # carries `when` is dropped (#3111).
+                    # carries `when` is dropped.
                     while child.type == "binary_operator":
                         head = None
                         for sub in child.children:
@@ -338,7 +338,7 @@ def extract_elixir(path: Path) -> dict:
                 function_bodies.append((func_nid, do_block_node))
             else:
                 # Keyword form (`def f(x), do: expr`) has no `do_block`; its
-                # body is the value of the `do:` pair in `arguments` (#4207).
+                # body is the value of the `do:` pair in `arguments`.
                 # Without this the body is never walked and its calls are
                 # silently dropped from the graph.
                 keyword_body = _get_do_keyword_body(arguments_node)

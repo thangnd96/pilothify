@@ -2,8 +2,7 @@
 
 Bash expands backticks (and $(...)) inside double quotes. A comment such as
 ``# `pilothify update` deleted it ...`` inside ``$(cat pilothify-out/.pilothify_python) -c "..."``
-therefore ran pilothify before Python started and pasted its output into the Python source
-(#4461): a SyntaxError, plus an unrequested rebuild of the user's graph.
+therefore ran pilothify before Python started and pasted its output into the Python source: a SyntaxError, plus an unrequested rebuild of the user's graph.
 
 Two checks over the generated skill files (pilothify/skill*.md and pilothify/skills/**):
 

@@ -1,9 +1,9 @@
-"""C# enum members get a node and a `case_of` edge, like Java's (#1719).
+"""C# enum members get a node and a `case_of` edge, like Java's.
 
 `enum_declaration` is in `_CSHARP_CONFIG.class_types`, so the enum type was a
 node while its members were not — the type sat in the graph as a leaf. Java has
 emitted a node per `enum_constant` with a `case_of` edge since #1719 and Kotlin
-since #1738 (both from #1700), and Swift does the same for `enum_entry`. The C#
+since #1738 (both from), and Swift does the same for `enum_entry`. The C#
 walk already descends into `enum_member_declaration_list` with the enum as
 `parent_class_nid`, so this is the Java shape applied where it was missing.
 """
@@ -77,7 +77,7 @@ def test_an_explicit_value_does_not_change_the_member(tmp_path):
 
 def test_case_only_sibling_members_do_not_duplicate_an_edge(tmp_path):
     # Legal C#, and one id after normalization. Each member gets its own node
-    # (#4415) with its own edge, rather than a second edge hanging off the
+    # with its own edge, rather than a second edge hanging off the
     # first member's node.
     case_of, r = _extract(tmp_path, {"S.cs": (
         "public enum Odd {\n"

@@ -1,4 +1,4 @@
-"""C# `var x = R.M<A>(...)` is typed from M's declared return type (#4266).
+"""C# `var x = R.M<A>(...)` is typed from M's declared return type.
 
 `var report = ServiceFactory.Get<IReport>(scope); report.Build()` had no calls
 edge because a `var` was only typed from `new T()`. The variable now takes the

@@ -85,7 +85,7 @@ def extract_ocaml(path: Path) -> dict:
         rewire collapses it onto the unique real definition of that name;
         external names (Stdlib, Core, ...) dangle and are pruned. A *sourced*
         stub here would bake this file's path into the id and block the rewire
-        (the #1402 phantom-duplicate bug)."""
+        (the  phantom-duplicate bug)."""
         nid = _make_id(name)
         if nid not in seen_ids:
             seen_ids.add(nid)

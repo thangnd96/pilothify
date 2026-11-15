@@ -1,5 +1,5 @@
 """`pilothify extract --cargo` must degrade, not abort, when no Cargo.toml
-exists at the scan root (#3677).
+exists at the scan root.
 
 A missing root manifest is an ordinary condition (e.g. a Tauri app keeps its
 manifest under src-tauri/), not a failure. Before the fix, FileNotFoundError

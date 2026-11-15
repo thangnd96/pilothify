@@ -3,7 +3,7 @@
 A trait/class's self-type declares a structural precondition on the enclosing
 type ("this can only be mixed into something also providing X") -- the
 cake-pattern idiom. `self_type` was never dispatched on anywhere in the
-extractor, so it produced no edges at all, in any context (#2052). These
+extractor, so it produced no edges at all, in any context. These
 tests pin the new dispatch branch: every real type shape a self-type can
 carry, the negative case where no type is present, that an ordinary class
 without a self-type never gains a spurious edge, that the new `requires`

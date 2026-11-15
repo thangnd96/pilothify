@@ -213,7 +213,7 @@ def bare_csharp_method_label(label: object, source_file: object) -> str | None:
     """Return the ``.Name()`` resolver form of a C# method label, else ``None``.
 
     Accepts both the extractor's bare ``.Name()`` and the owner-qualified
-    ``Owner.Name()`` display form the graph build assigns (#4883). Extraction
+    ``Owner.Name()`` display form the graph build assigns. Extraction
     emits, and call resolution, interface dispatch, and the method-ghost index
     match on, the bare form, so anything reading labels back from a persisted
     graph normalizes through here. C# method and type names never contain a
@@ -250,7 +250,7 @@ def csharp_method_label_reassignments(
     nodes: Iterable[tuple[object, dict]],
     method_edges: Iterable[tuple[object, object]],
 ) -> dict[str, str]:
-    """Return ``{method_id: "Owner.Name()"}`` display labels for C# methods (#4883).
+    """Return ``{method_id: "Owner.Name()"}`` display labels for C# methods.
 
     *nodes* are ``(id, attrs)`` pairs and *method_edges* are ``(owner_id,
     method_id)`` pairs from ``method`` edges. A method with zero or several
@@ -295,7 +295,7 @@ class CsharpNameResolver:
     Factored out of ``_resolve_csharp_type_references`` so the member-call pass
     (``_resolve_csharp_member_calls`` in ``pilothify/extract.py``) can type a
     receiver with the same scoping rules the type-reference side already applies
-    (the core of #1620), instead of bailing on any corpus-wide bare-name clash.
+    (the core of), instead of bailing on any corpus-wide bare-name clash.
 
     Built from graph-stamped facts only: the ``(namespace, name)`` type-definition
     index plus the per-file ``using``/alias import edges (each carrying its lexical
@@ -430,7 +430,7 @@ class CsharpNameResolver:
         ``using namespace`` directives declared at that level. A file-level
         using belongs to the compilation unit, so it is only considered at the
         outermost level; that is why an extension declared in an inner namespace
-        wins over one imported at the top of the file (#4828).
+        wins over one imported at the top of the file.
 
         A namespace-scoped using is treated as visible at every level inside it.
         That is coarser than the spec but only ever adds candidates at a deeper
@@ -614,7 +614,7 @@ def _resolve_csharp_type_references(
         return stem or None
 
     # One canonical sourceless stub per undeclared type NAME, shared across every
-    # file that references it (#4247). An external type the corpus uses but never
+    # file that references it. An external type the corpus uses but never
     # declares (`List`, `System.Type`, Unity's `VisualElement`) used to get a
     # separate per-file placeholder (`a_cs_list`, `b_cs_list`, ...) because the
     # extractor mints one provisional placeholder per file and the arbiter kept

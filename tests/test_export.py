@@ -251,7 +251,7 @@ def test_to_graphml_has_community_attribute():
 
 def test_to_graphml_tolerates_none_attribute_values():
     """nx.write_graphml raises ValueError on a None attribute value; to_graphml
-    must coerce None -> "" so a node/edge with a null field still exports (#1502)."""
+    must coerce None -> "" so a node/edge with a null field still exports."""
     G = make_graph()
     communities = cluster(G)
     # Inject a None-valued attribute on one node and one edge.
@@ -269,7 +269,7 @@ def test_to_graphml_tolerates_none_attribute_values():
 def test_to_graphml_tolerates_dict_and_list_attribute_values():
     """nx.write_graphml only accepts scalars; a dict/list attribute (per-node
     metadata, or the graph-level hyperedges list) used to crash the whole export.
-    to_graphml must JSON-serialize them across graph/node/edge scopes (#1831)."""
+    to_graphml must JSON-serialize them across graph/node/edge scopes."""
     import networkx as nx
     G = make_graph()
     communities = cluster(G)
@@ -291,8 +291,8 @@ def test_to_graphml_tolerates_dict_and_list_attribute_values():
 
 
 def test_to_graphml_exports_multigraph_parallel_edges():
-    """graph.json is loaded as a MultiGraph when it carries parallel edges
-    (#4500), e.g. `imports` and `calls` between the same two nodes. The edge
+    """graph.json is loaded as a MultiGraph when it carries parallel edges,
+    e.g. `imports` and `calls` between the same two nodes. The edge
     coercion loop indexed H.edges[u, v], which needs a key on a MultiGraph, so
     the export crashed; every parallel edge must reach the file, coerced."""
     import networkx as nx
@@ -316,7 +316,7 @@ def test_to_graphml_exports_multigraph_parallel_edges():
 
 def test_to_graphml_preserves_native_scalar_types():
     """Coercion must leave GraphML-native scalars (int/float/bool/str) untouched,
-    only stringifying non-scalars (#1831)."""
+    only stringifying non-scalars."""
     import networkx as nx
     G = nx.Graph()
     G.add_node("a", count=3, ratio=0.5, flag=True, name="x")
@@ -764,7 +764,7 @@ def test_obsidian_safe_stem_all_dots_label_falls_back_to_unnamed():
     assert _obsidian_safe_stem("Database") == "Database"   # normal labels untouched
 
 
-# ── Existing-vault safety: pilothify must not clobber user notes / .obsidian (#1506) ──
+# ── Existing-vault safety: pilothify must not clobber user notes / .obsidian ──
 
 def _two_node_graph():
     import networkx as nx
@@ -1065,7 +1065,7 @@ def test_backup_env_disable(tmp_path, monkeypatch):
 
 def test_backup_failed_copy_warns_and_returns_none(tmp_path, monkeypatch, capsys):
     """A copy that fails part-way leaves a stale snapshot; it must be warned
-    and reported as no backup, not printed as a success (#3769)."""
+    and reported as no backup, not printed as a success."""
     import shutil
     from datetime import date
     from pilothify.export import backup_if_protected
@@ -1095,7 +1095,7 @@ def test_backup_failed_copy_warns_and_returns_none(tmp_path, monkeypatch, capsys
 
 def test_backup_same_day_retries_missing_sidecar(tmp_path, monkeypatch, capsys):
     """A snapshot missing a sidecar is retried on the next call, not treated
-    as complete because graph.json already matches (#3769)."""
+    as complete because graph.json already matches."""
     import shutil
     from pilothify.export import backup_if_protected
     (tmp_path / "graph.json").write_text('{"nodes":[],"links":[]}')
@@ -1346,7 +1346,7 @@ console.log(bad);
 def test_hyperedge_regions_skip_hidden_members():
     """Legend toggles set `hidden` on nodes, but getPositions() still returns
     them. The hull must skip hidden members so a region disappears once fewer
-    than two members remain visible (#5121)."""
+    than two members remain visible."""
     import shutil
     import subprocess
     node = shutil.which("node")
@@ -1393,7 +1393,7 @@ console.log(JSON.stringify(out));
 def test_to_html_pins_vis_network_version_for_tooltip_xss_boundary():
     """Tooltip `title` is passed to vis-network as a STRING and rendered via
     Popup.setText -> innerText (verified in the 9.1.6 bundle), so tooltips are
-    intentionally NOT html-escaped (#3664/#3686). That safety rests on the pin:
+    intentionally NOT html-escaped. That safety rests on the pin:
     if vis-network is bumped, the innerText rendering path (the #1838 stored-XSS
     boundary) must be re-verified. This guard fails CI on a silent bump."""
     G = make_graph()

@@ -1,6 +1,6 @@
-"""The ObjC field->type table must survive the id remaps (#3150).
+"""The ObjC field->type table must survive the id remaps.
 
-`_resolve_objc_member_calls`' table (#2591) is the one extractor bucket keyed
+`_resolve_objc_member_calls`' table is the one extractor bucket keyed
 BY class node id. The #1529 passes rewrote node ids, edge endpoints,
 `raw_calls[].caller_nid` and `swift_extensions[].nid` — but not those keys.
 The remap fires whenever the input paths carry a common absolute prefix,

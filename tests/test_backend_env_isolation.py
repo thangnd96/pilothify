@@ -1,4 +1,4 @@
-"""Backend-detection tests must not depend on the developer's shell (#3481).
+"""Backend-detection tests must not depend on the developer's shell.
 
 `detect_backend()` reads a dozen environment variables. The autouse fixture in
 conftest.py clears all of them; these tests keep that list complete and prove

@@ -9,7 +9,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def test_dedupe_edges_collapses_exact_parallels():
-    # #1317: --no-cluster / incremental update concatenate edge lists raw.
+    # --no-cluster / incremental update concatenate edge lists raw.
     edges = [
         {"source": "a", "target": "b", "relation": "calls", "source_location": "L1"},
         {"source": "a", "target": "b", "relation": "calls", "source_location": "L9"},  # dup
@@ -35,8 +35,8 @@ def test_dedupe_edges_is_idempotent():
 
 
 def test_dedupe_nodes_collapses_by_id_last_wins():
-    # #1327: a shared module anchor is emitted once per importing file; the
-    # --no-cluster raw writer must collapse same-id node dicts (#1317).
+    # a shared module anchor is emitted once per importing file; the
+    # --no-cluster raw writer must collapse same-id node dicts.
     nodes = [
         {"id": "foundation", "label": "Foundation", "type": "module", "source_file": "A.swift"},
         {"id": "akit", "label": "AKit", "file_type": "code"},
@@ -418,7 +418,7 @@ def test_build_merges_multiple_extractions():
 
 def test_none_file_type_defaults_to_concept(capsys):
     """Legacy nodes with file_type=None (e.g. preserved from older graph.json
-    by `_rebuild_code`) must not trigger 'invalid file_type None' warnings (#660)."""
+    by `_rebuild_code`) must not trigger 'invalid file_type None' warnings."""
     ext = {
         "nodes": [
             {"id": "n1", "label": "Stub", "file_type": None, "source_file": "a.py"},
@@ -455,7 +455,7 @@ def test_missing_file_type_defaults_to_concept(capsys):
 
 def test_real_invalid_file_type_coerced_to_concept():
     """Unknown file_type values are coerced through the synonym mapper, falling
-    back to 'concept' for anything that isn't a known LLM synonym (#840)."""
+    back to 'concept' for anything that isn't a known LLM synonym."""
     ext = {
         "nodes": [
             {"id": "n1", "label": "Bad", "file_type": "weird_type", "source_file": "a.py"},
@@ -565,7 +565,7 @@ def test_ghost_merge_non_ast_different_files_both_survive():
     """#1753: two NON-AST (semantic) nodes sharing (basename, label) but from
     DIFFERENT files are distinct concepts with no AST canonical twin. They must
     not be merged into an arbitrary survivor (which flipped run-to-run with the
-    hash seed); both survive, mirroring the AST/AST guard (#1257)."""
+    hash seed); both survive, mirroring the AST/AST guard."""
     ext = {
         "nodes": [
             {"id": "dir_a_update_build_merge", "label": "build_merge() function",
@@ -822,7 +822,7 @@ def test_build_merge_fresh_graph_defaults_undirected(tmp_path):
 
 def test_build_merge_explicit_directed_overrides_disk_flag(tmp_path):
     """An explicit directed=True/False from the caller must still win over
-    whatever is stored on disk (#2342)."""
+    whatever is stored on disk."""
     ext = {
         "nodes": [{"id": "a", "label": "a", "file_type": "concept",
                    "source_file": "x.md", "source_location": "L1"}],
@@ -990,7 +990,7 @@ def test_edge_data_node_link_multigraph_roundtrip():
 
 def test_build_from_json_relativizes_absolute_source_file(tmp_path):
     """Semantic subagents emit absolute source_file paths; build_from_json must
-    relativize them to root so MCP traversal works correctly (#932)."""
+    relativize them to root so MCP traversal works correctly."""
     root = tmp_path / "myproject"
     root.mkdir()
     abs_path = str(root / "docs" / "overview.md")
@@ -1005,14 +1005,14 @@ def test_build_from_json_relativizes_absolute_source_file(tmp_path):
         ],
     }
     G = build_from_json(extraction, root=root)
-    # The id-stem migration (#1504) re-keys the old short id to the full-path form.
+    # The id-stem migration re-keys the old short id to the full-path form.
     sf = G.nodes["docs_overview_intro"]["source_file"]
     assert not sf.startswith("/"), f"source_file still absolute: {sf}"
     assert sf == "docs/overview.md"
 
 
 def test_build_relativizes_absolute_source_file(tmp_path):
-    """build() passes root through to build_from_json (#932)."""
+    """build() passes root through to build_from_json."""
     root = tmp_path / "proj"
     root.mkdir()
     abs_path = str(root / "src" / "main.py")
@@ -1164,7 +1164,7 @@ def test_build_from_json_relative_source_file_unchanged(tmp_path):
         "edges": [],
     }
     G = build_from_json(extraction, root=tmp_path)
-    # source_file must be untouched; the id is re-keyed to the full-path form (#1504).
+    # source_file must be untouched; the id is re-keyed to the full-path form.
     assert G.nodes["src_foo_bar"]["source_file"] == "src/foo.py"
 
 
@@ -1274,7 +1274,7 @@ def test_build_merge_replaces_changed_file_stale_edges(tmp_path):
 
 
 def _write_two_tier_graph(graph_path):
-    """A graph where docs/readme.md carries BOTH tiers (#2333 COEXIST): an
+    """A graph where docs/readme.md carries BOTH tiers (COEXIST): an
     AST layer (document/heading nodes + a contains edge, _origin=ast) and a
     semantic layer (an unstamped concept node, source_location=None)."""
     data = {
@@ -1511,7 +1511,7 @@ def test_build_from_json_skips_edge_with_non_hashable_endpoint():
 # ── #1504 migration: legacy-id detection + re-key source_file contract ──────────
 
 def test_graph_has_legacy_ids_detects_old_scheme():
-    """The read-only-consumer nudge (query/serve) flags a pre-#1504 graph and
+    """The read-only-consumer nudge (query/serve) flags a older graph and
     leaves a canonical one alone."""
     from pilothify.build import graph_has_legacy_ids
     old = [{"id": "api_readme", "source_file": "docs/v1/api/README.md", "type": "document", "source_location": "L1"}]
@@ -1530,7 +1530,7 @@ def test_graph_has_legacy_ids_detects_old_scheme():
 
 def test_graph_has_legacy_ids_honors_the_scan_root_prefix():
     """A subfolder build run from its parent (`pilothify update sub`) stores
-    source_file cwd-relative (#2603) but mints ids scan-root-relative. With the
+    source_file cwd-relative but mints ids scan-root-relative. With the
     marker's prefix the fresh graph is canonical; without it, `pkg_mod` reads as
     the old one-parent form of `sub/pkg/mod.py` and every query warned."""
     from pilothify.build import graph_has_legacy_ids
@@ -1538,7 +1538,7 @@ def test_graph_has_legacy_ids_honors_the_scan_root_prefix():
     assert graph_has_legacy_ids(fresh, root=None) is True  # the false positive
     assert graph_has_legacy_ids(fresh, root=None, source_prefix="sub") is False
     assert graph_has_legacy_ids(fresh, root=None, source_prefix="sub/") is False
-    # A genuinely pre-#1504 id under the same prefix is still caught.
+    # A genuinely older id under the same prefix is still caught.
     old = [{"id": "v1_readme", "source_file": "sub/docs/v1/README.md", "type": "document", "source_location": "L1"}]
     assert graph_has_legacy_ids(old, root=None, source_prefix="sub") is True
     # A source_file outside the prefix is judged as stored.
@@ -1584,7 +1584,7 @@ def test_subfolder_build_from_parent_is_not_flagged_legacy(tmp_path, monkeypatch
     gp = proj / "pilothify-out" / "graph.json"
     nodes = json.loads(gp.read_text(encoding="utf-8"))["nodes"]
     files = {n["source_file"] for n in nodes if n.get("source_location") == "L1"}
-    assert "proj/pkg/mod.py" in files  # stored cwd-relative (#2603)
+    assert "proj/pkg/mod.py" in files  # stored cwd-relative
     assert legacy_id_source_prefix(gp) == "proj"
     assert graph_has_legacy_ids(nodes, source_prefix=legacy_id_source_prefix(gp)) is False
 
@@ -1599,7 +1599,7 @@ def test_subfolder_build_from_parent_is_not_flagged_legacy(tmp_path, monkeypatch
 def test_graph_has_legacy_ids_ignores_global_mcp_ids(mcp_kind, nid):
     """MCP ingest stamps every node with L1 (JSON has no line info), so global ids
     would otherwise be read as file-level. Under `sub/.mcp.json` the old bare stem
-    is `mcp`, which these ids legitimately start with (#2408)."""
+    is `mcp`, which these ids legitimately start with."""
     from pilothify.build import graph_has_legacy_ids
     node = {
         "id": nid,
@@ -1627,7 +1627,7 @@ def test_graph_has_legacy_ids_still_checks_file_scoped_mcp_nodes():
 @pytest.mark.parametrize("mcp_dir", ["", "sub"])
 def test_fresh_mcp_graph_is_not_flagged_legacy(tmp_path, monkeypatch, mcp_dir):
     """End-to-end: a freshly extracted graph containing a .mcp.json — nested or at
-    the repo root — must not nudge the user to rebuild (#2408)."""
+    the repo root — must not nudge the user to rebuild."""
     from pilothify.build import graph_has_legacy_ids
     from pilothify.extract import extract
 
@@ -2245,7 +2245,7 @@ def test_method_ghost_dedupe_and_alias_resolution_3705():
 def test_method_ghost_ambiguous_same_name_in_one_file_is_not_merged_3705():
     """Two AST methods with the same name in the SAME file (different classes)
     are a genuine ambiguity: a spec-conformant ghost must NOT be remapped or
-    aliased onto either one (#3705 follow-up guard). The single-candidate rule
+    aliased onto either one (follow-up guard). The single-candidate rule
     (len == 1) must skip the 2-candidate case and leave the ghost intact."""
     from pilothify.build import build_from_json
 

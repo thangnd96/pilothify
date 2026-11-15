@@ -1,4 +1,4 @@
-"""Member-level interface dispatch for C# (#3003).
+"""Member-level interface dispatch for C#.
 
 A C# call through a constructor-injected dependency lands on the interface's
 method node, because that is what the call site names: `_report.Build()` where

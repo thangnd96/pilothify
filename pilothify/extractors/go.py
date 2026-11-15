@@ -166,7 +166,7 @@ def _go_strip_generic_args(type_text: str) -> str:
     ``[T any]`` as a separate ``type_parameter_list``, never part of the name.
     Without stripping this before building an id from it, a generic receiver's
     id never matched its own type's id, so a generic type's methods attached
-    to a node disconnected from the type itself (#3368) — this must run
+    to a node disconnected from the type itself — this must run
     everywhere a receiver's raw type text turns into an id, not only one of
     them, or the two computations silently disagree.
     """
@@ -333,7 +333,7 @@ def extract_go(path: Path) -> dict:
     # The receiver name identifies `s.field` as an owned field; scope bindings keep
     # parameters and locals distinct from package variables, even with unknown types.
     function_bodies: list[tuple[str, object, str | None, str | None, dict[str, str | None]]] = []
-    # Fed to the `_callable` / `_callable_class` stamp below (#2438): the indirect-call
+    # Fed to the `_callable` / `_callable_class` stamp below: the indirect-call
     # guard and the cross-repo member-call pass both read them off the node.
     callable_nids: set[str] = set()
     callable_class_nids: set[str] = set()
@@ -387,7 +387,7 @@ def extract_go(path: Path) -> dict:
             # corpus-level rewire can collapse it onto the real definition. A sourced
             # stub here makes _disambiguate_colliding_node_ids bake the referencing
             # file's path (with extension) into the id and blocks the rewire, which is
-            # the phantom-duplicate-node bug (#1402).
+            # the phantom-duplicate-node bug.
             seen_ids.add(nid)
             nodes.append({
                 "id": nid,
@@ -451,7 +451,7 @@ def extract_go(path: Path) -> dict:
         # The types a package-level `var` names, in its declared type (`var x T`), a
         # composite literal (`pkg.T{}`, `&T{}`) or a type argument (`new(*pkg.T)`,
         # `make(map[K]V)`), are referenced by the file, which owns the initialiser
-        # (#2360). Without this a file holding only a dependency-injection set
+        #. Without this a file holding only a dependency-injection set
         # (`wire.Bind(new(Iface), new(*Impl))`) referenced nothing. A closure body is
         # function code and is left to the call walk.
         stack = [var_decl]
@@ -478,7 +478,7 @@ def extract_go(path: Path) -> dict:
     # produce the same id and add_node silently dropped the second — the unexported
     # half vanished from the graph and its call sites bound by bare name to a
     # same-named function in another package, which Go's visibility rules make
-    # impossible (#2779). Salt the non-canonical member of a case-only collision
+    # impossible. Salt the non-canonical member of a case-only collision
     # so both survive.
     #
     # The EXPORTED member keeps the plain id. Only exported symbols are reachable
@@ -764,7 +764,7 @@ def extract_go(path: Path) -> dict:
             # function, so its calls, including those inside a `var f = func() {...}`
             # closure, are credited to the file, the owner a module-level call already
             # gets elsewhere. Without this they were never walked and the callee lost the
-            # caller (#2360).
+            # caller.
             emit_go_package_var_type_refs(node)
             function_bodies.append(
                 (file_nid, node, None, None, _go_receiver_type_table(node, source)))
@@ -823,7 +823,7 @@ def extract_go(path: Path) -> dict:
             n["metadata"] = {"language": "go", "kind": "interface"}
 
     # The field types of the structs this file declares ride on the file node, keyed by
-    # struct id, so a method in a sibling file can type `s.field` (#3368). Not on the
+    # struct id, so a method in a sibling file can type `s.field`. Not on the
     # struct node: every file holding a method of the struct emits that id too, so an
     # incremental rebuild of a method file would shadow the declaring file's copy.
     # A `pkg.T` field is stored as `<import path>.T`: the method file reading it may not
@@ -975,7 +975,7 @@ def extract_go(path: Path) -> dict:
             # `r.Get("/p", s.Handle)`) is how Go registers a handler or callback. It is
             # not a call here, so it never reached the branch above and the method had
             # no caller. Record it for the member-call resolver as an indirect call
-            # through the receiver's declared type (#1566). `s.field.Handle` is typed
+            # through the receiver's declared type. `s.field.Handle` is typed
             # through the field, as a direct `s.field.M()` is, only when `s` is this
             # method's own receiver.
             args = node.child_by_field_name("arguments")

@@ -5,7 +5,7 @@ never went through the same remap. The member naming a merged-away id was simply
 absent from the rebuilt graph, so the group lost a participant — and could fall
 under the 3-member threshold that makes it a hyperedge at all — with nothing on
 stderr and, crucially, **no dangling reference**, so a referential-integrity
-check saw a perfectly consistent graph (#2805).
+check saw a perfectly consistent graph.
 
 `_normalize_hyperedge_members` / `_coerce_hyperedge_member_refs` normalise member
 SHAPE (bare id vs object) but never resolve a member against surviving node ids,

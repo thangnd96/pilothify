@@ -1,4 +1,4 @@
-"""Every chat-template control token is defanged, not an enumerated few (#3183).
+"""Every chat-template control token is defanged, not an enumerated few.
 
 _neutralise_injection_sentinels listed six specific <|token|> markers, so
 <|start_header_id|>/<|eot_id|> (Llama 3), <|endofprompt|> and any template

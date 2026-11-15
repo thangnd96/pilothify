@@ -1,7 +1,7 @@
 """Member-level protocol dispatch for Swift.
 
 `store.fetch()` on an injected `Store` resolves to the protocol's own `.fetch()`
-requirement (#3673), because that is what the call site names. The conforming
+requirement, because that is what the call site names. The conforming
 `RemoteStore.fetch()` is a separate node, and nothing joins the two, so a
 directed walk stops at the protocol and every chain through an injected
 dependency is cut at that point — the Swift twin of the C# gap #3003 closed.

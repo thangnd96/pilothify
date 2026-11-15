@@ -366,7 +366,7 @@ edition = "2021"{dependency_block}
 
 
 def test_cargo_introspect_honors_package_rename_on_internal_dep(tmp_path):
-    """Renamed workspace-internal deps still produce a `crate_depends_on` edge (#1858).
+    """Renamed workspace-internal deps still produce a `crate_depends_on` edge.
 
     Cargo's `package = "..."` inside a dep table entry lets the key used in
     `use db::…;` differ from the crate's real `[package].name`. Looking up
@@ -485,7 +485,7 @@ edition = "2021"
 
 def test_cargo_introspect_discovery_resolves_workspace_members_from_the_manifest(tmp_path):
     """A discovered workspace manifest's own members are still resolved
-    relative to ITS directory, not the outer scan root (#3678)."""
+    relative to ITS directory, not the outer scan root."""
     tauri = tmp_path / "src-tauri"
     tauri.mkdir()
     _write_manifest(
@@ -517,7 +517,7 @@ edition = "2021"
 def test_cargo_introspect_discovery_skips_noise_directories(tmp_path):
     """A Cargo.toml sitting inside node_modules/ (a vendored or example crate
     pulled in by an npm dependency) must never win over a real, non-noise
-    subdirectory (#3678)."""
+    subdirectory."""
     noise = tmp_path / "node_modules" / "some-pkg"
     noise.mkdir(parents=True)
     _write_manifest(
@@ -550,7 +550,7 @@ edition = "2021"
 
 def test_cargo_introspect_discovery_does_not_search_past_the_depth_cap(tmp_path):
     """A manifest nested deeper than the discovery cap is left unfound rather
-    than searched for indefinitely (#3678)."""
+    than searched for indefinitely."""
     deep = tmp_path / "a" / "b" / "c" / "d"
     deep.mkdir(parents=True)
     _write_manifest(

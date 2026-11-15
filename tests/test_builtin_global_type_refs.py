@@ -33,7 +33,7 @@ def test_builtin_date_type_ref_does_not_bind_to_user_DATE(tmp_path):
 
 def test_nonbuiltin_receiver_type_still_resolves(tmp_path):
     # Guard must be a no-op for a genuine user type: a member call on a user-typed
-    # field still resolves cross-file (constructor-injection type table, #1316).
+    # field still resolves cross-file (constructor-injection type table).
     (tmp_path / "svc.ts").write_text(
         "export class PaymentClient {\n  charge(n: number): boolean { return true; }\n}\n")
     (tmp_path / "order.ts").write_text(
@@ -53,7 +53,7 @@ def test_nonbuiltin_receiver_type_still_resolves(tmp_path):
 
 
 def test_builtin_static_call_does_not_bind_to_user_symbol(tmp_path):
-    # #1726 (static-call shape, credit PR #1727 / @2loch-ness6): `Date.now()` treats
+    # #1726 (static-call shape, credit PR  / @2loch-ness6): `Date.now()` treats
     # the capitalized receiver `Date` as a type name; without the builtin guard it
     # binds to a same-spelled user `const DATE`, a false god node. A typed param in
     # the same class arms the cross-file member-call resolver (the real service shape).

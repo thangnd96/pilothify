@@ -1,4 +1,4 @@
-"""Line-ending preservation for the install/uninstall markdown writers (#4360).
+"""Line-ending preservation for the install/uninstall markdown writers.
 
 #3741 stopped the always-on registration and the Gemini writer from translating
 line endings on *write* by passing ``newline=""``. But those paths, and every
@@ -119,7 +119,7 @@ def test_md_writer_round_trip_preserves_line_endings(
 
 @pytest.mark.parametrize("newline", NEWLINES)
 def test_always_on_registration_round_trip_preserves_line_endings(tmp_path, newline):
-    """_register_always_on_block / _remove_claude_skill_registration (#4360)."""
+    """_register_always_on_block / _remove_claude_skill_registration."""
     project = tmp_path / "proj"
     md = project / ".claude" / "CLAUDE.md"
     original = _seed(md, newline)
@@ -154,7 +154,7 @@ def test_strip_pilothify_md_section_preserves_line_endings(tmp_path, newline):
 
 def test_new_instructions_file_is_written_lf(tmp_path, patched_home):
     """A fresh file has no convention to preserve, so pilothify writes LF on every
-    host -- matching the other install writers (#4360/#3668)."""
+    host -- matching the other install writers."""
     project = tmp_path / "proj"
     project.mkdir()
 

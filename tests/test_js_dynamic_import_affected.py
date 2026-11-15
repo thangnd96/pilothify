@@ -1,6 +1,6 @@
 """`affected` must traverse a dynamic `import('…')` written inside a function — #2584.
 
-The edge was already emitted (#2575), so an edge-existence assertion passes while the
+The edge was already emitted, so an edge-existence assertion passes while the
 answer users actually read is short. The reason is a granularity mismatch: a static import
 emits ``file -> target``, but ``_dynamic_import_js`` emitted ``caller_nid -> target``, and
 ``caller_nid`` is the file node ONLY at module level. Written inside a function it is that

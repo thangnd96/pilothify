@@ -95,7 +95,7 @@ def test_self_loops_dropped_after_merge():
 
 
 def test_preexisting_self_loops_preserved_after_unrelated_merge():
-    # #3809: Pre-existing self-loops (e.g. recursive calls, self-referencing FKs)
+    # Pre-existing self-loops (e.g. recursive calls, self-referencing FKs)
     # must survive entity deduplication even when an unrelated merge occurs.
     # Only self-loops created by the merge itself should be dropped.
     nodes = [
@@ -187,7 +187,7 @@ def test_build_calls_dedup():
 
 
 def test_build_dedup_preserves_semantic_attributes():
-    """The default build path must not discard semantic enrichment (#2091)."""
+    """The default build path must not discard semantic enrichment."""
     from pilothify.build import build
     ast = {
         "nodes": [{"id": "src_auth_login", "label": "login", "file_type": "code",
@@ -213,28 +213,28 @@ def test_build_dedup_preserves_semantic_attributes():
 # --- #878: fuzzy dedup false merges on short/variant labels ---
 
 def test_dedup_does_not_merge_numeric_variants(tmp_path):
-    """Chip SKU variants (ASR1603 vs ASR1605) must not be merged (#878)."""
+    """Chip SKU variants (ASR1603 vs ASR1605) must not be merged."""
     nodes = _make_nodes("ASR1603", "ASR1605")
     result_nodes, _ = deduplicate_entities(nodes, [], communities={})
     assert len(result_nodes) == 2, "ASR1603 and ASR1605 are distinct chip models, not duplicates"
 
 
 def test_dedup_does_not_merge_short_insertion_variants(tmp_path):
-    """Short labels differing by an insertion (cranel vs cranelr) must not merge (#878)."""
+    """Short labels differing by an insertion (cranel vs cranelr) must not merge."""
     nodes = _make_nodes("cranel", "cranelr")
     result_nodes, _ = deduplicate_entities(nodes, [], communities={})
     assert len(result_nodes) == 2, "cranel and cranelr are distinct, not a typo"
 
 
 def test_dedup_does_not_merge_model_with_suffix(tmp_path):
-    """M1 vs M1 Pro must not merge (#878)."""
+    """M1 vs M1 Pro must not merge."""
     nodes = _make_nodes("M1", "M1 Pro")
     result_nodes, _ = deduplicate_entities(nodes, [], communities={})
     assert len(result_nodes) == 2, "M1 and M1 Pro are distinct Apple chip variants"
 
 
 def test_dedup_still_merges_real_typos():
-    """Genuine same-length single-char typos should still merge (#878 non-regression)."""
+    """Genuine same-length single-char typos should still merge (non-regression)."""
     from pilothify.dedup import _is_variant_pair, _short_label_blocked
     from rapidfuzz.distance import JaroWinkler
     a, b = "graphextractor", "graphextractar"
@@ -244,7 +244,7 @@ def test_dedup_still_merges_real_typos():
 
 
 def test_variant_pair_helper():
-    """_is_variant_pair correctly identifies chip-model variant pairs (#878)."""
+    """_is_variant_pair correctly identifies chip-model variant pairs."""
     from pilothify.dedup import _is_variant_pair
     assert _is_variant_pair("asr1603", "asr1605")
     assert _is_variant_pair("cortex a55", "cortex a55x")
@@ -254,7 +254,7 @@ def test_variant_pair_helper():
 
 def test_prefix_extension_symbols_not_merged():
     """Distinct symbols whose name is a strict prefix-extension of another must not
-    be merged (#1201). getActiveSession / getActiveSessions score ~98.82 JW but are
+    be merged. getActiveSession / getActiveSessions score ~98.82 JW but are
     different functions; parseConfig / parseConfigFile likewise."""
     import networkx as nx
     from pilothify.dedup import deduplicate_entities
@@ -282,12 +282,12 @@ def test_prefix_extension_symbols_not_merged():
 
 
 def test_pass2_winner_union_does_not_pull_in_uncompared_same_label_nodes():
-    """Pass 2's winner selection must consider only the verified pair (#1247).
+    """Pass 2's winner selection must consider only the verified pair.
 
     Picking the winner from the union of both normalized-label groups pulls
     never-compared nodes into the merge: here A ("Session Manager", auth.md)
     and B ("Session Manager", billing.md) are deliberately kept distinct by
-    the cross-file identical-label guards (#1046, #1178), yet when the
+    the cross-file identical-label guards, yet when the
     A-C fuzzy match ("Session Managr" typo) fires, _pick_winner over
     [A, B, C] selects B (shortest id) and unions B with both A and C —
     merging B although it was never compared against anything.
@@ -313,7 +313,7 @@ def test_pass2_winner_union_does_not_pull_in_uncompared_same_label_nodes():
 
 def test_prefix_guard_does_not_block_same_length_typos():
     """The prefix-extension guard must not fire for same-length pairs — only strict
-    prefix-extensions (one is a substring of the other) should be blocked (#1201).
+    prefix-extensions (one is a substring of the other) should be blocked.
     graphextractor / graphextractar have the same length, so neither starts-with the
     other, and the guard must not fire."""
     from pilothify.dedup import _norm
@@ -328,7 +328,7 @@ def test_prefix_guard_does_not_block_same_length_typos():
 
 def test_prefix_guard_fires_for_extension_pairs():
     """The prefix-extension guard must fire for pairs where one is a strict prefix
-    of the other, preventing false merges (#1201)."""
+    of the other, preventing false merges."""
     from pilothify.dedup import _norm
     pairs = [
         ("getActiveSession", "getActiveSessions"),
@@ -347,7 +347,7 @@ def test_prefix_guard_fires_for_extension_pairs():
 
 def test_numeric_tokens_differ_helper():
     """_numeric_tokens_differ compares digit runs as zero-padding-insensitive
-    multisets (#1284)."""
+    multisets."""
     from pilothify.dedup import _numeric_tokens_differ
     assert _numeric_tokens_differ("adr 0011 d5 pipeline placement", "adr 0013 d4 pipeline placement")
     assert _numeric_tokens_differ("3 1 product goals", "1 1 product goals")
@@ -359,7 +359,7 @@ def test_numeric_tokens_differ_helper():
 
 def test_dedup_does_not_merge_numbered_siblings():
     """Long labels differing only in embedded numbers (ADR/section/issue ids)
-    must not merge — numbered siblings, not duplicates (#1284)."""
+    must not merge — numbered siblings, not duplicates."""
     nodes = [
         {"id": "n1", "label": "Pipeline placement — 4 call sites (ADR 0013 D4)",
          "file_type": "document", "source_file": "docs/index-activity.md"},
@@ -371,8 +371,8 @@ def test_dedup_does_not_merge_numbered_siblings():
 
 
 def test_dedup_does_not_merge_crossfile_rationale_boilerplate():
-    """Rationale nodes are file-anchored like code (#1205): parallel modules'
-    boilerplate docstrings differing by one word must not merge (#1284)."""
+    """Rationale nodes are file-anchored like code: parallel modules'
+    boilerplate docstrings differing by one word must not merge."""
     boiler = ("Django app config for {}. No business logic here. "
               "Domain services live in services.py and adapters in providers.")
     nodes = [
@@ -387,7 +387,7 @@ def test_dedup_does_not_merge_crossfile_rationale_boilerplate():
 
 def test_dedup_does_not_merge_crossfile_document_headings():
     """Document nodes are file-anchored too: near-identical headings in different
-    files are distinct sections, not duplicates (#1284, extends the rationale guard)."""
+    files are distinct sections, not duplicates (extends the rationale guard)."""
     nodes = [
         {"id": "d1", "label": "Getting Started Installation Guide",
          "file_type": "document", "source_file": "docs/a.md"},
@@ -400,7 +400,7 @@ def test_dedup_does_not_merge_crossfile_document_headings():
 
 def test_dedup_still_merges_samefile_rationale_duplicates():
     """The file-anchored guard only blocks cross-file pairs — near-identical
-    rationale duplicates within one file still merge (#1284 non-regression)."""
+    rationale duplicates within one file still merge (non-regression)."""
     nodes = [
         {"id": "r1", "label": "Counts-only metrics export, a read-only aggregation service.",
          "file_type": "rationale", "source_file": "apps/schemas/metrics.py"},
@@ -417,7 +417,7 @@ def test_dedup_does_not_merge_crossfile_shared_prefix_divergence():
     """Cross-file labels sharing a long prefix but diverging in a distinguishing
     token ("…jest native" vs "…react native") get JaroWinkler's prefix bonus past
     threshold but are distinct entities; scoring them on plain Jaro blocks the
-    merge (#1243)."""
+    merge."""
     nodes = [
         {"id": "p1", "label": "testing library jest native",
          "file_type": "concept", "source_file": "pkg-a/package.json"},
@@ -444,9 +444,9 @@ def test_dedup_still_merges_crossfile_true_duplicates():
 def test_cross_chunk_id_collision_emits_warning(capsys):
     """When two nodes share the same ID but come from different source files
     (a cross-chunk LLM ID collision), a WARNING must be printed to stderr
-    and only the first node survives (#1504). The id is not a shorter-stem mint
+    and only the first node survives. The id is not a shorter-stem mint
     of either path, so this covers a collision the path-qualify pass cannot
-    attribute (#4281)."""
+    attribute."""
     nodes = [
         {"id": "booking_service", "label": "Booking Service",
          "file_type": "concept", "source_file": "module-a/README.md"},
@@ -484,7 +484,7 @@ def test_same_id_same_source_file_no_warning(capsys):
 # ── #1857: dedup summary log breakdown ────────────────────────────────────────
 
 def test_dedup_summary_prints_fuzzy_count_when_no_exact_merges(capsys):
-    """A fuzzy-only run must still report the fuzzy count (#1857).
+    """A fuzzy-only run must still report the fuzzy count.
 
     Two long, high-entropy, non-code labels on different files. Pass 1 (exact,
     same-file) finds nothing; Pass 2 (Jaro-Winkler cross-file) merges them.
@@ -662,7 +662,7 @@ def test_same_file_relabel_is_noted(capsys):
     ],
 ], ids=["ast-first", "semantic-first"])
 def test_same_id_same_entity_retains_complementary_attributes(nodes):
-    """Exact-ID dedup combines AST precision with semantic enrichment (#2091)."""
+    """Exact-ID dedup combines AST precision with semantic enrichment."""
     result_nodes, _ = deduplicate_entities(nodes, [], communities={})
 
     assert len(result_nodes) == 1
@@ -742,7 +742,7 @@ def test_semantic_reference_stubs_from_issue_4738_are_namespaced():
 
 
 def test_semantic_reference_stub_rewires_its_own_file_edges():
-    """The citing file's edge must follow its retained reference stub (#4738)."""
+    """The citing file's edge must follow its retained reference stub."""
     nid = "functional_agent_runtime_doc"
     a_ref = "functional_agents_agent_operator__ref__" + nid
     b_ref = "delivery_developer_interaction__ref__" + nid
@@ -814,7 +814,7 @@ def test_collision_survivor_is_order_independent():
 
 def test_bare_file_node_defines_its_own_id():
     """A file-level semantic node whose id is exactly the slugified path (no
-    `_entity` suffix) must be recognised as defining its id (#1851 tweak)."""
+    `_entity` suffix) must be recognised as defining its id (tweak)."""
     assert _defines_id({"id": "agents_make_batch_fixtures",
                         "source_file": "agents/make-batch-fixtures.md"})
 
@@ -880,7 +880,7 @@ def test_sourced_node_survives_a_source_less_namesake_order_independent():
     the entity actually lives, and it was the one getting dropped. A node
     with a `source_file` must beat one without, whichever order they arrive
     in, mirroring the same rule `_pick_winner` already applies one level up
-    (#3775/#3786)."""
+   ."""
     import itertools
     sourced = {"id": "x", "label": "X", "source_file": "a.md"}
     blank = {"id": "x", "label": "X"}
@@ -890,7 +890,7 @@ def test_sourced_node_survives_a_source_less_namesake_order_independent():
         assert out[0] == sourced
 
 
-# #4859: pkg.md sits beside pkg/test_x.py. The AST id for the file is
+# pkg.md sits beside pkg/test_x.py. The AST id for the file is
 # `pkg_test_x`, and `pkg_` is also a slice of pkg.md's own path, so a doc node
 # reusing that id defines it too and both pass the first `_collision_rank` key.
 _AST_FILE = {"id": "pkg_test_x", "label": "test_x.py", "file_type": "code",
@@ -989,7 +989,7 @@ def test_extension_twin_ids_ignore_the_ast_preference():
 
 def test_same_file_ast_and_semantic_definers_rank_as_before():
     """#4859 boundary: the AST preference is only for ids defined from two or more
-    files. An AST node and its semantic enrichment from the same file (#2091) keep
+    files. An AST node and its semantic enrichment from the same file keep
     the shorter label as before."""
     import itertools
     ast = {"id": "m_run", "label": "run()", "file_type": "code",
@@ -1005,7 +1005,7 @@ def test_same_file_ast_and_semantic_definers_rank_as_before():
 def test_cross_file_doc_loses_but_same_file_pair_keeps_its_label():
     """#4859: a doc from another file loses to the AST node (it won on v8 with an
     equally short label), while the AST node and its same-file semantic
-    enrichment (#2091) still rank on label length between themselves."""
+    enrichment still rank on label length between themselves."""
     import itertools
     ast = {"id": "m_run", "label": "run()", "file_type": "code",
            "source_file": "m.py", "source_location": "L3", "_origin": "ast"}
@@ -1155,7 +1155,7 @@ def test_dedup_gapfill_is_order_independent_with_multiple_losers():
 
 def test_dedup_no_attribute_merge_when_source_file_missing():
     """(fix B) Two provenance-less records sharing an ID must NOT cross-pollinate
-    attributes — '' == '' is not proof of the same symbol (#1178)."""
+    attributes — '' == '' is not proof of the same symbol."""
     nodes = [
         {"id": "c", "label": "c", "file_type": "concept", "summary": "A"},
         {"id": "c", "label": "c", "file_type": "concept", "notes": "B"},
@@ -1184,7 +1184,7 @@ def test_dedup_survivor_does_not_inherit_false_origin_ast():
 
 def test_dedup_fills_explicit_none_attribute():
     """(fix D) An explicit source_location=None on the survivor is treated as
-    absent and filled from a same-source record that has a real line (#2091)."""
+    absent and filled from a same-source record that has a real line."""
     nodes = [
         {"id": "y", "label": "y", "file_type": "code", "source_file": "m.py",
          "source_location": None},                                   # survivor, explicit None
@@ -1200,7 +1200,7 @@ def test_dedup_fills_explicit_none_attribute():
 
 def test_crossfile_identical_concepts_merge_and_rewire():
     """Two `concept` nodes whose labels are byte-identical after _norm() but
-    live in different files must merge (#2182). Pass 1 used to defer them to
+    live in different files must merge. Pass 1 used to defer them to
     Pass 2, whose norm-unique candidate filter (`seen_norms`) structurally
     cannot form an equal-norm pair — so exact cross-file duplicates were the
     one class of duplicate that never merged, while a one-char-different
@@ -1228,7 +1228,7 @@ def test_crossfile_identical_concepts_merge_and_rewire():
 
 def test_crossfile_one_char_typo_concepts_still_merge():
     """Non-regression: the near-identical (one-char-different) cross-file pair
-    that already merged via Pass 2 fuzzy matching must keep merging (#2182)."""
+    that already merged via Pass 2 fuzzy matching must keep merging."""
     nodes = [
         {"id": "g1", "label": "Authentication Manager",
          "file_type": "concept", "source_file": "a.md"},
@@ -1285,8 +1285,8 @@ def test_crossfile_identical_labels_stay_distinct_for_guarded_types(a, b):
     sides, and #296 widened its type gate only as far as nodes provably not
     their file's own node. Identical labels must still NOT merge for: a
     document/rationale node that IS its file's own node (#296, the boundary of
-    #1284's file-anchored guard), code (#1205), images sharing a basename in
-    different dirs, mixed concept+image pairs, provenance-less nodes (#1178),
+    #1284's file-anchored guard), code, images sharing a basename in
+    different dirs, mixed concept+image pairs, provenance-less nodes,
     and low-entropy generic labels."""
     result_nodes, _ = deduplicate_entities([dict(a), dict(b)], [], communities={})
     assert len(result_nodes) == 2, (
@@ -1310,7 +1310,7 @@ def test_cross_repo_guard_still_raises():
 
 def test_crossfile_concept_merge_is_order_independent():
     """Three identical-norm concepts across three files: every input order must
-    yield the same single survivor (#2182). Winner ids differ in length so
+    yield the same single survivor. Winner ids differ in length so
     _pick_winner has a unique minimum."""
     import itertools
     base = [
@@ -1368,7 +1368,7 @@ def test_crossfile_concept_merge_deterministic_across_hash_seeds():
 def test_crossfile_concept_merge_is_transitive():
     """Exact cross-file matches and a punctuation variant collapse to one
     survivor: {'Acme Corp' doc1, 'Acme Corp' doc2, 'Acme Corp.' doc3} all
-    normalize to 'acme corp' and must transitively union (#2182)."""
+    normalize to 'acme corp' and must transitively union."""
     nodes = [
         {"id": "acme_corp_one", "label": "Acme Corp",
          "file_type": "concept", "source_file": "doc1.md"},
@@ -1391,7 +1391,7 @@ def test_dedup_does_not_merge_samefile_sibling_pipeline_stages():
     affixes and differ in a single content word, so Jaro-Winkler's prefix bonus
     clears the threshold on the same-file path (92.74 with the bonus, 87.90 on
     plain Jaro). The absorbed node's edges are re-pointed at the survivor, so
-    the graph asserts relationships the document never states (#2576)."""
+    the graph asserts relationships the document never states."""
     src = "docs/pipeline.md"
     nodes = [
         {"id": "pipeline_asset_contribution_flow", "label": "Asset Contribution Flow",
@@ -1422,7 +1422,7 @@ def test_dedup_does_not_merge_samefile_sibling_pipeline_stages():
 def test_dedup_still_merges_samefile_stopword_insertion():
     """The pair #1243 was scoped around: swapping a function word is how a
     restatement of the same entity differs, so a stopword in either differing
-    position exempts the pair and the merge still happens (#2576)."""
+    position exempts the pair and the merge still happens."""
     nodes = [
         {"id": "m1", "file_type": "concept", "source_file": "docs/metrics.md",
          "label": "Counts-only metrics export, a read-only aggregation service"},
@@ -1459,7 +1459,7 @@ def test_dedup_still_merges_samefile_normalization_variants():
 def test_dedup_still_merges_samefile_typo_in_one_token():
     """A typo inside the differing token leaves it the same word: manager and
     managr score 97.14 against each other, so the pair is not a content-word
-    swap and still merges (#2576)."""
+    swap and still merges."""
     nodes = [
         {"id": "a1", "label": "Authentication Manager",
          "file_type": "concept", "source_file": "docs/auth.md"},
@@ -1473,7 +1473,7 @@ def test_dedup_still_merges_samefile_typo_in_one_token():
 def test_dedup_still_merges_single_token_transposition_at_length_boundary():
     """A single-token label at the 12-char _short_label_blocked boundary with a
     trailing transposition is a typo: same length, Damerau-Levenshtein 1, so
-    _same_word_variant exempts it and the merge survives (#2576)."""
+    _same_word_variant exempts it and the merge survives."""
     nodes = [
         {"id": "gb1", "label": "GraphBuilder",
          "file_type": "concept", "source_file": "docs/build.md"},
@@ -1488,7 +1488,7 @@ def test_dedup_recovers_samefile_first_letter_typo():
     """DELTA over #2587: token-level JW scores manager/nanager at 84.92 (the
     prefix bonus is zero at position 0), so the PR's bare-JW token test would
     have blocked a genuine typo. The same-length Damerau-Levenshtein<=1 branch
-    of _same_word_variant reads it as one word and the merge happens (#2576).
+    of _same_word_variant reads it as one word and the merge happens.
     The label carries a third token so the pair clears MinHash/LSH candidacy
     (the two-token pair's shingle Jaccard sits at 0.727, on the 0.7 blocking
     threshold, and never reaches the comparator either way)."""
@@ -1505,7 +1505,7 @@ def test_dedup_recovers_samefile_first_letter_typo():
 def test_dedup_does_not_merge_samefile_short_content_word_swap():
     """DELTA over #2587: pane/plane scores 94.0 on token-level JW, above the
     merge threshold, so the PR's bare-JW token test read two distinct short
-    words as a typo. Tokens under 6 chars never pass the JW fallback (#2576)."""
+    words as a typo. Tokens under 6 chars never pass the JW fallback."""
     nodes = [
         {"id": "p1", "label": "User Profile Pane",
          "file_type": "concept", "source_file": "docs/ui.md"},
@@ -1520,7 +1520,7 @@ def test_dedup_does_not_merge_two_position_content_swap():
     """DELTA over #2587: the PR guard required exactly one differing token, so
     a sibling pair that also drifts in a second position (Flow vs Flows) slid
     back to whole-label JW (95.44) and merged. Any same-position distinct
-    content-word pair now blocks (#2576)."""
+    content-word pair now blocks."""
     nodes = [
         {"id": "h1", "label": "Customer Asset Contribution Flow Handler",
          "file_type": "concept", "source_file": "docs/handlers.md"},
@@ -1534,7 +1534,7 @@ def test_dedup_does_not_merge_two_position_content_swap():
 def test_dedup_does_not_merge_samefile_sibling_packages():
     """#1243's own first example, with the source file its repro used: two
     dependencies both come from one package.json, so the cross-file scoring
-    change never applied to them and they still merged (#2576)."""
+    change never applied to them and they still merged."""
     nodes = [
         {"id": "jest_native", "label": "@testing-library/jest-native",
          "file_type": "concept", "source_file": "package.json"},
@@ -1549,7 +1549,7 @@ def test_dedup_does_not_merge_same_community_dated_doc_slugs():
     """#1243's fourth example, with the communities its repro used: the pair is
     cross-file and scores 87.68 on plain Jaro, but both nodes sit in one
     community and the +5 boost lifts it back to 92.68. Comparing the differing
-    tokens (fe/mob) blocks it before the boost applies (#2576)."""
+    tokens (fe/mob) blocks it before the boost applies."""
     nodes = [
         {"id": "fe_doc", "label": "2026-05-17-phase4-fe-api-integration.md",
          "file_type": "concept", "source_file": "a.md"},
@@ -1564,7 +1564,7 @@ def test_dedup_does_not_merge_same_community_dated_doc_slugs():
 
 def test_content_token_swap_helper():
     """_content_token_swap fires when any same-position pair is a swap of two
-    distinct content words (#2576)."""
+    distinct content words."""
     from pilothify.dedup import _content_token_swap
     assert _content_token_swap("asset contribution flow", "asset consumption flow")
     assert _content_token_swap("testing library jest native",
@@ -1585,7 +1585,7 @@ def test_content_token_swap_helper():
 
 def test_same_word_variant_helper():
     """_same_word_variant separates one-word misspellings from two words
-    (#2576 DELTA over #2587's bare token-JW test)."""
+    (DELTA over 's bare token-JW test)."""
     from pilothify.dedup import _same_word_variant
     assert _same_word_variant("manager", "managr")     # JW 97.14, min len 6
     assert _same_word_variant("manager", "nanager")    # JW 84.92 but same-len DL 1
@@ -1614,7 +1614,7 @@ _CYRIL_VARIANTS = ["@cyrilXBT", "@cyrilxbt", "cyrilXBT"]
 
 def test_reads_as_file_entity_helper():
     """A file's own node, a stamped `page`/`heading` node, and any node missing
-    an id or provenance all stay treated as file-anchored (#296). The own-node
+    an id or provenance all stay treated as file-anchored. The own-node
     half is a reconstruction and holds for every stored-path spelling; the
     structural half rests on the producer stamping `node_kind`."""
     from pilothify.dedup import _reads_as_file_entity
@@ -1626,7 +1626,7 @@ def test_reads_as_file_entity_helper():
     assert not _reads_as_file_entity(
         {"id": "journal_2024_03_01", "source_file": "journal/2024-03-01.md"})
     assert not _reads_as_file_entity(
-        {"id": "2024_03_01", "source_file": "journal/2024-03-01.md"})  # pre-#1504 bare stem
+        {"id": "2024_03_01", "source_file": "journal/2024-03-01.md"})  # older bare stem
     assert not _reads_as_file_entity(
         {"id": "vault_journal_2024_03_01", "source_file": 'C:\\vault\\journal\\2024-03-01.md'})
     # The markdown extractor states it outright, for the file and its sections.
@@ -1643,7 +1643,7 @@ def test_reads_as_file_entity_helper():
 def test_dedup_merges_crossfile_document_entity_variants():
     """Unstamped document nodes that share a label stay one node per file.
 
-    The exact pass calls the same cross-file block as the fuzzy pass (#3094).
+    The exact pass calls the same cross-file block as the fuzzy pass.
     Three notes no longer collapse to one node.
     """
     nodes = [
@@ -1656,7 +1656,7 @@ def test_dedup_merges_crossfile_document_entity_variants():
 
 
 def test_dedup_merges_crossfile_rationale_entity_variants():
-    """Unstamped rationale nodes that share a label stay one node per file (#3094)."""
+    """Unstamped rationale nodes that share a label stay one node per file."""
     nodes = [
         {"id": "svc_alpha_py_retention_window", "label": "Retention Window",
          "file_type": "rationale", "source_file": "svc/alpha.py"},
@@ -1668,7 +1668,7 @@ def test_dedup_merges_crossfile_rationale_entity_variants():
 
 
 def test_dedup_never_merges_a_files_own_node_away():
-    """The boundary the widened gate is defined against (#296): a curated note
+    """The boundary the widened gate is defined against: a curated note
     whose OWN node carries the entity's label must survive as its own node, even
     when a same-label entity node exists in another file."""
     nodes = [
@@ -1701,7 +1701,7 @@ def test_dedup_never_merges_two_files_own_nodes():
 
 
 def test_dedup_crossfile_entity_merge_keeps_the_entropy_gate():
-    """Entropy guard untouched (#296): a short generic label stays distinct for
+    """Entropy guard untouched: a short generic label stays distinct for
     `document` entity nodes exactly as it does for `concept`."""
     nodes = [
         {"id": "docs_a_api", "label": "API", "file_type": "document",
@@ -1714,7 +1714,7 @@ def test_dedup_crossfile_entity_merge_keeps_the_entropy_gate():
 
 
 def test_dedup_crossfile_entity_merge_keeps_the_provenance_gate():
-    """Provenance guard untouched (#296, #1178): without a source_file the node
+    """Provenance guard untouched: without a source_file the node
     cannot be proven to be an entity, so it stays out of the merge."""
     nodes = [
         {"id": "orphan_cyrilxbt", "label": "@cyrilXBT",
@@ -1729,7 +1729,7 @@ def test_dedup_crossfile_entity_merge_keeps_the_provenance_gate():
 def test_dedup_crossfile_fuzzy_fileanchored_block_is_untouched():
     """Pass 2 still refuses near-identical document labels in different files.
 
-    The exact pass now calls the same block (#3094). This pair is not an exact
+    The exact pass now calls the same block. This pair is not an exact
     label match, so only the fuzzy pass can see it, and the block keeps both nodes.
     """
     nodes = [
@@ -1833,7 +1833,7 @@ def test_dedup_never_merges_repeated_headings_across_files():
 
 
 def test_reads_as_file_entity_trusts_the_node_kind_stamp_only():
-    """The documented limit of the structural half (#296): `node_kind` is what
+    """The documented limit of the structural half: `node_kind` is what
     marks a sub-file node, so an UNSTAMPED structural node reads as an entity.
     Pinned deliberately — the fix for such a producer is to stamp `node_kind`,
     and this test is what fails if the predicate is ever quietly changed to
@@ -1880,7 +1880,7 @@ def test_extension_rename_is_order_independent():
 def test_bare_id_across_different_paths_is_path_qualified(capsys):
     """A bare `protocol` shared by docs/protocol.md and docs/firmware/protocol.md,
     with no protocol.md anywhere: neither file is named by the bare id, so both are
-    definers and each gets its own path-qualified id (#4281 remaining case).
+    definers and each gets its own path-qualified id (remaining case).
 
     No own-file `references` edge points at either copy here, so there is no
     evidence that one of them is a mention of the other file, and both are renamed.
@@ -1911,7 +1911,7 @@ def _three_bare_protocols():
 def test_bare_ids_in_three_files_keep_one_node_per_file(capsys):
     """protocol.md exists and the other two files each have only a bare `protocol`.
     Neither has a page of its own, so the bare id is their page: protocol.md keeps
-    `protocol` and the others are path-qualified. Nothing is dropped (#4281)."""
+    `protocol` and the others are path-qualified. Nothing is dropped."""
     result_nodes, _ = deduplicate_entities(_three_bare_protocols(), [], communities={})
     assert {(n["id"], n["source_file"]) for n in result_nodes} == {
         ("protocol", "protocol.md"),
@@ -1923,7 +1923,7 @@ def test_bare_ids_in_three_files_keep_one_node_per_file(capsys):
 
 def test_build_with_absolute_edge_paths_moves_edges_to_renamed_node(tmp_path):
     """Semantic edges reach dedup with an ABSOLUTE source_file while nodes are already
-    root-relative; the renamed node must still receive its edges (#4281)."""
+    root-relative; the renamed node must still receive its edges."""
     from pilothify.build import build
 
     root = tmp_path
@@ -1992,7 +1992,7 @@ def test_identical_indic_labels_still_exact_merge():
 def test_build_from_subdirectory_moves_edges_to_renamed_node(tmp_path, monkeypatch):
     """Nodes are root-relative by dedup time; run from a subdirectory of the root, a
     relative path must not be resolved against the CWD, or the renamed node's key
-    stops matching its edges' and they stay on the survivor (#4281)."""
+    stops matching its edges' and they stay on the survivor."""
     from pilothify.build import build
 
     root = tmp_path
@@ -2043,7 +2043,7 @@ def _path_dropped_input():
 
 def test_path_dropped_doc_id_keeps_both_files(capsys):
     """a/x.md and b/x.md both mint `x`; neither may be dropped, and each file's
-    edge stays inside its own file (#4281)."""
+    edge stays inside its own file."""
     nodes, edges = _path_dropped_input()
     result_nodes, result_edges = deduplicate_entities(nodes, edges, communities={})
 
@@ -2069,7 +2069,7 @@ def test_path_dropped_rename_is_order_independent():
 
 def test_path_dropped_foreign_reference_is_not_guessed(capsys):
     """c.md points at the bare `x`. It cannot be attributed to a/x.md or b/x.md, so
-    it is left unresolved with one warning rather than guessed (#4281)."""
+    it is left unresolved with one warning rather than guessed."""
     nodes, edges = _path_dropped_input()
     nodes.append({"id": "c_note", "label": "Note C", "file_type": "document",
                   "source_file": "c.md"})
@@ -2094,7 +2094,7 @@ def test_path_dropped_foreign_reference_is_not_guessed(capsys):
 def test_path_dropped_absolute_paths_are_not_qualified(a, b, leaked, capsys):
     """With no root to relativize against, a stored absolute path (POSIX or
     Windows) must not be baked into an id: the checkout location would leak into
-    persisted ids. Such files stay on the collapse-and-warn path (#4281)."""
+    persisted ids. Such files stay on the collapse-and-warn path."""
     nodes = [
         {"id": "x", "label": "X A", "file_type": "document", "source_file": a},
         {"id": "x", "label": "X B", "file_type": "document", "source_file": b},
@@ -2116,7 +2116,7 @@ def test_single_path_dropped_id_left_alone():
 
 def test_path_dropped_through_build(tmp_path):
     """The full build path (dedup runs before build_from_json) keeps both files'
-    nodes and edges, with absolute semantic paths as real extractions carry (#4281)."""
+    nodes and edges, with absolute semantic paths as real extractions carry."""
     from pilothify.build import build
 
     root = tmp_path
@@ -2147,7 +2147,7 @@ def test_path_dropped_through_build(tmp_path):
 
 def test_path_dropped_rebuild_is_idempotent():
     """Round-tripping a built graph through build() again must not keep renaming
-    the fix's own output (#4281)."""
+    the fix's own output."""
     import copy
     from networkx.readwrite import json_graph
     from pilothify.build import build
@@ -2164,7 +2164,7 @@ def test_path_dropped_rebuild_is_idempotent():
 
 def test_path_dropped_id_stays_qualified_after_collision_disappears():
     """Once b/x.md leaves the corpus there is no collision, but a/x.md must keep
-    `a_x` rather than flip back to the bare `x` (#4281)."""
+    `a_x` rather than flip back to the bare `x`."""
     from pilothify.build import build
 
     nodes, edges = _path_dropped_input()
@@ -2178,7 +2178,7 @@ def test_path_dropped_id_stays_qualified_after_collision_disappears():
 
 def test_path_dropped_foreign_reference_edge_is_dropped_by_build(capsys):
     """c.md's reference to the bare `x` cannot be attributed, so build() ends up
-    with no node `x` and drops the edge, and the warning says so (#4281)."""
+    with no node `x` and drops the edge, and the warning says so."""
     from pilothify.build import build
 
     nodes, edges = _path_dropped_input()
@@ -2236,7 +2236,7 @@ def test_reference_to_another_file_does_not_become_a_second_document():
     """Case R. A bare id that another node of its own file `references`, and that is
     itself a path slice (`protocol`), is a mention of a document: it is not renamed
     into the mentioning file's own page, so the reference ends on docs/protocol.md.
-    Renaming it made `docs_firmware_protocol` reference itself (#4281)."""
+    Renaming it made `docs_firmware_protocol` reference itself."""
     from pilothify.build import build
 
     _assert_reference_lands_on_the_other_file(build([_protocol_reference_input()]))
@@ -2265,7 +2265,7 @@ def test_mention_without_an_edge_gives_the_same_two_documents():
 def test_top_level_file_keeps_its_own_node_next_to_dropped_folder_docs():
     """Case R_toplevel. protocol.md, docs/protocol.md and docs/firmware/protocol.md
     all mint `protocol`. Each file keeps its own node, and the firmware reference
-    lands on the top-level `protocol` node (#4281)."""
+    lands on the top-level `protocol` node."""
     from pilothify.build import build
 
     G = build([_protocol_reference_input(top_level=True)])
@@ -2286,7 +2286,7 @@ def _reference_to_top_level(*, edge=True, docs_label="protocol", top_label="Prot
 def test_genuine_reference_to_top_level_file_still_collapses():
     """docs/protocol.md has its own `docs_protocol` page and a `protocol` it
     references. That bare id is the top-level file, not a second page of docs/:
-    it collapses onto protocol.md's node and the edge ends there (#4281)."""
+    it collapses onto protocol.md's node and the edge ends there."""
     nodes, edges = _reference_to_top_level()
     kept, kept_edges = deduplicate_entities(nodes, edges, communities={})
     assert {(n["id"], n["source_file"]) for n in kept} == {
@@ -2296,7 +2296,7 @@ def test_genuine_reference_to_top_level_file_still_collapses():
 
 def test_reference_to_top_level_file_without_an_edge_still_collapses():
     """Same input with no `references` edge: the docs `protocol` still collapses
-    into protocol.md's node, because docs/protocol.md has its own page (#4281)."""
+    into protocol.md's node, because docs/protocol.md has its own page."""
     nodes, edges = _reference_to_top_level(edge=False)
     kept, kept_edges = deduplicate_entities(nodes, edges, communities={})
     assert {(n["id"], n["source_file"]) for n in kept} == {
@@ -2307,7 +2307,7 @@ def test_reference_to_top_level_file_without_an_edge_still_collapses():
 def test_top_level_file_survives_whatever_the_labels_are():
     """Case R_toplevel, label-swap. The bare `protocol` from docs/protocol.md has the
     SHORTER label. docs/protocol.md has its own page, so that node is a reference and
-    protocol.md's node survives; the docs_protocol edge ends on it (#4281)."""
+    protocol.md's node survives; the docs_protocol edge ends on it."""
     nodes, edges = _reference_to_top_level(docs_label="Protocol", top_label="Protocol (top-level)")
     kept, kept_edges = deduplicate_entities(nodes, edges, communities={})
     assert {(n["id"], n["label"], n["source_file"]) for n in kept} == {
@@ -2319,7 +2319,7 @@ def test_top_level_file_survives_whatever_the_labels_are():
 def test_top_level_file_survives_without_a_references_edge():
     """Same label-swap input with no `references` edge, so `_mentions` has no
     evidence. The ranking alone must keep protocol.md's node: a bare slice from a
-    file that has its own page is a reference, whatever the labels (#4281)."""
+    file that has its own page is a reference, whatever the labels."""
     nodes, _ = _reference_to_top_level(edge=False, docs_label="Protocol",
                                        top_label="Protocol (top-level)")
     for order in (nodes, list(reversed(nodes))):
@@ -2329,7 +2329,7 @@ def test_top_level_file_survives_without_a_references_edge():
 
 
 def test_top_level_collision_result_does_not_depend_on_input_order():
-    """The three-file case fed in reverse order keeps the same nodes (#4281)."""
+    """The three-file case fed in reverse order keeps the same nodes."""
     nodes = _three_bare_protocols()
     fwd, _ = deduplicate_entities([dict(n) for n in nodes], [], communities={})
     rev, _ = deduplicate_entities([dict(n) for n in reversed(nodes)], [], communities={})
@@ -2341,7 +2341,7 @@ def test_dropped_folder_doc_with_own_stem_entity_falls_back_to_collapse():
     """KNOWN BOUNDARY, pinned so a change is noticed. docs/protocol.md emits `protocol`
     AND `docs_protocol_header` (an entity spelled with its full stem), so the file
     counts as having its own page and the bare id may be a reference. It collapses
-    into protocol.md's node, as before this change (#4281)."""
+    into protocol.md's node, as before this change."""
     nodes = [_mention_node("protocol", "protocol", "docs/protocol.md"),
              _mention_node("docs_protocol_header", "Header", "docs/protocol.md"),
              _mention_node("protocol", "Protocol", "protocol.md")]
@@ -2352,7 +2352,7 @@ def test_dropped_folder_doc_with_own_stem_entity_falls_back_to_collapse():
 
 def test_lone_bare_id_without_a_top_level_file_is_left_to_build():
     """A single `protocol` from docs/protocol.md and no protocol.md anywhere: this
-    pass does not act, the id stays `protocol` for build's remap (#4281)."""
+    pass does not act, the id stays `protocol` for build's remap."""
     nodes = [_mention_node("protocol", "Protocol", "docs/protocol.md")]
     kept, _ = deduplicate_entities(nodes, [], communities={})
     assert [n["id"] for n in kept] == ["protocol"]
@@ -2384,7 +2384,7 @@ def test_reference_evidence_does_not_change_survivors_of_other_collisions():
     is derived from a/x.md (so a/x.md defines it and wins the collision) but is not a
     slice. Both copies are the target of an own-file `references` edge. Applied to every
     id, that evidence would demote a/x.md's copy and let the shorter label from c.md
-    win. The survivor must be what v8 picks: a/x.md's node (#4281)."""
+    win. The survivor must be what v8 picks: a/x.md's node."""
     nodes = [_mention_node("x", "X", "a/x.md"),
              _mention_node("x_intro", "Introduction to X", "a/x.md"),
              _mention_node("c_doc", "Doc C", "c.md"),

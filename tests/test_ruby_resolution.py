@@ -462,8 +462,8 @@ def test_plain_module_gets_a_node_with_methods(tmp_path: Path) -> None:
 
 
 def test_nested_modules_each_get_a_node(tmp_path: Path) -> None:
-    """#1640 shape 1, nested — the inner module is labelled fully qualified
-    (#2302), so nested and compact declarations converge on one label."""
+    """#1640 shape 1, nested — the inner module is labelled fully qualified,
+    so nested and compact declarations converge on one label."""
     r = extract_ruby(_write(tmp_path, "n.rb",
         "module Billing\n  module Rounding\n    def round(x)\n      x.round(2)\n    end\n  end\nend\n"))
     labels = _node_labels(r)
@@ -505,7 +505,7 @@ def test_constant_receiver_singleton_call_resolves(tmp_path: Path) -> None:
 
 def test_constant_receiver_module_function_call_resolves(tmp_path: Path) -> None:
     """#1634 + #1640: `TaxCalculator.rate_for` resolves across files to a
-    module_function — needs both the module node (#1640) and the resolver (#1634)."""
+    module_function — needs both the module node and the resolver."""
     _write(tmp_path, "tax.rb",
         "module TaxCalculator\n  module_function\n  def rate_for(o)\n    0.2\n  end\nend\n")
     pp = _write(tmp_path, "pp.rb",
@@ -837,7 +837,7 @@ def test_framework_qualified_receiver_does_not_bind_same_named_local_class(tmp_p
     The receiver used to be truncated to its last constant, so any corpus with a
     single class named `Base` collected every framework call as an EXTRACTED 1.0
     edge — a false hub, not a missing edge. The namespace has to be part of the
-    match (#3078). `ActiveJob::Base` is here too because both namespaces used to
+    match. `ActiveJob::Base` is here too because both namespaces used to
     collapse onto the very same node.
     """
     _write(tmp_path, "thing.rb", _LOCAL_BASE_RB)

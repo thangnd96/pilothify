@@ -1,7 +1,7 @@
 """Swift member-level protocol dispatch.
 
 `repo.fetch()` on an injected `Repository` resolves to the protocol's own
-`.fetch()` requirement (#3673), which is what the call site names. The
+`.fetch()` requirement, which is what the call site names. The
 conformer's `.fetch()` is a separate node with nothing joining the two, so a
 directed walk stops at the protocol and every chain through an injected
 dependency is cut there — the Swift twin of the C# gap #3003 closed.

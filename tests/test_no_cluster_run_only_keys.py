@@ -1,6 +1,6 @@
 """A --no-cluster graph.json must not carry extract()'s run-only keys.
 
-extract() returns ``extracted_sources`` (#3411) and ``failed_sources`` (#2543)
+extract() returns ``extracted_sources`` and ``failed_sources``
 next to nodes/edges. They steer the current run and hold the absolute paths of
 its inputs. The raw --no-cluster writers dumped the extraction as graph.json, so
 the first ``pilothify update --no-cluster`` and every ``pilothify extract

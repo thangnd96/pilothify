@@ -1,4 +1,4 @@
-"""`Type.Member` endpoints name the member, not the type (#4884).
+"""`Type.Member` endpoints name the member, not the type.
 
 A member's label is `.Build()`, so `PdfReport.Build` matched no exact tier and
 token scoring picked the `PdfReport` class. `path "Exporter.Run" "PdfReport.Build"`

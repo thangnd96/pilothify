@@ -368,7 +368,7 @@ def test_rust_trait_impl_emits_implements():
 
 
 def test_rust_trait_method_declarations_are_captured():
-    # #3366: signature-only trait method declarations (and default-bodied ones)
+    # signature-only trait method declarations (and default-bodied ones)
     # were dropped because trait bodies were never walked. Both `Processor.run`
     # and `Logger.log` are declaration-only trait methods in the fixture.
     r = extract_rust(FIXTURES / "sample.rs")
@@ -378,7 +378,7 @@ def test_rust_trait_method_declarations_are_captured():
 
 
 def test_rust_trait_decl_method_is_distinct_from_impl_method():
-    # #3366: the trait-declared `Processor.run` must be its own node, not collide
+    # the trait-declared `Processor.run` must be its own node, not collide
     # onto the impl `DataProcessor.run` — the crux of the fix.
     r = extract_rust(FIXTURES / "sample.rs")
     by_id = {n["id"]: n["label"] for n in r["nodes"]}
@@ -416,7 +416,7 @@ def test_rust_enum_variants_emit_case_of_nodes():
     The enum handler only walked variants to collect their payload type
     references; the variants themselves (`NodeAdded`, `Processed`) never became
     nodes, so the enum was left a memberless leaf. Every other language with
-    enums (Java #1719, Kotlin #1738, Swift, Scala) emits a node per member with
+    enums (Java , Kotlin , Swift, Scala) emits a node per member with
     a `case_of` edge; this brings Rust to parity.
     """
     r = extract_rust(FIXTURES / "sample.rs")
@@ -456,7 +456,7 @@ def test_rust_method_parameter_return_and_generic_contexts():
 
 def test_rust_no_cross_crate_spurious_edges():
     """Scoped calls (Type::method) and blocklisted names must not produce
-    INFERRED cross-crate calls edges (#908)."""
+    INFERRED cross-crate calls edges."""
     from pilothify.extract import extract
     crate_a = FIXTURES / "crate_a" / "src" / "lib.rs"
     crate_b = FIXTURES / "crate_b" / "src" / "lib.rs"
@@ -594,7 +594,7 @@ def test_rust_forward_reference_skips_items_in_const_and_static_initializers(tmp
 def test_rust_forward_reference_to_a_casefold_colliding_type_resolves_to_it(tmp_path):
     """#3782: ids are casefolded, so `fn handle` (also in an `extern` block),
     `const HANDLE`, `struct HANDLE` or an `impl` for `HANDLE` fold to the id of
-    `struct Handle`. Those items now get ids of their own (#3302's rule), so the
+    `struct Handle`. Those items now get ids of their own ('s rule), so the
     struct owns its id and a reference above the declarations resolves to it, as
     a reference below already did, instead of to a sourceless stub."""
     extern_fn = 'extern "C" {\n    fn handle();\n}'
@@ -939,7 +939,7 @@ def test_sql_create_index_emits_index_node_linked_to_its_table(tmp_path):
     assert (by_label["profiles_id_uniq"]["id"], "indexes", profiles) in edges
     assert (by_label["quoted idx"]["id"], "indexes", profiles) in edges
     # An index on a table defined in another file links to a sourceless stub,
-    # the same way a trigger does (#2324).
+    # the same way a trigger does.
     orders = by_label["public.orders"]
     assert orders["source_file"] == ""
     assert (by_label["orders_customer_idx"]["id"], "indexes", orders["id"]) in edges
@@ -1056,7 +1056,7 @@ def test_sql_mysql_current_timestamp_parens_table_is_recovered(tmp_path):
     current_timestamp()`: tree-sitter-sql rejects the parentheses, so the
     whole CREATE TABLE lands in an ERROR node and the table was dropped —
     the only trace left was the sourceless stub minted by other tables'
-    REFERENCES to it (#4613).
+    REFERENCES to it.
     """
     pytest.importorskip("tree_sitter_sql")
     p = tmp_path / "repro.sql"
@@ -1861,7 +1861,7 @@ def test_sql_schema_qualified_alter_fk():
 
 def test_sql_plpgsql_functions_survive_parse_errors():
     """PL/pgSQL bodies make tree-sitter-sql emit ERROR nodes; the functions
-    must still be extracted (#1910), without cascading into later statements."""
+    must still be extracted, without cascading into later statements."""
     r = _extract_sql_or_skip("sample_plpgsql.sql")
     labels = [n["label"] for n in r["nodes"]]
     # Both PL/pgSQL functions extracted, schema-qualified name kept whole

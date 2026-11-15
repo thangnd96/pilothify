@@ -1,4 +1,4 @@
-"""C++ member calls through parameter and field receivers resolve (#3215).
+"""C++ member calls through parameter and field receivers resolve.
 
 `_resolve_cpp_member_calls` types a receiver from `cpp_type_table`, which
 was populated only from local variable declarations — parameters and class

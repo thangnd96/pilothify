@@ -1,4 +1,4 @@
-"""A call inside ``_main`` is credited to ``_main``, not to its public sibling (#4994).
+"""A call inside ``_main`` is credited to ``_main``, not to its public sibling.
 
 ``make_id`` strips the underscore edges off each part, so ``_main``/``main`` (and
 any ``foo``/``_foo`` pair, e.g. ``invoke_scheduler``/``_invoke_scheduler``) mint

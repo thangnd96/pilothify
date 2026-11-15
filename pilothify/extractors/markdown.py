@@ -30,7 +30,7 @@ _MD_REF_DEF_RE = re.compile(
 
 # Reference-style link uses: [text][label] or [label][]. The label resolves to
 # a separate definition (`[label]: target`), so the use — not the definition —
-# carries the citation evidence for its section (#4804).
+# carries the citation evidence for its section.
 _MD_REF_LINK_RE = re.compile(r'(?<!\!)\[([^\]]*)\]\[([^\]]*)\]')
 
 _MD_WIKILINK_RE = re.compile(r'(?<!\!)\[\[([^\]|#]+?)(?:\\?\|[^\]]*|#[^\]]*)?\]\]')
@@ -39,7 +39,7 @@ _MD_WIKILINK_RE = re.compile(r'(?<!\!)\[\[([^\]|#]+?)(?:\\?\|[^\]]*|#[^\]]*)?\]\
 # the extensions the Obsidian wikilink index covers.
 _MD_LINKABLE_EXTS = {".md", ".mdx", ".qmd", ".markdown", ".rst", ".txt"}
 
-# Source files can be linked as citations and resolved to references edges (#4804).
+# Source files can be linked as citations and resolved to references edges.
 _MD_CITEABLE_EXTS = _MD_LINKABLE_EXTS | CODE_EXTENSIONS
 
 # Inline code spans, single or double backtick delimited. Fenced blocks are
@@ -63,7 +63,7 @@ _MD_BARE_MENTION_RE = re.compile(
 )
 # The namespace/member chain the other languages' docs write: ``App\Services\Mailer``
 # (PHP namespaces) and ``Mailer::send()`` (PHP, Rust, C++ type-qualified members).
-# Each segment is a plain identifier; the separators are ``\`` and ``::`` (#4610).
+# Each segment is a plain identifier; the separators are ``\`` and ``::``.
 _MD_NS_MENTION_RE = re.compile(
     r'^[A-Za-z_]\w*(?:(?:::|\\)[A-Za-z_]\w*)+(?:\(\))?$'
 )
@@ -207,7 +207,7 @@ _MD_LINK_INDEX_CACHE: "dict[str, dict[str, list[tuple[int, str, Path]]]]" = {}
 # The in-flight scan root now lives on extractors.base (correct import
 # direction: extract.py -> extractors/, never back), so a rename can no longer
 # silently disable link resolution the way the old getattr(pilothify.extract, …,
-# None) could (#3666).
+# None) could.
 from pilothify.extractors.base import active_scan_root as _active_scan_root
 
 
@@ -224,7 +224,7 @@ def _build_link_index(root: Path) -> "dict[str, list[tuple[int, str, Path]]]":
     path)]. Directories in detect._SKIP_DIRS, dot-directories, and paths
     excluded by .pilothifyignore/.gitignore are pruned — the same corpus
     boundary the scanner draws, and Obsidian itself does not index dot-folders
-    or ignored paths (#3822).
+    or ignored paths.
     """
     from pilothify.detect import _SKIP_DIRS, ignored_predicate
     root = Path(root)
@@ -279,7 +279,7 @@ def _vault_lookup(target: str, root: Path) -> "Path | None":
     if not matches:
         # Obsidian writes vault-relative paths, so scanning a folder below the
         # vault root meets links that start with that folder's own path
-        # ([[Corp/wiki/Fox]] from inside Corp/, #4559). Drop the longest such
+        # ([[Corp/wiki/Fox]] from inside Corp/). Drop the longest such
         # leading run and match the rest from the scan root.
         root_parts = [_nfc(p) for p in Path(root).parts]
         for k in range(len(parts) - 1, 0, -1):
@@ -415,7 +415,7 @@ def _code_span_mention(span: str) -> "tuple[str | None, list[str]] | None":
       and ``names`` is the symbol chain;
     - for a source-file span (``pilothify/build.py``, ``setup.py``), ``path`` is
       the file path and ``names`` is empty, so resolution can record it as file
-      evidence (#4804).
+      evidence.
     Spans that read as a shell command, an expression, a document name
     (``README.md``) or prose yield None.
     """
@@ -479,7 +479,7 @@ def extract_markdown(path: Path) -> dict:
     - file --references--> linked document, for inline ``[text](./other.md)``,
       reference-style ``[label]: ./other.md`` and ``[[wikilink]]`` links, so a
       hub doc (``index.md`` / ``table-of-contents.md``) becomes a real hub node
-      instead of an under-connected orphan (#1376). The target node ID is built
+      instead of an under-connected orphan. The target node ID is built
       from the resolved target path with the same recipe as the target file's
       own node, so the edge merges into that node (no ghost node). External
       URLs, in-page anchors, images and non-document targets are skipped; a
@@ -499,7 +499,7 @@ def extract_markdown(path: Path) -> dict:
     mention above the first heading): EXTRACTED for the path-qualified form,
     INFERRED for a bare name that matches exactly one code symbol. A bare
     free-function name whose label reads as prose (``token``, ``raw``) requires
-    evidence from its defining file in the citing section (#4804).
+    evidence from its defining file in the citing section.
     Source-file links are recorded as file citations and resolved at corpus time.
     The shared cross-file call pass skips these raw_calls, so a mention never
     becomes a ``calls`` edge.
@@ -508,7 +508,7 @@ def extract_markdown(path: Path) -> dict:
     same character at least as long, per CommonMark) are skipped during
     parsing so their contents don't get treated as headings, but no node is emitted for
     them — they were always orphans (only a single contains edge to the
-    parent doc) and inflated the disconnected-component count (#1077).
+    parent doc) and inflated the disconnected-component count.
 
     Leading YAML frontmatter is parsed onto the page node and excluded from
     heading detection (a `#` there is a YAML comment). Links inside it are
@@ -556,7 +556,7 @@ def extract_markdown(path: Path) -> dict:
             # A `\`/`::` chain carries its namespace root as a qualifier the way
             # a dotted mention does, but a PSR-4 root (`App\`) maps to the scan
             # directory and has no path segment: the resolver may drop leading
-            # qualifiers a candidate cannot account for (#4610).
+            # qualifiers a candidate cannot account for.
             raw_call["ns_qualified"] = True
         raw_calls.append(raw_call)
 
@@ -586,7 +586,7 @@ def extract_markdown(path: Path) -> dict:
     frontmatter = sanitize_metadata(_parse_frontmatter(fm_lines))
 
     # Pre-scan reference definitions so a use can resolve to a definition that
-    # appears later in the document (#4804). Fenced code blocks are skipped.
+    # appears later in the document. Fenced code blocks are skipped.
     ref_defs: dict[str, str] = {}
     _in_fence = False
     for _line in lines:
@@ -630,7 +630,7 @@ def extract_markdown(path: Path) -> dict:
             return
         suffix = resolved.suffix.lower()
         if suffix in CODE_EXTENSIONS and suffix not in _MD_LINKABLE_EXTS:
-            # Record source file link as citation; resolver mints edge if scanned (#4804).
+            # Record source file link as citation; resolver mints edge if scanned.
             try:
                 cited = os.path.relpath(
                     str(resolved), str(source_dir)
@@ -665,11 +665,11 @@ def extract_markdown(path: Path) -> dict:
             return
         linked_targets.add(tgt_nid)
         # Stamp the resolved target file (mirroring the JS/Python import
-        # stamps, #1814/#2213) so the #2169 remap pass can canonicalize this
+        # stamps) so the #2169 remap pass can canonicalize this
         # edge's target on an incremental run where the linked doc is not in
         # the batch — without it the target keeps an absolute-path-derived id
         # that matches no node in the merged graph and the md->md reference
-        # silently drops (#2211). Existence-gated: a link to a nonexistent
+        # silently drops. Existence-gated: a link to a nonexistent
         # doc must stay dangling, exactly as before. The stamp is transient
         # and popped before graph.json ships.
         target_file = None
@@ -688,7 +688,7 @@ def extract_markdown(path: Path) -> dict:
         line_num = line_num_0 + 1
 
         # Skip over fenced code blocks so their contents are not parsed as
-        # headings, but do not emit nodes/edges for them (#1077).
+        # headings, but do not emit nodes/edges for them.
         if fence is not None:
             if _fence_closes(line_text, fence):
                 fence = None
@@ -770,7 +770,7 @@ def extract_markdown(path: Path) -> dict:
         if ref_def:
             # A definition is not a use. A document definition keeps its
             # page-level link edge; a source-file definition creates no
-            # citation at all — only its uses carry section evidence (#4804).
+            # citation at all — only its uses carry section evidence.
             _url = ref_def.group(2) or ref_def.group(3)
             if _url and not _is_code_file_link(_url, source_dir):
                 add_link(_url, line_num, owner=file_nid)

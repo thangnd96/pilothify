@@ -1,5 +1,5 @@
 """A parameter of a file-scope anonymous callback must shadow same-named
-functions elsewhere in the corpus (#4448).
+functions elsewhere in the corpus.
 
 #3124 walks the body of a closure passed in a module-level call statement
 (`items.forEach(function (value) { ... })`, AngularJS `.controller(...)`,
@@ -7,7 +7,7 @@ functions elsewhere in the corpus (#4448).
 closure's own params/locals for that walk. A parameter passed on as a call
 argument was then resolved against the corpus-wide label index and became an
 `indirect_call` from the file to any function named like it. Inside a named
-function the same code was already handled (#2241, #2568).
+function the same code was already handled.
 """
 from __future__ import annotations
 

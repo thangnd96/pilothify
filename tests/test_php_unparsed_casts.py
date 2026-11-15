@@ -1,4 +1,4 @@
-"""PHP 8.5 `(void)` casts and casts applied to `match (...)` (#4202).
+"""PHP 8.5 `(void)` casts and casts applied to `match (...)`.
 
 tree-sitter-php has no `(void)` cast and cannot parse `(string) match (...)`,
 so those statements came out as ERROR nodes: the call behind the cast was lost

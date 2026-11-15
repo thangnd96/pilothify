@@ -163,7 +163,7 @@ def test_query_cli_question_containing_help_text_still_runs(monkeypatch, tmp_pat
 
 def test_explain_cli_lone_help_flag_prints_usage(monkeypatch, tmp_path, capsys):
     """`pilothify explain --help`/`-h` with nothing else shows usage instead of
-    running a literal node lookup for the text "--help" (#4830 extended): explain
+    running a literal node lookup for the text "--help" (extended): explain
     is a free-text command with the same standalone-help gap as query."""
     graph_path = _write_graph(tmp_path)
     monkeypatch.setattr(mainmod, "_check_skill_version", lambda _: None)

@@ -1,4 +1,4 @@
-"""TS/JS receiver-typed member calls beyond `this.field` (#1630).
+"""TS/JS receiver-typed member calls beyond `this.field`.
 
 The #1316 resolver handled `this.injectedField.method()`. This adds two receiver
 tiers whose type is statically known but was previously dropped, so
@@ -82,7 +82,7 @@ def test_array_typed_receiver_emits_no_edge(tmp_path):
     assert not any("h(" in s and "doThing" in t for s, t in calls)
 
 
-# ── Origin gate (#2553) ──────────────────────────────────────────────────────
+# ── Origin gate ──────────────────────────────────────────────────────
 # A receiver typed as a THIRD-PARTY `Repo` must never bind, by name alone, to an
 # unrelated local `class Repo` the caller's file neither defines nor imports.
 
@@ -310,7 +310,7 @@ def test_a_pure_esm_corpus_still_activates_the_resolver(tmp_path):
 
 
 def _parked(r) -> list[dict]:
-    # `file` (the parked call-site path, #3152 issue 3) is dropped: its exact
+    # `file` (the parked call-site path issue 3) is dropped: its exact
     # value depends on the root these cases extract without, and they assert the
     # receiver/callee/lang/line shape, not the location.
     return [{k: v for k, v in entry.items() if k != "file"}
@@ -519,7 +519,7 @@ def test_inherited_field_of_a_package_type_emits_no_edge(tmp_path):
     assert not any(s == ".run()" and "save" in str(t) for s, t in calls), calls
 
 
-# ── Assignments made after construction (#4473) ───────────────────────────────
+# ── Assignments made after construction ───────────────────────────────
 
 def test_instance_method_assignment_types_this_field_calls(tmp_path):
     calls, r = _calls(tmp_path, {

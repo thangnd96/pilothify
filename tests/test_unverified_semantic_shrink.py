@@ -1,4 +1,4 @@
-"""Tests for unverified semantic document node shrink protection (#3203).
+"""Tests for unverified semantic document node shrink protection.
 
 When an incremental extraction produces strictly fewer semantic document nodes
 for an existing source file (prior > 1 and fresh < prior), it is treated as an

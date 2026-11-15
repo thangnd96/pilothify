@@ -1,4 +1,4 @@
-"""A node whose source_file equals the scan root must not crash build (#1618).
+"""A node whose source_file equals the scan root must not crash build.
 
 `_norm_source_file` relativizes an absolute source_file that equals the scan root
 to `Path('.')`. `_semantic_id_remap` then fed that into `_file_stem`, whose
@@ -44,7 +44,7 @@ def test_build_from_json_with_root_level_concept_node():
 
 
 def test_normal_semantic_remap_still_works():
-    # regression guard: a real per-file node still gets remap consideration (#1504)
+    # regression guard: a real per-file node still gets remap consideration
     remap = _semantic_id_remap(
         [{"id": "foo", "source_file": "src/foo.py", "_origin": "semantic"}], "/proj")
     assert isinstance(remap, dict)
@@ -55,7 +55,7 @@ def test_normal_semantic_remap_still_works():
 def test_semantic_id_remap_is_idempotent_when_stem_contains_legacy_stem():
     """A file whose parent dir name equals its stem (.claude/CLAUDE.md ->
     canonical `claude_claude`, legacy `claude`) must not re-prefix an
-    already-canonical id on every build (#1917). Without the guard, ids grow
+    already-canonical id on every build. Without the guard, ids grow
     `claude_x` -> `claude_claude_x` -> `claude_claude_claude_x` ..., defeating
     the same_topology/no_change short-circuits."""
     nodes = [{"id": "claude_pilothify_trigger",

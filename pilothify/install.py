@@ -100,7 +100,7 @@ def _release_skill_lock(fh) -> None:
 def _skill_lock(skill_dir: Path, *, wait: bool = True):
     """Serialize every process that writes ``skill_dir``.
 
-    Install, uninstall and the CLI's stale-skill refresh (#1805) all write the
+    Install, uninstall and the CLI's stale-skill refresh all write the
     same files and stage through fixed ``SKILL.md.tmp`` / ``references.tmp``
     names, so two of them at once would write through each other - and an
     uninstall racing a refresh could see the refresh put the skill back.
@@ -154,7 +154,7 @@ def _write_version_stamp(skill_dst: Path, version: str) -> None:
     then ``os.replace``. Unlike ``Path.write_text`` (and unlike
     ``paths.write_text_atomic``, which resolves through symlinks), ``os.replace``
     replaces a managed symlink in place — consistent with SKILL.md /
-    ``references/`` and crash-safe against a half-written stamp (#3286).
+    ``references/`` and crash-safe against a half-written stamp.
     """
     version_file = skill_dst.parent / ".pilothify_version"
     fd, tmp_name = tempfile.mkstemp(
@@ -210,7 +210,7 @@ def _platform_skill_destination(platform_name: str, *, project: bool = False, pr
             return (project_dir or Path(".")) / ".gemini" / "skills" / "pilothify" / "SKILL.md"
         # Gemini CLI reads ~/.gemini/skills on every OS. ~/.agents/skills is the
         # `agents` platform's destination, and sharing it let each platform
-        # overwrite and uninstall the other's skill (#2800).
+        # overwrite and uninstall the other's skill.
         return Path.home() / ".gemini" / "skills" / "pilothify" / "SKILL.md"
 
     if platform_name == "opencode":
@@ -221,7 +221,7 @@ def _platform_skill_destination(platform_name: str, *, project: bool = False, pr
     if platform_name == "hermes":
         if project:
             return (project_dir or Path(".")) / ".hermes" / "skills" / "pilothify" / "SKILL.md"
-        # On Windows, Hermes scans %LOCALAPPDATA%\hermes\skills, not ~/.hermes (#1403).
+        # On Windows, Hermes scans %LOCALAPPDATA%\hermes\skills, not ~/.hermes.
         if platform.system() == "Windows":
             local_appdata = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local"))
             return local_appdata / "hermes" / "skills" / "pilothify" / "SKILL.md"
@@ -240,7 +240,7 @@ def _platform_skill_destination(platform_name: str, *, project: bool = False, pr
     if platform_name == "pi":
         # Pi reads project skills from ./.pi/skills; ~/.pi/agent/skills is the
         # user-scope path only. Writing the $HOME shape into a project left the
-        # skill where Pi never looks, with no error (#5011).
+        # skill where Pi never looks, with no error.
         if project:
             return (project_dir or Path(".")) / ".pi" / "skills" / "pilothify" / "SKILL.md"
         return Path.home() / _PLATFORM_CONFIG["pi"]["skill_dst"]
@@ -381,7 +381,7 @@ def _copy_skill_file(platform_name: str, *, project: bool = False, project_dir: 
         # A SKILL.md that differs from what is about to be written may carry the
         # user's local edits (a tuned description:, extra guidance); replacing it
         # wholesale with only "skill installed ->" for output read like a no-op
-        # while the edits were gone (#3144). Keep one .bak beside it and say so.
+        # while the edits were gone. Keep one .bak beside it and say so.
         # Every upgrade differs too - the .bak is overwritten each install, so it
         # always holds exactly the previous copy.
         try:
@@ -479,7 +479,7 @@ def _remove_skill_registration(target: Path, prefix: str, *, only_pilothify_writ
     registration bullet goes; a hand-written `# pilothify` section stays, and a
     file holding both is left as is, with a hint, rather than guessed at.
 
-    Degrades instead of raising, as the install side does (#3474): a CLAUDE.md
+    Degrades instead of raising, as the install side does: a CLAUDE.md
     that nix/home-manager links into a read-only store must not abort an
     uninstall halfway, with later platforms not yet cleaned.
     """
@@ -511,17 +511,17 @@ def _remove_skill_registration(target: Path, prefix: str, *, only_pilothify_writ
                 )
                 return
         # Match the exact H1 `# pilothify` registration heading, never a substring of a
-        # user's `## pilothify`/`### pilothify` (#2062). Section runs to the next H1.
+        # user's `## pilothify`/`### pilothify`. Section runs to the next H1.
         # _SKILL_REGISTRATION_MARKER is the single source of truth for this heading,
         # shared with _register_always_on_block so an insert and its removal always
-        # agree on what they're matching (#3668).
+        # agree on what they're matching.
         cleaned = _remove_marker_section(content, _SKILL_REGISTRATION_MARKER, boundary_prefix="# ")
         if cleaned is None:
             return
         # A symlink stays: writing through it cleans the file it points to.
         if cleaned or target.is_symlink():
             # The file's own line ending is restored, so the rest of its content is
-            # never re-translated on write (#3668/#4360).
+            # never re-translated on write.
             _write_keep_newline(target, bom + cleaned + "\n", newline)
             print(f"{prefix}pilothify skill registration removed from {_shown_path(target)}")
         else:
@@ -541,7 +541,7 @@ def _claude_global_registration() -> "tuple[Path, str]":
     """The CLAUDE.md a global (non-project) Claude install registers the skill in,
     and the skill path that registration names: the same choice install() makes.
 
-    CLAUDE_CONFIG_DIR relocates both, as it does the skill copy (#527, #2694).
+    CLAUDE_CONFIG_DIR relocates both, as it does the skill copy.
     """
     config = os.environ.get("CLAUDE_CONFIG_DIR")
     if config:
@@ -569,20 +569,20 @@ def _claude_pretooluse_hooks(strict: bool = False, project: bool = False) -> "li
 
     The command invokes `pilothify hook-guard <search|read>` via the absolute exe
     path (`_resolve_pilothify_exe`) — or, for a project-scoped install, via the
-    bare `pilothify` command, since that config gets committed (#3129). Either
+    bare `pilothify` command, since that config gets committed. Either
     form parses under sh, cmd.exe and PowerShell alike — this is the #522 fix,
     and mirrors the codex hook. Matchers are
     "Bash|Grep" and "Read|Glob" and the command always contains "pilothify", so the
     existing install/uninstall filters find and replace both old bash hooks and
     these. "Grep" is in the search matcher because current Claude Code routes
-    content search through its dedicated Grep tool, not Bash (#1986) — a
+    content search through its dedicated Grep tool, not Bash — a
     Bash-only matcher never fired on the agent's primary search path.
 
     When ``strict`` is set, both hooks carry ``--strict`` so Read and dedicated
     Grep share one block per session; Bash and Glob remain advisory. The
     ``PILOTHIFY_HOOK_STRICT`` env var can force it on or off without a reinstall.
 
-    Each entry carries a ``timeout`` (#3314): unset, Claude Code defaults a
+    Each entry carries a ``timeout``: unset, Claude Code defaults a
     command hook to 600s, so a single wedged guard (a stuck filesystem, a
     hung subprocess) stalls the surrounding tool call for ten minutes on
     every Bash/Grep/Read/Glob call -- the four highest-frequency tools an
@@ -620,7 +620,7 @@ def _claude_sessionstart_hooks(project: bool = False) -> "list[dict]":
     ]
 # Tokens that only ever appear in a command pilothify itself writes: its
 # `hook-guard <search|read|gemini>` and `hook-check` subcommands. Legacy
-# (pre-#522) installs shipped an inline POSIX bash guard instead, whose command
+# (pre-) installs shipped an inline POSIX bash guard instead, whose command
 # always gated on pilothify's own output dir, so that marker identifies it too.
 _PILOTHIFY_HOOK_SUBCOMMANDS = ("hook-guard", "hook-check")
 _PILOTHIFY_LEGACY_HOOK_MARKER = "pilothify-out/"
@@ -633,7 +633,7 @@ def _is_pilothify_hook_command(command: str) -> bool:
     ``pilothify-out/`` path its pre-#522 inline bash guard gated on (legacy
     installs). Deliberately command-scoped: the old ``"pilothify" in str(group)``
     match also caught an unrelated group whose command path merely contained the
-    word "pilothify" (#4359).
+    word "pilothify".
     """
     lowered = command.lower()
     if "pilothify" not in lowered:
@@ -648,7 +648,7 @@ def _is_pilothify_hook_entry(entry: object) -> bool:
 
     Non-dict and non-command entries are never pilothify's (the old uninstall
     filter called ``.get`` on every entry and raised ``AttributeError`` on a
-    plain string, #4359).
+    plain string).
     """
     if not isinstance(entry, dict) or entry.get("type") != "command":
         return False
@@ -665,7 +665,7 @@ def _strip_pilothify_hooks(groups: "list") -> "list":
     passed through untouched, and a group without a pilothify entry is never
     rewritten. This replaces the old group-level ``"pilothify" in str(group)``
     filter, which removed whole groups (and other tools' commands in them) and
-    any unrelated group whose command path happened to contain the word (#4359).
+    any unrelated group whose command path happened to contain the word.
     """
     kept: "list" = []
     for group in groups:
@@ -695,7 +695,7 @@ def _skill_registration(skill_path: str = "~/.claude/skills/pilothify/SKILL.md")
 def _shown_path(path: Path) -> str:
     """Name *path* for install/uninstall output, plus the file it points to when it
     is a symlink. Writing through a symlinked CLAUDE.md edits the target, so
-    printing only the link hid which file was changed (#3805)."""
+    printing only the link hid which file was changed."""
     if path.is_symlink():
         return f"{path} -> {path.resolve()}"
     return str(path)
@@ -708,15 +708,15 @@ def _register_always_on_block(target: Path, prefix: str, registration: str) -> N
     paired with _remove_claude_skill_registration's own H1 match) rather than a
     bare append, so a stale or edited block gets refreshed on re-install instead
     of the bare "pilothify" substring check silently treating any unrelated
-    mention of the word as already-registered and skipping every re-run (#3668).
+    mention of the word as already-registered and skipping every re-run.
 
     Written through the shared _read_keep_newline/_write_keep_newline pair, so an
     existing file's own line endings survive the read-modify-write: a plain
     read_text/write_text round-trip turns a bare-LF file into CRLF on Windows (and
-    a CRLF file into LF elsewhere) just to append a few lines (#3668/#4360).
+    a CRLF file into LF elsewhere) just to append a few lines.
 
     The skill files are copied before this runs, so a *target* that cannot be
-    read or written must not abort an otherwise-complete install (#3474). That
+    read or written must not abort an otherwise-complete install. That
     happens whenever the dotfile is managed declaratively -- nix/home-manager
     symlinks ``~/.claude/CLAUDE.md`` into a read-only /nix/store, and chezmoi or
     stow with read-only sources leave the same shape.
@@ -905,18 +905,18 @@ def _replace_or_append_section(
     The section runs from that heading to the line before the next
     ``boundary_prefix`` heading (default the next H2), or to EOF if none
     follows. This lets older installs receive the updated copy without users
-    having to uninstall and reinstall (issue #580).
+    having to uninstall and reinstall.
 
     ``boundary_prefix`` must match whatever level ``marker`` itself is (``"# "``
     for an H1 marker, the default ``"## "`` for an H2 one) — mirrors
     ``_remove_marker_section``'s own ``boundary_prefix`` so an insert and its
-    matching removal agree on where a section ends (#3668).
+    matching removal agree on where a section ends.
 
     The heading is matched only when a line *is* exactly ``marker`` (after
     stripping surrounding whitespace), never as a substring. Matching ``##
     pilothify`` inside a bullet or an inline reference used to anchor the replace
     on that mention and delete every line from there to the next heading,
-    silently destroying hand-curated content (#1688). When several exact
+    silently destroying hand-curated content. When several exact
     headings exist, the last one is used, since pilothify's section is appended.
     """
     lines = content.split("\n")
@@ -955,11 +955,11 @@ def _remove_marker_section(content: str, marker: str, boundary_prefix: str = "##
     The heading is matched only when a line *is* exactly ``marker`` (after
     stripping surrounding whitespace), never as a substring. The old uninstall
     regex ``## pilothify`` was unanchored, so it matched inside a user's
-    ``### pilothify`` heading and deleted hand-written content (#2062) — the same
+    ``### pilothify`` heading and deleted hand-written content — the same
     class of bug the install side hardened against in #1688. Each section runs to
     the line before the next ``boundary_prefix`` heading (default the next H2) or
     EOF, mirroring ``_replace_or_append_section``. All exact-heading sections are
-    removed (pre-#1688 installs could leave duplicates).
+    removed (pre- installs could leave duplicates).
 
     Returns None when no exact ``marker`` line exists — the caller must then leave
     the file untouched. This doubles as the guard: a substring mention (a bullet,
@@ -999,7 +999,7 @@ def _read_keep_newline(path: Path) -> "tuple[str, str]":
     to ``\n``, so the file's convention is lost before the write side ever sees
     it; a plain ``write_text`` then re-emits the platform default and rewrites
     the WHOLE file's endings, turning an LF file into CRLF on Windows (or a CRLF
-    file into LF on Linux) just to merge in a few lines (#4360). Reading the bytes
+    file into LF on Linux) just to merge in a few lines. Reading the bytes
     and normalising here keeps the original ending to restore.
     """
     raw = path.read_bytes().decode("utf-8")
@@ -1012,7 +1012,7 @@ def _write_keep_newline(path: Path, text: str, newline: str = "\n") -> None:
 
     ``newline=""`` stops ``write_text`` from translating on the way out; the one
     conversion from bare ``\n`` to the file's own ending happens here, so every
-    install/uninstall writer shares a single line-ending contract (#4360). A file
+    install/uninstall writer shares a single line-ending contract. A file
     with no prior convention (a fresh install) is written with plain LF, matching
     what the other install writers already emit.
     """
@@ -1093,8 +1093,8 @@ def install(platform: str = "claude", *, project: bool = False, project_dir: Pat
     if cfg["claude_md"]:
         # Register in the matching Claude Code scope. Honor CLAUDE_CONFIG_DIR
         # for the global (non-project) case, same as _platform_skill_destination
-        # does for the skill copy path (#527) -- this always-on registration
-        # path was missed by that fix (#2694).
+        # does for the skill copy path -- this always-on registration
+        # path was missed by that fix.
         if project:
             claude_md = project_dir / ".claude" / "CLAUDE.md"
             skill_ref = ".claude/skills/pilothify/SKILL.md"
@@ -1144,14 +1144,14 @@ _GEMINI_MD_MARKER = "## pilothify"
 # (or CODEBUDDY.md), a different section from the "always-on instructions"
 # block the H2 markers above anchor. Kept at H1 specifically so it can never
 # collide with a genuine user-authored "## pilothify" heading elsewhere in the
-# same file (#2062) — _remove_claude_skill_registration matches on this same
+# same file — _remove_claude_skill_registration matches on this same
 # constant so the two stay in sync.
 _SKILL_REGISTRATION_MARKER = "# pilothify"
 def _gemini_hook(project: bool = False) -> dict:
     """Gemini CLI BeforeTool hook, resolved to a shell-agnostic `pilothify` call.
 
     A project-scoped install emits the bare command, since .gemini/settings.json
-    is then committed and an installing machine's path is wrong there (#3129).
+    is then committed and an installing machine's path is wrong there.
     """
     exe = _resolve_pilothify_exe(project=project)
     if " " in exe and not exe.startswith('"'):
@@ -1192,7 +1192,7 @@ def gemini_install(project_dir: Path | None = None, *, project: bool = False) ->
         print(f"pilothify already configured in {target.resolve()} (no change)")
     else:
         # The file's own line ending is restored on write, so its existing
-        # content is never re-translated (#3668/#4360).
+        # content is never re-translated.
         _write_keep_newline(target, new_content, newline)
         print(f"pilothify section written to {target.resolve()}")
 
@@ -1205,7 +1205,7 @@ def gemini_install(project_dir: Path | None = None, *, project: bool = False) ->
     print("Gemini CLI will now check the knowledge graph before answering")
     print("codebase questions and rebuild it after code changes.")
 def _refuse_to_modify(settings_path: Path) -> "NoReturn":
-    """Abort a hook install rather than clobber a config file we can't parse (#2167)."""
+    """Abort a hook install rather than clobber a config file we can't parse."""
     print(
         f"[pilothify] refusing to modify {settings_path}: not valid JSON "
         "(fix or move it and re-run)",
@@ -1218,8 +1218,8 @@ def _read_settings_for_merge(settings_path: Path) -> dict:
     A missing file yields a fresh ``{}`` (first install). An existing file that
     cannot be parsed as a JSON object aborts via ``_refuse_to_modify`` instead of
     silently falling back to ``{}`` — the old fallback rewrote the whole file and
-    destroyed every setting the user had (#2167). Reads with ``utf-8-sig`` so a
-    UTF-8 BOM (the most likely parse-error trigger, same class as #2163) is
+    destroyed every setting the user had. Reads with ``utf-8-sig`` so a
+    UTF-8 BOM (the most likely parse-error trigger, same class as) is
     tolerated rather than fatal.
     """
     if not settings_path.exists():
@@ -1237,7 +1237,7 @@ def _write_settings_with_backup(settings_path: Path, settings: dict) -> None:
     Skips the write entirely when the output is identical to what is on disk
     (idempotent re-install: no backup churn, no mtime churn). Otherwise copies
     the existing file to ``<name>.pilothify-bak`` (single rolling backup) before
-    overwriting, so one bad merge can never destroy the user's config (#2167).
+    overwriting, so one bad merge can never destroy the user's config.
     """
     output = json.dumps(settings, indent=2)
     if settings_path.exists():
@@ -1280,7 +1280,7 @@ def _uninstall_gemini_hook(project_dir: Path) -> None:
 def gemini_uninstall(project_dir: Path | None = None, *, project: bool = False, remove_user_skill: bool | None = None) -> None:
     """Remove the pilothify section from GEMINI.md, uninstall hook, and remove skill file.
 
-    Scope rules (#2215): a bare call removes the user-global skill; passing
+    Scope rules: a bare call removes the user-global skill; passing
     ``project_dir`` (or ``project=True``) scopes skill removal to that project
     and leaves the global tree untouched, unless ``remove_user_skill=True``
     explicitly opts back into the global delete (as ``uninstall_all`` does).
@@ -1442,7 +1442,7 @@ def _kiro_install(project_dir: Path) -> None:
     # Skill file + references/ sidecar + .pilothify_version stamp via the shared
     # progressive-disclosure helper.  Previously this used a bare write_text that
     # bypassed _copy_skill_file, so the references/ dir and version stamp were
-    # never written even though kiro declares skill_refs: "kiro" (#1142).
+    # never written even though kiro declares skill_refs: "kiro".
     _copy_skill_file("kiro", project=True, project_dir=project_dir)
 
     # Steering file → .kiro/steering/pilothify.md (always-on)
@@ -1453,7 +1453,7 @@ def _kiro_install(project_dir: Path) -> None:
         print(f"  .kiro/steering/pilothify.md  ->  already configured (no change)")
     else:
         # File is wholly pilothify-owned. Overwrite on upgrade so older
-        # report-first wording does not silently linger (issue #580).
+        # report-first wording does not silently linger.
         action = "updated" if steering_dst.exists() else "written"
         steering_dst.write_text(_always_on("kiro-steering"), encoding="utf-8")
         print(f"  .kiro/steering/pilothify.md  ->  always-on steering {action}")
@@ -1609,7 +1609,7 @@ def _cursor_install(project_dir: Path) -> None:
         print(f"pilothify rule at {rule_path} already configured (no change)")
         return
     # File is wholly pilothify-owned. Overwrite on upgrade so older
-    # report-first wording does not silently linger (issue #580).
+    # report-first wording does not silently linger.
     action = "updated" if rule_path.exists() else "written"
     rule_path.write_text(_CURSOR_RULE, encoding="utf-8")
     print(f"pilothify rule {action} at {rule_path.resolve()}")
@@ -1672,7 +1672,7 @@ export const PilothifyPlugin = async ({ directory }) => {
       if (input.tool === "bash") {
         // Separate with ';' not '&&' — Windows PowerShell 5.1 rejects '&&' as a
         // statement separator ("not a valid statement separator"), which broke
-        // the first bash command in every OpenCode session on Windows (#1646).
+        // the first bash command in every OpenCode session on Windows.
         // ';' works in PowerShell 5.1, Bash, and POSIX shells alike.
         output.args.command =
           'echo "[pilothify] Knowledge graph available. Read pilothify-out/GRAPH_REPORT.md for god nodes and architecture context before searching files." ; ' +
@@ -1834,7 +1834,7 @@ import { existsSync } from "fs";
 import { join } from "path";
 
 // ';' not '&&' — Windows PowerShell 5.1 rejects '&&' as a statement
-// separator, breaking the first shell command of the session (#1646).
+// separator, breaking the first shell command of the session.
 const REMINDER =
   'echo "[pilothify] knowledge graph at pilothify-out/. For focused questions, run pilothify query with your question (scoped subgraph, usually much smaller than GRAPH_REPORT.md) instead of grepping raw files. Read GRAPH_REPORT.md only for broad architecture context." ; ';
 
@@ -1888,7 +1888,7 @@ def _opencode_dir(*, project: bool, project_dir: Path | None = None) -> Path:
 
     OpenCode loads plugins from <dir>/plugins/ in both. The global dir has no
     .opencode/ segment, so it cannot be built by joining _OPENCODE_PLUGIN_PATH
-    onto a base the way the project one is (#3398).
+    onto a base the way the project one is.
     """
     if project:
         return (project_dir or Path(".")) / ".opencode"
@@ -1900,7 +1900,7 @@ def _opencode_plugin_is_v1_only(body: str) -> bool:
 
     Releases up to 0.9.74 exported a named ``PilothifyPlugin`` function and
     nothing else. OpenCode 2 needs a default export, so it rejects the file
-    with "Plugin must export a default definition" (#3554, #3732).
+    with "Plugin must export a default definition".
     """
     return body.startswith(_OPENCODE_PLUGIN_HEADER) and "export default" not in body
 def _opencode_config_names_plugin(opencode_dir: Path) -> bool:
@@ -1916,7 +1916,7 @@ def _drop_opencode_config_entry(opencode_dir: Path) -> bool:
     The entry was the bare path ``.opencode/plugins/pilothify.js``. OpenCode
     loads every file in ``.opencode/plugins/`` on its own, so the entry was
     never needed, and OpenCode 2 reads a bare path as an npm package name and
-    fails to install it (#3732). Returns True when the config changed.
+    fails to install it. Returns True when the config changed.
     """
     config_file = opencode_dir / _OPENCODE_CONFIG_PATH.name
     entry = _OPENCODE_PLUGIN_PATH.as_posix()
@@ -1980,7 +1980,7 @@ def _resolve_pilothify_exe(project: bool = False) -> str:
     for every other clone: it names a directory that does not exist there, and
     the drive letter and ``.EXE`` casing do not even survive between two Windows
     checkouts. A committed hook refers to ``pilothify`` the way it would refer to
-    ``git`` or ``node``, and PATH resolves it per machine (#3129).
+    ``git`` or ``node``, and PATH resolves it per machine.
 
     Falls back to bare 'pilothify' if resolution fails. Using an absolute path
     ensures the hook works in environments where the venv Scripts/ directory is
@@ -2011,7 +2011,7 @@ def _install_codex_hook(project_dir: Path, project: bool = False) -> None:
     """Add pilothify PreToolUse hook to .codex/hooks.json.
 
     A project-scoped install emits the bare command, since .codex/hooks.json is
-    then committed and an installing machine's path is wrong there (#3129).
+    then committed and an installing machine's path is wrong there.
     """
     hooks_path = project_dir / ".codex" / "hooks.json"
     hooks_path.parent.mkdir(parents=True, exist_ok=True)
@@ -2223,7 +2223,7 @@ def _project_uninstall(platform_name: str, project_dir: Path | None = None) -> N
             print("nothing to remove")
     elif platform_name == "codebuddy":
         # project=True keeps `uninstall --project` project-scoped; previously
-        # this deleted the user-global codebuddy skill (#2215).
+        # this deleted the user-global codebuddy skill.
         codebuddy_uninstall(project_dir, project=True)
     else:
         _remove_skill_file(platform_name, project=True, project_dir=project_dir)
@@ -2332,7 +2332,7 @@ def claude_install(project_dir: Path | None = None, strict: bool = False, projec
         print(f"pilothify section written to {target.resolve()}")
 
     # Always re-install the Claude Code PreToolUse hook so an old hook
-    # payload (e.g. pre-issue-#580 wording) is replaced on upgrade.
+    # payload (e.g. pre- wording) is replaced on upgrade.
     _install_claude_hook(project_dir or Path("."), strict=strict, project=project)
 
     print()
@@ -2346,7 +2346,7 @@ def _install_claude_hook(project_dir: Path, strict: bool = False, project: bool 
     """Add pilothify PreToolUse hook to .claude/settings.json.
 
     A project-scoped install emits the bare command, since .claude/settings.json
-    is then committed and an installing machine's path is wrong there (#3129).
+    is then committed and an installing machine's path is wrong there.
     """
     settings_path = project_dir / ".claude" / "settings.json"
     settings_path.parent.mkdir(parents=True, exist_ok=True)
@@ -2377,7 +2377,7 @@ def _uninstall_claude_hook(project_dir: Path) -> None:
     local-only sibling .claude/settings.local.json.
 
     A user may relocate the hook into settings.local.json so it is not committed
-    to a shared repo, so uninstall has to clean whichever file holds it (#1731).
+    to a shared repo, so uninstall has to clean whichever file holds it.
     """
     claude_dir = project_dir / ".claude"
     for name in ("settings.json", "settings.local.json"):
@@ -2447,7 +2447,7 @@ def uninstall_all(project_dir: Path | None = None, purge: bool = False) -> None:
 
     # Skill-file / config-section uninstallers. remove_user_skill=True keeps the
     # historical `pilothify uninstall` behavior: global skill delete plus md/hook
-    # cleanup at the project dir (#2215).
+    # cleanup at the project dir.
     claude_uninstall(pd, remove_user_skill=True)
     codebuddy_uninstall(pd, remove_user_skill=True)
     gemini_uninstall(pd, remove_user_skill=True)
@@ -2466,7 +2466,7 @@ def uninstall_all(project_dir: Path | None = None, purge: bool = False) -> None:
     for line in _kilo_uninstall_global():
         print(f"  {line}")
     _uninstall_opencode_plugin(_opencode_dir(project=True, project_dir=pd))
-    # `pilothify install --platform opencode` writes the plugin here (#3398).
+    # `pilothify install --platform opencode` writes the plugin here.
     _uninstall_opencode_plugin(_opencode_dir(project=False))
     _uninstall_codex_hook(pd)
 
@@ -2494,13 +2494,13 @@ def claude_uninstall(project_dir: Path | None = None, *, project: bool = False, 
 
     Mirrors gemini_uninstall: the bare `pilothify uninstall` and `pilothify claude
     uninstall` must remove the installed skill, not just strip CLAUDE.md, or the
-    progressive-disclosure tree (SKILL.md + references/) is orphaned (#1121).
+    progressive-disclosure tree (SKILL.md + references/) is orphaned.
 
     A user may relocate the section/hook into the local-only files Claude Code
     supports so they are not committed to a shared repo, so uninstall also cleans
-    CLAUDE.local.md, .claude/CLAUDE.local.md and .claude/settings.local.json (#1731).
+    CLAUDE.local.md, .claude/CLAUDE.local.md and .claude/settings.local.json.
 
-    Scope rules (#2215): a bare call removes the user-global skill; passing
+    Scope rules: a bare call removes the user-global skill; passing
     ``project_dir`` (or ``project=True``) scopes skill removal to that project
     and leaves the global tree untouched, unless ``remove_user_skill=True``
     explicitly opts back into the global delete (as ``uninstall_all`` does).
@@ -2627,7 +2627,7 @@ def _uninstall_codebuddy_hook(project_dir: Path) -> None:
 def codebuddy_uninstall(project_dir: Path | None = None, *, project: bool = False, remove_user_skill: bool | None = None) -> None:
     """Remove the pilothify skill tree (SKILL.md + references/) and the CODEBUDDY.md section.
 
-    Scope rules (#2215): a bare call removes the user-global skill; passing
+    Scope rules: a bare call removes the user-global skill; passing
     ``project_dir`` (or ``project=True``) scopes skill removal to that project
     and leaves the global tree untouched, unless ``remove_user_skill=True``
     explicitly opts back into the global delete (as ``uninstall_all`` does).

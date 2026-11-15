@@ -1,4 +1,4 @@
-"""`pilothify extract --code-only` indexes code without an LLM key (#1734).
+"""`pilothify extract --code-only` indexes code without an LLM key.
 
 A mixed repo (code + docs) with no API key configured used to hard-fail on the
 doc/paper/image files. `--code-only` skips the semantic pass so the code graph
@@ -379,7 +379,7 @@ def test_code_only_force_prunes_removed_semantic_files(tmp_path):
 def test_code_only_force_rescan_re_resolves_tsconfig_paths_and_preserves_semantics(tmp_path: Path):
     """#3125 regression: `extract --code-only --force` over an existing graph
     must perform a full code/AST re-scan so updated tsconfig paths take effect on
-    unchanged .ts files, while preserving the existing semantic layer (#2923).
+    unchanged .ts files, while preserving the existing semantic layer.
     """
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -399,7 +399,7 @@ def test_code_only_force_rescan_re_resolves_tsconfig_paths_and_preserves_semanti
         "alias import @/utils must not resolve without tsconfig paths mapping"
     )
 
-    # 2. Seed a semantic file and node into graph.json to verify semantic preservation (#2923)
+    # 2. Seed a semantic file and node into graph.json to verify semantic preservation
     (repo / "ARCH.md").write_text("# Architecture\nDesign notes.\n")
     g1["nodes"].append({
         "id": "doc_arch", "label": "Architecture", "type": "concept",

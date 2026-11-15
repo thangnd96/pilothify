@@ -1,4 +1,4 @@
-"""ObjC category / class-extension interfaces must fold into the base class (#1556).
+"""ObjC category / class-extension interfaces must fold into the base class.
 
 `@interface Foo (Cat)` in `Foo+Cat.h` declares members of an EXISTING class, but the
 extractor keyed its class node off the file stem `Foo+Cat`, minting a SECOND node

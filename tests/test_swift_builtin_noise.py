@@ -26,7 +26,7 @@ def test_god_nodes_excludes_swift_builtin_labels(builtin_label: str) -> None:
     """Swift framework symbols must be filtered from god_nodes output.
 
     Constructs a graph where the builtin-labelled node has the highest degree
-    (the #2147 report shape: `Foundation` at 105 edges, `NSLock` at 102) and a
+    (the  report shape: `Foundation` at 105 edges, `NSLock` at 102) and a
     real project abstraction has lower degree. The builtin must be excluded and
     the project symbol kept.
 
@@ -88,7 +88,7 @@ def test_god_nodes_excludes_swift_builtin_labels(builtin_label: str) -> None:
 
 
 def test_swift_builtin_receiver_does_not_bind_to_user_symbol(tmp_path):
-    # #2147 (same shape as #1726 for TS): a receiver typed with a builtin
+    # #2147 (same shape as  for TS): a receiver typed with a builtin
     # (`let payload: Data`) must not have its member calls bound to a user type
     # that happens to be named `Data` in another file.
     (tmp_path / "Model.swift").write_text(
@@ -121,7 +121,7 @@ def test_swift_builtin_receiver_does_not_bind_to_user_symbol(tmp_path):
 
 def test_swift_user_receiver_type_still_resolves(tmp_path):
     # Guard must be a no-op for genuine user types: a member call on a
-    # user-typed property still resolves cross-file (#1356 inference table).
+    # user-typed property still resolves cross-file (inference table).
     (tmp_path / "Engine.swift").write_text(
         "class AudioEngine {\n"
         "    func play() {}\n"

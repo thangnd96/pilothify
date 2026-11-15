@@ -1,4 +1,4 @@
-"""Same-basename cross-extension re-exports must not collapse to a self-cycle (#1814).
+"""Same-basename cross-extension re-exports must not collapse to a self-cycle.
 
 A hand-written ``.mjs`` plain-ESM runtime plus a thin typed ``.ts`` wrapper that
 re-exports it (``export { N } from "./foo.mjs"``) is a common convention. Because
@@ -11,7 +11,7 @@ importer's own variant — a phantom ``foo.ts -> foo.ts`` self-loop reported as 
 1-file import cycle.
 
 These lock: the salted node ids stay unchanged (the fix does NOT make ids
-extension-aware — Option A rejected, #1033), the re-export edge lands on the
+extension-aware — Option A rejected), the re-export edge lands on the
 sibling node, and no phantom 1-file cycle survives.
 """
 from __future__ import annotations

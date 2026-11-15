@@ -1,10 +1,10 @@
-"""Re-extraction must collect the placeholders it strands, not only prunes (#4399).
+"""Re-extraction must collect the placeholders it strands, not only prunes.
 
 build_merge drops the old nodes and edges of re-extracted files by source_file.
 A source-less placeholder (an external type like `List`, a namespace node) is
 owned by no file, so it survived with no edges, and the #2807 sweep only ran
 under prune_sources. Two ways to get there: per-file stubs re-pointed at a shared
-node (#4247 upgrade), and an edit that removes a type's last reference.
+node (upgrade), and an edit that removes a type's last reference.
 """
 import json
 from pathlib import Path

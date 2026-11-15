@@ -86,7 +86,7 @@ def extract_commonlisp(path: Path) -> dict:
         return {"nodes": [], "edges": [], "error": str(e)}
 
     # Path-qualified, not the bare `path.stem`: same-named .lisp files in
-    # different directories must not collide (#1504). Pre-collapsed through
+    # different directories must not collide. Pre-collapsed through
     # `_make_id` because `_cl_id` would otherwise map the `/` separators to
     # `_slash` via _CL_CHAR_MAP.
     stem = _make_id(_file_stem(path))
@@ -145,7 +145,7 @@ def extract_commonlisp(path: Path) -> dict:
         has a real target instead of dangling. The corpus rewire collapses it
         onto a unique in-corpus `defpackage` of the same name; an external one
         (cl, alexandria) stays a sourceless leaf. `origin_file` is stripped
-        before persist (no #1899 leak); a sourced bare stub would salt the id."""
+        before persist (no  leak); a sourced bare stub would salt the id."""
         nid = _cl_id(mod_name)
         if nid not in seen_ids:
             seen_ids.add(nid)

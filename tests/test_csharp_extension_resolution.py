@@ -1,4 +1,4 @@
-"""Production behaviour for C# extension-call binding (#4828).
+"""Production behaviour for C# extension-call binding.
 
 Ground truth lives in ``tests/csharp_extension_harness.py``: ``expect`` edges must
 exist in the real pipeline output, ``forbid`` edges must not. ``STAGE_FIXTURES``

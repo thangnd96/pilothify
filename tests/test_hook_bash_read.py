@@ -1,7 +1,7 @@
 """Reading code with cat/sed/head/tail/... in Bash gets the Read nudge.
 
 The Read|Glob matcher gives the read nudge, but Bash goes to `hook-guard
-search`, which only reacted to search commands (_bash_invokes_search, #3121).
+search`, which only reacted to search commands (_bash_invokes_search).
 `cat src/app.py`, `head -50 src/app.py` or `nl src/app.py` read indexed code
 with no nudge at all, and `sed -n 1,80p src/app.py` got the generic search
 nudge without the file's symbols. Now a Bash command that prints an in-project
@@ -149,9 +149,9 @@ SILENT = [
     "cat -",
     'echo "cat src/app.py"',       # prose, not an executed reader
     "# cat src/app.py",
-    "cat ../elsewhere/other.py",   # outside the project (#1840)
+    "cat ../elsewhere/other.py",   # outside the project
     "cat {tmp}/elsewhere/other.py",
-    "cat pilothify-out/GRAPH_REPORT.md",  # graph output (#4961)
+    "cat pilothify-out/GRAPH_REPORT.md",  # graph output
     "head pilothify-out/graph.json",
     "cat $HOME/src/app.py",        # shell expansion: target unknown
     "cat src/*.py",

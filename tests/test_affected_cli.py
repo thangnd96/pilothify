@@ -63,7 +63,7 @@ def test_affected_cli_relation_filter_limits_reverse_traversal(monkeypatch, tmp_
 
 def test_affected_cli_forces_directed_on_undirected_graph(monkeypatch, tmp_path, capsys):
     """A graph persisted with directed=false must still recover caller->callee
-    direction (#1174): affected on the callee returns the caller, not the callee
+    direction: affected on the callee returns the caller, not the callee
     or nothing. Without forcing directed=True, node_link_graph builds an
     undirected Graph, predecessors() collapses, and the reverse traversal breaks.
     """
@@ -98,7 +98,7 @@ def test_affected_cli_forces_directed_on_undirected_graph(monkeypatch, tmp_path,
 def test_affected_cli_loads_edges_keyed_graph(monkeypatch, tmp_path, capsys):
     """pilothify's `extract` writes graph.json with an "edges" key (not networkx's
     default "links"). affected.load_graph must handle it; before the edges/links
-    normalization it raised an uncaught KeyError: 'links' (same class as #1198)."""
+    normalization it raised an uncaught KeyError: 'links'."""
     graph = nx.DiGraph()
     graph.add_node("target", label="Foo", source_file="pkg/foo.py", source_location="L1")
     graph.add_node("caller", label="X()", source_file="app.py", source_location="L4")
@@ -340,7 +340,7 @@ def test_affected_resolves_equivalent_path_forms(tmp_path, monkeypatch):
 
 
 def test_affected_absolute_seed_resolves_via_graph_root_off_cwd(tmp_path, monkeypatch, capsys):
-    """An absolute-path seed resolves off the graph's location, not the cwd (#2706).
+    """An absolute-path seed resolves off the graph's location, not the cwd.
 
     The shipped `./`/absolute fix only matched when the working directory already
     was the analysed repo root. Editors and scripts pass an absolute path from
@@ -375,7 +375,7 @@ def test_affected_absolute_seed_resolves_via_graph_root_off_cwd(tmp_path, monkey
 
 def test_affected_absolute_seed_outside_root_misses_cleanly(tmp_path, monkeypatch, capsys):
     """An absolute seed that is NOT under the derived repo root must report a clean
-    no-match, not silently traverse from a wrong/guessed node (#2706)."""
+    no-match, not silently traverse from a wrong/guessed node."""
     from pilothify.paths import PILOTHIFY_OUT_NAME
 
     repo_root = tmp_path / "repo"
@@ -393,7 +393,7 @@ def test_affected_absolute_seed_outside_root_misses_cleanly(tmp_path, monkeypatc
     monkeypatch.setattr(mainmod, "_check_skill_version", lambda _: None)
     monkeypatch.setattr(mainmod.sys, "argv",
                         ["pilothify", "affected", outside_seed, "--graph", str(gp)])
-    # An unmatched seed now exits EXIT_NOT_FOUND instead of 0 (#4792).
+    # An unmatched seed now exits EXIT_NOT_FOUND instead of 0.
     with pytest.raises(SystemExit) as excinfo:
         mainmod.main()
     from pilothify.cli import EXIT_NOT_FOUND

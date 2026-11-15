@@ -224,7 +224,7 @@ def test_cross_file_indirect_survives_id_relativization(tmp_path):
         os.chdir(old)
     nid = {n["label"].rstrip("()"): n["id"] for n in r["nodes"]}
     assert (nid["schedule"], nid["on_event"]) in _rels(r, "indirect_call")
-    # the internal callable marker now persists to graph.json (#2438), so an
+    # the internal callable marker now persists to graph.json, so an
     # incremental rebuild can resolve indirect_call edges into unchanged targets.
     assert any(n.get("_callable") for n in r["nodes"])
 
@@ -309,7 +309,7 @@ def test_cross_file_param_shadow_emits_no_indirect_call(tmp_path):
     assert (nid["schedule"], nid["on_event"]) not in indirect
 
 
-# ── Dispatch tables (#1566 slice 1): functions referenced as collection values ─
+# ── Dispatch tables (slice 1): functions referenced as collection values ─
 # A function listed as a VALUE in a dict/list/set/tuple literal (a route/handler
 # registry) is an indirect dependency. Same INFERRED relation, same guards:
 # callable-target-only, not shadowed, dict keys excluded.
@@ -402,7 +402,7 @@ def test_cross_file_dict_registry_emits_indirect_call(tmp_path):
     assert (reg_file, nid["on_event"]) in indirect
 
 
-# ── JS / TS (#1566 slice 5) ───────────────────────────────────────────────────
+# ── JS / TS (slice 5) ───────────────────────────────────────────────────
 # The same model for JS/TS: callbacks passed by name (`arr.map(fn)`,
 # `setTimeout(fn)`, Express `app.get("/", handler)`) and functions listed in
 # object/array dispatch tables. Same INFERRED relation, same guards, plus arrow-

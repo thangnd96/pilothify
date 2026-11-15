@@ -1,4 +1,4 @@
-"""Dict-shaped hyperedge member refs must never abort a build (#2486).
+"""Dict-shaped hyperedge member refs must never abort a build.
 
 LLM/subagent drift sometimes emits a hyperedge member as an object
 (``{"id": "a_ts"}``) instead of a bare id string. A dict is unhashable, so the
@@ -96,9 +96,9 @@ def test_sanitize_fragment_coerces_dict_members_to_strings(capsys):
 def test_numeric_members_coerced_via_aliases(capsys):
     """A tolerated member alias must coerce numeric ids like the canonical key.
 
-    ``_coerce_non_string_ids`` (#2326) str-coerces numeric node ids and only the
+    ``_coerce_non_string_ids`` str-coerces numeric node ids and only the
     ``nodes`` member list, so a hyperedge that spells its members ``members`` or
-    ``node_ids`` (#1561) kept bare ints while its nodes became ``"1"``/``"2"``.
+    ``node_ids`` kept bare ints while its nodes became ``"1"``/``"2"``.
     Every member then matched no built node and the whole hyperedge was dropped,
     while the same input under ``nodes`` survives.
     """

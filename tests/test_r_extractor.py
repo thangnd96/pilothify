@@ -310,7 +310,7 @@ def test_r_operator_fallback_does_not_collide_with_ordinary_binding(tmp_path):
 def test_r_partial_symbol_operator_does_not_collide_with_ordinary(tmp_path):
     # A partially-symbolic backtick name (`%foo%`) normalizes to the same _make_id
     # suffix as an ordinary `foo`, so without the backtick-namespace fix the second
-    # node is silently dropped by the seen_ids merge (#4253 follow-up).
+    # node is silently dropped by the seen_ids merge.
     source = tmp_path / "ops.R"
     source.write_text(
         "foo <- function() 1\n"

@@ -224,10 +224,10 @@ def test_imported_type_stubs_do_not_collide_across_source_files(tmp_path):
 
 
 def test_origin_file_is_not_serialized_into_extract_output(tmp_path):
-    """origin_file is an internal disambiguation hint (#1462) consumed only by the
+    """origin_file is an internal disambiguation hint consumed only by the
     colliding-id pass during extraction. It must not survive into the returned nodes
     (and thus graph.json), where it would ship as an absolute, machine-specific path —
-    the "no absolute paths in output" contract (#555, #932). Disambiguation still keys
+    the "no absolute paths in output" contract. Disambiguation still keys
     on it first, so the two same-label cross-file stubs stay distinct."""
     first = tmp_path / "pkg/a.py"
     second = tmp_path / "pkg/b.py"
@@ -304,7 +304,7 @@ def test_extract_keeps_inheritance_stub_when_the_only_class_is_another_language(
     """C# `SqliteBookStore : BookStore` must not inherit the Python class.
 
     This fixture used to require that rewire. It is the same bind as an
-    unresolved base landing on the only same-label class in another language (#2207).
+    unresolved base landing on the only same-label class in another language.
     """
     definition = tmp_path / "interfaces.py"
     implementation = tmp_path / "services/BookStore.cs"
@@ -597,7 +597,7 @@ def test_collect_files_parity_with_legacy_synthetic(tmp_path):
 
 def test_collect_files_walks_each_directory_once(tmp_path, monkeypatch):
     """collect_files must scan every directory at most once and never descend
-    into noise dirs (#1261). The old implementation ran one rglob pass per
+    into noise dirs. The old implementation ran one rglob pass per
     supported extension (~85 walks) and filtered node_modules/.git paths only
     after descending into them.
     """
@@ -901,7 +901,7 @@ def _cjs_require_with_targets(tmp_path):
 
     The fixture's own siblings (./foundation, ./utils, ./helpers) do not exist,
     and a require() of a missing module is unresolved (no symbol edges, a stable
-    ref target), the same as a static import (#2457). Binder symbol edges are
+    ref target), the same as a static import. Binder symbol edges are
     therefore checked against modules that resolve.
     """
     for name in ("foundation", "utils", "helpers"):
@@ -957,7 +957,7 @@ def test_extract_js_function_scoped_require_emits_import_edge(tmp_path):
 
 def test_extract_js_dynamic_require_variable_is_not_fabricated(tmp_path):
     """A lazy `require(someVar)` has no static string target, so the body pass
-    must skip it rather than fabricate an edge to a guessed path (#2700)."""
+    must skip it rather than fabricate an edge to a guessed path."""
     caller = tmp_path / "dyn.js"
     caller.write_text(
         "function load(name) {\n"
@@ -973,7 +973,7 @@ def test_extract_js_dynamic_require_variable_is_not_fabricated(tmp_path):
 def test_extract_js_module_scope_require_still_single_edge(tmp_path):
     """No-double-count regression: the module-level and body require passes must
     never both emit for the same require — a top-level require stays exactly one
-    imports_from edge (#2700)."""
+    imports_from edge."""
     target = tmp_path / "target.js"
     target.write_text("exports.helper = () => 42;\n", encoding="utf-8")
     caller = tmp_path / "top.js"
@@ -1239,7 +1239,7 @@ def test_extract_ts_class_arrow_field(tmp_path):
 
 
 def test_extract_js_arbitrary_member_assignment_not_captured(tmp_path):
-    """Guard against the phantom-god-node class (#1077): an arbitrary
+    """Guard against the phantom-god-node class: an arbitrary
     `obj.x = fn` (obj is neither this/exports/module.exports/<X>.prototype)
     must NOT produce a node."""
     from pilothify.extract import extract_js
@@ -1478,7 +1478,7 @@ def test_cross_file_call_promoted_to_extracted_with_import_evidence(tmp_path):
 
 def test_js_cross_file_call_without_import_emits_no_edge(tmp_path):
     """A JS/TS call with no local definition and no import must NOT bind to a
-    same-named export in another file (#1659). JS/TS modules have no implicit
+    same-named export in another file. JS/TS modules have no implicit
     cross-module scope, so name collision alone is not a real call — it used to
     produce a phantom INFERRED edge that fabricated cross-package dependencies."""
     caller = tmp_path / "caller.js"
@@ -1502,7 +1502,7 @@ def test_js_cross_file_call_without_import_emits_no_edge(tmp_path):
 
 def test_python_qualified_class_method_call_resolves_extracted(tmp_path):
     """`ClassName.method()` across files resolves to the class-qualified method
-    node with an EXTRACTED `calls` edge (#1446)."""
+    node with an EXTRACTED `calls` edge."""
     actions = tmp_path / "actions.py"
     viewset = tmp_path / "viewset.py"
     actions.write_text(
@@ -1648,7 +1648,7 @@ def test_out_of_tree_cache_root_keeps_source_file_relative_to_scan_root(tmp_path
 
 
 def test_c_include_out_of_root_target_id_is_portable(tmp_path):
-    """#2243 (residual of #1899, in edges not nodes): a `#include "../lib/foo.h"`
+    """#2243 (residual of , in edges not nodes): a `#include "../lib/foo.h"`
     reaching OUTSIDE the scan root must not leak the absolute scan path
     (including the OS username) into the edge's target id. #1899's out-of-root
     fix taught the belt-and-braces pass to catch a NODE whose id was minted from
@@ -1729,7 +1729,7 @@ def test_c_include_in_root_same_batch_still_resolves_to_real_node(tmp_path):
 def test_python_relative_import_out_of_root_target_id_is_portable(tmp_path):
     """#2243 is not C-specific: it is a gap in the shared target_file remap path
     every language resolver funnels through. Python's cross-directory relative
-    import already stamped `target_file` (#1814/#2169) -- but for a genuinely
+    import already stamped `target_file` -- but for a genuinely
     out-of-root target that stamp was still discarded ("out-of-root target:
     leave its ids alone") with no fallback, so the raw absolute-path id leaked
     exactly as it did for C. Covering this second, independent consumer of the
@@ -1755,7 +1755,7 @@ def test_python_relative_import_out_of_root_target_id_is_portable(tmp_path):
 
 def test_python_module_qualified_call_resolves_extracted(tmp_path):
     """`module.func()` where `module` is imported resolves to the callable that
-    module contains, with an EXTRACTED `calls` edge (#1883), even when the caller
+    module contains, with an EXTRACTED `calls` edge, even when the caller
     file contains a same-named function that bare-name lookup could select."""
     mathlib = tmp_path / "mathlib.py"
     caller = tmp_path / "caller.py"
@@ -1783,7 +1783,7 @@ def test_python_module_qualified_call_resolves_extracted(tmp_path):
 def test_python_module_qualified_call_requires_the_import(tmp_path):
     """A `module.func()` call must resolve only against a module the caller's own
     file imports — a local instance `o.compute()` (o is a parameter) must NOT be
-    linked to a same-named function in some other module (#1883 false-edge guard)."""
+    linked to a same-named function in some other module (false-edge guard)."""
     mathlib = tmp_path / "mathlib.py"
     caller = tmp_path / "caller.py"
     mathlib.write_text("def compute(x):\n    return x * 2\n")
@@ -1802,10 +1802,10 @@ def test_python_module_qualified_call_requires_the_import(tmp_path):
 
 def test_python_module_call_resolves_when_same_file_imports_function_with_nested_def(tmp_path):
     """When a file imports both a module and a function from that module, and the
-    function contains a nested def, `module.func()` calls must still resolve (#3887).
+    function contains a nested def, `module.func()` calls must still resolve.
 
-    Nested functions are tracked as `contains` children of their enclosing function
-    (#3410). The module resolver must not mistake the enclosing function for an
+    Nested functions are tracked as `contains` children of their enclosing function.
+    The module resolver must not mistake the enclosing function for an
     imported module node, which would cause an ambiguity bailout and drop the call."""
     services = tmp_path / "services"
     services.mkdir()
@@ -1848,7 +1848,7 @@ def test_python_module_call_resolves_when_same_file_imports_function_with_nested
 
 def test_python_module_qualified_call_resolves_from_enclosing_scopes(tmp_path):
     """`mod.func()` inside a class method or a nested function resolves against
-    the enclosing file's imports (#2447, cause C).
+    the enclosing file's imports (cause C).
 
     A method hangs off its class via a `method` edge rather than a `contains`
     edge from the file node, and a nested function's `contains` parent is the
@@ -1916,13 +1916,13 @@ def test_python_module_qualified_call_resolves_from_enclosing_scopes(tmp_path):
 
 def test_python_from_import_alias_module_call_resolves(tmp_path):
     """`from pkg import mod as alias` must resolve `alias.func()` the same way the
-    unaliased `from pkg import mod` / `mod.func()` form already does (#2082). The
+    unaliased `from pkg import mod` / `mod.func()` form already does. The
     local alias binding was untracked, so the aliased receiver never matched the
     submodule's own stem and the `calls` edge silently disappeared while the
     file-level `imports_from` edge stayed present and made the graph look intact.
 
     Also covers the fix's `local_alias` hint hygiene: like the existing
-    `target_file` transient hint (#1814), it must be popped once the resolver
+    `target_file` transient hint, it must be popped once the resolver
     that reads it has run, never surviving into the returned edges/graph.json --
     otherwise an internal local-variable name from the source tree leaks into
     every graph.json produced from an aliased import."""
@@ -1957,8 +1957,8 @@ def test_python_from_import_alias_module_call_resolves(tmp_path):
 
 def test_python_import_as_alias_module_call_resolves(tmp_path):
     """`import mod as alias` must resolve `alias.func()` the same way `import mod`
-    / `mod.func()` already does (#1883) -- the same untracked-alias regression as
-    `from pkg import mod as alias` (#2082), on the plain `import` form."""
+    / `mod.func()` already does -- the same untracked-alias regression as
+    `from pkg import mod as alias`, on the plain `import` form."""
     mathlib = tmp_path / "mathlib.py"
     caller = tmp_path / "caller.py"
     mathlib.write_text("def compute(x):\n    return x * 2\n")
@@ -1981,7 +1981,7 @@ def test_python_import_as_alias_module_call_resolves(tmp_path):
 
 
 def test_python_try_except_from_import_alias_module_call_resolves(tmp_path):
-    """The issue's own motivating shape (#2082): `from pkg import mod as alias`
+    """The issue's own motivating shape: `from pkg import mod as alias`
     guarded by a `try:`/`except ImportError:` fallback assignment, the pattern
     real code uses for an optional dependency. The issue explicitly called out
     that the drop is independent of the `try:` nesting -- this locks that in as
@@ -2348,7 +2348,7 @@ def test_python_qualified_call_resolves_when_method_name_collides_with_caller(tm
 
 def test_python_instance_member_call_not_overconnected(tmp_path):
     """A lowercase-receiver member call (`obj.run()`, `self.run()`) must NOT be
-    resolved cross-file — the #543/#1219 god-node guard stays intact (#1446)."""
+    resolved cross-file — the #543/#1219 god-node guard stays intact."""
     svc = tmp_path / "svc.py"
     worker = tmp_path / "worker.py"
     svc.write_text(
@@ -2374,7 +2374,7 @@ def test_python_instance_member_call_not_overconnected(tmp_path):
 
 def _self_attr_call_targets(result, caller_label):
     """(target label, target file name, confidence) for each `calls` edge out of
-    the method labelled `caller_label` (#2860)."""
+    the method labelled `caller_label`."""
     nodes = {n["id"]: n for n in result["nodes"]}
     return sorted(
         (nodes[e["target"]]["label"], Path(nodes[e["target"]].get("source_file") or "").name,
@@ -3315,7 +3315,7 @@ def test_kotlin_unqualified_call_keeps_the_file_wide_lookup(tmp_path):
 
 def test_python_qualified_call_ambiguous_class_bails(tmp_path):
     """When the class name is defined in 2+ files, the qualified call must not
-    resolve — single-definition god-node guard (#1446)."""
+    resolve — single-definition god-node guard."""
     a = tmp_path / "a.py"
     b = tmp_path / "b.py"
     caller = tmp_path / "caller.py"
@@ -3472,7 +3472,7 @@ def test_extract_parallel_returns_false_when_pool_cannot_start(tmp_path, monkeyp
 
 def test_spawn_cannot_reimport_main_true_for_stdin_caller(monkeypatch):
     """stdin (`… | python -`) leaves __main__.__file__ as a non-file (`<stdin>`),
-    which spawn workers cannot re-import — the pool is unusable up front (#3669)."""
+    which spawn workers cannot re-import — the pool is unusable up front."""
     import multiprocessing
     import __main__
     from pilothify import extract as extract_mod
@@ -3483,8 +3483,9 @@ def test_spawn_cannot_reimport_main_true_for_stdin_caller(monkeypatch):
     assert extract_mod._spawn_cannot_reimport_main() is True
 
 
-def test_spawn_cannot_reimport_main_true_for_repl_without_file(monkeypatch):
-    """A REPL / `python -c` __main__ has no __file__ attribute at all."""
+def test_spawn_cannot_reimport_main_false_for_repl_without_file(monkeypatch):
+    """A REPL / `python -c` __main__ has no __file__ at all, so spawn leaves it
+    alone and the pool works: the worker function lives in pilothify.extract."""
     import multiprocessing
     import __main__
     from pilothify import extract as extract_mod
@@ -3492,6 +3493,21 @@ def test_spawn_cannot_reimport_main_true_for_repl_without_file(monkeypatch):
     monkeypatch.setattr(multiprocessing, "get_start_method", lambda allow_none=True: "spawn")
     monkeypatch.setattr(__main__, "__spec__", None, raising=False)
     monkeypatch.delattr(__main__, "__file__", raising=False)
+    assert extract_mod._spawn_cannot_reimport_main() is False
+
+
+def test_spawn_cannot_reimport_main_uses_the_default_before_a_pool_exists(monkeypatch):
+    """With no pool started yet the start method is unset; on a spawn-default
+    platform a stdin caller must still be caught on the first extract."""
+    import multiprocessing
+    import __main__
+    from pilothify import extract as extract_mod
+
+    monkeypatch.setattr(sys, "platform", "darwin")
+    monkeypatch.setattr(multiprocessing, "get_start_method", lambda allow_none=True: None)
+    monkeypatch.setattr(multiprocessing, "get_all_start_methods", lambda: ["spawn", "fork", "forkserver"])
+    monkeypatch.setattr(__main__, "__spec__", None, raising=False)
+    monkeypatch.setattr(__main__, "__file__", "<stdin>", raising=False)
     assert extract_mod._spawn_cannot_reimport_main() is True
 
 
@@ -3556,7 +3572,7 @@ def test_extract_skips_pool_up_front_on_unusable_main(tmp_path, monkeypatch, cap
     """With >= _PARALLEL_THRESHOLD uncached files but an unusable __main__, the
     pool is not attempted at all — extract() runs sequentially, producing correct
     output with an explanatory note instead of a wall of BrokenProcessPool
-    tracebacks (#3669)."""
+    tracebacks."""
     from pilothify import extract as extract_mod
 
     files = [FIXTURES / "sample.py"] * 25  # >= _PARALLEL_THRESHOLD
@@ -3661,7 +3677,7 @@ def test_extract_falls_back_when_worker_future_breaks_pool(
     monkeypatch.setattr(
         concurrent.futures, "as_completed", lambda futures: iter(futures)
     )
-    # A 1-CPU runner resolves max_workers to 1 and never enters the pool (#2173).
+    # A 1-CPU runner resolves max_workers to 1 and never enters the pool.
     monkeypatch.setenv("PILOTHIFY_MAX_WORKERS", "2")
 
     sequential_calls = 0
@@ -3886,7 +3902,7 @@ def test_extract_legitimately_empty_result_keeps_no_error_marker(
 
 
 # ---------------------------------------------------------------------------
-# Bash extractor tests (#866)
+# Bash extractor tests
 # ---------------------------------------------------------------------------
 
 def test_dispatch_includes_sh_and_json():
@@ -3950,7 +3966,7 @@ def test_extract_bash_source_forms_are_imports_not_invokes(tmp_path, source_form
     import_edges = [edge for edge in result["edges"] if edge["relation"] == "imports_from"]
     # A misrouted `source` would land in the script-invocation branch as either a
     # direct-`.sh` `calls` edge or an interpreter `invokes` edge, so guard on the
-    # context regardless of relation (the `calls` form is the realistic #4081 miss).
+    # context regardless of relation (the `calls` form is the realistic  miss).
     invocation_edges = [
         edge for edge in result["edges"]
         if edge.get("context") == "script_invocation"
@@ -3964,7 +3980,7 @@ def test_extract_bash_source_forms_are_imports_not_invokes(tmp_path, source_form
 def test_extract_bash_source_via_variable_path_resolves_to_real_file(tmp_path):
     """`source "${DIR}/lib/x.sh"` (the `dirname "${BASH_SOURCE[0]}"` idiom) must
     resolve to the real file node relative to the script dir — never emit a dead
-    id baking in the literal `${DIR}` text (#2079)."""
+    id baking in the literal `${DIR}` text."""
     lib = tmp_path / "lib"
     lib.mkdir()
     helper = lib / "gpu-discover.sh"
@@ -3989,7 +4005,7 @@ def test_extract_bash_source_via_variable_path_resolves_to_real_file(tmp_path):
 
 def test_extract_bash_source_via_variable_path_no_match_emits_no_dead_edge(tmp_path):
     """A variable-built source path with no matching file on disk must emit no
-    import edge at all — not an `imports` edge to an id containing `${VAR}` (#2079)."""
+    import edge at all — not an `imports` edge to an id containing `${VAR}`."""
     script = tmp_path / "bench.sh"
     script.write_text(
         '#!/bin/bash\nsource "${BENCH_DIR}/lib/missing.sh"\n',
@@ -4023,7 +4039,7 @@ def test_extract_bash_emits_script_invocation_calls(tmp_path, command):
         "source_location": "L2",
         "weight": 1.0,
         "context": "script_invocation",
-        # Transient canonicalization hint (#2243); popped before persist.
+        # Transient canonicalization hint; popped before persist.
         "target_file": str(helpers.resolve()),
     }]
 
@@ -4115,7 +4131,7 @@ def test_extract_bash_script_invocation_via_variable_built_path(tmp_path, invoca
         "source_location": "L3",
         "weight": 1.0,
         "context": "script_invocation",
-        # Transient canonicalization hint (#2243); popped before persist.
+        # Transient canonicalization hint; popped before persist.
         "target_file": str(helpers.resolve()),
     }]
 
@@ -4262,7 +4278,7 @@ def test_extract_bash_invokes_targets_a_bash_entrypoint_when_the_target_is_sh(tm
 
 def test_extract_bash_skips_invokes_for_a_non_interpreter_command(tmp_path):
     """A plain command that happens to take a .py argument (cp, a custom
-    tool, ...) must not be mistaken for an interpreter invocation (#3802)."""
+    tool, ...) must not be mistaken for an interpreter invocation."""
     stage = tmp_path / "stage.py"
     stage.write_text("print('stage')\n", encoding="utf-8")
     script = tmp_path / "runner.sh"
@@ -4563,7 +4579,7 @@ def test_extract_bash_emits_raw_calls_and_bash_sources_for_sourced_calls(tmp_pat
     ``bash_sources`` entry per sourced file and a ``raw_calls`` entry for each
     call whose callee is not defined in the same file. Without these,
     resolve_bash_source_edges has nothing to resolve a sourced-function call
-    from (#2141)."""
+    from."""
     (tmp_path / "b.sh").write_text("#!/usr/bin/env bash\nb_func() { echo ok; }\n")
     a = tmp_path / "a.sh"
     a.write_text(
@@ -4603,7 +4619,7 @@ def test_extract_bash_call_to_sourced_function_resolves(tmp_path):
 
 def test_extract_bash_sourced_call_does_not_duplicate_source_edge(tmp_path):
     """Wiring the source-backed call resolver must not re-emit the ``imports_from``
-    source edge the extractor already resolved for ``source ./b.sh`` (#2141)."""
+    source edge the extractor already resolved for ``source ./b.sh``."""
     (tmp_path / "b.sh").write_text("#!/usr/bin/env bash\nb_func() { echo ok; }\n")
     (tmp_path / "a.sh").write_text(
         "#!/usr/bin/env bash\n"
@@ -4689,7 +4705,7 @@ def test_extract_bash_bare_source_missing_file_fabricates_nothing(tmp_path):
 
 
 def test_bash_var_sourced_function_call_resolves(tmp_path):
-    """End-to-end integration of #2079 + #2141 (#2157/#2139): a library sourced
+    """End-to-end integration of #2079 + #2141: a library sourced
     via the canonical ``${VAR}`` idiom must feed ``bash_sources`` so that
     resolve_bash_source_edges binds calls into its functions — not just the
     imports_from source edge. Before the extractor appended the resolved path to
@@ -4826,7 +4842,7 @@ def test_extract_bash_var_source_uses_tracked_assignment_base(tmp_path):
 
 
 def test_extract_bash_var_source_script_dir_idiom_still_resolves(tmp_path):
-    """The canonical script-dir idiom must keep working (#2079 regression guard)."""
+    """The canonical script-dir idiom must keep working (regression guard)."""
     (tmp_path / "lib").mkdir()
     (tmp_path / "lib" / "x.sh").write_text(
         "#!/usr/bin/env bash\nx_fn() { :; }\n", encoding="utf-8"
@@ -4861,7 +4877,7 @@ def test_extract_bash_var_source_untracked_var_keeps_script_dir_guess(tmp_path):
 
 
 def test_extract_bash_source_dirname_cmdsubst_in_argument(tmp_path):
-    """Form 3 (#2596): `source "$(dirname "$VAR")/lib/y.sh"` — command
+    """Form 3: `source "$(dirname "$VAR")/lib/y.sh"` — command
     substitution in the source argument.  The dirname idiom on the *source*
     line should resolve the same way it does on an assignment line: treat
     `$(dirname "$VAR")` as `var_bases[VAR].parent` (or `script_dir.parent`
@@ -4911,7 +4927,7 @@ def test_extract_bash_source_dirname_cmdsubst_untracked_var(tmp_path):
 
 
 def test_extract_bash_source_dotdot_suffix_with_tracked_var(tmp_path):
-    """Form 4 (#2596): `source "$VAR/../lib/y.sh"` — `..` in the literal
+    """Form 4: `source "$VAR/../lib/y.sh"` — `..` in the literal
     suffix.  When the base comes from a tracked var_bases entry, `..` is
     safe (it's a known directory, not a guess), so resolve via normpath
     and the existing is_file() gate.  The `..` rejection should only apply
@@ -4953,7 +4969,7 @@ def test_extract_bash_source_dotdot_suffix_script_dir_guess_still_rejected(tmp_p
 
 
 def test_extract_bash_source_dirname_cmdsubst_rejects_traversal(tmp_path):
-    """Form 3 hardening (#2596): the `$(dirname …)` base is a guessed directory,
+    """Form 3 hardening: the `$(dirname …)` base is a guessed directory,
     so a `..` suffix must be rejected before the target is probed or recorded —
     otherwise `source "$(dirname "$VAR")/../../../../etc/passwd"` resolves to an
     arbitrary host path and leaks it as a source edge on an attacker-controlled
@@ -4976,7 +4992,7 @@ def test_extract_bash_source_dirname_cmdsubst_rejects_traversal(tmp_path):
 
 
 def test_extract_bash_source_dotdot_tracked_var_cannot_escape_to_root(tmp_path):
-    """Form 4 hardening (#2596): a tracked base legitimately reaches a sibling via
+    """Form 4 hardening: a tracked base legitimately reaches a sibling via
     `$VAR/../lib`, but a multi-level `..` that walks past the base's parent to an
     arbitrary host path must be dropped, not probed and recorded."""
     outside = tmp_path / "secret.sh"
@@ -4998,7 +5014,7 @@ def test_extract_bash_source_dotdot_tracked_var_cannot_escape_to_root(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# JSON extractor tests (#866)
+# JSON extractor tests
 # ---------------------------------------------------------------------------
 
 def test_extract_json_top_level_keys():
@@ -5168,7 +5184,7 @@ def test_extract_json_no_self_loops():
 
 
 # ---------------------------------------------------------------------------
-# Data JSON must not explode into orphan key-nodes (#1224)
+# Data JSON must not explode into orphan key-nodes
 # ---------------------------------------------------------------------------
 
 def test_extract_json_data_file_skipped(tmp_path):
@@ -5519,7 +5535,7 @@ def test_case_insensitive_suffix_filtering(tmp_path):
 
 
 def test_extract_warns_on_code_files_with_no_ast_extractor(tmp_path, capsys):
-    # #1689: .ets is in CODE_EXTENSIONS (counted as code) but has no AST extractor,
+    # .ets is in CODE_EXTENSIONS (counted as code) but has no AST extractor,
     # so ArkTS files silently contribute nothing. extract() must surface that instead of
     # reporting success as if the language were mapped.
     r1 = tmp_path / "analysis.ets"; r1.write_text("@Component struct Analysis {}\n")
@@ -5531,7 +5547,7 @@ def test_extract_warns_on_code_files_with_no_ast_extractor(tmp_path, capsys):
 
     assert "no AST extractor" in err
     assert ".ets (2)" in err
-    assert "#1689" in err
+    assert "open an issue to request support" in err
     # the Python file still extracts normally
     labels = [n.get("label") for n in result["nodes"]]
     assert any(str(l).startswith("main") for l in labels)
@@ -5545,7 +5561,7 @@ def test_extract_no_warning_when_all_code_has_extractors(tmp_path, capsys):
 
 
 def test_extract_warns_when_sql_extra_missing(tmp_path, capsys, monkeypatch):
-    # #1745: .sql HAS a dispatch entry, so the #1689 warning can't fire, and
+    # .sql HAS a dispatch entry, so the #1689 warning can't fire, and
     # extract_sql returns an "error" result when tree-sitter-sql is absent, so
     # the #1666 warning skips it too. The files must not vanish silently:
     # extract() surfaces them with the [sql] extra named.
@@ -5560,11 +5576,10 @@ def test_extract_warns_when_sql_extra_missing(tmp_path, capsys, monkeypatch):
     assert "2 .sql file(s)" in err
     assert "tree_sitter_sql not installed" in err
     assert 'pilothify[sql]' in err
-    assert "#1745" in err
     # the Python file still extracts normally
     labels = [n.get("label") for n in result["nodes"]]
     assert any(str(l).startswith("main") for l in labels)
-    # #2543: failed sql sources must be surfaced so the CLI can leave them
+    # failed sql sources must be surfaced so the CLI can leave them
     # unstamped in the incremental manifest.
     failed = {Path(p).name for p in result.get("failed_sources", [])}
     assert failed == {"schema.sql", "views.sql"}
@@ -5585,11 +5600,11 @@ def test_extract_no_missing_dep_warning_when_sql_installed(tmp_path, capsys):
     s = tmp_path / "schema.sql"; s.write_text("CREATE TABLE users (id INT);\n")
     extract([s], cache_root=tmp_path)
     err = capsys.readouterr().err
-    assert "#1745" not in err
+    assert "contributed nothing to the graph" not in err
 
 
 def test_extract_sql_reports_load_failure_not_missing(tmp_path, monkeypatch):
-    # #2602: an installed-but-broken grammar (e.g. a wheel built for a different
+    # an installed-but-broken grammar (e.g. a wheel built for a different
     # Python ABI) raises ImportError at import time just like an absent one. The
     # extractor must NOT claim "not installed" — that sends the user to a no-op
     # `pip install` — but surface the real load exception instead.
@@ -5612,7 +5627,7 @@ def test_extract_sql_reports_load_failure_not_missing(tmp_path, monkeypatch):
 
 
 def test_extract_warns_sql_grammar_failed_to_load(tmp_path, capsys, monkeypatch):
-    # #2602: the aggregated #1745 warning must surface a present-but-broken
+    # the aggregated #1745 warning must surface a present-but-broken
     # grammar with the real cause and WITHOUT the misleading "install the extra"
     # hint, so the files are neither silently dropped nor sent to a no-op fix.
     import builtins
@@ -5634,17 +5649,17 @@ def test_extract_warns_sql_grammar_failed_to_load(tmp_path, capsys, monkeypatch)
 
     assert "2 .sql file(s)" in err
     assert "failed to load" in err
-    assert "#1745" in err
+    assert "contributed nothing to the graph" in err
     # the no-op fix must NOT be suggested for a present-but-broken grammar
     assert "pilothify[sql]" not in err
     assert "pip install" not in err
-    # #2543: still surfaced as failed so the incremental manifest retries them
+    # still surfaced as failed so the incremental manifest retries them
     failed = {Path(p).name for p in result.get("failed_sources", [])}
     assert failed == {"schema.sql", "views.sql"}
 
 
 def test_extract_progress_final_line_uses_consistent_denominator(tmp_path, capsys):
-    # #1693: intermediate progress lines count against uncached_work; the final
+    # intermediate progress lines count against uncached_work; the final
     # "100%" line must NOT switch to total_files (which includes cached hits and
     # files with no extractor), or the count appears to jump upward at the end.
     for i in range(100):
@@ -5662,7 +5677,7 @@ def test_extract_progress_final_line_uses_consistent_denominator(tmp_path, capsy
 
 
 def test_extract_reports_ast_cache_hit_rate_over_file_total(tmp_path, capsys):
-    # #4740: every progress line counts against uncached_work, so a run whose
+    # every progress line counts against uncached_work, so a run whose
     # only uncached files are the JS/TS ones ends at "5/5 uncached files (100%)"
     # and reads as a perfect cache hit rate. The new "AST cache:" line reports
     # the hit rate against the FILE TOTAL, so the denominator cannot shrink to
@@ -5703,7 +5718,7 @@ def test_extract_reports_ast_cache_hit_rate_over_file_total(tmp_path, capsys):
 
 
 def test_get_extractor_routes_matlab_m_away_from_objc(tmp_path):
-    # #1702: .m is shared by Objective-C and MATLAB. A real ObjC .m still routes to
+    # .m is shared by Objective-C and MATLAB. A real ObjC .m still routes to
     # extract_objc, but a MATLAB .m must NOT be force-parsed by the ObjC grammar
     # (which produces garbage) — it gets no extractor instead.
     from pilothify.extract import _get_extractor, extract_objc
@@ -5736,7 +5751,7 @@ def test_markdown_dispatch_matches_resolution_suffixes():
 
 def test_matlab_m_not_extracted_as_garbage(tmp_path, capsys):
     # End to end: a MATLAB .m produces no (garbage) nodes and is surfaced by the
-    # no-AST-extractor warning (#1702 + #1689), rather than mis-parsed as ObjC.
+    # no-AST-extractor warning, rather than mis-parsed as ObjC.
     m = tmp_path / "controller.m"
     m.write_text("function u = controller(x)\n  u = -x;\nend\n")
     result = extract([m], cache_root=tmp_path)
@@ -5763,7 +5778,7 @@ def test_rewire_binds_cross_module_function_reference_to_definition():
 
 def test_rewire_does_not_bind_function_reference_across_language():
     """#1781 safety: a Python reference stub must not bind to a unique Go
-    function of the same name (mirrors the #1749 interop guard)."""
+    function of the same name (mirrors the  interop guard)."""
     from pilothify.extract import _rewire_unique_stub_nodes
     nodes = [
         {"id": "svc_get_db", "label": "get_db()", "file_type": "code",
@@ -5867,7 +5882,7 @@ def test_rewire_builtin_supertype_guard_folds_case_insensitive_languages():
 
 
 def test_rewire_does_not_bind_casefolded_type_across_language():
-    """The case-folded candidate list is a second way into the same bind (#2207)."""
+    """The case-folded candidate list is a second way into the same bind."""
     from pilothify.extract import _rewire_unique_stub_nodes
     nodes = [
         {"id": "base_base", "label": "base", "file_type": "code",
@@ -5951,7 +5966,7 @@ def test_extract_emits_posix_source_file_for_relative_inputs(tmp_path):
     `src\lib\content.ts` and `src/pages/index.astro` in one extraction.
     source_file is compared as a string downstream (build keying, prune-root
     derivation, dedup, analyze.find_import_cycles), so two spellings are two
-    different files (#683 / #2625).
+    different files.
 
     Uses the relative-input form deliberately: passing an explicit ``root``
     takes the branch that already normalized, and would make this vacuous.
@@ -6004,7 +6019,7 @@ def _inferred_uses(result):
 def test_inferred_uses_edge_attributes_to_the_referencing_symbol(tmp_path):
     """A cross-file INFERRED `uses` edge binds to the symbol that actually
     references the import — a function is a valid source and a co-located class
-    that never touches the import gets no edge (#2652)."""
+    that never touches the import gets no edge."""
     (tmp_path / "helpers.py").write_text("class Helper:\n    pass\n", encoding="utf-8")
     (tmp_path / "api.py").write_text(
         "from helpers import Helper\n\n\n"
@@ -6039,7 +6054,7 @@ def test_inferred_uses_edge_kept_when_the_class_body_references_the_import(tmp_p
 
 def test_inferred_uses_edge_follows_an_import_alias(tmp_path):
     """`from helpers import Helper as H` attributes via the local alias `H`, so a
-    body that only ever names `H` still resolves to the imported target (#2652)."""
+    body that only ever names `H` still resolves to the imported target."""
     (tmp_path / "helpers.py").write_text("class Helper:\n    pass\n", encoding="utf-8")
     (tmp_path / "api.py").write_text(
         "from helpers import Helper as H\n\n\n"
@@ -6055,7 +6070,7 @@ def test_inferred_uses_edge_follows_an_import_alias(tmp_path):
 def test_inferred_uses_edge_emitted_once_per_referencing_symbol(tmp_path):
     """Each symbol that references the import gets its own edge, and only those
     symbols do — guards against the old fan-out (every class in the file) and
-    against collapsing distinct sources into one (#2652)."""
+    against collapsing distinct sources into one."""
     (tmp_path / "helpers.py").write_text("class Helper:\n    pass\n", encoding="utf-8")
     (tmp_path / "api.py").write_text(
         "from helpers import Helper\n\n\n"
@@ -6091,7 +6106,7 @@ def test_inferred_uses_edge_dropped_for_module_top_level_reference(tmp_path):
 
 
 def test_extract_declined_data_json_is_not_failed(tmp_path, capsys):
-    """#2879: data JSON is declined by design (#1224), not failed.
+    """#2879: data JSON is declined by design, not failed.
 
     A `.json` extractor is registered, so a declined file used to satisfy both
     halves of the failed-source test (zero nodes + extractor exists) and was
@@ -6108,7 +6123,7 @@ def test_extract_declined_data_json_is_not_failed(tmp_path, capsys):
     err = capsys.readouterr().err
 
     assert result.get("failed_sources") == []
-    # ...and no "produced zero nodes" noise for a deliberate decline (#1666).
+    # ...and no "produced zero nodes" noise for a deliberate decline.
     assert "zero nodes" not in err
     # the config JSON still extracts normally
     assert any(str(n.get("label", "")).startswith("package.json") for n in result["nodes"])

@@ -1,4 +1,4 @@
-"""ObjC receiver typing must not treat a ``@protocol`` as a message receiver (#1556).
+"""ObjC receiver typing must not treat a ``@protocol`` as a message receiver.
 
 The ObjC extractor labels a protocol declaration ``<Name>``, and the member-call
 resolver's ``_key()`` strips the angle brackets — so a protocol and a class of the

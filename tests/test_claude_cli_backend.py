@@ -1,4 +1,4 @@
-"""Tests for the `claude-cli` backend (#855/#856).
+"""Tests for the `claude-cli` backend.
 
 Mocks subprocess.run + shutil.which so the suite runs on CI without
 the `claude` binary or a live network call.
@@ -100,7 +100,7 @@ _ERROR_ENVELOPE = {
 
 def test_nonzero_exit_surfaces_envelope_error_when_stderr_empty():
     # The CLI reports API failures in the stdout JSON envelope, not on stderr.
-    # Without reading it the user gets a bare "exited 1: " and no cause (#2554).
+    # Without reading it the user gets a bare "exited 1: " and no cause.
     completed = MagicMock(
         returncode=1, stdout=json.dumps(_ERROR_ENVELOPE), stderr="",
     )
@@ -114,7 +114,7 @@ def test_raises_on_error_envelope_with_zero_exit():
     # `claude -p` exits 0 on a rate limit and flags it as is_error in the
     # envelope. Parsing `result` as model output yields an empty graph that
     # _response_is_hollow then misreads as truncation, so adaptive retry
-    # bisects the chunk while every request is still being refused (#2554).
+    # bisects the chunk while every request is still being refused.
     completed = MagicMock(
         returncode=0, stdout=json.dumps(_ERROR_ENVELOPE), stderr="",
     )
@@ -126,7 +126,7 @@ def test_raises_on_error_envelope_with_zero_exit():
 
 def test_raises_on_array_shaped_error_envelope():
     # Newer CLIs (>= ~2.1) stream a JSON ARRAY of events with the result
-    # object last; the is_error flag must be honoured in that shape too (#2554).
+    # object last; the is_error flag must be honoured in that shape too.
     streamed = [
         {"type": "system", "subtype": "init"},
         dict(_ERROR_ENVELOPE),
@@ -142,7 +142,7 @@ def test_call_llm_raises_on_error_envelope():
     # _call_llm returns envelope["result"] verbatim, so a rate-limited call
     # hands "API Error: Rate limit reached" back to its callers as if it were
     # model output — the dedup tiebreaker and community labeling then write
-    # that string into the graph as a label (#2554).
+    # that string into the graph as a label.
     completed = MagicMock(
         returncode=0, stdout=json.dumps(_ERROR_ENVELOPE), stderr="",
     )
@@ -331,7 +331,7 @@ def test_user_turn_preserves_untrusted_source_guardrails(fake_claude):
     assert "untrusted_source" in sent
 
 
-# ---------- structured output via --json-schema (#2076) ----------
+# ---------- structured output via --json-schema ----------
 # Newer Claude Code CLIs treat a bare file-dump prompt as an agentic task and
 # REPORT the extraction in prose instead of returning JSON, so the graph comes
 # out empty and adaptive-retry bisects forever. When the CLI supports
@@ -388,7 +388,7 @@ def test_supports_json_schema_false_and_cached_on_probe_error():
     assert run.call_count == 1
 
 
-# ---------- Windows path resolution (#1072) ----------
+# ---------- Windows path resolution ----------
 
 
 def test_windows_prefers_claude_cmd_over_bare_claude(monkeypatch):

@@ -108,7 +108,7 @@ def test_pascal_enum_type_and_values_are_extracted(tmp_path):
     (`TColor = (clRed, clGreen, clBlue);`) and all of its values fell through and
     were dropped — the whole type vanished. An enum's values are its cases, so
     each becomes a node with a `case_of` edge to the type, matching every other
-    language with enums (Java #1719 / C# / Swift / Scala).
+    language with enums (Java  / C# / Swift / Scala).
     """
     from pilothify.extract import extract_pascal
     p = tmp_path / "colors.pas"
@@ -144,7 +144,7 @@ def test_pascal_valued_enum_literals_are_not_nodes(tmp_path):
 
     An explicit ordinal nests under declEnumValue -> defaultValue, beside the
     value's identifier. Only the identifier names the case: the literal must not
-    leak into the value's label or become a node of its own (#4071).
+    leak into the value's label or become a node of its own.
     """
     from pilothify.extract import extract_pascal
     p = tmp_path / "colors.pas"

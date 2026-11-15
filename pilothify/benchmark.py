@@ -68,7 +68,7 @@ def run_benchmark(
     """
     graph_path = graph_path or _default_graph_json()
     # Loaded exactly as the MCP server loads it (size cap, links/edges
-    # normalization for a raw --no-cluster graph, #2212), so every answer
+    # normalization for a raw --no-cluster graph), so every answer
     # measured is the one query_graph returns.
     G = _read_graph(str(graph_path))
 

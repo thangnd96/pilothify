@@ -1,5 +1,5 @@
 """Tests for pilothify.llm._label_batch_with_retry — adaptive split-and-retry
-on JSON parse failure during community labeling (#1278).
+on JSON parse failure during community labeling.
 """
 from __future__ import annotations
 

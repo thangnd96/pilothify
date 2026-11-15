@@ -9,8 +9,7 @@ worked examples like::
 Those examples are the LLM's ground truth, and they must reproduce exactly what
 the AST extractor emits (`extract._file_stem` + `extract._make_id`) or the two
 producers generate different IDs for the same symbol and the graph splits it into
-disconnected ghost nodes — the bug class the prose itself warns about
-(#811/#550/#1033/#1104).
+disconnected ghost nodes — the bug class the prose itself warns about.
 
 The prose is hand-maintained, so it can silently drift from the code. This test
 parses every example straight out of the shipped specs and asserts the real
@@ -91,6 +90,6 @@ def test_cautionary_wrong_forms_are_actually_wrong():
     correct = _ast_symbol_id("src/auth/session.py", "ValidateToken")
     assert correct == "src_auth_session_validatetoken"
     # filename-only (drops every dir) and immediate-parent-only (drops outer dirs)
-    # are both wrong now that the stem is the full repo-relative path (#1504).
+    # are both wrong now that the stem is the full repo-relative path.
     assert _make_id("session", "ValidateToken") != correct
     assert _make_id("auth", "session", "ValidateToken") != correct

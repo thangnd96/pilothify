@@ -1,4 +1,4 @@
-"""Non-string node ids from LLM backends must not crash the build (#2326).
+"""Non-string node ids from LLM backends must not crash the build.
 
 A backend can emit ``{"id": 10}`` where the schema says ``{"id": "10"}``. Every
 id consumer downstream assumes ``str``, so an int id used to abort the whole
@@ -67,7 +67,7 @@ def test_float_id_is_coerced_too():
 
 
 def test_legacy_from_to_endpoints_are_coerced():
-    """dedup reads the legacy from/to aliases (#803), so they need it as well."""
+    """dedup reads the legacy from/to aliases, so they need it as well."""
     ext = {
         "nodes": [_node(10, "Alpha"), _node("b", "Beta")],
         "edges": [{"from": 10, "to": "b", "relation": "uses", "confidence": "EXTRACTED"}],

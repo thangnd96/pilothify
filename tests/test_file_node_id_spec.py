@@ -26,7 +26,7 @@ def _file_nodes(extraction: dict) -> list[dict]:
 
 def test_file_node_id_uses_parent_dir_and_stem_no_extension(tmp_path):
     """match/script/pipeline_step.py -> file node id 'match_script_pipeline_step'
-    (full repo-relative path, #1504)."""
+    (full repo-relative path)."""
     sub = tmp_path / "match" / "script"
     sub.mkdir(parents=True)
     f = sub / "pipeline_step.py"
@@ -59,7 +59,7 @@ def test_top_level_file_SYMBOL_ids_use_bare_stem(tmp_path):
     """A SYMBOL in a root-level file must use the bare-stem prefix (`setup_configure`),
     not pick up the project-root directory name (`<rootdir>_setup_configure`). The
     semantic subagent emits the bare-stem form per skill.md, so an absolute-parent
-    stem here splits the symbol into two ghost nodes (#1096). Pass ABSOLUTE paths,
+    stem here splits the symbol into two ghost nodes. Pass ABSOLUTE paths,
     as the CLI does, to exercise the root-relative remap."""
     f = tmp_path / "main.py"
     f.write_text("def run():\n    return 1\n")

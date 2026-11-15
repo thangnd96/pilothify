@@ -2,7 +2,7 @@
 
 Step B3.5 lists the files a subagent read only partway in ``.pilothify_partial.txt``. A full
 build's Step 9 passes that list to ``_stamped_manifest_files``, so those files stay unstamped and
-``detect_incremental`` queues them again (#2225). The ``--update`` runbook writes the manifest
+``detect_incremental`` queues them again. The ``--update`` runbook writes the manifest
 itself, so it has to pass the list too, and leave it for Step 9 when an agent runs that after the
 update. A list an earlier run left must not hold back this run's files.
 

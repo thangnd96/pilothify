@@ -1,4 +1,4 @@
-"""#3642, #3742, #3844: INPUT_PATH substitution into bash commands is a command
+"""#3642, #3844: INPUT_PATH substitution into bash commands is a command
 injection vector.
 
 INPUT_PATH is a literal placeholder in generated skill files, meant to

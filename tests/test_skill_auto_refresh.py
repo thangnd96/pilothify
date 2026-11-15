@@ -159,7 +159,7 @@ def test_the_copilot_dir_shared_with_vscode_is_not_guessed():
 @pytest.mark.parametrize("system", ["Linux", "Darwin", "Windows"])
 def test_gemini_and_agents_own_separate_skill_dirs(monkeypatch, system):
     """gemini and agents ship different SKILL.md files, so one shared dir let
-    each overwrite and uninstall the other's skill on Windows (#2800)."""
+    each overwrite and uninstall the other's skill on Windows."""
     monkeypatch.setattr(mainmod.platform, "system", lambda: system)
     gemini = _platform_skill_destination("gemini")
     assert gemini == Path.home() / ".gemini" / "skills" / "pilothify" / "SKILL.md"
@@ -480,7 +480,7 @@ def test_the_first_cli_run_after_an_upgrade_refreshes_and_stays_quiet(monkeypatc
     [], ["--version"], ["-v"], ["version"], ["--help"], ["-h"], ["-?"], ["update", "--help"],
 ])
 def test_version_and_help_leave_a_stale_skill_alone(monkeypatch, capsys, argv):
-    """Checking what is installed must not rewrite it (#4545); the stale copy is
+    """Checking what is installed must not rewrite it; the stale copy is
     still reported, since the warning only reads."""
     dst = _stale("codex")
     monkeypatch.setattr(sys, "argv", ["pilothify", *argv])

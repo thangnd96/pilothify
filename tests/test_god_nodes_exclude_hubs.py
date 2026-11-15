@@ -1,4 +1,4 @@
-"""god_nodes() honours exclude_hubs_percentile (#3205).
+"""god_nodes() honours exclude_hubs_percentile.
 
 The percentile only ever reached cluster()'s community-resolution step; the
 god-node ranking had no exclusion parameter at all, so running it at every

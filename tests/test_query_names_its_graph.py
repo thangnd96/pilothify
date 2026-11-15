@@ -4,7 +4,7 @@
 project while thinking about a vendored subproject answers from the parent's
 graph — and the answer is well-formed, confident, and wrong. Nothing in the
 output named the graph file, the scan root, or the node count, so the only way to
-notice was recognising community labels you had not assigned (#2789).
+notice was recognising community labels you had not assigned.
 
 The header now leads with the graph. It is shown relative to the CWD when it
 sits underneath it (the ordinary case, and short) and absolute when it does not,

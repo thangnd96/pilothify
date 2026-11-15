@@ -1,4 +1,4 @@
-"""Tests for LLM-backed community labeling (issue #1097).
+"""Tests for LLM-backed community labeling.
 
 Backend calls are mocked - no network. Covers the happy path, partial replies,
 malformed replies, and the no-backend fallback.
@@ -203,7 +203,7 @@ def test_generate_community_labels_degrades_on_error(monkeypatch):
 def test_generate_community_labels_no_backend(monkeypatch):
     G, communities = _graph()
     monkeypatch.setattr("pilothify.llm.detect_backend", lambda: None)
-    # Keep hermetic: the claude-cli labelling fallback (#3475) probes PATH, so a
+    # Keep hermetic: the claude-cli labelling fallback probes PATH, so a
     # machine with `claude` installed would otherwise take the CLI path here.
     monkeypatch.setattr("pilothify.llm._claude_cli_available", lambda: False)
     labels, source = generate_community_labels(G, communities, backend=None, quiet=True)
@@ -284,7 +284,7 @@ def test_label_communities_batches_when_over_batch_size(monkeypatch):
 
     def fake_call(prompt, *, backend, max_tokens=200):
         # The fake reads which cids the prompt asks about and answers all of them.
-        # #2534: prompt lines are now "<cid>: <names>" — the old "Community {cid}:"
+        # prompt lines are now "<cid>: <names>" — the old "Community {cid}:"
         # key collided with the placeholder sentinel and echoed keys were dropped.
         cids = [int(m.group(1)) for m in
                 (re.match(r"^(\d+): ", line) for line in prompt.splitlines()) if m]
@@ -312,7 +312,7 @@ def test_label_communities_partial_batch_failure_keeps_successful_batches(monkey
 
     def fake_call(prompt, *, backend, max_tokens=200):
         n_calls[0] += 1
-        # #2534: prompt lines are now "<cid>: <names>" — the old "Community {cid}:"
+        # prompt lines are now "<cid>: <names>" — the old "Community {cid}:"
         # key collided with the placeholder sentinel and echoed keys were dropped.
         cids = [int(m.group(1)) for m in
                 (re.match(r"^(\d+): ", line) for line in prompt.splitlines()) if m]
@@ -350,7 +350,7 @@ def test_label_communities_max_communities_caps_total(monkeypatch):
     captured_cids = []
 
     def fake_call(prompt, *, backend, max_tokens=200):
-        # #2534: prompt lines are now "<cid>: <names>" — the old "Community {cid}:"
+        # prompt lines are now "<cid>: <names>" — the old "Community {cid}:"
         # key collided with the placeholder sentinel and echoed keys were dropped.
         cids = [int(m.group(1)) for m in
                 (re.match(r"^(\d+): ", line) for line in prompt.splitlines()) if m]
@@ -442,7 +442,7 @@ def test_label_communities_forces_serial_for_ollama(monkeypatch):
 
 
 def test_label_communities_salvages_truncated_reply(monkeypatch):
-    # #1690: a reply truncated mid-object (a stingy token budget or model
+    # a reply truncated mid-object (a stingy token budget or model
     # preamble) used to hard-fail the whole batch with `Expecting value: line 1
     # column 6`. The complete pairs that arrived are now salvaged.
     G, communities = _graph()
@@ -476,7 +476,7 @@ def test_parse_label_response_salvage_keeps_value_with_invalid_escape():
 
 
 def test_label_communities_accumulates_token_usage(monkeypatch):
-    # #1694: cluster-only mode reported zero labeling cost because token usage
+    # cluster-only mode reported zero labeling cost because token usage
     # from the naming LLM calls was never accumulated. label_communities now
     # fills a caller-supplied usage_out accumulator, summed across all batches.
     G, communities = _many_communities(6)
@@ -507,7 +507,7 @@ def test_label_communities_accumulates_token_usage(monkeypatch):
 
 def test_label_communities_counts_tokens_for_failed_batch(monkeypatch):
     # A batch whose reply can't be parsed was still billed by the provider, so
-    # its tokens must be counted even though it contributes no label (#1694).
+    # its tokens must be counted even though it contributes no label.
     G, communities = _graph()
 
     def fake_call(prompt, *, backend, max_tokens=200, usage_out=None):
@@ -862,7 +862,7 @@ def test_cluster_only_heals_persisted_placeholder_but_reuses_genuine(tmp_path, m
 
 
 def _auth_billing_graph(out: Path) -> None:
-    """Two saved communities plus one unclustered node (#2298)."""
+    """Two saved communities plus one unclustered node."""
     graph = {
         "directed": False,
         "multigraph": False,
@@ -1012,7 +1012,7 @@ def test_label_prompt_lines_use_bare_cid_keys():
     """The prompt line used to read "Community {cid}: ..." — the exact string of
     the no-backend placeholder sentinel. A model that echoed the key back as the
     name produced a reply indistinguishable from the fallback, so the caller's
-    sentinel filter silently dropped it (#2534). The key must be the bare id."""
+    sentinel filter silently dropped it. The key must be the bare id."""
     from pilothify.llm import _community_label_lines
 
     G, communities = _graph()

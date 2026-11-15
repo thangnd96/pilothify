@@ -1,4 +1,4 @@
-"""Scope regression tests for the uninstall API trap (issue #2215).
+"""Scope regression tests for the uninstall API trap.
 
 `X_uninstall(project_dir)` used to delete the USER-GLOBAL skill tree because
 `_platform_skill_destination` honors ``project_dir`` only when ``project=True``.
@@ -42,7 +42,7 @@ def _plant_skill_tree(root: Path, dot_dir: str) -> Path:
 
 @pytest.mark.parametrize("uninstall_fn,platform,dot_dir", PLATFORMS)
 def test_project_dir_call_never_touches_global(uninstall_fn, platform, dot_dir, tmp_path):
-    """fn(project_dir) removes only the project skill tree (#2215 trap closed)."""
+    """fn(project_dir) removes only the project skill tree (trap closed)."""
     global_tree = _plant_skill_tree(Path.home(), dot_dir)
     proj_dir = tmp_path / "proj"
     project_tree = _plant_skill_tree(proj_dir, dot_dir)
@@ -100,7 +100,7 @@ def test_project_true_removes_only_project_tree(uninstall_fn, platform, dot_dir,
 
 
 def test_project_uninstall_codebuddy_spares_global(tmp_path):
-    """`pilothify uninstall --project` (codebuddy branch) must not delete ~/.codebuddy (#2215)."""
+    """`pilothify uninstall --project` (codebuddy branch) must not delete ~/.codebuddy."""
     global_tree = _plant_skill_tree(Path.home(), ".codebuddy")
     proj_dir = tmp_path / "proj"
     project_tree = _plant_skill_tree(proj_dir, ".codebuddy")
@@ -125,7 +125,7 @@ def _posix_skill_layout(monkeypatch):
 
 def test_windows_gemini_install_and_uninstall_leave_the_agents_skill(tmp_path, monkeypatch, capsys):
     """On Windows gemini used to install into ~/.agents/skills, the `agents`
-    platform's dir, so a gemini uninstall deleted the agents skill (#2800)."""
+    platform's dir, so a gemini uninstall deleted the agents skill."""
     from pilothify.install import gemini_install
 
     monkeypatch.setattr("platform.system", lambda: "Windows")

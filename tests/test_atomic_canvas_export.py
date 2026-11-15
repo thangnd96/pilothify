@@ -1,4 +1,4 @@
-"""Regression: to_canvas / Obsidian vault writes must be atomic (#3282)."""
+"""Regression: to_canvas / Obsidian vault writes must be atomic."""
 from __future__ import annotations
 
 import json

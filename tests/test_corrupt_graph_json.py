@@ -1,4 +1,4 @@
-"""Corrupt graph.json produces an actionable error, not a raw traceback (#1536/#1537).
+"""Corrupt graph.json produces an actionable error, not a raw traceback.
 
 Three load paths call json.loads on graph.json — build_merge (`--update`),
 affected.load_graph (`pilothify prs`), and diagnostics._read_json_file

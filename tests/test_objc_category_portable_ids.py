@@ -1,13 +1,13 @@
 """An ObjC category's node ids must not carry the checkout path.
 
 A category (`@interface Foo (Cat)` in `Foo+Cat.h`) keys its class node and methods
-off the BASE stem `Foo`, so they fold into `Foo.h`'s class (#1556). extract() turns
+off the BASE stem `Foo`, so they fold into `Foo.h`'s class. extract() turns
 an id minted from an absolute input path into the repo-relative form only when it
 starts with its own file's stem prefix (`.../Foo+Cat`), so these ids kept the
 absolute form: `/home/me/proj/Lib/NSString+Extra.h` produced a `NSString` node
 `home_me_proj_lib_nsstring_nsstring`. A method of a category on an in-corpus class
 (`Foo (Cat) -bar`) kept it too. The same repo checked out in two places gave two
-different graphs, and graph.json carried the checkout path (#502).
+different graphs, and graph.json carried the checkout path.
 """
 from __future__ import annotations
 

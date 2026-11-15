@@ -40,7 +40,7 @@ def extract_sln(path: Path) -> dict:
         # that leaked the absolute scan path (incl. the OS username) into graph.json,
         # because the CLI's id-relativization only remaps ids of real files in the
         # scan set — a virtual folder never matches, so its absolute id survived
-        # (#1789). Use the folder name itself (relative, no filesystem resolution).
+        #. Use the folder name itself (relative, no filesystem resolution).
         is_solution_folder = proj_path == proj_name
         if is_solution_folder:
             abs_proj = proj_name

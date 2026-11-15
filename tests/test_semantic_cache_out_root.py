@@ -41,7 +41,7 @@ def _count_cache_files(base: Path) -> int:
 
 
 # ---------------------------------------------------------------------------
-# #1990 — checkpoint writes to cache_root, not corpus root
+# checkpoint writes to cache_root, not corpus root
 # ---------------------------------------------------------------------------
 
 
@@ -91,7 +91,7 @@ def test_save_semantic_cache_no_corpus_pilothify_out_created(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# #1990 — checkpoint written with cache_root is found on recovery read
+# checkpoint written with cache_root is found on recovery read
 # ---------------------------------------------------------------------------
 
 
@@ -128,7 +128,7 @@ def test_checkpoint_with_cache_root_is_found_by_check_semantic_cache(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# #1991 — final save resolves source_file against corpus root, not out_root
+# final save resolves source_file against corpus root, not out_root
 # ---------------------------------------------------------------------------
 
 
@@ -183,8 +183,8 @@ def test_final_save_with_wrong_root_emits_warning(tmp_path):
     assert saved == 0
     # The new warning must fire when every group is dropped
     assert any(
-        "#1991" in str(warning.message) for warning in w
-    ), "expected RuntimeWarning mentioning #1991 when all groups are silently skipped"
+        "do not resolve to real files" in str(warning.message) for warning in w
+    ), "expected a RuntimeWarning when all groups are silently skipped"
 
 
 # ---------------------------------------------------------------------------

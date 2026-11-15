@@ -1,4 +1,4 @@
-"""Type-only imports must not manufacture Import Cycles (#3123).
+"""Type-only imports must not manufacture Import Cycles.
 
 `import type` / `export type ... from` are erased by the TypeScript compiler
 — no runtime emit, no module-graph edge — yet the extractor emitted an
@@ -10,10 +10,10 @@ defect.
 
 The edge is kept — the type dependency is real for "what references this
 type" — stamped `type_only`, and `find_import_cycles` excludes it the way
-it already excludes deferred `import(...)` (#1241).
+it already excludes deferred `import(...)`.
 
 Python's `if TYPE_CHECKING:` imports never execute either and get the same
-stamp (#3159). Merging two edges of one file pair keeps an attribute from
+stamp. Merging two edges of one file pair keeps an attribute from
 either, so the merged edge is `type_only` only if every import folded into it
 is: a runtime import next to a type-only one keeps its cycle.
 """
@@ -145,7 +145,7 @@ def test_a_cycle_with_one_type_only_leg_is_not_a_cycle(tmp_path):
 
 def test_undirected_graph_keeps_the_marker_when_the_reverse_import_is_dropped(tmp_path):
     """Default undirected graph: b imports a at runtime, a only `import type`s b.
-    The pair keeps one edge (#1061); a's type-only import must not become a
+    The pair keeps one edge; a's type-only import must not become a
     runtime leg closing a -> b -> c -> a."""
     cycles = _cycles(tmp_path, {
         "a.ts": "import type { B } from './b';\nexport class A { b?: B; }\n",
@@ -196,7 +196,7 @@ def test_a_reexport_with_a_runtime_import_back_is_still_a_cycle(tmp_path, runtim
 
 
 # ---------------------------------------------------------------------------
-# Python: imports under `if TYPE_CHECKING:` (#3159)
+# Python: imports under `if TYPE_CHECKING:`
 # ---------------------------------------------------------------------------
 
 def _stamped_by_line(result, importer):
@@ -334,7 +334,7 @@ def test_python_guard_in_one_direction_keeps_the_runtime_import_in_the_other(tmp
 
 
 def test_a_type_import_beside_a_value_import_of_the_same_file_keeps_the_cycle(tmp_path):
-    """The same merge hid a real cycle for TypeScript (#3123)."""
+    """The same merge hid a real cycle for TypeScript."""
     cycles = _cycles(tmp_path, {
         "a.ts": ('import type { B } from "./b.js";\nimport { helper } from "./b.js";\n'
                  "export const a = (x: B) => helper(x);\n"),

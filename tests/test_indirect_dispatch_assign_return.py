@@ -88,7 +88,7 @@ def test_assignment_feeds_affected(tmp_path):
     assert nid["bind"] in affected
 
 
-# ── negatives: the inverted-shadow trap (must not reintroduce #1565's false edges) ──
+# ── negatives: the inverted-shadow trap (must not reintroduce 's false edges) ──
 
 PARAM_SHADOW = '''\
 def handler(): ...

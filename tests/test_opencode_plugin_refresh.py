@@ -388,7 +388,7 @@ def test_the_first_cli_run_after_an_upgrade_rewrites_it(tmp_path, monkeypatch, c
 
 
 def test_version_leaves_an_old_plugin_alone(tmp_path, monkeypatch, capsys):
-    """Checking the version must not rewrite installed files (#4545)."""
+    """Checking the version must not rewrite installed files."""
     plugin, _config = _old_install(tmp_path)
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["pilothify", "--version"])
@@ -424,7 +424,7 @@ def test_install_and_hook_commands_skip_it(monkeypatch, cmd):
 
 def test_a_v1_plugin_in_the_global_config_dir_is_rewritten(tmp_path, monkeypatch, capsys):
     """A global `pilothify install --platform opencode` writes the plugin to
-    ~/.config/opencode/plugins (#3398), so the refresh looks there too."""
+    ~/.config/opencode/plugins, so the refresh looks there too."""
     plugin = Path.home() / ".config" / "opencode" / "plugins" / "pilothify.js"
     plugin.parent.mkdir(parents=True)
     plugin.write_text(V1_PLUGIN, encoding="utf-8")

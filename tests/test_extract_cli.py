@@ -477,7 +477,7 @@ def test_manifest_stamps_freshly_extracted_semantic_docs(monkeypatch, tmp_path):
     paths — so `f in _sem_extracted` was always False and every freshly
     extracted doc was dropped from the manifest (only code/zero-node files
     survived). Both sides must be resolved against the scan root; a genuinely
-    omitted doc (zero nodes) must still stay unstamped (#933 is intentional)."""
+    omitted doc (zero nodes) must still stay unstamped (is intentional)."""
     import json
 
     corpus = _make_corpus(tmp_path)  # main.go + README.md
@@ -525,7 +525,7 @@ def test_manifest_stamps_freshly_extracted_semantic_docs(monkeypatch, tmp_path):
     )
     # Code files are always stamped.
     assert manifest.get("main.go", {}).get("semantic_hash")
-    # The zero-node doc stays unstamped so detect_incremental re-queues it (#933).
+    # The zero-node doc stays unstamped so detect_incremental re-queues it.
     assert "OMITTED.md" not in manifest, (
         "zero-node doc must not be stamped in the manifest"
     )
@@ -534,7 +534,7 @@ def test_manifest_stamps_freshly_extracted_semantic_docs(monkeypatch, tmp_path):
 def test_stamped_manifest_files_normalizes_both_sides(tmp_path):
     """Unit test for the #1897 helper: relative (fresh) and absolute (cache-hit)
     source_file values must both match detect()'s absolute file lists; docs with
-    no valid output (or edge-only output, #2927) are filtered; code files pass through untouched."""
+    no valid output (or edge-only output) are filtered; code files pass through untouched."""
     from pilothify.cli import _stamped_manifest_files
 
     fresh_doc = tmp_path / "fresh.md"; fresh_doc.write_text("# fresh")
@@ -554,7 +554,7 @@ def test_stamped_manifest_files_normalizes_both_sides(tmp_path):
             # cache replay: absolute source_file
             {"id": "n2", "source_file": str(cached_doc)},
         ],
-        # edge-only: must NOT count toward stamping (#2927)
+        # edge-only: must NOT count toward stamping
         "edges": [{"source": "a", "target": "b", "source_file": str(edge_only_doc)}],
     }
 
@@ -589,7 +589,7 @@ def test_stamped_manifest_files_counts_hyperedge_only_docs(tmp_path):
     assert str(hyper_doc) in out["document"], (
         "a hyperedge-only doc must be stamped (#1920)"
     )
-    # A doc with no output at all still stays unstamped (#933).
+    # A doc with no output at all still stays unstamped.
     assert str(omitted_doc) not in out["document"]
 
 
@@ -704,14 +704,14 @@ def test_extract_mode_deep_dispatches_over_warm_cache(monkeypatch, tmp_path):
         "second deep run must be served from cache/semantic-deep/"
     )
     # The deep entry landed in its own namespace, not cache/semantic/. Entries are
-    # nested under a p{prompt-fingerprint}/ subdir (#1939), hence the recursive glob.
+    # nested under a p{prompt-fingerprint}/ subdir, hence the recursive glob.
     assert any((corpus / "pilothify-out" / "cache" / "semantic-deep").glob("**/*.json"))
 
 
 def test_extract_force_flag_redispatches_and_stamps_manifest(monkeypatch, tmp_path):
     """extract accepts --force: a warm tree re-dispatches every semantic file
     (cache read skipped, incremental gate off) and the manifest is still
-    stamped afterward (#1897-compatible full coverage)."""
+    stamped afterward (-compatible full coverage)."""
     import json
 
     corpus = _make_corpus(tmp_path)
@@ -737,7 +737,7 @@ def test_extract_force_flag_redispatches_and_stamps_manifest(monkeypatch, tmp_pa
     assert calls[1]["paths"] == [str(corpus / "README.md")]
 
     # The forced run still wrote the semantic cache and stamped the manifest.
-    # Entries nest under a p{prompt-fingerprint}/ subdir (#1939).
+    # Entries nest under a p{prompt-fingerprint}/ subdir.
     assert any((corpus / "pilothify-out" / "cache" / "semantic").glob("**/*.json"))
     manifest = json.loads(
         (corpus / "pilothify-out" / "manifest.json").read_text()
@@ -820,7 +820,7 @@ def test_extract_codeonly_succeeds_without_api_key(monkeypatch, tmp_path):
 
     Regression: pilothify extract validated a backend upfront and exited 1 with
     'no LLM API key found' even for a code-only corpus that never calls a model.
-    The keyless AST path now runs to a written graph.json (#1122).
+    The keyless AST path now runs to a written graph.json.
     """
     corpus = _code_only_corpus(tmp_path)
     out_dir = tmp_path / "out"
@@ -847,7 +847,7 @@ def test_missing_manifest_code_only_preserves_semantic_layer(monkeypatch, tmp_pa
     not degrade to a full scan that discards the committed semantic layer. An
     existing graph.json is a sufficient incremental baseline, so doc/paper/image
     nodes (excluded by --code-only, not deleted) are preserved; a genuinely
-    deleted source is still evicted (#1909 semantics retained)."""
+    deleted source is still evicted (semantics retained)."""
     import json
 
     corpus = tmp_path / "proj"; corpus.mkdir()
@@ -952,7 +952,7 @@ def test_extract_without_key_still_errors_when_docs_present(
     """Key requirement still fires when semantic work is needed.
 
     A corpus with a Markdown doc needs LLM semantic extraction, so a keyless
-    extract must exit 1 with clear guidance (#1122).
+    extract must exit 1 with clear guidance.
     """
     corpus = _make_corpus(tmp_path)  # includes a Markdown doc
     out_dir = tmp_path / "out"
@@ -975,7 +975,7 @@ def test_extract_without_key_still_errors_when_docs_present(
 
 
 def test_extract_timing_flag_emits_stage_timings(monkeypatch, tmp_path, capsys):
-    """--timing prints per-stage `[pilothify timing]` lines to stderr (#1490); omitting
+    """--timing prints per-stage `[pilothify timing]` lines to stderr; omitting
     it prints none, so default output is unchanged. Code-only corpus => no API key."""
     code = tmp_path / "code"
     code.mkdir()
@@ -1115,7 +1115,7 @@ def test_pathless_postgres_extract_initializes_empty_detection(
 
 
 # ---------------------------------------------------------------------------
-# #1909: a newly-excluded file's nodes must be pruned from graph.json on the
+# a newly-excluded file's nodes must be pruned from graph.json on the
 # next incremental extract even when the manifest never listed the file (the
 # pre-#1897 state every 0.9.16 graph is in), so the manifest-diff prune set
 # (`manifest - corpus`) can never see it.
@@ -1202,7 +1202,7 @@ def test_incremental_extract_prunes_excluded_file_listed_in_manifest(
     monkeypatch, tmp_path
 ):
     """Post-#1897 state: the excluded file IS manifest-listed. It must be
-    pruned from graph.json AND dropped from the manifest (#1908), and stay
+    pruned from graph.json AND dropped from the manifest, and stay
     settled on a further run."""
     import json
     project = _two_file_corpus(tmp_path)
@@ -1282,7 +1282,7 @@ def test_no_cluster_incremental_prunes_newly_excluded_file(
 
 
 # ---------------------------------------------------------------------------
-# #2543: a code file whose AST extraction FAILED (error result — e.g. missing
+# a code file whose AST extraction FAILED (error result — e.g. missing
 # optional extra — or extractor-present zero nodes) must not be stamped in the
 # incremental manifest, or detect_incremental reports it unchanged forever and
 # only `rm -rf pilothify-out` recovers. The extractor is swapped through
@@ -1301,7 +1301,7 @@ def _sql_failure_corpus(tmp_path):
 
 
 def _failing_sql(path):
-    # Mirrors extractors/sql.py's missing-extra result (#1745).
+    # Mirrors extractors/sql.py's missing-extra result.
     return {"nodes": [], "edges": [],
             "error": "tree_sitter_sql not installed. Run: pip install tree-sitter-sql"}
 
@@ -1621,7 +1621,7 @@ def test_edge_only_semantic_extraction_not_stamped_and_retried(monkeypatch, tmp_
 
     # README.md has nodes -> stamped
     assert m1.get("README.md", {}).get("semantic_hash") != ""
-    # ARCH.md has only edges -> NOT stamped in manifest (#2927)
+    # ARCH.md has only edges -> NOT stamped in manifest
     assert not m1.get("ARCH.md", {}).get("semantic_hash"), (
         f"ARCH.md had zero nodes and must stay unstamped: {m1}"
     )
@@ -1724,7 +1724,7 @@ def test_stale_poisoned_manifest_semantic_source_healed(monkeypatch, tmp_path, c
     node_ids = {n["id"] for n in g.get("nodes", [])}
     assert "guide_doc" in node_ids, "guide.md node must be present in graph.json after healing"
 # ---------------------------------------------------------------------------
-# #2926: LLM output misattributed to a NON-dispatched file must not reach
+# LLM output misattributed to a NON-dispatched file must not reach
 # build_merge. Its replace-set logic swaps any source_file present in the new
 # chunks for the new fragment — so a 1-node stray for an unchanged doc used to
 # delete that doc's entire prior contribution (the doc is never re-dispatched

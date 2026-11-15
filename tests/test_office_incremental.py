@@ -4,7 +4,7 @@ detect_incremental tracks the converted markdown SIDECAR, not the Office
 source. convert_office_file used to early-return whenever the sidecar existed,
 so a source edited after its first conversion never updated its sidecar and was
 reported "unchanged" forever. It now re-converts when the source is newer than
-the sidecar (and still skips an unchanged source so it never churns, #1226).
+the sidecar (and still skips an unchanged source so it never churns).
 """
 from __future__ import annotations
 
@@ -63,5 +63,5 @@ def test_unchanged_docx_sidecar_not_rewritten(tmp_path: Path):
 
     sidecar2 = detect.convert_office_file(src, out)
     assert sidecar2 == sidecar
-    # Not rewritten: mtime unchanged, so detect_incremental won't see churn (#1226).
+    # Not rewritten: mtime unchanged, so detect_incremental won't see churn.
     assert sidecar2.stat().st_mtime == before

@@ -7,7 +7,7 @@ semantic subagents (the skill prompt's node-ID spec), and the graph builder
 copy-pasted into ``_make_id`` and ``_normalize_id`` and kept in sync only by
 mirrored docstrings — exactly how the recurring ID-drift bug class crept in
 (#811 Unicode collapse, #550 same-filename collisions, #1033 AST-vs-LLM file-node
-mismatch, #1104).
+mismatch).
 
 Both callers now delegate to :mod:`pilothify.ids`, so they share one
 implementation and cannot diverge. These tests lock that contract: if a future
@@ -30,16 +30,16 @@ CONTRACT_CASES = [
     "foo__bar..baz",              # repeated separators collapse
     "  Leading_Trailing__  ",     # strip stray underscores/space
     "A/B\\C",                     # path separators both directions
-    "MixedCASE",                  # #811: casefold
+    "MixedCASE",                  # casefold
     "café",                       # composed accented Latin (NFKC)
     "café",                 # decomposed e + combining acute -> same as 'café'
-    "日本語クラス",                  # #811: CJK letters survive, not collapsed
+    "日本語クラス",                  # CJK letters survive, not collapsed
     "Кириллица",                  # Cyrillic survives
     "naïve_Über",                 # mixed accented Latin
     "x_c1",                       # must NOT be treated as a chunk suffix here
     "__dunder__",                 # leading/trailing underscores stripped
     "tab\tnewline\nspace ",       # whitespace runs -> single underscore
-    # #2614: casefolding these EXPANDS them into a base letter plus a combining
+    # casefolding these EXPANDS them into a base letter plus a combining
     # mark. With casefold last, the mark landed in the id after the [^\w] filter
     # had already run, so the id carried a non-word character and a second pass
     # changed it. Turkish identifiers are the common real-world case.
@@ -193,7 +193,7 @@ def test_both_callers_share_one_implementation():
     assert _make_id("Foo.Bar") == normalize_id("Foo.Bar")
     # The other two live ID producers — MCP config ingestion and bash symbol
     # resolution — must also resolve to the shared recipe, or the "single source
-    # of truth" leaks back into copy-pasted forks (#1378).
+    # of truth" leaks back into copy-pasted forks.
     from pilothify.mcp_ingest import _make_id as _mcp_make_id
     from pilothify.symbol_resolution import _bash_make_id
     for fn in (_make_id, _mcp_make_id, _bash_make_id):

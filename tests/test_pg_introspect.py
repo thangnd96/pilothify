@@ -363,7 +363,7 @@ def test_pg_introspect_import_error():
     with patch.dict("sys.modules", {"psycopg": None}):
         with pytest.raises(ImportError, match="psycopg is required") as exc_info:
             introspect_postgres("postgresql://localhost/db")
-    # #1906: the PyPI package is pilothify (double-y), so the install hint must match
+    # the PyPI package is pilothify (double-y), so the install hint must match
     assert "pilothify[postgres]" in str(exc_info.value)
 
 

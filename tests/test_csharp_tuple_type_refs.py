@@ -1,4 +1,4 @@
-"""C# named-tuple element names must not be collected as type references (#3796).
+"""C# named-tuple element names must not be collected as type references.
 
 In tree-sitter-c-sharp a named tuple type `(int mode, string label)` is a
 `tuple_type` whose children are `tuple_element` nodes carrying a `type` field

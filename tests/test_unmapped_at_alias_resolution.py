@@ -157,7 +157,7 @@ def test_tsconfig_without_paths_leaves_at_alias_unresolved(tmp_path: Path):
     # No symbol import edge
     assert not any(e.get("relation") == "imports" and e.get("source") == "caller" for e in edges)
 
-    # No calls edge (gated by #1659)
+    # No calls edge (gated by)
     assert not any(e.get("relation") == "calls" for e in edges)
 
 
@@ -239,7 +239,7 @@ def test_scoped_package_import_remains_external(tmp_path: Path):
 
 
 def test_regex_rescue_unmapped_at_alias_resolves(tmp_path: Path):
-    """The regex-rescue path in extract.py (#701) also resolves unmapped @/."""
+    """The regex-rescue path in extract.py also resolves unmapped @/."""
     _write(tmp_path / "package.json", '{"name": "test-app"}\n')
     lib = _write(
         tmp_path / "lib.js",

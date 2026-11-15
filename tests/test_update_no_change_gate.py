@@ -212,7 +212,7 @@ def test_inputs_unchanged_treats_a_scanned_file_with_no_manifest_row_as_changed(
     built: Path,
 ) -> None:
     # A scanned source with no manifest row (e.g. one whose AST extraction
-    # previously failed, #2543) must NOT fast-path the gate: if it is later fixed
+    # previously failed) must NOT fast-path the gate: if it is later fixed
     # with no other change in the tree, the gate has to take the full rebuild so
     # the graph gains its nodes. Tolerating the missing row would skip forever and
     # leave the graph stale. The cost is that a corpus with a permanently-failing
@@ -294,7 +294,7 @@ def test_partially_published_graph_is_never_stamped(
     built: Path, monkeypatch: pytest.MonkeyPatch, capsys
 ) -> None:
     # The atomic replace exists because a crash mid-write must not leave a
-    # truncated graph.json (#2689). Its non-atomic fallback can still land part of
+    # truncated graph.json. Its non-atomic fallback can still land part of
     # the bytes and report success. Stamping that file records the truncated size,
     # and the next run matches the stamp and skips over the damage forever.
     graph = built / "pilothify-out" / "graph.json"

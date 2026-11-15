@@ -24,7 +24,7 @@ def _run_isolated(script: str, *args: str) -> subprocess.CompletedProcess:
     """Run *script* in a fresh interpreter so in-process global state cannot leak in.
 
     ``_rebuild_code`` touches module-level globals: the cache stat index
-    (#3989) and the active scan root.  In the full suite a prior test's root
+    and the active scan root.  In the full suite a prior test's root
     can be served to a later rebuild, dropping resolver-minted markdown
     reference edges.  A subprocess starts from a clean slate, matching the
     isolated run the test sees when executed on its own.
@@ -112,7 +112,7 @@ def test_code_span_mentions_are_classified():
     pinned = ("src/widget.py", ["Widget", "render"])
     assert _code_span_mention("src/widget.py::Widget::render") == pinned
     assert _code_span_mention("src/widget.py::Widget::render()") == pinned
-    # `\` and `::` are qualifier separators too (#4610): PHP namespaces and the
+    # `\` and `::` are qualifier separators too: PHP namespaces and the
     # type-qualified member form PHP, Rust and C++ docs write.
     assert _code_span_mention("App\\Services\\Mailer") == (
         None, ["App", "Services", "Mailer"])
@@ -126,7 +126,7 @@ def test_code_span_mentions_are_classified():
     for span in ("Foo::CONST", "Foo::class", "App\\", "C:\\Users\\me"):
         assert _code_span_mention(span) is None, span
     # A source-file span classifies with an empty symbol chain, so resolution
-    # can record it as file evidence (#4804).
+    # can record it as file evidence.
     assert _code_span_mention("setup.py") == ("setup.py", [])
     assert _code_span_mention("src/widget.py") == ("src/widget.py", [])
     # A *document* span is not evidence (only code files are), so it is not a
@@ -278,7 +278,7 @@ def test_dotted_mentions_need_qualifier_evidence(tmp_path):
 
 def test_namespace_and_member_chains_resolve(tmp_path):
     """``App\\Services\\Mailer`` and ``Mailer::send()`` reach the same nodes the
-    dotted and bare forms do (#4610)."""
+    dotted and bare forms do."""
     r = _extract(tmp_path, {
         "mailer.py": "class Mailer:\n    def send(self):\n        return 1\n",
         "gadget.py": "class Gadget:\n    def send(self):\n        return 2\n",
@@ -355,7 +355,7 @@ def test_mentions_survive_the_extraction_cache(tmp_path):
 
 
 def test_bare_lowercase_word_does_not_link_to_an_unrelated_method(tmp_path):
-    """`redis` the server is prose, not a reference to whichever method is named redis (#4609)."""
+    """`redis` the server is prose, not a reference to whichever method is named redis."""
     r = _extract(tmp_path, {
         "cache.py": "class Cache:\n    def redis(self):\n        return 'connection'\n",
         "README.md": "# Queue\n\nJobs run on `redis` (the server, not our code).\n",
@@ -366,7 +366,7 @@ def test_bare_lowercase_word_does_not_link_to_an_unrelated_method(tmp_path):
 
 
 def test_bare_method_mention_survives_when_the_document_cites_its_class(tmp_path):
-    """`successWithWarnings` next to `HandlerResult` is a real reference (#4609)."""
+    """`successWithWarnings` next to `HandlerResult` is a real reference."""
     r = _extract(tmp_path, {
         "handler.py": "class HandlerResult:\n    def successWithWarnings(self):\n        return 1\n",
         "notes.md": "# Notes\n\n`HandlerResult` returns `successWithWarnings`.\n",
@@ -378,7 +378,7 @@ def test_bare_method_mention_survives_when_the_document_cites_its_class(tmp_path
 
 
 def test_bare_method_with_parentheses_still_resolves(tmp_path):
-    """A trailing () is explicit evidence, so the owner does not have to be cited (#4609)."""
+    """A trailing () is explicit evidence, so the owner does not have to be cited."""
     r = _extract(tmp_path, {
         "cache.py": "class Cache:\n    def redis(self):\n        return 'connection'\n",
         "notes.md": "# Notes\n\nCall `redis()` on the cache.\n",
@@ -390,7 +390,7 @@ def test_bare_method_with_parentheses_still_resolves(tmp_path):
 
 
 def test_bare_lowercase_word_does_not_link_to_an_unrelated_function(tmp_path):
-    """`token` the query parameter is prose, not a reference to token() in an unrelated JS file (#4804)."""
+    """`token` the query parameter is prose, not a reference to token() in an unrelated JS file."""
     r = _extract(tmp_path, {
         "web/charts.js": "export function token(name) {\n  return name;\n}\n",
         "docs/feed.md": "# Quote feed\n\nThe client sends the API key as the `token` query parameter.\n",
@@ -401,7 +401,7 @@ def test_bare_lowercase_word_does_not_link_to_an_unrelated_function(tmp_path):
 
 
 def test_bare_function_mention_survives_when_the_document_cites_another_symbol_from_its_file(tmp_path):
-    """`token` next to `palette()` from the same file is a real reference (#4804)."""
+    """`token` next to `palette()` from the same file is a real reference."""
     r = _extract(tmp_path, {
         "web/charts.js": (
             "export function palette() { return 'dark'; }\n"
@@ -418,7 +418,7 @@ def test_bare_function_mention_survives_when_the_document_cites_another_symbol_f
 
 
 def test_bare_function_with_parentheses_still_resolves(tmp_path):
-    """A trailing () is explicit evidence, so defining file does not need another symbol cited (#4804)."""
+    """A trailing () is explicit evidence, so defining file does not need another symbol cited."""
     r = _extract(tmp_path, {
         "deploy.py": "def deploy():\n    pass\n",
         "notes.md": "# Notes\n\nRun `deploy()` after the tests.\n",
@@ -430,7 +430,7 @@ def test_bare_function_with_parentheses_still_resolves(tmp_path):
 
 
 def test_bare_function_survives_when_a_class_in_its_file_is_cited(tmp_path):
-    """`deploy` next to `Deployer` in the same file is a real reference (#4804)."""
+    """`deploy` next to `Deployer` in the same file is a real reference."""
     r = _extract(tmp_path, {
         "deploy.py": "class Deployer:\n    pass\n\ndef deploy():\n    pass\n",
         "notes.md": "# Notes\n\nUse `Deployer` then run `deploy`.\n",
@@ -442,7 +442,7 @@ def test_bare_function_survives_when_a_class_in_its_file_is_cited(tmp_path):
 
 
 def test_function_evidence_cited_in_another_document_does_not_count(tmp_path):
-    """The file-symbol evidence is per document: one doc's mention cannot license another's (#4804)."""
+    """The file-symbol evidence is per document: one doc's mention cannot license another's."""
     r = _extract(tmp_path, {
         "web/charts.js": (
             "export function palette() { return 'dark'; }\n"
@@ -457,7 +457,7 @@ def test_function_evidence_cited_in_another_document_does_not_count(tmp_path):
 
 
 def test_owner_cited_in_another_document_does_not_count(tmp_path):
-    """The owner evidence is per document: one doc's mention cannot license another's (#4609)."""
+    """The owner evidence is per document: one doc's mention cannot license another's."""
     r = _extract(tmp_path, {
         "handler.py": "class HandlerResult:\n    def successWithWarnings(self):\n        return 1\n",
         "a.md": "# A\n\n`HandlerResult` is the result type.\n",
@@ -473,7 +473,7 @@ def test_owner_evidence_survives_an_edge_that_already_exists():
 
     The resolver skips an edge that is already there, but the document has still
     cited that symbol, so the evidence must stay on record for a later method
-    mention in the same document (#4609, review finding on the PR).
+    mention in the same document (review finding on the PR).
     """
     from pilothify.markdown_resolution import resolve_markdown_mentions
 
@@ -531,7 +531,7 @@ def test_dotted_mention_resolves_when_method_name_is_a_builtin(tmp_path):
 
 
 def test_bare_function_survives_when_file_is_cited(tmp_path):
-    """Naming the defining file (span or link) licenses a bare function (#4804)."""
+    """Naming the defining file (span or link) licenses a bare function."""
     r = _extract(tmp_path, {
         "web/charts.js": "export function token(name) { return name; }\n",
         "docs/span.md": "# Span\n\n- `web/charts.js` — uses `token` to read styles.\n",
@@ -547,7 +547,7 @@ def test_bare_function_survives_when_file_is_cited(tmp_path):
 
 
 def test_two_bare_functions_from_one_file_with_no_other_citation_yield_no_edge(tmp_path):
-    """Two bare prose-like names cannot circularly license each other without evidence (#4804)."""
+    """Two bare prose-like names cannot circularly license each other without evidence."""
     r = _extract(tmp_path, {
         "web/charts.js": (
             "export function palette() { return 'dark'; }\n"
@@ -561,7 +561,7 @@ def test_two_bare_functions_from_one_file_with_no_other_citation_yield_no_edge(t
 
 
 def test_bare_function_resolves_when_class_is_cited_after_it_in_document(tmp_path):
-    """Pass 2a/2c ordering ensures license is document-scoped, not reading-order dependent (#4804)."""
+    """Pass 2a/2c ordering ensures license is document-scoped, not reading-order dependent."""
     r = _extract(tmp_path, {
         "deploy.py": "class Deployer:\n    pass\n\ndef deploy():\n    pass\n",
         "notes.md": "# Notes\n\nRun `deploy` first. Then use `Deployer`.\n",
@@ -576,7 +576,7 @@ def test_bare_function_resolves_when_class_is_cited_after_it_in_document(tmp_pat
 
 
 def test_bare_function_survives_with_path_qualified_evidence(tmp_path):
-    """A path-qualified class citation licenses a bare function from that file (#4804)."""
+    """A path-qualified class citation licenses a bare function from that file."""
     r = _extract(tmp_path, {
         "deploy.py": "class Deployer:\n    pass\n\ndef deploy():\n    pass\n",
         "notes.md": "# Notes\n\nSee `deploy.py::Deployer`. Then run `deploy`.\n",
@@ -588,7 +588,7 @@ def test_bare_function_survives_with_path_qualified_evidence(tmp_path):
 
 
 def test_target_with_no_source_file_is_safely_skipped():
-    """A callable target without a source_file sentinel is skipped without error (#4804)."""
+    """A callable target without a source_file sentinel is skipped without error."""
     from pilothify.markdown_resolution import resolve_markdown_mentions
 
     per_file = [{"raw_calls": [
@@ -606,7 +606,7 @@ def test_target_with_no_source_file_is_safely_skipped():
 
 
 def test_nested_class_resolves_standalone(tmp_path):
-    """A nested class is a class, not a method; it resolves without outer class cited (#4804)."""
+    """A nested class is a class, not a method; it resolves without outer class cited."""
     r = _extract(tmp_path, {
         "tree.py": "class Outer:\n    class Inner:\n        pass\n",
         "notes.md": "# Notes\n\nUse `Inner`.\n",
@@ -618,7 +618,7 @@ def test_nested_class_resolves_standalone(tmp_path):
 
 
 def test_bare_function_with_snake_case_or_camel_case_resolves_without_file_citation(tmp_path):
-    """Distinct code identifiers (snake_case or camelCase) resolve standalone (#4804)."""
+    """Distinct code identifiers (snake_case or camelCase) resolve standalone."""
     r = _extract(tmp_path, {
         "build.py": (
             "def deduplicate_by_label():\n    pass\n\n"
@@ -639,7 +639,7 @@ def test_bare_function_with_snake_case_or_camel_case_resolves_without_file_citat
 
 
 def test_bare_function_mention_survives_when_symbol_itself_cited_with_parentheses(tmp_path):
-    """An explicit () mention under h1 licenses a bare mention under h2 (#4804)."""
+    """An explicit () mention under h1 licenses a bare mention under h2."""
     r = _extract(tmp_path, {
         "web/charts.js": "export function palette() { return 'dark'; }\n",
         "docs/guide.md": (
@@ -659,7 +659,7 @@ def test_bare_function_mention_survives_when_symbol_itself_cited_with_parenthese
 
 
 def test_link_to_scanned_source_file_is_a_reference_and_licenses_bare_mentions(tmp_path):
-    """A link to a scanned source file is a doc->file edge AND licenses a bare mention (#4804)."""
+    """A link to a scanned source file is a doc->file edge AND licenses a bare mention."""
     r = _extract(tmp_path, {
         "web/charts.js": "export function token(name) { return name; }\n",
         "docs/guide.md": "# Guide\n\nSee [charts](../web/charts.js). Sends `token`.\n",
@@ -678,7 +678,7 @@ def test_link_to_scanned_source_file_is_a_reference_and_licenses_bare_mentions(t
 
 def test_extract_markdown_records_a_source_file_link_as_a_citation(tmp_path):
     """The citation rides the markdown raw-call channel with only `path`, so the
-    corpus-aware resolver can decide edge vs evidence-only (#4804)."""
+    corpus-aware resolver can decide edge vs evidence-only."""
     doc = tmp_path / "docs" / "guide.md"
     doc.parent.mkdir()
     doc.write_text("# Guide\n\nSee [charts](../web/charts.js) and `token`.\n")
@@ -718,7 +718,7 @@ def test_wikilink_to_scanned_source_file_yields_only_a_file_edge(tmp_path):
 
 
 def test_single_word_pascal_case_function_resolves_standalone(tmp_path):
-    """An exported Go/C#/Swift entry point (`Serve`) is a distinct identifier, not prose (#4804)."""
+    """An exported Go/C#/Swift entry point (`Serve`) is a distinct identifier, not prose."""
     r = _extract(tmp_path, {
         "worker.go": "package worker\n\nfunc Serve() {}\n",
         "docs/guide.md": "# Guide\n\n`Serve` starts the server.\n",
@@ -804,7 +804,7 @@ def test_file_citation_evidence_survives_a_rebuild(tmp_path):
 
 
 def test_bare_function_mention_in_a_sibling_section_needs_its_own_evidence(tmp_path):
-    """Evidence is section-scoped: a citation in one h1 does not license a sibling h1 (#4804)."""
+    """Evidence is section-scoped: a citation in one h1 does not license a sibling h1."""
     r = _extract(tmp_path, {
         "web/charts.js": (
             "export function palette() { return 'dark'; }\n"
@@ -845,7 +845,7 @@ def test_bare_function_mention_in_a_sibling_section_needs_its_own_evidence(tmp_p
 
 
 def test_pascal_case_in_a_lowercase_convention_language_needs_evidence(tmp_path):
-    """`Token` in Python is prose as often as not; only PascalCase-export languages skip the test (#4804)."""
+    """`Token` in Python is prose as often as not; only PascalCase-export languages skip the test."""
     r = _extract(tmp_path, {
         "build.py": "def Token():\n    pass\n",
         "notes.md": "# Notes\n\n`Token` builds the response.\n",
@@ -865,7 +865,7 @@ def test_pascal_case_in_a_lowercase_convention_language_needs_evidence(tmp_path)
 
 
 def test_file_span_is_evidence_but_not_a_doc_file_edge(tmp_path):
-    """A source-file code span licenses bare mentions; only a link is a doc->file reference (#4804)."""
+    """A source-file code span licenses bare mentions; only a link is a doc->file reference."""
     r = _extract(tmp_path, {
         "web/charts.js": "export function token(name) { return name; }\n",
         "docs/span.md": "# Span\n\n- `web/charts.js` — uses `token` to read styles.\n",
@@ -879,7 +879,7 @@ def test_file_span_is_evidence_but_not_a_doc_file_edge(tmp_path):
 
 
 def test_cited_file_fallback_respects_explicit_relative_discipline():
-    """The suffix fallback fires only under detected path-form mixing (#4804).
+    """The suffix fallback fires only under detected path-form mixing.
 
     Runs in a subprocess so ``_active_scan_root()`` is None: the resolver's
     fallback consults that process global, and a root leaked by an earlier test
@@ -954,7 +954,7 @@ def test_missing_source_link_does_not_reference_other_files(tmp_path):
 
 def test_reference_style_use_licenses_its_own_section(tmp_path):
     """A reference-style use `[charts][source]` licenses a bare mention in its own section,
-    not the section where the definition sits (#4804)."""
+    not the section where the definition sits."""
     r = _extract(tmp_path, {
         "web/charts.js": "export function token(name) { return name; }\n",
         "docs/guide.md": (
@@ -978,7 +978,7 @@ def test_reference_style_use_licenses_its_own_section(tmp_path):
 
 def test_reference_definition_section_does_not_license_bare_mention(tmp_path):
     """A definition's own section does not inherit citation evidence from the
-    definition line (#4804 regression)."""
+    definition line."""
     r = _extract(tmp_path, {
         "web/charts.js": "export function token(name) { return name; }\n",
         "docs/guide.md": (
@@ -996,7 +996,7 @@ def test_reference_definition_section_does_not_license_bare_mention(tmp_path):
 
 
 def test_reference_style_use_shared_by_multiple_sections(tmp_path):
-    """Each use of a shared definition licenses its own section (#4804)."""
+    """Each use of a shared definition licenses its own section."""
     r = _extract(tmp_path, {
         "web/charts.js": "export function token(name) { return name; }\n",
         "docs/guide.md": (

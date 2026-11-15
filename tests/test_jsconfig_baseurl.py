@@ -1,4 +1,4 @@
-"""Regression tests: jsconfig.json / baseUrl module resolution (#2153).
+"""Regression tests: jsconfig.json / baseUrl module resolution.
 
 `compilerOptions.baseUrl` was only ever used as the base that `paths` aliases
 resolve against, so a config declaring `baseUrl` and NO `paths` produced an
@@ -9,7 +9,7 @@ answered nothing. `jsconfig.json` was also never probed at all — only
 `tsconfig.json` — even though json_config.py already indexes it.
 
 baseUrl is now a resolution root of last resort: tried only after every declared
-alias fails to match, so existing `paths` precedence (#1269, #927, #1531) is
+alias fails to match, so existing `paths` precedence is
 untouched.
 """
 from pathlib import Path
@@ -43,12 +43,12 @@ def _rails_tree(tmp_path: Path, config_name: str, importer_body: str,
 def _widget(tmp_path: Path, base_url: str = "app/javascript") -> str:
     # The resolved import target is canonicalized to the root-relative file-node
     # id (the same id Widget.js gets as a node), not the absolute-path form
-    # (#2169 canonicalizes cross-file edge targets).
+    # (canonicalizes cross-file edge targets).
     return _cid(tmp_path, tmp_path / base_url / "mods" / "Widget.js")
 
 
 def _cid(tmp_path: Path, abs_path: Path) -> str:
-    """Canonical root-relative file-node id of a cross-file import target (#2169)."""
+    """Canonical root-relative file-node id of a cross-file import target."""
     return _make_id(str(Path(abs_path).relative_to(tmp_path).with_suffix("")))
 
 
@@ -97,7 +97,7 @@ def test_declared_paths_alias_still_wins_over_baseurl(tmp_path):
            '    "baseUrl": "app/javascript",\n'
            '    "paths": { "@mods/*": ["real/*"] }\n'
            '  }\n}\n')
-    # paths targets are relative to baseUrl (#1269), so "real/*" is
+    # paths targets are relative to baseUrl, so "real/*" is
     # <baseUrl>/real/*.
     real = _write(tmp_path / "app/javascript" / "real" / "Widget.js",
                   "export default 1;\n")
@@ -193,7 +193,7 @@ def test_tsconfig_wins_when_both_configs_present(tmp_path):
     assert _cid(tmp_path, tmp_path / "js_root" / "mods" / "W.js") not in targets
 
 
-# --- config edits must survive the per-process caches (#2917) ---------------
+# --- config edits must survive the per-process caches ---------------
 #
 # `_TSCONFIG_ALIAS_CACHE` and `_TSCONFIG_BASEURL_CACHE` are keyed on the config
 # path with no mtime component. Every test above calls extract() exactly once
@@ -234,7 +234,7 @@ def test_edited_paths_alias_is_observed_by_a_later_extract(tmp_path):
 
 
 def test_edited_baseurl_is_observed_by_a_later_extract(tmp_path):
-    """Same contract for the separately cached `baseUrl` root (#2153)."""
+    """Same contract for the separately cached `baseUrl` root."""
     _write(tmp_path / "one" / "mods" / "Widget.js", "export default function Widget() {}\n")
     _write(tmp_path / "two" / "mods" / "Widget.js", "export default function Widget() {}\n")
     importer = _write(tmp_path / "packs" / "dashboard.js",

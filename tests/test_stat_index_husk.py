@@ -1,4 +1,4 @@
-"""The atexit stat-index flush must not resurrect a deleted directory (#2974).
+"""The atexit stat-index flush must not resurrect a deleted directory.
 
 A post-commit hook runs `pilothify update . &` in a short-lived worktree; the
 branch merges and `git worktree remove` deletes the tree while the rebuild

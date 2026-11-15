@@ -1,4 +1,4 @@
-"""Regression tests: Python decorator references (#2154).
+"""Regression tests: Python decorator references.
 
 Applying a Python decorator emitted no edge to the decorator symbol, so
 `affected <decorator>` answered "No affected nodes found" for every function it
@@ -6,7 +6,7 @@ wraps — a silent false negative on reverse-impact queries.
 
 TS/JS already emitted these edges (`_ts_emit_decorator_edges`); the Python
 `decorated_definition` branch walked its children only to propagate the parent
-class id (#1050) and never looked at the `decorator` children. Python now emits
+class id and never looked at the `decorator` children. Python now emits
 the same shape: `references` edges with context="decorator" from the decorated
 function/class to the decorator symbol, resolved through the same
 sourceless-stub path as type references so an imported decorator collapses onto

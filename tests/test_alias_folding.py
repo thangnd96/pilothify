@@ -75,7 +75,7 @@ def test_numeric_confidence_does_not_override_an_existing_score():
 def test_model_drifted_string_confidence_folds_to_inferred():
     # "high"/"confirmed"/"medium-high"/"medium-low" are model drift from the
     # LLM semantic pass, not the documented EXTRACTED/INFERRED/AMBIGUOUS enum
-    # (#4495): none of them parse as a float, so confidence_score is left
+    # none of them parse as a float, so confidence_score is left
     # alone and only the enum field itself is repaired.
     for drifted in ("high", "confirmed", "medium-high", "medium-low"):
         edge = {"source": "a", "target": "b", "confidence": drifted}
@@ -86,7 +86,7 @@ def test_model_drifted_string_confidence_folds_to_inferred():
 
 def test_numeric_looking_string_confidence_backfills_score():
     """A string that DOES parse as a float still backfills confidence_score,
-    the same as a genuinely numeric confidence (#4495)."""
+    the same as a genuinely numeric confidence."""
     edge = {"source": "a", "target": "b", "confidence": "0.85"}
     _fold_edge_aliases(edge)
     assert edge["confidence"] == "INFERRED"
@@ -94,7 +94,7 @@ def test_numeric_looking_string_confidence_backfills_score():
 
 
 def test_lowercase_confidence_is_case_corrected_not_treated_as_drift():
-    """A case variant of a real enum value (#4495) IS the enum value, just
+    """A case variant of a real enum value IS the enum value, just
     mis-cased -- it must be corrected to its exact spelling, not treated as
     an unknown word that backfills confidence_score from a failed float
     parse of a string that was never meant to be a number."""
@@ -202,7 +202,7 @@ def test_node_confidence_folds_the_same_way():
 
 
 def test_node_without_confidence_is_left_untouched():
-    """No behavior change for graphs whose nodes carry no confidence (#4529)."""
+    """No behavior change for graphs whose nodes carry no confidence."""
     node = {"id": "a", "label": "A", "source_file": "a.py"}
     _fold_node_aliases(node)
     assert "confidence" not in node

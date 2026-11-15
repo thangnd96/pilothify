@@ -122,7 +122,7 @@ _GRAPH_DIFF_EDIT = (
     " graph rebuild or its hooks.",
 )
 ALWAYS_ON_SANCTIONED_EDITS: dict[str, tuple[tuple[str, str], ...]] = {
-    # #1530: install guidance must stay host-generic — do not tell agents to
+    # install guidance must stay host-generic — do not tell agents to
     # invoke a literal `skill` tool with `skill: "pilothify"`, which is
     # host-specific and not valid in every environment.
     "_AGENTS_MD_SECTION": (
@@ -167,7 +167,7 @@ _EXTRACTION_SOURCE = {
 # CLI traversal plus inline NetworkX fallback, shipped to every platform. The
 # capabilities used to be split across cli.md / cli-inline.md so no platform got
 # both — Claude had expansion but no fallback, the rest had the fallback but the
-# weaker matcher (#1325).
+# weaker matcher.
 _QUERY_REFERENCE = "references/query/default.md"
 _QUERY_STUB = "query-stub/default.md"
 # The hooks reference is host-flavored. Most hosts read CLAUDE.md and wire
@@ -303,7 +303,7 @@ class Platform:
     refs_dst: str | None = None
     name: str = "pilothify"
     description: str | None = None
-    trigger: str | None = None  # removed — not part of Agent Skills spec (#1180)
+    trigger: str | None = None  # removed — not part of Agent Skills spec
     dispatch: str | None = None
     extraction: str = "verbose"
     shell: str = "posix"
@@ -387,7 +387,7 @@ def _render_frontmatter(platform: Platform) -> str:
     return "\n".join(lines)
 
 
-# --- POSIX -> PowerShell core translation (#2528) --------------------------------
+# --- POSIX -> PowerShell core translation --------------------------------
 #
 # The lean core template is written once, in POSIX shell. A host that declares
 # ``shell = "powershell"`` (windows) used to get a PowerShell Step 1 but bash for
@@ -497,7 +497,7 @@ def _translate_prose_line(line: str) -> str:
 
 
 def _core_to_powershell(body: str) -> str:
-    """Render the composed POSIX core body as strict PowerShell (#2528)."""
+    """Render the composed POSIX core body as strict PowerShell."""
     lines = body.split("\n")
     out: list[str] = []
     i, n = 0, len(lines)
@@ -542,7 +542,7 @@ def _core_to_powershell(body: str) -> str:
 
 
 # Step B3's re-run hints name the agent that can write chunk files. A dispatch
-# variant whose host has no `general-purpose` agent names its own (#4494).
+# variant whose host has no `general-purpose` agent names its own.
 _DEFAULT_WRITER_AGENT = ("general-purpose agent", '`subagent_type="general-purpose"`')
 _WRITER_AGENT = {"pi-subagents": ("the `delegate` agent", "the `delegate` agent")}
 
@@ -932,7 +932,7 @@ def _is_enum_line(line: str) -> bool:
 def _is_frontmatter_description_line(line: str) -> bool:
     """Whether a line is a YAML frontmatter description field.
 
-    The unified description (pilothify #1106) rewrites the frontmatter
+    The unified description (pilothify) rewrites the frontmatter
     ``description`` on every host, monoliths included. That line is now an
     allowed diff against v8 alongside the enum unification.
     """
@@ -944,7 +944,7 @@ def _is_chunk_cleanup_line(line: str) -> bool:
 
     The bare glob ``.pilothify_chunk_*.json`` in the v8 cleanup line aborts the
     whole ``rm`` under fish/zsh when no chunk files exist (no-match is a hard
-    error there, unlike bash). The fix (pilothify #1172) drops the glob from the
+    error there, unlike bash). The fix (pilothify) drops the glob from the
     ``rm`` and deletes the chunk files with ``find ... -delete`` instead. That
     rewrite touches the single cleanup line in place (no line added or removed),
     so it joins the enum and description unifications as an allowed monolith diff.
@@ -959,7 +959,7 @@ def _is_chunk_cleanup_line(line: str) -> bool:
 
 
 def _is_trigger_line(line: str) -> bool:
-    """Whether a line is the non-spec ``trigger:`` frontmatter field (#1180).
+    """Whether a line is the non-spec ``trigger:`` frontmatter field.
 
     The Agent Skills spec does not include ``trigger:`` — only name/description
     and a few optional fields. Removing it is a permitted monolith diff.
@@ -968,7 +968,7 @@ def _is_trigger_line(line: str) -> bool:
 
 
 def _is_directed_fix_line(line: str) -> bool:
-    """Whether a line is part of the ``--directed`` propagation fix (#1392).
+    """Whether a line is part of the ``--directed`` propagation fix.
 
     The monolith runbooks built every graph undirected, so a ``--directed`` run
     silently collapsed reciprocal A<->B edges. Every ``build_from_json(...)`` call
@@ -984,7 +984,7 @@ def _is_directed_fix_line(line: str) -> bool:
 
 
 def _is_content_scope_fix_line(line: str) -> bool:
-    """Whether a line is part of the content-only semantic scope fix (#1392).
+    """Whether a line is part of the content-only semantic scope fix.
 
     Flattening every detect category fed code files (already covered by the AST
     pass) back to the semantic step. The fix scopes to document/paper/image.
@@ -999,7 +999,7 @@ def _is_content_scope_fix_line(line: str) -> bool:
 
 
 def _is_cache_unlink_fix_line(line: str) -> bool:
-    """Whether a line is part of the stale-cache unlink fix (#1392).
+    """Whether a line is part of the stale-cache unlink fix.
 
     The cache file was written only on a hit, so a miss left a prior run's
     ``.pilothify_cached.json`` for Part C to merge. The miss branch now deletes it.
@@ -1013,11 +1013,11 @@ def _is_cache_unlink_fix_line(line: str) -> bool:
 
 
 def _is_zero_node_guard_fix_line(line: str) -> bool:
-    """Whether a line is part of the zero-node / shrink-guard ordering fix (#1392).
+    """Whether a line is part of the zero-node / shrink-guard ordering fix.
 
     Step 4 wrote GRAPH_REPORT.md, graph.json and the analysis sidecar *before*
     the zero-node guard, so an empty extraction clobbered a good graph; and the
-    report was written even when ``to_json`` refused to shrink (#479). The guard
+    report was written even when ``to_json`` refused to shrink. The guard
     now runs before any write and the report/analysis are gated on ``to_json``.
     Both the old (removed) and new (added) forms of these lines match here.
     """
@@ -1039,7 +1039,7 @@ def _is_zero_node_guard_fix_line(line: str) -> bool:
 
 
 def _is_manifest_root_fix_line(line: str) -> bool:
-    """Whether a line is part of the manifest-portability fix (#1417).
+    """Whether a line is part of the manifest-portability fix.
 
     The monolith Step 9 called ``save_manifest(detect['files'])`` with no
     ``root=``, so the manifest stored absolute path keys and a clone or move
@@ -1054,7 +1054,7 @@ def _is_manifest_root_fix_line(line: str) -> bool:
 
 
 def _is_manifest_stamp_fix_line(line: str) -> bool:
-    """Whether a line is part of the manifest over-stamping fix (#2015).
+    """Whether a line is part of the manifest over-stamping fix.
 
     Step 9 stamped the whole detected corpus, so a semantic file whose chunk
     failed (or was omitted) was marked done and never re-queued on the next
@@ -1090,7 +1090,7 @@ def _is_sensitive_reporting_fix_line(line: str) -> bool:
 
 
 def _is_no_api_key_fix_line(line: str) -> bool:
-    """Whether a line is part of the "no API key required" clarity (#1461).
+    """Whether a line is part of the "no API key required" clarity.
 
     The aider/devin monoliths described Step 3 semantic extraction without ever
     stating that pilothify needs no API key, and (like the subagent-host skills)
@@ -1103,7 +1103,7 @@ def _is_no_api_key_fix_line(line: str) -> bool:
 
 
 def _is_shebang_allowlist_fix_line(line: str) -> bool:
-    """Whether a line is part of the Homebrew ``python@`` shebang allowlist fix (#1586).
+    """Whether a line is part of the Homebrew ``python@`` shebang allowlist fix.
 
     The interpreter-detection guard rejected any shebang containing a character
     outside ``[!a-zA-Z0-9/_.-]``, but Homebrew installs versioned Python under
@@ -1116,7 +1116,7 @@ def _is_shebang_allowlist_fix_line(line: str) -> bool:
 
 
 def _is_obsidian_usage_comment_line(line: str) -> bool:
-    """Whether a line is part of the ``/pilothify`` usage-comment fix (#1681).
+    """Whether a line is part of the ``/pilothify`` usage-comment fix.
 
     The Usage block's bare ``/pilothify`` comment said "full pipeline on current
     directory -> Obsidian vault", contradicting Step 6 (HTML always; Obsidian vault
@@ -1127,7 +1127,7 @@ def _is_obsidian_usage_comment_line(line: str) -> bool:
 
 
 def _is_uv_from_interpreter_fix_line(line: str) -> bool:
-    """Whether a line is part of the uv interpreter-detection fix (#1735).
+    """Whether a line is part of the uv interpreter-detection fix.
 
     Step 1's POSIX interpreter probe ran ``uv tool run pilothify python -c ...``,
     but ``pilothify`` exposes its executable as ``pilothify``, so uv treated
@@ -1141,7 +1141,7 @@ def _is_uv_from_interpreter_fix_line(line: str) -> bool:
 
 
 def _is_semantic_cache_scope_fix_line(line: str) -> bool:
-    """Whether a line scopes semantic cache writes to dispatched files (#1757).
+    """Whether a line scopes semantic cache writes to dispatched files.
 
     A semantic subagent can mention a corpus file outside its assigned chunk and
     misattribute a node to that file. The final cache write now passes the B0
@@ -1157,7 +1157,7 @@ def _is_semantic_cache_scope_fix_line(line: str) -> bool:
 
 
 def _is_community_label_export_fix_line(line: str) -> bool:
-    """Whether a line is part of the Step-5 community_name re-export fix (#2490).
+    """Whether a line is part of the Step-5 community_name re-export fix.
 
     Step 5 curated the community labels but never re-exported graph.json, so the
     persisted nodes shipped without ``community_name`` (only the
@@ -1182,7 +1182,7 @@ def _is_community_label_export_fix_line(line: str) -> bool:
 
 
 def _is_step1_root_marker_fix_line(line: str) -> bool:
-    """Whether a line is part of Step 1 writing .pilothify_root via quoted heredoc (#3642/#3844).
+    """Whether a line is part of Step 1 writing .pilothify_root via quoted heredoc.
 
     The v8 monoliths did not persist .pilothify_root in Step 1. The fix adds the
     safe quoted-heredoc scan-root writer to Step 1, persisting
@@ -1202,7 +1202,7 @@ def _is_step1_root_marker_fix_line(line: str) -> bool:
 
 
 def _is_watch_injection_fix_line(line: str) -> bool:
-    """Whether a line is part of the --watch INPUT_PATH injection fix (#3844).
+    """Whether a line is part of the --watch INPUT_PATH injection fix.
 
     The v8 monoliths passed the raw, agent-substituted INPUT_PATH placeholder
     unquoted to `pilothify.watch` in bash (`python3 -m pilothify.watch INPUT_PATH --debounce 3`),
@@ -1220,11 +1220,11 @@ def _is_watch_injection_fix_line(line: str) -> bool:
 
 
 def _is_graph_diff_direction_fix_line(line: str) -> bool:
-    """Whether a line is part of the --update graph-diff direction fix (#4067).
+    """Whether a line is part of the --update graph-diff direction fix.
 
     The diff step loaded the old graph.json with a plain ``node_link_graph``,
     which drops the stored edge direction, so a reversed call showed as "no
-    changes". It now loads through ``paths.load_node_link_graph`` (#4066). Both
+    changes". It now loads through ``paths.load_node_link_graph``. Both
     the removed import/load lines and the added ones match here.
     """
     stripped = line.strip()
@@ -1237,7 +1237,7 @@ def _is_graph_diff_direction_fix_line(line: str) -> bool:
 
 
 def _is_persisted_scan_options_fix_line(line: str) -> bool:
-    """Skill scans reuse CLI corpus-shaping options without changing detect defaults (#4240)."""
+    """Skill scans reuse CLI corpus-shaping options without changing detect defaults."""
     return line.strip() in (
         "from pilothify.paths import out_path",
         "from pilothify.watch import _read_build_excludes, _read_build_gitignore",
@@ -1249,7 +1249,7 @@ def _is_persisted_scan_options_fix_line(line: str) -> bool:
 
 
 def _is_input_path_sidecar_fix_line(line: str) -> bool:
-    """Whether a line is part of the INPUT_PATH scan-path injection fix (#4762).
+    """Whether a line is part of the INPUT_PATH scan-path injection fix.
 
     The monolith runbooks substituted the agent-supplied scan path straight into
     Python string literals (``detect(Path('INPUT_PATH'))``, ``generate(..,
@@ -1277,7 +1277,7 @@ def _is_input_path_sidecar_fix_line(line: str) -> bool:
 
 
 def _is_worktree_visibility_note_line(line: str) -> bool:
-    """Whether a line is the Step 9 working-tree note (#3941).
+    """Whether a line is the Step 9 working-tree note.
 
     Step 9's report never told the user that ``pilothify-out/`` was written into
     their working tree, so a repository that does not ignore it was left with
@@ -1288,7 +1288,7 @@ def _is_worktree_visibility_note_line(line: str) -> bool:
 
 
 def _is_semantic_origin_stamp_fix_line(line: str) -> bool:
-    """Whether a line is part of the Part-C `_origin` stamping fix (#2843).
+    """Whether a line is part of the Part-C `_origin` stamping fix.
 
     build._is_ast_tier reads ``_origin`` when present and otherwise guesses the
     tier from the shape of ``source_location`` (``L<line>`` means AST). Part C
@@ -1317,7 +1317,7 @@ def _is_semantic_origin_stamp_fix_line(line: str) -> bool:
 
 
 def _is_code_only_fast_path_fix_line(line: str) -> bool:
-    """Whether a line is part of the aider/devin code-only runbook fix (#4447).
+    """Whether a line is part of the aider/devin code-only runbook fix.
 
     In the two monoliths the Part B fast path was prose only, so Part C's
     unconditional read of ``.pilothify_semantic.json`` raised FileNotFoundError on
@@ -1352,7 +1352,7 @@ def _is_code_only_fast_path_fix_line(line: str) -> bool:
 
 
 def _is_update_detect_populate_fix_line(line: str) -> bool:
-    """Whether a line is part of the aider/devin ``--update`` detect block (found while fixing #4447).
+    """Whether a line is part of the aider/devin ``--update`` detect block (found while fixing).
 
     Part A reads ``.pilothify_detect.json``, Step 9 deletes it, and the monoliths'
     ``--update`` section never wrote it again, so Part A raised FileNotFoundError.
@@ -1402,7 +1402,7 @@ def _is_when_to_build_guidance_line(line: str) -> bool:
 
 
 def _is_hub_bypass_check_fix_line(line: str) -> bool:
-    """Whether a line is the aider/devin hub bypass check paragraph (#4426).
+    """Whether a line is the aider/devin hub bypass check paragraph.
 
     A hub/bridge question's neighbour listing only shows code with an edge to
     the hub, so it cannot show code that reimplements the hub's job instead of
@@ -1462,10 +1462,10 @@ def monolith_roundtrip(platform: Platform) -> list[str]:
     pristine v8 blob (``roundtrip_ref``); this is the guard that stops an
     arbitrary edit (even a blessed one) from drifting them. Sanctioned changes are
     enumerated as predicates in ``_SANCTIONED_MONOLITH_DIFFS``: the file_type enum
-    unification, the unified frontmatter description, the chunk-cleanup rewrite
-    (#1172), the four #1392 runbook fixes (directed propagation, content-only
+    unification, the unified frontmatter description, the chunk-cleanup rewrite,
+    the four #1392 runbook fixes (directed propagation, content-only
     semantic scope, stale-cache unlink, and the zero-node/shrink-guard ordering),
-    semantic-cache source scoping (#1757), and the hub bypass check (#4426).
+    semantic-cache source scoping, and the hub bypass check.
 
     The comparison is a multiset diff, not a positional zip: a line whose text is
     unchanged but merely *moved* (the report-write line shifted below ``to_json``
@@ -1479,7 +1479,7 @@ def monolith_roundtrip(platform: Platform) -> list[str]:
 
     rendered_lines = render(platform)[0].content.splitlines()
     # Strip trigger lines from the original — they are non-spec and their removal
-    # (#1180) is a permitted diff.
+    # is a permitted diff.
     original_lines = [
         l for l in _normalise(_git_show(platform.roundtrip_ref)).splitlines()
         if not _is_trigger_line(l)

@@ -80,7 +80,7 @@ def test_annotations_reference_the_local_aliases(tmp_path: Path):
 
 
 def test_an_alias_and_a_function_that_fold_to_one_id_stay_separate(tmp_path: Path):
-    """`Vector` and `vector()` slug to one id (#2810's census)."""
+    """`Vector` and `vector()` slug to one id ('s census)."""
     result = _extract(tmp_path, {"shapes.py": "type Vector = list[float]\n\n\ndef vector():\n    pass\n"})
     labels = sorted(n["label"] for n in result["nodes"] if n["label"] in ("Vector", "vector()"))
     assert labels == ["Vector", "vector()"]

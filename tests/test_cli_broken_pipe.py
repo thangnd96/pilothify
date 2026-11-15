@@ -1,4 +1,4 @@
-"""CLI must not crash when a downstream reader closes the pipe early (#1807).
+"""CLI must not crash when a downstream reader closes the pipe early.
 
 Truncating a command's output (`head`, PowerShell `Select-Object -First N`,
 `sed q`) is routine. pilothify used to keep writing after the reader disconnected,

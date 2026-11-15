@@ -1,5 +1,5 @@
 """After #4634, `class A extends X` with `const X = require('./m')` must inherit
-the class the required file exports — not a local binding, and not nothing (#4688).
+the class the required file exports — not a local binding, and not nothing.
 
 #4634 correctly stopped minting a module-scope node for the require binding so
 `new X()` no longer shadows the required class. Heritage resolution still went
@@ -169,7 +169,7 @@ def test_external_require_binds_locally_unlike_external_esm(tmp_path: Path):
 
 
 def test_bare_exports_assignment_is_not_a_default_export(tmp_path: Path):
-    """Bare `exports = X` does not change what require() returns (#4700 review)."""
+    """Bare `exports = X` does not change what require() returns (review)."""
     lib = _write(
         tmp_path / "lib.js",
         "class Decoy {}\n"

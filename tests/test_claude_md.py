@@ -137,7 +137,7 @@ def test_uninstall_removes_settings_hook(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# local-only variants: settings.local.json / CLAUDE.local.md (#1731)
+# local-only variants: settings.local.json / CLAUDE.local.md
 # ---------------------------------------------------------------------------
 
 def test_uninstall_removes_hook_from_settings_local_json(tmp_path):

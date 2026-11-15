@@ -1,4 +1,4 @@
-"""Regression coverage for Python leading-underscore node-id collisions (#3302).
+"""Regression coverage for Python leading-underscore node-id collisions.
 
 ``ids.py:make_id`` strips leading/trailing underscores from every part before
 normalizing, so ``_get_connection``/``get_connection`` (and more broadly any
@@ -220,7 +220,7 @@ def test_collision_in_one_class_does_not_salt_unrelated_class(tmp_path: Path) ->
     )
 
 
-# --- Module-level classes join the collision map (#2810) -------------------
+# --- Module-level classes join the collision map -------------------
 #
 # The pre-scan above records module-level functions and class methods but not
 # module-level class names, so a class colliding with a function or another

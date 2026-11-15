@@ -80,7 +80,7 @@ def backup_if_protected(out_dir: Path) -> "Path | None":
         # identical graph.json. graph.json alone is not proof of completeness: a
         # snapshot missing a sidecar (an earlier copy attempt failed part-way)
         # must fall through and retry the copy instead of reporting itself
-        # complete forever (#3769). If content differs, overwrite the backup in
+        # complete forever. If content differs, overwrite the backup in
         # place — one folder per day, always the latest pre-overwrite state.
         if backup_dir.exists() and (backup_dir / "graph.json").exists():
             src_hash = hashlib.sha256(graph_src.read_bytes()).hexdigest()
@@ -104,7 +104,7 @@ def backup_if_protected(out_dir: Path) -> "Path | None":
                     failed.append(name)
         if failed:
             # A partial snapshot reported as a successful backup lets a stale
-            # graph.json survive the next overwrite unnoticed (#3769). Best-effort
+            # graph.json survive the next overwrite unnoticed. Best-effort
             # is unchanged: warn, report no backup, do not block the write.
             print(
                 f"[pilothify] warning: backup incomplete - could not copy "
@@ -125,7 +125,7 @@ def _obsidian_tag(name: str) -> str:
     Obsidian tags accept letters from any language plus digits, hyphens,
     underscores and slashes; spaces and most punctuation are not allowed, and a
     tag cannot be digits-only. ``\w`` is Unicode-aware in Python 3, so Hangul,
-    CJK, Cyrillic and accented Latin survive instead of being stripped (#2862):
+    CJK, Cyrillic and accented Latin survive instead of being stripped:
     an ASCII-only filter collapsed every non-Latin community label to
     underscores, so every note in that community carried the same tag.
     """
@@ -208,7 +208,7 @@ def _pilothify_version() -> str | None:
 # which is not in the discrete INFERRED set {0.55, 0.65, 0.75, 0.85, 0.95} either.
 # It is now the bottom of that set: a missing score is an absence of evidence
 # about strength, so the honest fallback is the weakest value the rubric allows,
-# not a midpoint that reads as a coin flip (#2813). Every AST emission site now
+# not a midpoint that reads as a coin flip. Every AST emission site now
 # supplies its own score, so this is a backstop rather than a routine path.
 _CONFIDENCE_SCORE_DEFAULTS = {"EXTRACTED": 1.0, "INFERRED": 0.55, "AMBIGUOUS": 0.2}
 
@@ -216,7 +216,7 @@ _CONFIDENCE_SCORE_DEFAULTS = {"EXTRACTED": 1.0, "INFERRED": 0.55, "AMBIGUOUS": 0
 def attach_hyperedges(G: nx.Graph, hyperedges: list) -> None:
     """Store hyperedges in the graph's metadata dict."""
     existing = G.graph.get("hyperedges", [])
-    # Skip id-less persisted entries when seeding the dedup set (#2775): the
+    # Skip id-less persisted entries when seeding the dedup set: the
     # semantic extractor emits hyperedges with no `id` and build.py persists them
     # verbatim, so a prior graph.json can contain id-less hyperedges. A hard
     # `h["id"]` here raised `KeyError: 'id'` on every incremental re-extract,
@@ -233,8 +233,8 @@ def attach_hyperedges(G: nx.Graph, hyperedges: list) -> None:
 def _git_head(cwd: "str | Path | None" = None) -> str | None:
     """Return git HEAD for the repo containing ``cwd``, or None outside a repo.
 
-    ``cwd`` selects the repository to ask, exactly as in watch._git_head
-    (#2316). Without it the command inherits the caller's working directory,
+    ``cwd`` selects the repository to ask, exactly as in watch._git_head.
+    Without it the command inherits the caller's working directory,
     which stamps the *invoking* repo's commit when the graph being written
     describes a different repo — provenance must come from the repo the graph
     describes, so callers pass the graph's own location.
@@ -305,13 +305,13 @@ def to_json(G: nx.Graph, communities: dict[int, list[str]], output_path: str, *,
     # other caller of to_json (the documented build_merge persist path) does not.
     from pilothify.build import take_dedup_remap, take_shrink_accounting
     # The guard below reads it; it is removed here so node_link_data cannot
-    # write it into graph.json (#4940).
+    # write it into graph.json.
     dedup_remap = take_dedup_remap(G)
     take_shrink_accounting(G)
     # Sources build_merge replaced or pruned this run: their old semantic ids
     # are not lost. Popped so it is never written into graph.json.
     replaced_sources = set(G.graph.pop("_replaced_sources", None) or ())
-    # Safety check: refuse to silently shrink an existing graph (#479)
+    # Safety check: refuse to silently shrink an existing graph
     existing_path = Path(output_path)
     if not force and existing_path.exists():
         from pilothify.security import check_graph_file_size_cap
@@ -379,11 +379,11 @@ def to_json(G: nx.Graph, communities: dict[int, list[str]], output_path: str, *,
                 )
                 return False
             # A saved semantic node merged into an AST twin that was already
-            # saved is one node, not two; a reload-and-recluster folds it (#4389).
+            # saved is one node, not two; a reload-and-recluster folds it.
             # A twin new to this run does not offset some other node's loss.
             existing_ids = {n.get("id") for n in existing_nodes if isinstance(n, dict)}
             merged = sum(twin in existing_ids for twin in folded.values())
-            # Ids entity dedup folded into a survivor are not lost either (#4940).
+            # Ids entity dedup folded into a survivor are not lost either.
             if dedup_remap:
                 merged += _dedup_shrink_allowance(
                     existing_ids, set(G.nodes), dedup_remap,
@@ -425,7 +425,7 @@ def to_json(G: nx.Graph, communities: dict[int, list[str]], output_path: str, *,
         # list from G after a reload-and-recluster (cluster-only/label) would
         # silently drop a second edge on a pair that stayed connected by
         # another (e.g. an `imports` and a `calls` edge between the same two
-        # nodes, #3999). Community is purely a node attribute, so clustering
+        # nodes). Community is purely a node attribute, so clustering
         # never needs to add or remove an edge; write back every original
         # link verbatim instead, dropping only one whose endpoint no longer
         # exists in G. This also sidesteps any endpoint-order canonicalization
@@ -445,8 +445,8 @@ def to_json(G: nx.Graph, communities: dict[int, list[str]], output_path: str, *,
             and link.get("source") in node_ids and link.get("target") in node_ids
         ]
         # The flag above was derived from the in-memory simple graph, but the
-        # restored links may hold parallel edges (#3999); keep the serialized
-        # metadata consistent with the links or readers collapse them (#4500).
+        # restored links may hold parallel edges; keep the serialized
+        # metadata consistent with the links or readers collapse them.
         if has_parallel_links(data["links"], directed=bool(data.get("directed", True))):
             data["multigraph"] = True
     for link in data["links"]:
@@ -456,7 +456,7 @@ def to_json(G: nx.Graph, communities: dict[int, list[str]], output_path: str, *,
         # Restore original edge direction. Undirected NetworkX storage may
         # canonicalize endpoint order, flipping `calls` and other directional
         # edges in graph.json. The build path stashes the true endpoints in
-        # _src/_tgt for exactly this purpose (#563).
+        # _src/_tgt for exactly this purpose.
         true_src = link.pop("_src", None)
         true_tgt = link.pop("_tgt", None)
         if true_src is not None and true_tgt is not None:
@@ -487,7 +487,7 @@ def to_json(G: nx.Graph, communities: dict[int, list[str]], output_path: str, *,
     data["nodes"].sort(key=_json_sort_key)
     data["links"].sort(key=_json_sort_key)
     if "hyperedges" not in getattr(G, "graph", {}):
-        # Hardening (#2485): a graph with NO hyperedges key at all was built by
+        # Hardening: a graph with NO hyperedges key at all was built by
         # a path that never engaged hyperedge metadata — distinct from an
         # intentional empty set ([], which build_from_json now stores
         # explicitly after a full-wipeout revalidation). If the file on disk
@@ -642,7 +642,7 @@ def _strip_xml_illegal(s: str) -> str:
     unfiltered from the corpus, so this is ordinary content rather than hostile
     input: an ANSI escape in a markdown heading pasted from a terminal capture,
     or the form feed some Python/Emacs sources use as a section separator
-    (#2897).
+   .
     """
     return _XML_ILLEGAL_RE.sub("", s)
 
@@ -650,14 +650,14 @@ def _strip_xml_illegal(s: str) -> str:
 # C0 controls and DEL, folded to a space when building a filename stem. Windows
 # rejects them in a path outright with OSError EINVAL, so one of them in a label
 # aborted a whole Obsidian vault export; POSIX would accept the name but leave a
-# note nothing can comfortably open (#2897).
+# note nothing can comfortably open.
 _CONTROL_TO_SPACE_RE = re.compile("[\x00-\x1f\x7f]")
 
 
 def _cap_filename(s: str, limit: int = 200) -> str:
     """Cap a filename stem to ``limit`` UTF-8 bytes so it stays under the 255-byte
-    filesystem limit even after the ``.md`` extension and dedup suffix are added
-    (#1094). The cap is on BYTES, not chars, because a label of multibyte
+    filesystem limit even after the ``.md`` extension and dedup suffix are added.
+    The cap is on BYTES, not chars, because a label of multibyte
     characters (CJK, accented) can exceed 255 bytes well under 255 chars. When
     truncation happens, an 8-char hash of the full label is appended so two
     distinct labels sharing a long prefix produce distinct, deterministic
@@ -744,7 +744,7 @@ def _obsidian_safe_stem(label: str, limit: int = 200) -> str:
     Strips filesystem-unsafe characters, a trailing ``.md``-family extension
     (so ``CLAUDE.md`` does not become ``CLAUDE.md.md``), and a leading ``.`` —
     Obsidian hides every note whose name starts with a dot, so ``.env.md``
-    would be written but invisible in the UI (#2205). The ``dot-`` prefix keeps
+    would be written but invisible in the UI. The ``dot-`` prefix keeps
     the name recognizable; H1 / frontmatter still carry the true label.
     """
     cleaned = re.sub(
@@ -753,21 +753,21 @@ def _obsidian_safe_stem(label: str, limit: int = 200) -> str:
         # CR/LF were already folded to spaces here; every other C0 control now
         # goes the same way. They are not merely awkward in a filename — Windows
         # rejects them outright, so a single one aborted the whole vault export
-        # rather than spoiling one note (#2897).
+        # rather than spoiling one note.
         _CONTROL_TO_SPACE_RE.sub(" ", label),
     ).strip()
     cleaned = re.sub(r"\.(md|mdx|qmd|markdown)$", "", cleaned, flags=re.IGNORECASE)
-    # Obsidian treats a leading-dot filename as a hidden file (#2205). Only
+    # Obsidian treats a leading-dot filename as a hidden file. Only
     # prefix when something nameable remains after the dots: an all-dots label
     # like "..." would otherwise become the meaningless stem "dot-" instead of
-    # falling through to the "unnamed" guard below (#1409).
+    # falling through to the "unnamed" guard below.
     if cleaned.startswith(".") and re.search(r"\w", cleaned.lstrip("."), flags=re.UNICODE):
         cleaned = "dot-" + cleaned.lstrip(".")
     # A stem of only punctuation (e.g. "@", "*", "#") survives the unsafe-char
     # strip above but is empty once a downstream tool re-slugs on word chars
     # (e.g. qmd's handelize() reduces "@" -> "" and raises, aborting the whole
     # `qmd update`). Require at least one word char; else fall back so we never
-    # emit a "@.md"-style filename. (#1409)
+    # emit a "@.md"-style filename.
     if not re.search(r"\w", cleaned, flags=re.UNICODE):
         return "unnamed"
     return _cap_filename(cleaned, limit)
@@ -823,7 +823,7 @@ def to_obsidian(
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    # #1506: when the export target is an existing Obsidian vault (a user pointed
+    # when the export target is an existing Obsidian vault (a user pointed
     # --obsidian-dir at one), we must not clobber the user's own notes or their
     # .obsidian/ config. Track the files pilothify owns in a manifest; a pre-existing
     # file NOT in the manifest is the user's and is never overwritten.
@@ -839,7 +839,7 @@ def to_obsidian(
         # pilothify owns, so every note it wrote last time reads as the user's and
         # is skipped. The re-export then writes fresh notes BESIDE the stale ones
         # and the vault carries two generations, with a warning claiming pilothify
-        # "did not create" files it did (#2863). Adopt the notes that carry
+        # "did not create" files it did. Adopt the notes that carry
         # pilothify's own frontmatter, once, so the manifest starts out honest.
         _owned |= _adopt_pre_manifest_notes(out)
     _written: list[str] = []
@@ -851,7 +851,7 @@ def to_obsidian(
         or not it was physically written).
 
         The disk write is skipped when the content is byte-identical to what is
-        already there (#3060) — an export re-runs on every graph.json change, and
+        already there — an export re-runs on every graph.json change, and
         rewriting an unchanged note churns disk and fires inotify / re-index /
         sync for nothing. The note is still recorded in ``_written`` so it stays
         owned and is neither pruned as stale nor dropped from the manifest."""
@@ -868,7 +868,7 @@ def to_obsidian(
 
     # Cap stems against THIS vault's path, not just NAME_MAX: on Windows the
     # 200-byte default plus an ordinary vault directory overruns MAX_PATH and
-    # every note write raises FileNotFoundError (#2655). No-op on POSIX.
+    # every note write raises FileNotFoundError. No-op on POSIX.
     _stem_limit = stem_filename_budget(out, reserve=_DEDUP_SUFFIX_RESERVE)
 
     # Map node_id → safe filename so wikilinks stay consistent.
@@ -940,7 +940,7 @@ def to_obsidian(
                 neighbor_label = node_filename[neighbor]
                 # One bullet per parallel edge, not per neighbour: graph.json is
                 # reloaded as a MultiGraph when it carries parallel edges
-                # (#4500), and `edge_data()` returns only the FIRST of them — so
+                # and `edge_data()` returns only the FIRST of them — so
                 # a pair joined by both `imports` and `calls` lost one relation
                 # from the note. Sorted so the note is byte-stable regardless of
                 # the order the parallel edges were inserted in.
@@ -999,7 +999,7 @@ def to_obsidian(
     community_filename: dict = {}
     used_community: set[str] = set()
     # The community stem carries the "_COMMUNITY_" prefix on top of the dedup
-    # suffix, so it gets that much less of the MAX_PATH window (#2655).
+    # suffix, so it gets that much less of the MAX_PATH window.
     _community_stem_limit = stem_filename_budget(
         out, reserve=_DEDUP_SUFFIX_RESERVE + len(_COMMUNITY_PREFIX)
     )
@@ -1020,7 +1020,7 @@ def to_obsidian(
         # (e.g. pruned nodes, stale community assignments from a prior run, or
         # synthesized/merge-artifact ids). Dereferencing those via G.nodes[n] or
         # node_filename[n] raises KeyError and aborts the whole vault export, so
-        # skip dangling members rather than crashing (issue #1236).
+        # skip dangling members rather than crashing.
         members = [m for m in all_members if m in G and m in node_filename]
         n_members = len(members)
         coh_value = cohesion.get(cid) if cohesion else None
@@ -1114,7 +1114,7 @@ def to_obsidian(
     graph_config = {
         "colorGroups": [
             {
-                # Same sanitizer as the note tags (#2862): built from the raw
+                # Same sanitizer as the note tags: built from the raw
                 # label, the canvas colour group queried a tag that no note
                 # carries whenever the label held non-ASCII or punctuation.
                 "query": f"tag:#community/{_obsidian_tag(label)}",
@@ -1125,7 +1125,7 @@ def to_obsidian(
     }
     _owned_write(".obsidian/graph.json", json.dumps(graph_config, indent=2))
 
-    # #1896: prune notes for nodes that dropped out of the graph. Only files the
+    # prune notes for nodes that dropped out of the graph. Only files the
     # manifest says pilothify owns are candidates, and anything written or skipped
     # this run is excluded — so a user's own note is never touched (foreign files
     # land in _skipped, never _owned). Guard each path to stay inside the vault in
@@ -1187,7 +1187,7 @@ def to_canvas(
     # The CLI calls to_canvas without passing the map, so it must derive the
     # SAME stem budget to keep card links pointing at the notes to_obsidian
     # wrote — hence budgeting against the canvas's own directory, which is the
-    # vault directory (#2655).
+    # vault directory.
     _stem_limit = stem_filename_budget(
         Path(output_path).parent, reserve=_DEDUP_SUFFIX_RESERVE
     )
@@ -1199,7 +1199,7 @@ def to_canvas(
     # Fallback: with no community data (e.g. --no-cluster builds or a missing
     # analysis sidecar) the grid below produces nothing and the canvas is written
     # as an empty 32-byte shell on an otherwise populated graph. Emit every node
-    # into one synthetic community so the canvas always reflects the graph (#1324).
+    # into one synthetic community so the canvas always reflects the graph.
     if not communities and G.number_of_nodes() > 0:
         communities = {0: [str(n) for n in G.nodes()]}
 
@@ -1225,7 +1225,7 @@ def to_canvas(
     for cid in sorted_cids:
         # Skip dangling community members with no backing node / filename, so box
         # sizing matches the cards actually laid out and `G.nodes[m]` never
-        # KeyErrors below — mirrors the to_obsidian guard (#1236).
+        # KeyErrors below — mirrors the to_obsidian guard.
         members = [m for m in communities[cid] if m in G and m in node_filenames]
         n = len(members)
         inner_cols = max(1, math.ceil(math.sqrt(n)))
@@ -1299,7 +1299,7 @@ def to_canvas(
         # Node cards inside the group - laid out in the same ceil(sqrt(n))-column
         # grid the box was sized for (group_cols[cid]), so cards fill the box.
         inner_cols = group_cols[cid]
-        # Same dangling-member guard as the sizing loop and to_obsidian (#1236):
+        # Same dangling-member guard as the sizing loop and to_obsidian:
         # a community id absent from G / node_filenames would KeyError the sort.
         members = [m for m in members if m in G and m in node_filenames]
         sorted_members = sorted(members, key=lambda n: G.nodes[n].get("label", n))
@@ -1360,7 +1360,7 @@ def to_graphml(
     node_community = _node_community_map(communities)
     for node_id in H.nodes():
         H.nodes[node_id]["community"] = node_community.get(node_id, -1)
-    # Drop internal markers (e.g. the AST-provenance "_origin" tag, #1116, and
+    # Drop internal markers (e.g. the AST-provenance "_origin" tag, and
     # the "_src"/"_tgt" direction markers) — they are persistence/runtime details,
     # not graph data, and should not leak into the exported file.
     for _, attrs in H.nodes(data=True):
@@ -1372,7 +1372,7 @@ def to_graphml(
     # nx.write_graphml only accepts scalar attribute values: None raises, and a
     # dict/list value (e.g. a per-node `metadata` dict, or the graph-level
     # `hyperedges` list set by attach_hyperedges()) raises
-    # "GraphML does not support type <class 'dict'/'list'> as data values" (#1831).
+    # "GraphML does not support type <class 'dict'/'list'> as data values".
     # Coerce None -> "" and non-scalars -> a JSON string, across all three scopes.
     def _graphml_safe(val):
         if val is None:
@@ -1404,7 +1404,7 @@ def to_graphml(
         for key, val in list(H.nodes[node_id].items()):
             H.nodes[node_id][key] = _graphml_safe(val)
     # edges(data=True) rather than H.edges[u, v]: graph.json is loaded as a
-    # MultiGraph when it carries parallel edges (#4500), and a MultiGraph edge
+    # MultiGraph when it carries parallel edges, and a MultiGraph edge
     # view needs a key, so the (u, v) form crashed the whole export.
     for *_, attrs in H.edges(data=True):
         for key, val in list(attrs.items()):
@@ -1412,7 +1412,7 @@ def to_graphml(
 
     # Write atomically: a mid-serialization error otherwise leaves a 0-byte
     # .graphml on disk that downstream tooling mistakes for a completed export
-    # (#1831). Write to a sibling temp file, then replace on success.
+    #. Write to a sibling temp file, then replace on success.
     out = Path(output_path)
     tmp = out.with_name(out.name + ".tmp")
     try:

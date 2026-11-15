@@ -1,4 +1,4 @@
-"""Incremental --update: hyperedge preservation (#1574, #5081) and root-less prune (#1571).
+"""Incremental --update: hyperedge preservation and root-less prune.
 
 build_merge backs `pilothify --update`. The regressions covered here:
 
@@ -6,7 +6,7 @@ build_merge backs `pilothify --update`. The regressions covered here:
   hyperedges, so every incremental update collapsed the graph's hyperedge set
   down to just the re-extracted files'. Now existing hyperedges are carried
   forward, with re-extracted files' replaced (by source_file) and deleted files'
-  pruned. The loader also folds the nested ``graph.hyperedges`` slot (#2485),
+  pruned. The loader also folds the nested ``graph.hyperedges`` slot,
   which node_link_data-only writers emit instead of the top-level key.
 - #1571: when a caller omits `root` (the skill's --update runbook does), absolute
   prune_sources never relativized to match the stored relative source_file keys, so
@@ -99,7 +99,7 @@ def test_deleted_file_hyperedges_are_pruned(tmp_path):
 
 def test_update_keeps_unchanged_files_hyperedge_that_shares_an_id(tmp_path):
     """Hyperedge ids are chosen per extraction, so two files can emit the same
-    id. Re-extracting one must not drop the other's (#3981)."""
+    id. Re-extracting one must not drop the other's."""
     root = tmp_path / "corpus"
     root.mkdir()
     graph_path = tmp_path / "graph.json"
@@ -162,7 +162,7 @@ def _seed_full_graph(tmp_path, *, nested_only=False):
     )
     data = {"nodes": nodes, "edges": [], "hyperedges": hyperedges}
     if nested_only:
-        # node_link_data-only writer: hyperedges live in graph attrs only (#2485).
+        # node_link_data-only writer: hyperedges live in graph attrs only.
         data.pop("hyperedges")
         data["graph"] = {"hyperedges": hyperedges}
     graph_path.write_text(json.dumps(data), encoding="utf-8")
@@ -224,7 +224,7 @@ def test_deleted_file_member_is_pruned_from_surviving_hyperedges(tmp_path):
 def test_update_reads_nested_only_hyperedge_slot(tmp_path):
     """A graph.json written by a node_link_data-only writer stores its hyperedges
     solely under ``graph.hyperedges``. The incremental loader must fold that slot
-    the way build_from_json does (#2485), or --update loses the whole set."""
+    the way build_from_json does, or --update loses the whole set."""
     root, graph_path = _seed_full_graph(tmp_path, nested_only=True)
     G = _update_after_editing_b(graph_path, root)
     ids = _he_ids(G)
@@ -435,7 +435,7 @@ def test_prune_matches_node_stored_absolute_against_relative_delete(tmp_path):
     graph_path = root / "pilothify-out" / "graph.json"
     nodes = [
         # gone.py's node kept an ABSOLUTE source_file (a semantic subagent wrote
-        # it that way, #932); keep.py's is relative.
+        # it that way); keep.py's is relative.
         {"id": "g1", "label": "gone", "file_type": "code",
          "source_file": str(root / "gone.py")},
         {"id": "k1", "label": "keep", "file_type": "code", "source_file": "keep.py"},
@@ -478,7 +478,7 @@ def test_prune_reextracted_absolute_node_not_deleted(tmp_path):
 
 
 def test_pilothify_root_marker_with_a_utf8_bom_still_resolves(tmp_path):
-    r"""A marker written by Windows PowerShell 5.1 carries a UTF-8 BOM (#3028).
+    r"""A marker written by Windows PowerShell 5.1 carries a UTF-8 BOM.
 
     `Out-File -Encoding utf8` on 5.1 always prepends EF BB BF — there is no
     BOM-less utf8 there — and `str.strip()` does not remove U+FEFF, so the BOM

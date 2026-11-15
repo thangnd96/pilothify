@@ -1,4 +1,4 @@
-"""PHP language constructs must not bind to same-named user methods (#3830).
+"""PHP language constructs must not bind to same-named user methods.
 
 `empty($x)`, `isset($a)`, `eval($s)` and `die($m)` are keywords, but
 tree-sitter-php parses them as an ordinary `function_call_expression`, and the
@@ -170,7 +170,7 @@ def test_member_call_to_construct_named_method_survives(tmp_path):
 
     It is a member_call_expression, not a function_call_expression. Filtering
     by name alone would drop this genuine edge. Kept in one file because
-    cross-file PHP member calls do not resolve yet (the other half of #3830),
+    cross-file PHP member calls do not resolve yet (the other half of),
     so a two-file version would pass or fail for reasons unrelated to this
     filter.
     """

@@ -1,4 +1,4 @@
-"""A parked member call records its call-site file, relativized (#3152 issue 3).
+"""A parked member call records its call-site file, relativized (issue 3).
 
 `_park_unresolved_member_call` keeps an unresolved cross-repo call on the caller
 node so a later merge can finish the edge. The call-site file (the `.m`) differs

@@ -58,7 +58,7 @@ def test_import_require_bare_module_targets_ref_stub(tmp_path: Path):
     # A bare module (`require("fs")`) is external, so it emits an imports_from
     # edge to a ref-namespaced stub — NOT the bare `_make_id("fs")` id, which
     # would collide with any local file named fs.* via build.py's alias index
-    # (#1638). Parity with the ESM external path (test_external_module_unchanged).
+    #. Parity with the ESM external path (test_external_module_unchanged).
     importer = _write(
         tmp_path / "src/io.ts",
         'import fs = require("fs");\nexport const data = fs.readFileSync("x");\n',

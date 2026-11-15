@@ -5,7 +5,7 @@ Neither name was skipped, so a C# project scanned after its first build — and
 GlobalUsings/AssemblyInfo sources into the graph as file nodes with import
 edges to every implicit namespace, and scanned the build-copied
 appsettings*.json a second time. ``bin`` is also real source in Rust, Ruby and
-script trees, so both get the ``out`` treatment (#3347): keep on doubt, prune
+script trees, so both get the ``out`` treatment: keep on doubt, prune
 on proof.
 """
 

@@ -357,7 +357,7 @@ def _make_marked_graph(src, tgt):
 
 
 def test_graph_diff_reversed_edge_reported():
-    # #4067: n1 calls n2 becoming n2 calls n1 must not vanish from the diff.
+    # n1 calls n2 becoming n2 calls n1 must not vanish from the diff.
     diff = graph_diff(_make_marked_graph("n1", "n2"), _make_marked_graph("n2", "n1"))
     assert [(e["source"], e["target"]) for e in diff["new_edges"]] == [("n2", "n1")]
     assert [(e["source"], e["target"]) for e in diff["removed_edges"]] == [("n1", "n2")]

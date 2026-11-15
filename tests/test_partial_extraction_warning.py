@@ -1,10 +1,10 @@
 """The partial-extraction warning must be actionable and must not misdirect.
 
-It used to end in a hardcoded `(#2551)` for EVERY language. #2551 is closed and
+It used to end in a hardcoded `` for EVERY language. #2551 is closed and
 Kotlin-specific ("bundled grammar rejects one-line type bodies"), so a reader
 following the only lead the message offered landed on a resolved problem in a
 different language — and at least one did, recording an Astro failure as
-"already tracked upstream" on the strength of that number (#2788).
+"already tracked upstream" on the strength of that number.
 
 The message also could not distinguish a file that contributed nothing but its
 own file node from one that yielded most of its symbols and lost an ERROR

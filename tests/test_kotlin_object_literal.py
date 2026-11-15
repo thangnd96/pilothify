@@ -1,4 +1,4 @@
-"""Kotlin anonymous-object members (#2347).
+"""Kotlin anonymous-object members.
 
 `object : Foo { ... }` (node type `object_literal`) got no nodes at all:
 object_literal is not a class_type (it has no name), and the function branch

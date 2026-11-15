@@ -9,7 +9,7 @@ import pytest
 
 @pytest.fixture(scope="session")
 def _can_symlink() -> bool:
-    """Whether this machine can create symlinks at all (#2642).
+    """Whether this machine can create symlinks at all.
 
     Probed rather than inferred from ``sys.platform``: Windows *can* create
     symlinks from an elevated shell or with Developer Mode enabled, and those
@@ -51,7 +51,7 @@ def requires_symlinks(_can_symlink) -> None:
 def _sandbox_home(tmp_path_factory, monkeypatch):
     """Every test gets a throwaway HOME so installers/uninstallers can never
     touch the developer's real ~/.claude, ~/.gemini, ~/.codebuddy, ~/.copilot,
-    ~/.config, ~/.agents (issue #2168).
+    ~/.config, ~/.agents.
 
     Allocated via tmp_path_factory (not inside tmp_path) so tests that assert
     the exact contents of their own tmp_path are unaffected."""
@@ -68,7 +68,7 @@ def _sandbox_home(tmp_path_factory, monkeypatch):
 def _isolate_backend_env(monkeypatch):
     """detect_backend() probes the developer's real shell: with GOOGLE_API_KEY (or
     any of a dozen others) exported, the backend-detection tests picked that
-    backend instead of the one the test set up (#3481). Clear every variable it
+    backend instead of the one the test set up. Clear every variable it
     reads before each test; a test that wants one sets it with monkeypatch."""
     from pilothify.llm import backend_detection_env_vars
 

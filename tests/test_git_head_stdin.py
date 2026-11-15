@@ -1,4 +1,4 @@
-"""_git_head must not hand git the caller's stdin (#4440).
+"""_git_head must not hand git the caller's stdin.
 
 Under an MCP stdio host, stdin is the protocol pipe. On Windows a git child that
 inherits it blocks, so `graph_stats` stalls on the timeout or hangs. Same class

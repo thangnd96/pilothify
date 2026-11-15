@@ -1,4 +1,4 @@
-"""TS/JS/TSX `new Foo(...)` constructor calls emit `calls` edges (#3116).
+"""TS/JS/TSX `new Foo(...)` constructor calls emit `calls` edges.
 
 In tree-sitter JS/TS, `new_expression` exposes its callee under the `constructor`
 field rather than `function`. The generic path in `walk_calls` previously queried

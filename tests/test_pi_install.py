@@ -1,4 +1,4 @@
-"""Tests for pilothify install / uninstall with --platform pi (#5011)."""
+"""Tests for pilothify install / uninstall with --platform pi."""
 from pathlib import Path
 from unittest.mock import patch
 

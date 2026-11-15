@@ -1,4 +1,4 @@
-"""Structural YAML extraction (#2214).
+"""Structural YAML extraction.
 
 YAML was previously classified as a document, so AST-only / code-only runs
 (``pilothify update``) produced zero nodes from config-heavy repositories

@@ -1,5 +1,5 @@
 """The in-flight scan root is shared through extractors.base, not by reaching
-back into pilothify.extract — MIGRATION.md invariant #4 (#3666)."""
+back into pilothify.extract — MIGRATION.md invariant #4."""
 from __future__ import annotations
 
 import ast
@@ -28,7 +28,7 @@ def _imports_pilothify_extract(module) -> bool:
 def test_markdown_extractor_does_not_import_pilothify_extract():
     """The Markdown extractor read the in-flight scan root via a function-local
     `import pilothify.extract` + getattr, a package->parent dependency that
-    violated invariant #4 and degraded silently on a rename (#3666). It must now
+    violated invariant #4 and degraded silently on a rename. It must now
     reach the shared context through extractors.base instead."""
     assert not _imports_pilothify_extract(markdown_mod), (
         "extractors/markdown.py must not import pilothify.extract — read the scan "

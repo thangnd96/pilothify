@@ -5,7 +5,7 @@ references outside the block it is actually scoped to.
 `for`/`for-of` loop's own binding) into one FUNCTION-WIDE shadow set, but
 both are block-scoped in JS, unlike `var` (function-scoped, hoisted). A
 reference to a same-named module callable made OUTSIDE the block that binds
-the name had its genuine indirect_call edge suppressed (#2822):
+the name had its genuine indirect_call edge suppressed:
 
 - a `const`/`let` declared inside any nested block (`if`, `try`, a bare `{}`)
 - a `for...of`/`for...in` loop binding, referenced after the loop ends
@@ -79,7 +79,7 @@ def test_for_of_binding_does_not_shadow_a_closure_that_outlives_the_loop(tmp_pat
 
 
 def test_for_of_binding_still_shadows_a_reference_inside_its_own_loop(tmp_path):
-    """Control from the issue (#2606 must not regress): a reference INSIDE the
+    """Control from the issue (must not regress): a reference INSIDE the
     loop still refers to the loop's own binding, not the module callable."""
     r, nid = _extract_js_dir(tmp_path, {"a.js": (
         "function k(x){ return x; }\n"

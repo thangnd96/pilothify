@@ -1,4 +1,4 @@
-"""Tests for pilothify.semantic_cleanup.validate_semantic_fragment (#825)."""
+"""Tests for pilothify.semantic_cleanup.validate_semantic_fragment."""
 
 import json
 
@@ -53,7 +53,7 @@ def test_validate_semantic_fragment_rejects_path_separator_in_id():
 
 def test_validate_semantic_fragment_accepts_unknown_file_type():
     """An unknown/synonym file_type is NOT a validation failure: build_from_json
-    coerces any value via _FILE_TYPE_SYNONYMS (unknown -> "concept", #840), so
+    coerces any value via _FILE_TYPE_SYNONYMS (unknown -> "concept"), so
     rejecting a whole chunk over it would be pure data loss. file_type carries no
     security risk, so it is left to build's coercion rather than gated here."""
     fragment = _valid_fragment()

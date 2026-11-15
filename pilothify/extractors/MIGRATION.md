@@ -1,7 +1,7 @@
 # Migrating a language extractor out of extract.py
 
-`pilothify/extract.py` is being split into this package, one language per PR
-(upstream issue #1212). This is the playbook for porting ONE language. It is
+`pilothify/extract.py` is being split into this package, one language per PR.
+This is the playbook for porting ONE language. It is
 written so an AI agent can execute it in a single session.
 
 ## Status
@@ -102,6 +102,6 @@ that are not satisfied internally, and verify each header import is used.
 ## What NOT to do
 
 - Do not rewire dispatch, add classes, or add lazy imports — mechanism layers
-  come later, by separate agreement (see #1212 discussion).
+  come later, by separate agreement.
 - Do not port two languages in one PR "while you're at it".
 - Do not touch `__main__.py`.

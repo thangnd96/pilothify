@@ -2,7 +2,7 @@
 
 `build_from_json` puts one edge per node pair into a simple graph, and resolved
 same-pair collisions by "last write wins" over a sort keyed on
-`(source, target, relation)`. That sort exists for determinism (#1061 — an
+`(source, target, relation)`. That sort exists for determinism (an
 unstable order flipped `_src`/`_tgt` run to run), but it also decided which
 RELATION survived, and it decided it alphabetically:
 

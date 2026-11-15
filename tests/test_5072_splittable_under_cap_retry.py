@@ -1,4 +1,4 @@
-"""Splittable documents below character cap can bisect after output truncation (#5072)."""
+"""Splittable documents below character cap can bisect after output truncation."""
 from pathlib import Path
 from unittest.mock import patch
 
@@ -17,7 +17,7 @@ from pilothify.file_slice import (
 def test_splittable_document_under_cap_bisects_on_truncation(tmp_path, ext):
     """When a splittable document below _FILE_CHAR_CAP truncates (finish_reason='length'),
     adaptive retry should promote the raw Path unit to a full-range FileSlice and bisect it,
-    completing without being marked partial (#5072).
+    completing without being marked partial.
     """
     path = tmp_path / f"dense{ext}"
     content = "# Title\n\n" + "".join(f"Paragraph {i} with some content.\n\n" for i in range(40))

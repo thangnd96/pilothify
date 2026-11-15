@@ -1,5 +1,5 @@
 """Opt-in check against a real Ollama server: the whole prompt must reach the
-model, not just as much as fits Ollama's default context (#4413). Every other
+model, not just as much as fits Ollama's default context. Every other
 Ollama test fakes the openai client, so this is the one that exercises the
 real `client.post` call and Ollama's own truncation.
 

@@ -177,7 +177,7 @@ def diagnose_extraction(
     canonical_edges = [_canonical_edge(edge) for edge in raw_edges]
 
     # Code-typed semantic nodes the extractor could not verify against the source
-    # it read (#1949): likely-inferred (or hallucinated) symbols surfaced from a
+    # it read: likely-inferred (or hallucinated) symbols surfaced from a
     # document. Count them so the flag on graph.json nodes is actually surfaced.
     raw_nodes = extraction.get("nodes")
     unverified_node_count = sum(
@@ -210,7 +210,7 @@ def diagnose_extraction(
             # Two intentionally-distinct populations of "external": a `ref_`
             # target here is a JSON/config out-of-corpus reference ($ref /
             # extends / references), whereas import-family externals are minted
-            # as declared `external=True` stub nodes at build time (#2873) and
+            # as declared `external=True` stub nodes at build time and
             # therefore never reach this branch. Don't try to unify them.
             if source in node_ids and target.startswith("ref_"):
                 external_reference_edges += 1

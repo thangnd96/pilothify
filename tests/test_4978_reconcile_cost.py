@@ -165,7 +165,7 @@ def test_production_sniffer_reads_only_the_cap(tmp_path, monkeypatch, name):
     """The shipped sniffer must read _SNIFF_BYTES, not the whole file.
 
     Without this, reverting to read_bytes()[:CAP] would keep every other test
-    green while reintroducing a full-file read and allocation per call (#4978).
+    green while reintroducing a full-file read and allocation per call.
     """
     p = tmp_path / name
     body = b"class Late { };\n" if name.endswith(".h") else b"@implementation App\n"

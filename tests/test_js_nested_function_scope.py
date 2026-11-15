@@ -1,4 +1,4 @@
-"""A JS/TS function nested inside another (#2653) went into the file-wide name
+"""A JS/TS function nested inside another went into the file-wide name
 map, so a call to that name from anywhere in the file could bind to it: two
 functions with their own `run` both called the last one, and a top-level or
 imported `helper` lost its callers to an unrelated inner `helper`.

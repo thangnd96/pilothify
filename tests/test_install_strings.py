@@ -4,8 +4,7 @@ These strings live in pilothify/__main__.py and are written into project-local
 files (CLAUDE.md, AGENTS.md, GEMINI.md, .cursor/rules/, .kiro/steering/, etc.)
 or into in-process hook payloads. Earlier versions of pilothify told every
 assistant to "ALWAYS read pilothify-out/GRAPH_REPORT.md before answering" —
-which silently increased per-question token usage in Claude Code sessions
-(issue #580). This file locks in the query-first policy so a future revert
+which silently increased per-question token usage in Claude Code sessions. This file locks in the query-first policy so a future revert
 or partial change is caught by CI.
 """
 from __future__ import annotations

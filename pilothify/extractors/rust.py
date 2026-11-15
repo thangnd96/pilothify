@@ -383,7 +383,7 @@ def extract_rust(path: Path) -> dict:
     # Pre-scan the struct/enum/trait names declared in this file so a type used
     # above its declaration resolves exactly as a use below it already does,
     # rather than to a sourceless stub that the corpus-level rewire only folds
-    # back when the name is unique across the corpus (#3782). Only these three
+    # back when the name is unique across the corpus. Only these three
     # items are pre-registered: walk() never makes a node of a `type` alias or a
     # `union`, so registering one would leave its references pointing at no node.
     # The scan never descends further than walk() does, so every id registered
@@ -469,7 +469,7 @@ def extract_rust(path: Path) -> dict:
             # corpus-level rewire can collapse it onto the real definition. A sourced
             # stub here makes _disambiguate_colliding_node_ids bake the referencing
             # file's path (with extension) into the id and blocks the rewire, which is
-            # the phantom-duplicate-node bug (#1402).
+            # the phantom-duplicate-node bug.
             seen_ids.add(nid)
             node_by_id[nid] = {
                 "id": nid,
@@ -733,7 +733,7 @@ def extract_rust(path: Path) -> dict:
             # `static NAME: T = …;` / `const NAME: T = …;` at module level, or an
             # associated const inside an impl. Neither node type had a branch, so a
             # constant reached the graph only through files that referenced it,
-            # never from the Rust that defines it (#3471).
+            # never from the Rust that defines it.
             name_node = node.child_by_field_name("name")
             if name_node:
                 item_name = _read_text(name_node, source)
@@ -774,7 +774,7 @@ def extract_rust(path: Path) -> dict:
                 add_node(impl_nid, type_name, node.start_point[0] + 1)
                 impl_key = _rust_simple_generic_impl_key(node, source)
                 # Bare name (generics stripped) for typing a `self.` receiver
-                # inside this block's methods (#2234) — `impl Foo<T>` types
+                # inside this block's methods — `impl Foo<T>` types
                 # `self` as `Foo`, not the literal `Foo<T>` text.
                 impl_type_bare = type_name.split("<")[0].strip()
             if trait_node is not None and impl_nid is not None:
@@ -819,7 +819,7 @@ def extract_rust(path: Path) -> dict:
             if arg:
                 # The mods declared beside this `use`: an inline `mod` block is a scope of
                 # its own, so a `use serde::..` inside `mod tests { .. }` sees none of the
-                # file's top-level mods (#4564).
+                # file's top-level mods.
                 scope_mods = {
                     _read_text(name_node, source)
                     for sibling in (node.parent.children if node.parent is not None else ())
@@ -829,7 +829,7 @@ def extract_rust(path: Path) -> dict:
 
                 # A plain `pub use` re-exports the named item from the crate its path
                 # starts with, so a later `use this_crate::Item` may reach a definition
-                # that lives in that crate (#4699). `pub(crate)` and `pub(super)` stay
+                # that lives in that crate. `pub(crate)` and `pub(super)` stay
                 # inside the re-exporting crate, so only a bare `pub` counts.
                 visibility = next(
                     (child for child in node.children if child.type == "visibility_modifier"),
@@ -839,12 +839,12 @@ def extract_rust(path: Path) -> dict:
                     visibility, source).strip() == "pub"
 
                 def name_use(written: str, path: str) -> None:
-                    # The name as written, for the corpus rewire (#4439): the id folds its
+                    # The name as written, for the corpus rewire: the id folds its
                     # case. Only for a path rooted in this crate: `serde::Serialize` or
                     # `std::fs::File` is never the corpus's own `Serialize` or `File`. A
                     # first segment that is a `mod` declared in this scope is this crate's
                     # too (`mod item; pub use item::Invoice;`), unless the path starts with
-                    # `::`, which always names a crate (#4564).
+                    # `::`, which always names a crate.
                     first = path.lstrip(": ").split("::")[0].strip()
                     bound = written.split(" as ")[-1].strip()
                     ident = re.match(r"[A-Za-z_][A-Za-z0-9_]*", first)  # `item as items` -> `item`
@@ -1001,7 +1001,7 @@ def extract_rust(path: Path) -> dict:
                 elif func_node.type == "scoped_identifier":
                     # Type::method() — still allow in-file EXTRACTED match, but
                     # skip cross-file resolution: bare last-segment lookup ignores
-                    # crate boundaries and produces spurious INFERRED edges (#908).
+                    # crate boundaries and produces spurious INFERRED edges.
                     is_scoped_call = True
                     name = func_node.child_by_field_name("name")
                     if name:
@@ -1062,7 +1062,7 @@ def extract_rust(path: Path) -> dict:
                     # A module-qualified call (`crate::m::f()`, `m::f()`, `super::m::f()`)
                     # goes to the cross-file pass with its qualifier, which binds it only
                     # when the qualifier matches the candidate's module path and exactly
-                    # one candidate survives. Bare last-segment lookup stays off (#908).
+                    # one candidate survives. Bare last-segment lookup stays off.
                     qual_node = func_node.child_by_field_name("path")
                     qualifier = _read_text(qual_node, source) if qual_node else ""
                     # `use std::fs; fs::read()` names std's fs, never a local `fs.rs`.

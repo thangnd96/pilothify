@@ -74,7 +74,7 @@ def test_backend_pkg_hint_points_at_uv_tool_and_extra():
 def test_all_extra_is_the_union_of_every_other_extra():
     """README documents `[all]` as "Everything above": every dependency of every
     other extra must be in it. `psycopg[binary]` from `[postgres]` was missing, so
-    an `[all]` install still failed on `pilothify extract --postgres` (#3482)."""
+    an `[all]` install still failed on `pilothify extract --postgres`."""
     extras = _extras()
     union = {dep for name, deps in extras.items() if name != "all" for dep in deps}
     missing = sorted(union - set(extras["all"]))
@@ -108,7 +108,7 @@ def test_all_extra_gates_leiden_the_same_way():
 
 def test_requires_python_is_capped_below_an_unsupported_interpreter():
     """requires-python must keep an upper bound so uv/pip never auto-select a
-    Python newer than our C-extension deps ship wheels for (#5134).
+    Python newer than our C-extension deps ship wheels for.
 
     Without the cap, `uv tool install pilothify` on a fresh machine installs the
     newest cpython (e.g. 3.15), tree-sitter has no wheel for it, pip falls back to

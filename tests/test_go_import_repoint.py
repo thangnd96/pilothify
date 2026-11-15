@@ -1,4 +1,4 @@
-"""Go intra-module imports must reach the imported package's files (#3746).
+"""Go intra-module imports must reach the imported package's files.
 
 `pilothify/extractors/go.py` turns every `import "x/y"` into an `imports_from`
 edge whose target id is minted from the raw string (`go_pkg_x_y`). That node

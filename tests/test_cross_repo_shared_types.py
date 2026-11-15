@@ -1,4 +1,4 @@
-"""`merge-graphs` links a type declaration two repos share (#3007).
+"""`merge-graphs` links a type declaration two repos share.
 
 Node ids are repo-prefixed, so a contract type both services declare arrives as
 two unconnected nodes and a traversal cannot cross the repo boundary even though

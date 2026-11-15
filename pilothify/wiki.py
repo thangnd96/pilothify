@@ -16,7 +16,7 @@ from pilothify.paths import stem_filename_budget, write_text_atomic_if_changed
 _SLUG_SUFFIX_RESERVE = 5
 
 # Characters a slug may not contain, because the article's LINK and its ON-DISK
-# NAME have to be the same string (#2597). Anything left here must be legal,
+# NAME have to be the same string. Anything left here must be legal,
 # unescaped, in a CommonMark link destination:
 #   < > : " / \ | ? *   Windows-reserved in filenames (pre-existing set)
 #   ( )                 parentheses delimit/nest a link destination
@@ -46,7 +46,7 @@ def _safe_filename(name: str, limit: int = 200) -> str:
     Falls back to 'unnamed' for empty results and caps length at ``limit``
     chars (default 200) to stay well under common filesystem limits; ``to_wiki``
     lowers ``limit`` when the wiki directory leaves less than that inside
-    Windows' MAX_PATH window (#2655).
+    Windows' MAX_PATH window.
 
     Parentheses are DROPPED rather than substituted: every callable node is
     labelled ``foo()``, and substituting would leave a trailing ``foo__`` on
@@ -69,7 +69,7 @@ def _md_link(label: str, resolver: dict[str, str]) -> str:
     was written under. When the label has an article, emit a standard
     ``[label](slug.md)`` link whose target is the on-disk name VERBATIM.
 
-    The target is deliberately not percent-encoded (#2597). ``quote()`` turned
+    The target is deliberately not percent-encoded. ``quote()`` turned
     ``_make_id().md`` into ``_make_id%28%29.md`` while the file stayed raw, so
     the link pointed at a path that does not exist. Renderers hid it by
     decoding before resolving, but the wiki's whole purpose is to be
@@ -98,8 +98,8 @@ def _md_link_to(label: str, slug: str | None) -> str:
     Same output as :func:`_md_link`, minus the label lookup. The index knows the
     exact slug of every article it lists — two same-labelled articles have
     distinct slugs — so it links by that slug instead of re-deriving one from the
-    label, which collapses duplicates onto whichever was registered first
-    (#3032/#3033). ``None`` means no article exists, rendered as plain text.
+    label, which collapses duplicates onto whichever was registered first.
+    ``None`` means no article exists, rendered as plain text.
     """
     text = label.replace("[", r"\[").replace("]", r"\]")
     if slug is None:
@@ -234,7 +234,7 @@ def _god_node_article(G: nx.Graph, nid: str, labels: dict[int, str], node_commun
             lines.append(f"- {t}")
         # The cap keeps god-node articles readable, but silently dropping the
         # tail made the body disagree with the header's degree count with
-        # nothing telling the reader anything was cut (#3127). Entries are
+        # nothing telling the reader anything was cut. Entries are
         # degree-sorted, so what is hidden is the low-degree tail.
         if len(targets) > 20:
             lines.append(
@@ -263,7 +263,7 @@ def _index_md(
     rather than the label -> slug resolver the articles use for prose links.
     Two communities, or two god nodes, can share a label while owning separate
     files, and a label lookup cannot tell them apart: it points every row at
-    whichever was registered first and orphans the rest (#3032/#3033).
+    whichever was registered first and orphans the rest.
     """
     # A node with no article of its own is absent here, so it renders as plain
     # text rather than linking to a same-labelled article that isn't it.
@@ -357,7 +357,7 @@ def to_wiki(
     # run, once the produced set is known — not by an up-front unlink of every
     # *.md. Unlinking first forced a full rewrite of the identical page set on
     # every export (an export re-runs on any graph.json change: tens of thousands
-    # of unchanged pages, disk + inotify + re-index churn, #3060) and opened a
+    # of unchanged pages, disk + inotify + re-index churn) and opened a
     # window where a reader saw an empty wiki/ mid-export. to_wiki() still owns
     # wiki/ entirely, so anything it did not produce this run is still removed.
     produced: set[str] = set()
@@ -379,7 +379,7 @@ def to_wiki(
     # Articles are capped against THIS wiki directory, not just NAME_MAX: on
     # Windows a 200-char slug under an ordinary pilothify-out/wiki/ overruns
     # MAX_PATH and write_text raises FileNotFoundError partway through the
-    # export (#2655). No-op on POSIX.
+    # export. No-op on POSIX.
     _slug_limit = stem_filename_budget(out, reserve=_SLUG_SUFFIX_RESERVE)
 
     def _unique_slug(base: str) -> str:
@@ -390,7 +390,7 @@ def to_wiki(
         # other while still emitting the original-case filename. lower() is not
         # enough for Unicode: "Straße".lower() != "STRASSE".lower(), yet both
         # casefold to "strasse", so both slugs were allocated and the sweep's
-        # folded map kept one and unlinked the other current article (#5087).
+        # folded map kept one and unlinked the other current article.
         # Same fold on both sides keeps every produced name distinct here, so a
         # name the sweep sees is always one it produced.
         slug = base
@@ -463,7 +463,7 @@ def to_wiki(
     # rewrites the contents of `groups.md` without renaming it. The exact-name
     # check then saw `"groups.md" not in {"Groups.md"}`, unlinked the file this run
     # had just written, and left `index.md` pointing at `Groups.md` with nothing
-    # behind it (#4508).
+    # behind it.
     #
     # _unique_slug dedups on casefold(), so this map is one-to-one. sorted()
     # keeps the survivor deterministic (not set-iteration order) if it ever is not.
@@ -472,7 +472,7 @@ def to_wiki(
         # Never delete a file this run produced. The fold map is one-to-one only
         # because _unique_slug dedups on casefold(); this exact-name check keeps
         # that promise even if a future slug rule drifts from the fold rule again
-        # (#5087: two current Unicode labels, only one fold key, one article lost).
+        # (: two current Unicode labels, only one fold key, one article lost).
         if old_article.name in produced:
             continue
         wanted = produced_by_fold.get(old_article.name.casefold())

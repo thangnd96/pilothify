@@ -1,4 +1,4 @@
-"""GRAPH_REPORT's headline numbers must agree with themselves (#3148, #3548).
+"""GRAPH_REPORT's headline numbers must agree with themselves.
 
 The Summary and Communities headers counted thin communities against the
 caller's --min-community-size, while the Knowledge Gaps section counted
@@ -70,7 +70,7 @@ def test_summary_and_gaps_count_thin_with_the_same_threshold():
 
 def test_at_the_default_threshold_only_the_zero_real_community_is_thin():
     # At min=3: "mid" (4 real) clears the threshold and is shown; "onlyfile"
-    # (0 real) is still thin at any positive threshold (#3548).
+    # (0 real) is still thin at any positive threshold.
     text = _report(3)
     assert "1 thin omitted" in text
     if "## Knowledge Gaps" in text:
@@ -79,7 +79,7 @@ def test_at_the_default_threshold_only_the_zero_real_community_is_thin():
 
 
 def test_shown_counts_only_what_the_render_loop_renders():
-    """`shown + thin` must sum to the total community count (#3548): the
+    """`shown + thin` must sum to the total community count: the
     zero-real-node community is never shown (the render loop skips it), so
     it must be counted as thin rather than going uncounted anywhere."""
     text = _report(5)

@@ -1,4 +1,4 @@
-"""C++ nested types and C++/CLI keep their symbols (#2876)."""
+"""C++ nested types and C++/CLI keep their symbols."""
 from pathlib import Path
 
 import pytest
@@ -172,7 +172,7 @@ def test_nested_cpp_class_is_extracted(tmp_path):
     assert [n["label"] for n in result["nodes"]] == [
         "nested.h", "Outer", "Inner", ".Method()",
     ]
-    # Inner is contained by Outer, not by the file (#2040).
+    # Inner is contained by Outer, not by the file.
     outer = next(n["id"] for n in result["nodes"] if n["label"] == "Outer")
     inner = next(n["id"] for n in result["nodes"] if n["label"] == "Inner")
     assert any(

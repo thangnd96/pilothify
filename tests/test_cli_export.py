@@ -465,7 +465,7 @@ def test_path_uses_pilothify_out_env(tmp_path):
     assert r.returncode == 0, r.stderr
 
 
-# ── pilothify path direction (#2487) ─────────────────────────────────────────
+# ── pilothify path direction ─────────────────────────────────────────
 
 def _write_path_graph(tmp_path: Path, nodes: list[str], links: list[dict]) -> Path:
     """Write a minimal hand-rolled directed graph.json for path-direction tests."""
@@ -501,7 +501,7 @@ def test_path_directed_respects_direction(tmp_path):
 
 
 def test_path_directed_backwards_is_no_path(tmp_path):
-    # Default-change guard (#2487): a plain `path` with no flag is directed,
+    # Default-change guard: a plain `path` with no flag is directed,
     # so walking the chain backwards must report no directed path.
     _write_path_graph(
         tmp_path, ["alpha", "beta", "gamma"],
@@ -530,7 +530,7 @@ def test_path_undirected_flag_opt_in(tmp_path):
 def test_path_directed_legacy_markers(tmp_path):
     # Legacy canonicalized file: the persisted arc is flipped (beta->alpha) but
     # the _src/_tgt markers carry the true direction alpha->beta. Direction
-    # truth must come from the markers, not the raw arc order (#2309/#2487).
+    # truth must come from the markers, not the raw arc order.
     _write_path_graph(
         tmp_path, ["alpha", "beta"],
         [{"source": "beta", "target": "alpha",
@@ -548,7 +548,7 @@ def test_path_directed_legacy_markers(tmp_path):
 
 def test_path_directed_deterministic(tmp_path):
     # Diamond with two equal-length directed routes: the chosen route must not
-    # depend on the process hash seed (#2074 discipline for the digraph too).
+    # depend on the process hash seed (discipline for the digraph too).
     _write_path_graph(
         tmp_path, ["start", "left", "right", "goal"],
         [_calls("start", "left"), _calls("left", "goal"),
@@ -637,7 +637,7 @@ def test_extract_no_cluster_marks_parallel_links_as_multigraph(tmp_path):
 # Regression test for #934 - cluster-only crashes when pilothify-out/ doesn't exist
 
 def test_cluster_only_creates_output_dir_when_missing(tmp_path):
-    """cluster-only must not crash with FileNotFoundError when pilothify-out/ is absent (#934)."""
+    """cluster-only must not crash with FileNotFoundError when pilothify-out/ is absent."""
     # Build graph.json somewhere other than the default pilothify-out/ location
     # so we can point --graph at it while pilothify-out/ doesn't exist yet.
     graph_src = tmp_path / "backup" / "graph.json"
@@ -730,7 +730,7 @@ def test_cluster_only_remaps_labels_to_previous_cids(tmp_path):
     .pilothify_labels.json keeps tracking the same conceptual communities after
     re-clustering. Without the remap call, Leiden's size-descending cid order
     re-applies labels by raw index and they silently misalign with cluster
-    contents (#1027). Mirror of the watch/update fix from #822.
+    contents. Mirror of the watch/update fix from #822.
     """
     out = _make_graph(tmp_path)
     graph_json = out / "graph.json"
@@ -953,14 +953,14 @@ def test_graph_json_node_ids_are_portable_across_checkout_paths(tmp_path):
         f"node id embeds an absolute-path component: {a}"
 
 
-# ── cluster-only silent failures (#2534) + refused-write exit code (#2522) ───
+# ── cluster-only silent failures + refused-write exit code ───
 
 
 def test_cluster_only_reports_failure_when_write_is_refused(tmp_path):
     """The #479 shrink guard can refuse to overwrite graph.json. cluster-only
     still printed "graph.json updated" and exited 0, and it had already written
-    GRAPH_REPORT.md and the labels for the clustering it then discarded (#2436).
-    Contributed by @aniJani (#2522)."""
+    GRAPH_REPORT.md and the labels for the clustering it then discarded.
+    Contributed by @aniJani."""
     out = _make_graph(tmp_path)
     graph_json = out / "graph.json"
 
@@ -1139,13 +1139,13 @@ def test_cluster_only_preserves_built_at_commit_from_non_repo_cwd(tmp_path):
     assert final.get("built_at_commit") == commit_x
 
 
-# ── pilothify query names its graph (#2789) ───────────────────────────────────
+# ── pilothify query names its graph ───────────────────────────────────
 
 def test_query_command_header_names_the_graph(tmp_path):
     """End-to-end: the CLI `query` command must actually wire the resolved graph
     path into the header. The header logic is unit-tested in
     test_query_names_its_graph.py, but only a real subprocess run proves the CLI
-    call site passes graph_path through (the wiring that was the point of #2789)."""
+    call site passes graph_path through (the wiring that was the point of)."""
     _make_graph(tmp_path)
     r = _run(["query", "Transformer"], tmp_path)
     assert r.returncode == 0, r.stderr
@@ -1181,7 +1181,7 @@ def test_cluster_only_preserves_parallel_edges_across_an_id_remap(tmp_path):
     out = tmp_path / "pilothify-out"
     out.mkdir()
     # `claude_alpha` + source_file `.claude/CLAUDE.md` remaps to
-    # `claude_claude_alpha` (parent-dir == stem case, #1917).
+    # `claude_claude_alpha` (parent-dir == stem case).
     (out / "graph.json").write_text(json.dumps({
         "directed": False, "multigraph": False, "graph": {},
         "nodes": [
@@ -1213,8 +1213,7 @@ def test_cluster_only_preserves_parallel_edges_across_an_id_remap(tmp_path):
 
 
 def test_to_json_declares_multigraph_when_original_links_have_parallel_edges(tmp_path):
-    """#4500: to_json restored original_links (which may hold parallel edges,
-    #3999) while node_link_data derived "multigraph": false from the simple
+    """#4500: to_json restored original_links (which may hold parallel edges) while node_link_data derived "multigraph": false from the simple
     in-memory graph. The flag must match the links actually written."""
     from pilothify.build import build_from_json
     from pilothify.cluster import cluster

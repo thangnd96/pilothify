@@ -40,7 +40,7 @@ _MANIFEST_PATH = str(out_path("manifest.json"))
 #: mtime for "mtime unchanged" to prove the content is unchanged. Coarse for
 #: filesystems that round mtime to whole seconds; tight when real sub-second
 #: precision is reported. Mirrors cache.py's `_MTIME_GRANULARITY_NS` (2s) —
-#: the same racily-clean assumption at the hash-cache layer (#2466 / #2612);
+# the same racily-clean assumption at the hash-cache layer;
 #: keep the two in sync.
 _MTIME_COARSE_S = 2.0
 _MTIME_SUBSECOND_S = 0.05
@@ -56,7 +56,7 @@ _BINARY_MEDIA_EXTENSIONS = (IMAGE_EXTENSIONS - {'.svg'}) | VIDEO_EXTENSIONS
 CORPUS_WARN_THRESHOLD = 50_000    # words - below this, warn "you may not need a graph"
 CORPUS_UPPER_THRESHOLD = 500_000  # words - above this, warn about token cost
 FILE_COUNT_UPPER = 500             # files - above this, warn about token cost
-# #2942: a large *fraction* of the corpus having no supported extractor (not
+# a large *fraction* of the corpus having no supported extractor (not
 # just a small, expected sliver of e.g. lockfiles or binaries) means the
 # resulting graph looks complete but structurally represents only part of the
 # codebase. Gated on an absolute floor too, so a tiny repo with one stray
@@ -131,7 +131,7 @@ _CREDENTIAL_STORE_DIRS = frozenset({
 # Bare-name directories that are as often legitimate source packages (Go
 # internal/secrets, a credentials/ service module) as credential stores. Their
 # contents are sensitive EXCEPT genuine programming-language source, mirroring
-# the Stage 3 keyword carve-out (#1666) at the directory level (#1943).
+# the Stage 3 keyword carve-out at the directory level.
 _AMBIGUOUS_SENSITIVE_DIRS = frozenset({
     "secrets", ".secrets", "credentials",
 })
@@ -145,22 +145,22 @@ _SENSITIVE_PATTERNS = [
     # `id_rsa`) and `ID_RSA` are handled correctly, not matched as a substring.
     re.compile(r'(^|[^A-Za-z0-9])(id_rsa|id_dsa|id_ecdsa|id_ed25519)(\.pub)?$', re.IGNORECASE),
     re.compile(r'^secring(\.(gpg|pgp))?$', re.IGNORECASE),  # GPG private keyring
-    # Auth/credential dotfiles that routinely hold tokens (#2106: .npmrc/.pypirc/
+    # Auth/credential dotfiles that routinely hold tokens (.npmrc/.pypirc/
     # .git-credentials/.boto were silently indexed before).
     re.compile(r'(\.netrc|\.pgpass|\.htpasswd|\.npmrc|\.pypirc|\.git-credentials|\.boto)$', re.IGNORECASE),
     # NOTE: aws_credentials/gcloud_credentials/service_account moved to the
-    # boundary-checked Stage 3 keyword path (#2106). The old unbounded
+    # boundary-checked Stage 3 keyword path. The old unbounded
     # `service.account` substring (regex `.` wildcard) matched real source like
     # google/oauth2/service_account.py and prose like aws_credentials_rotation.md.
 ]
 
 # Committed dotenv / envrc templates — placeholders only, not live secrets.
-# Stage 2's `.env.` regex otherwise treats these like `.env.local` (#2184).
+# Stage 2's `.env.` regex otherwise treats these like `.env.local`.
 _ENV_TEMPLATE_SUFFIXES = (".example", ".sample", ".template", ".dist")
 
 
 def _is_env_template(name: str) -> bool:
-    """True for `.env.example` / `.envrc.sample` style committed templates (#2184)."""
+    """True for `.env.example` / `.envrc.sample` style committed templates."""
     lower = name.lower()
     if not lower.endswith(_ENV_TEMPLATE_SUFFIXES):
         return False
@@ -183,14 +183,14 @@ _GENERIC_KEYWORD_PATTERNS = [
     # service_account / service-account / serviceaccount (GCP key files). In the
     # keyword path so `service_account.py` (real source) is spared while
     # `service-account.json` (a downloaded key) and bare names are still caught
-    # (#2106; was an unbounded Stage 2 substring). aws_credentials/gcloud_credentials
+    # (was an unbounded Stage 2 substring). aws_credentials/gcloud_credentials
     # are already covered by the `credential` keyword above.
     re.compile(r'(?<![a-zA-Z0-9])service[._-]?account(?![a-zA-Z])', re.IGNORECASE),
 ]
 
 # Prose/note formats: a heavily-linked wiki article whose topic slug ends in a
 # keyword (privacy-tokens.md, token-economics.md) is a document ABOUT the topic,
-# not a credential store, so it must not be silently dropped (#2106). A BARE
+# not a credential store, so it must not be silently dropped. A BARE
 # keyword name (secrets.md, token.md, passwords.md) still reads as a dump and
 # stays excluded — see _is_prose_note.
 _PROSE_EXTS = frozenset({".md", ".markdown", ".rst", ".org", ".adoc", ".tex"})
@@ -198,7 +198,7 @@ _PROSE_EXTS = frozenset({".md", ".markdown", ".rst", ".org", ".adoc", ".tex"})
 # Bare PLURAL "tokens" in a prose file (TOKENS.md) reads as a design-token
 # reference doc, not a credential dump — unlike every other generic keyword's
 # plural (secrets.md, passwords.md, credentials.md still read as dumps) and
-# unlike the singular "token.md", which stays excluded (#3527). Scoped to
+# unlike the singular "token.md", which stays excluded. Scoped to
 # prose extensions only: "tokens.txt" is still a plausible secret store.
 _BARE_PLURAL_TOKENS = re.compile(r'(?<![a-zA-Z0-9])tokens(?![a-zA-Z])', re.IGNORECASE)
 
@@ -207,7 +207,7 @@ _BARE_PLURAL_TOKENS = re.compile(r'(?<![a-zA-Z0-9])tokens(?![a-zA-Z])', re.IGNOR
 # in an ambiguous sensitive dir (secrets/db.json). These stay subject to the
 # Stage 1 ambiguous-dir drop and the Stage 3 keyword drop even though some route
 # through the CODE path for manifest parsing — only real programming-language
-# source is exempt (#1666, #1943).
+# source is exempt.
 _SECRET_PRONE_DATA_EXTS = frozenset({
     ".json", ".yaml", ".yml", ".toml", ".ini", ".cfg", ".conf", ".config",
     ".xml", ".properties", ".env", ".txt",
@@ -220,16 +220,16 @@ _SECRET_PRONE_DATA_EXTS = frozenset({
 # Word separators for the load-bearing check (underscore intentionally included;
 # multi-word keywords like private_key are handled by the end-of-stem check,
 # which runs before word counting).
-_WORD_SPLIT = re.compile(r'[-_\s.]+')  # '.' included so `token.economics.notes` counts as 3 words (#2106)
+_WORD_SPLIT = re.compile(r'[-_\s.]+')  # '.' included so `token.economics.notes` counts as 3 words
 
 
 def _is_prose_note(path: Path) -> bool:
     """A prose/note file (.md/.rst/...) whose stem is a multi-word topic slug is
-    exempt from the generic-keyword drop (#2106). A stem that IS exactly a bare
+    exempt from the generic-keyword drop. A stem that IS exactly a bare
     keyword (secrets / token / passwords) is NOT exempt — that still reads as a
     credential dump. The one exception is bare plural "tokens" (TOKENS.md),
     which reads as a design-token reference doc rather than a secret store
-    (#3527)."""
+   ."""
     if path.suffix.lower() not in _PROSE_EXTS:
         return False
     stem = Path(path.name).stem.lstrip('.') or Path(path.name).stem
@@ -246,11 +246,11 @@ def _generic_keyword_hit(name: str) -> bool:
     "api_token", "oauth_token". A keyword that is neither at the end of the
     stem nor in a short (<=2 word) name is a topic word in a descriptive slug
     ("token-economics-of-recall.md", "password-policy-discussion.md") and must
-    not cause the file to be silently dropped from the graph (#436, #718).
+    not cause the file to be silently dropped from the graph.
     """
     # Stem = name minus only the FINAL extension (not up to the first dot), so a
     # multi-dot topic slug like `token.economics.notes.md` keeps all its words and
-    # doesn't collapse to a bare `token` (#2106). Leading dots stripped so
+    # doesn't collapse to a bare `token`. Leading dots stripped so
     # dotfiles like `.token` keep their keyword.
     stem = Path(name).stem.lstrip('.') or Path(name).stem
     for pat in _GENERIC_KEYWORD_PATTERNS:
@@ -284,7 +284,7 @@ _PAPER_SIGNAL_THRESHOLD = 3  # need at least this many signals to call it a pape
 
 def _is_graphable_source(path: Path) -> bool:
     """True for genuine programming-language source — the only category exempt
-    from the ambiguous-dir (Stage 1, #1943) and generic-keyword (Stage 3, #1666)
+    from the ambiguous-dir (Stage 1) and generic-keyword (Stage 3)
     drops. Data/serialization formats are NOT exempt even though some route
     through the CODE path for manifest parsing: credentials.json / secrets.yaml
     are exactly the stores those stages must keep catching.
@@ -298,32 +298,32 @@ def _is_sensitive(path: Path) -> bool:
     # the filename itself so a root-level file named "credentials" is not falsely
     # skipped — the name patterns in Stage 2 handle the filename). Dedicated
     # credential stores drop everything unconditionally; ambiguous bare-name dirs
-    # (secrets/, credentials/) spare genuine source (#1943), which still falls
+    # (secrets/, credentials/) spare genuine source, which still falls
     # through so Stages 2-3 screen its filename like anywhere else.
     parents = path.parts[:-1]
     # Lowercase the segment comparison so `Secrets/`/`SECRETS/` (real on
-    # case-insensitive macOS/Windows filesystems) are still caught (#2106).
+    # case-insensitive macOS/Windows filesystems) are still caught.
     if any(part.lower() in _CREDENTIAL_STORE_DIRS for part in parents):
         return True
     if any(part.lower() in _AMBIGUOUS_SENSITIVE_DIRS for part in parents) and not _is_graphable_source(path):
         return True
     # Stage 2: filename pattern match. Template suffixes (.example/.sample/…)
     # on .env / .envrc are the usual "safe to commit" convention — keep them
-    # in the graph without opening a broad Stage 2 allowlist (#2184 / #1921).
+    # in the graph without opening a broad Stage 2 allowlist.
     name = path.name
     if any(p.search(name) for p in _SENSITIVE_PATTERNS) and not _is_env_template(name):
         return True
     # Stage 3: generic keywords, only when load-bearing in the name. Do NOT let a
     # bare name keyword silently drop a genuine programming-language source file:
     # a .rb/.py named device_token or passwords_controller is a module, not a secret
-    # store (#1666). Data/config formats (.json, .yaml, .toml, ...) are deliberately
+    # store. Data/config formats (.json, .yaml, .toml, ...) are deliberately
     # NOT exempt even though .json routes through the CODE path for manifest parsing,
     # because credentials.json / oauth_token.json / secrets.yaml are exactly the
     # secret stores this stage must catch. The specific Stage 2 patterns (.env, .pem,
     # id_rsa, ...) still apply to everything regardless of extension.
     if _generic_keyword_hit(name):
         # Genuine source AND multi-word prose notes are exempt; a bare-keyword
-        # name (secrets.md, token.txt) still drops (#1666, #2106).
+        # name (secrets.md, token.txt) still drops.
         return not (_is_graphable_source(path) or _is_prose_note(path))
     return False
 
@@ -578,7 +578,7 @@ def classify_file(path: Path) -> FileType | None:
     # Package manifests (apm.yml, pyproject.toml, Cargo.toml, go.mod, pom.xml) are parsed
     # deterministically, so route them to the AST path (CODE) rather than the LLM
     # document path — otherwise apm.yml (a .yml "document") would be LLM-extracted
-    # and a package would split into duplicate file-anchored nodes (#1377).
+    # and a package would split into duplicate file-anchored nodes.
     from pilothify.manifest_ingest import is_package_manifest_path
     if is_package_manifest_path(path):
         return FileType.CODE
@@ -586,7 +586,7 @@ def classify_file(path: Path) -> FileType | None:
     if path.name.lower().endswith(".blade.php"):
         return FileType.CODE
     # A project may declare what an ambiguous extension means to it
-    # (.pilothifyrc `language.inc=php`, #2961); classify by the declared one.
+    # (.pilothifyrc `language.inc=php`); classify by the declared one.
     ext = effective_suffix(path).lower()
     if not ext:
         return _shebang_file_type(path)
@@ -626,7 +626,7 @@ def extract_pdf_text(path: Path) -> str:
 
     Returns ``""`` when the file cannot be read (malformed, encrypted, ...), the
     same as for a PDF with no text, but warns on stderr naming the file and the
-    error first (#4527), so a failed read is not mistaken for an empty document.
+    error first, so a failed read is not mistaken for an empty document.
     """
     if not _file_within_size_cap(path):
         return ""
@@ -926,13 +926,13 @@ def convert_office_file(path: Path, out_dir: Path, root: "Path | None" = None) -
     # absolute form salts the name with the checkout location, so the same
     # tracked .xlsx in two clones/worktrees emits two differently-named,
     # byte-identical sidecars — unbounded duplicates when pilothify-out/ is
-    # committed, each ingested as a distinct source doc (#2059). The relative
+    # committed, each ingested as a distinct source doc. The relative
     # path still disambiguates same-stem files in different directories.
     # Normalize to NFC before hashing: on macOS (HFS+/APFS) os.walk/rglob return
     # filenames in NFD, while Python string literals and directly-constructed
     # Path objects are NFC, so the same source file would otherwise hash to
     # different sidecar names across runs — making --update treat every Office
-    # file as new and re-extract it (#1226).
+    # file as new and re-extract it.
     import hashlib
     import unicodedata
     if root is None:
@@ -951,10 +951,10 @@ def convert_office_file(path: Path, out_dir: Path, root: "Path | None" = None) -
     # Skip re-writing only when the sidecar is present AND at least as new as the
     # source. detect_incremental tracks the SIDECAR (not the Office source), so a
     # sidecar that is never rewritten after the source changes leaves the doc
-    # reported "unchanged" forever and freezes the graph (#1649). Re-converting
+    # reported "unchanged" forever and freezes the graph. Re-converting
     # when the source is newer bumps the sidecar's mtime/content, which the
     # incremental hash check then correctly picks up. An unchanged source keeps
-    # its (newer-or-equal) sidecar untouched so it never churns (#1226).
+    # its (newer-or-equal) sidecar untouched so it never churns.
     try:
         if out_path.exists() and os.stat(_os_path(out_path)).st_mtime >= os.stat(_os_path(path)).st_mtime:
             return out_path
@@ -1012,27 +1012,27 @@ def _is_regular_file(path: Path) -> bool:
 
 # Directory names to always skip - venvs, caches, build artifacts, deps
 _SKIP_DIRS = {
-    "venv", ".venv",  # "env"/".env"/"*_env" are gated on venv markers below (#2058)
+    "venv", ".venv",  # "env"/".env"/"*_env" are gated on venv markers below
     "node_modules", "__pycache__", ".git",
-    "dist", "build", "target",  # bare "out" is gated on build-output evidence below (#3347)
+    "dist", "build", "target",  # bare "out" is gated on build-output evidence below
     "site-packages", "lib64",
     ".pytest_cache", ".mypy_cache", ".ruff_cache",
-    ".tox", ".nox", ".eggs", "*.egg-info",  # nox is tox's successor, same .nox/ venv shape (#1804)
-    "pilothify-out",  # never treat the default output as source input (#524)
+    ".tox", ".nox", ".eggs", "*.egg-info",  # nox is tox's successor, same .nox/ venv shape
+    "pilothify-out",  # never treat the default output as source input
     # Coverage/test-artefact dirs — generated, never architecturally meaningful
-    "lcov-report",                          # Vitest/Istanbul/nyc HTML reports (#870);
+    "lcov-report",                          # Vitest/Istanbul/nyc HTML reports;
                                             # bare "coverage" is gated on report
-                                            # artefacts below (#2339)
-    "visual-tests", "visual-test",          # Playwright/visual-regression bundles (#869)
+                                            # artefacts below
+    "visual-tests", "visual-test",          # Playwright/visual-regression bundles
     "__snapshots__",                        # Jest/Vitest snapshot dir (unambiguous)
     "storybook-static",                     # Storybook production build output
     "dist-protected",                       # Protected dist variants (same noise as dist)
-    # Framework cache/build dirs — generated, never architecturally meaningful (#873)
+    # Framework cache/build dirs — generated, never architecturally meaningful
     ".next", ".nuxt", ".turbo", ".angular",
     ".idea", ".cache", ".parcel-cache", ".svelte-kit", ".terraform", ".serverless",
     ".pilothify",  # pilothify's own extraction cache — never index self-generated data
-    ".obsidian", ".smart-env",  # Obsidian vault metadata and plugin caches (#2493)
-    ".worktrees",  # git worktree convention (#947) — sibling checkouts, always redundant
+    ".obsidian", ".smart-env",  # Obsidian vault metadata and plugin caches
+    ".worktrees",  # git worktree convention — sibling checkouts, always redundant
 }
 
 # Large generated files that are never useful to extract
@@ -1040,7 +1040,7 @@ _SKIP_FILES = {
     "package-lock.json", "yarn.lock", "pnpm-lock.yaml",
     "Cargo.lock", "poetry.lock", "Gemfile.lock",
     "composer.lock", "go.sum", "go.work.sum",
-    # Removed allowlist config (#2112) — no longer consumed, so keep a leftover
+    # Removed allowlist config — no longer consumed, so keep a leftover
     # file out of the unclassified list instead of surfacing it as scan input.
     ".pilothifyinclude",
 }
@@ -1048,7 +1048,7 @@ _SKIP_FILES = {
 # Files a JS/TS toolchain reads to resolve modules: workspace package roots,
 # tsconfig `paths`/`baseUrl`, and the installed dependency tree. Changing one of
 # these can change a .ts/.tsx/.js result without touching a single source file, so
-# the no-change gate in watch._rebuild_code() has to see them (#4740).
+# the no-change gate in watch._rebuild_code() has to see them.
 # tsconfig*.json / jsconfig.json / package.json are ordinary scan input (they land
 # in the "code" bucket and are stamped in the manifest like any other file). The
 # lock files are in _SKIP_FILES, so detect() records them separately instead.
@@ -1060,7 +1060,7 @@ _TS_CONFIG_NAME_RE = re.compile(r"^tsconfig(\.[^/\\]+)?\.json$")
 
 
 def is_resolution_input(path: "Path | str") -> bool:
-    """True when ``path`` steers JS/TS module resolution (#4740).
+    """True when ``path`` steers JS/TS module resolution.
 
     Deliberately over-approximate: a false positive only costs a slower run, a
     false negative ships a stale graph.
@@ -1072,7 +1072,7 @@ def is_resolution_input(path: "Path | str") -> bool:
 # A bare "snapshots" dir is a Jest/Vitest artifact only when it actually holds
 # snapshot files or lives directly under a JS test root. Elsewhere it is often a
 # real code namespace (e.g. Rails app/services/snapshots/), so pruning it by name
-# silently dropped legitimate source from the graph (#1666). "__snapshots__" stays
+# silently dropped legitimate source from the graph. "__snapshots__" stays
 # unconditionally pruned above; only the ambiguous bare name is gated here.
 _JS_SNAPSHOT_TEST_ROOTS = frozenset({"__tests__", "__test__"})
 
@@ -1081,7 +1081,7 @@ _JS_SNAPSHOT_TEST_ROOTS = frozenset({"__tests__", "__test__"})
 # #5011 and projects installed then still carry it).
 _NESTED_SKILL_HOLDERS = frozenset({(".pi", "agent"), (".config", "kilo")})
 
-# Single files `pilothify install` writes whole into a project (#4057): the
+# Single files `pilothify install` writes whole into a project: the
 # always-on rules/steering/workflow files and the opencode/kilo hook plugins.
 # Matched on the hidden holder dir plus the exact relative path, never on the
 # bare file name, so e.g. docs/pilothify.md or src/plugins/pilothify.js stay.
@@ -1099,7 +1099,7 @@ _PILOTHIFY_INSTALLED_FILES = frozenset({
 
 
 def _is_installed_pilothify_file(path: "Path") -> bool:
-    """True for a single file `pilothify install` wrote into the project (#4057)."""
+    """True for a single file `pilothify install` wrote into the project."""
     return path.parts[-3:] in _PILOTHIFY_INSTALLED_FILES
 
 # Files a coverage tool writes into its own output dir. Any one of them is proof
@@ -1121,7 +1121,7 @@ def _has_coverage_artifacts(d: "Path") -> bool:
     a domain namespace), so pruning it by name alone silently drops real source —
     an entire 5-module package in #2339, with its dependents left in the graph so
     queries still returned plausible neighbours. Prune it only on real evidence,
-    mirroring the ``snapshots``/``env`` gating (#1666/#2058): a coverage report
+    mirroring the ``snapshots``/``env`` gating: a coverage report
     file, or an Istanbul/lcov HTML report subtree.
     """
     try:
@@ -1153,7 +1153,7 @@ def _has_build_output_markers(d: "Path") -> bool:
     name alone silently drops an architectural layer from the graph: 196 of
     655 .java files on the #3347 corpus, exit code 0, no warning. Prune only
     on real generated-output evidence, mirroring the ``env``/``coverage``/
-    ``snapshots`` gating (#1666/#2058/#2339): the IntelliJ ``out/production``
+    ``snapshots`` gating: the IntelliJ ``out/production``
     layout, a Next.js static-export ``_next/`` tree, or compiled artifacts in
     the top two directory levels. An ``out`` that cannot be verified is kept —
     the same keep-on-doubt bias every other gated name has.
@@ -1195,7 +1195,7 @@ def _has_venv_markers(d: "Path") -> bool:
 
     ``env``/``.env``/``*_env`` is a real source-directory convention (UVM/ASIC
     verification trees, and others), so pruning it by name alone silently drops
-    legitimate source with no trace (#2058). Prune it only on real evidence: a
+    legitimate source with no trace. Prune it only on real evidence: a
     ``pyvenv.cfg``, an ``activate`` script, a ``lib/python*`` tree, or conda's
     ``conda-meta/`` (``conda create -p ./env`` writes no pyvenv.cfg).
     """
@@ -1238,7 +1238,7 @@ def _has_msbuild_markers(d: "Path", markers: tuple, max_depth: int) -> bool:
     so nothing else stops them. Neither name is safe to prune alone — ``bin``
     is source in Rust's src/bin/, Ruby binstubs and script dirs — so prune
     only on MSBuild's own artifacts, the same keep-on-doubt gating ``out``
-    gets (#3347). The walk is bounded by entries scanned, not just depth.
+    gets. The walk is bounded by entries scanned, not just depth.
     """
     budget = 4000
     pending = [(str(d), 0)]
@@ -1266,13 +1266,13 @@ def _is_noise_dir(part: str, parent: "Path | None" = None) -> bool:
         return True
     if part in ("env", ".env") or part.endswith("_env"):
         # Ambiguous: a real venv OR a real source dir. Prune only on actual venv
-        # evidence, mirroring the "snapshots" gating (#1666/#2058).
+        # evidence, mirroring the "snapshots" gating.
         if parent is None:
             return False  # cannot verify; keep a possibly-real code dir
         return _has_venv_markers(parent / part)
     if part == "coverage":
         # Ambiguous: a generated report dir OR a real package named coverage.
-        # Prune only on actual coverage-artefact evidence (#2339).
+        # Prune only on actual coverage-artefact evidence.
         if parent is None:
             return False  # cannot verify; keep a possibly-real code dir
         return _has_coverage_artifacts(parent / part)
@@ -1280,7 +1280,7 @@ def _is_noise_dir(part: str, parent: "Path | None" = None) -> bool:
         # Ambiguous: compiler/bundler output (IntelliJ, `next export`, a TS
         # outDir) OR the outbound layer of a hexagonal codebase
         # (adapter/out/, port/out/). Prune only on actual build-output
-        # evidence (#3347).
+        # evidence.
         if parent is None:
             return False  # cannot verify; keep a possibly-real code dir
         return _has_build_output_markers(parent / part)
@@ -1307,7 +1307,7 @@ def _is_noise_dir(part: str, parent: "Path | None" = None) -> bool:
             pass
         return False
     # Catch *_venv (unambiguous — "venv" is always a virtualenv signal). "*_env"
-    # is gated on markers above (#2058), not pruned by name.
+    # is gated on markers above, not pruned by name.
     if part.endswith("_venv"):
         return True
     if part.endswith(".egg-info"):
@@ -1316,10 +1316,10 @@ def _is_noise_dir(part: str, parent: "Path | None" = None) -> bool:
     if part == "worktrees" and parent is not None and parent.name.startswith("."):
         return True
     # pilothify's own skill folder, as `pilothify install --project` writes it
-    # (#4057): <hidden dir>/skills/pilothify/ (.claude, .codex, .agents, ...),
+    # <hidden dir>/skills/pilothify/ (.claude, .codex, .agents, ...),
     # .pi/agent/skills/pilothify/, .config/kilo/skills/pilothify/ and
     # .aider/pilothify/. Matched on the whole path shape rather than the bare
-    # names "skills"/"pilothify" (#2479), so pilothify's own source tree
+    # names "skills"/"pilothify", so pilothify's own source tree
     # (pilothify/skills/<host>/), a top-level skills/pilothify/ and the user's
     # other skills under .claude/skills/ are still indexed.
     if part == "pilothify" and parent is not None:
@@ -1378,7 +1378,7 @@ def _parse_gitignore_line(raw: str) -> str:
 
 
 def _is_valid_git_marker(dot_git: Path) -> bool:
-    """Whether ``dot_git`` is a ``.git`` that git itself would accept (#4444).
+    """Whether ``dot_git`` is a ``.git`` that git itself would accept.
 
     A ``.git`` directory needs ``HEAD``, ``objects/`` and ``refs/``, the same
     entries git's own repository check looks for. A ``.git`` file (linked
@@ -1411,7 +1411,7 @@ def _has_vcs_marker(directory: Path) -> bool:
 def _find_vcs_root(start: Path) -> Path | None:
     """Walk upward from start; return the first directory containing a VCS marker.
 
-    ``.git`` only counts when it is a valid repo marker (#4444).
+    ``.git`` only counts when it is a valid repo marker.
     """
     current = start.resolve()
     home = Path.home()
@@ -1436,7 +1436,7 @@ def _git_tracked_path_keys(root: Path) -> tuple[set[str], set[str]]:
     Git once per scan/predicate construction with NUL-delimited output so every
     valid filename is preserved. Missing Git, a non-Git VCS marker, command
     failure, and malformed output all fail closed to the historical ignore
-    behavior rather than making discovery fail (#2759).
+    behavior rather than making discovery fail.
     """
     root = root.resolve()
     vcs_root = _find_vcs_root(root)
@@ -1490,7 +1490,7 @@ def _git_info_exclude(vcs_root: Path) -> Path | None:
     where ``git worktree add`` writes nested worktree paths — so a repo can ignore
     a directory without any ``.gitignore`` entry. pilothify only read
     ``.gitignore``/``.pilothifyignore``, so it walked into those worktree copies and
-    the graph exploded (#1810). Handles the linked-worktree/submodule case where
+    the graph exploded. Handles the linked-worktree/submodule case where
     ``.git`` is a file (``gitdir: <path>``) and the real excludes live in the
     shared common git dir. Returns None when there is no readable exclude file.
     """
@@ -1535,7 +1535,7 @@ def _linked_worktree_main_root(directory: Path) -> Path | None:
     ``.git`` file points at ``<super>/.git/modules/<name>``, which carries no
     ``commondir``; a bare repo's shared git dir is not named ``.git`` (it has
     no main working tree); and a moved/deleted main checkout leaves ``cd``
-    dangling — all three fall through to None and stay scannable (#4683).
+    dangling — all three fall through to None and stay scannable.
     No git subprocess is used.
     """
     dot_git = directory / ".git"
@@ -1575,7 +1575,7 @@ def _git_global_excludes(vcs_root: Path) -> Path | None:
 
     This is where people keep machine-wide rules for local settings and secret
     files so they don't repeat them in every repo; git ignores those files but
-    pilothify read them (#4335). Asks git for the configured path (``--path``
+    pilothify read them. Asks git for the configured path (``--path``
     expands ``~``) and falls back to git's default,
     ``$XDG_CONFIG_HOME/git/ignore`` or ``~/.config/git/ignore``, when the key
     is unset or git is unavailable. Only applies inside a git repo, like git.
@@ -1667,7 +1667,7 @@ def _read_ignore_text(path: Path) -> str:
 def _load_dir_own_ignore(d: Path, *, gitignore: bool = True) -> list[tuple[Path, str]]:
     """Read .gitignore/.pilothifyignore directly inside *d* (not its ancestors).
 
-    Merges .gitignore and .pilothifyignore for this one directory (#1363):
+    Merges .gitignore and .pilothifyignore for this one directory:
     .gitignore is read first and .pilothifyignore last, so .pilothifyignore
     patterns (including `!` negations) win on conflict via last-match-wins;
     adding a .pilothifyignore can only ever exclude MORE, never re-include a
@@ -1678,7 +1678,7 @@ def _load_dir_own_ignore(d: Path, *, gitignore: bool = True) -> list[tuple[Path,
     scan) and the live os.walk loop in `detect()` (called per-directory as
     each descendant is visited), so nested ignore files *below* the scan
     root are honored too — previously only the scan root and its ancestors
-    were read, so e.g. `vendor/sub/.gitignore` was silently ignored (#1206).
+    were read, so e.g. `vendor/sub/.gitignore` was silently ignored.
     """
     patterns: list[tuple[Path, str]] = []
     for fname in ((".gitignore", ".pilothifyignore") if gitignore else (".pilothifyignore",)):
@@ -1703,7 +1703,7 @@ def _load_pilothifyignore(root: Path, *, gitignore: bool = True) -> list[tuple[P
 
     Covers the scan root and its ancestors only — directories *below* the
     scan root are picked up live during the os.walk in `detect()` instead,
-    since they aren't known until the walk reaches them (#1206).
+    since they aren't known until the walk reaches them.
     """
     root = root.resolve()
     ceiling = _find_vcs_root(root) or root
@@ -1721,7 +1721,7 @@ def _load_pilothifyignore(root: Path, *, gitignore: bool = True) -> list[tuple[P
     patterns: list[tuple[Path, str]] = []
 
     # git's user-wide excludes file ranks below info/exclude, so it goes first
-    # of all, anchored at the VCS root like info/exclude (#4335).
+    # of all, anchored at the VCS root like info/exclude.
     global_excludes = _git_global_excludes(ceiling) if gitignore else None
     if global_excludes is not None:
         for raw in _read_ignore_text(global_excludes).splitlines():
@@ -1732,7 +1732,7 @@ def _load_pilothifyignore(root: Path, *, gitignore: bool = True) -> list[tuple[P
     # $GIT_DIR/info/exclude is repo-root-scoped and, per git, ranks below every
     # per-directory .gitignore/.pilothifyignore — so load it first (lowest priority
     # under last-match-wins) anchored at the VCS root, letting a nearer `!`
-    # re-include still override it (#1810).
+    # re-include still override it.
     info_exclude = _git_info_exclude(ceiling) if gitignore else None
     if info_exclude is not None:
         for raw in _read_ignore_text(info_exclude).splitlines():
@@ -2000,7 +2000,7 @@ def _is_scan_ignored(
     ``patterns`` combines Git and graph-specific rules. ``explicit_patterns``
     contains only .pilothifyignore/--exclude rules, which remain authoritative
     even for tracked files. A tracked file's ancestor directories are preserved
-    from Git-only pruning so the walk can reach the file (#2759).
+    from Git-only pruning so the walk can reach the file.
     """
     if not _is_ignored(path, root, patterns, _cache=cache):
         return False
@@ -2021,11 +2021,11 @@ def ignored_predicate(
     Mirrors detect()'s ignore decisions for a single existing path WITHOUT
     re-walking the corpus, from the same machinery detect() uses: the ancestor
     .pilothifyignore/.gitignore chain (_load_pilothifyignore), CLI/persisted
-    ``--exclude`` patterns appended last at the root anchor (#947), nested
-    per-directory ignore files along the path's own lineage (#1206), the
+    ``--exclude`` patterns appended last at the root anchor, nested
+    per-directory ignore files along the path's own lineage, the
     _is_noise_dir directory pruning, and _SKIP_FILES. The sensitive-file
     heuristic (_is_sensitive) is deliberately NOT included: callers use this
-    predicate as positive evidence of a live ignore RULE (#2495), and a
+    predicate as positive evidence of a live ignore RULE, and a
     heuristic match is not user intent.
 
     Nested patterns are loaded lazily, once per directory, into one shared
@@ -2081,7 +2081,7 @@ def ignored_predicate(
             if linked_boundaries[parent]:
                 return True
         # Load ignore files along this path's own lineage — detect()'s walk
-        # would have loaded exactly these before reaching the file (#1206).
+        # would have loaded exactly these before reaching the file.
         ancestor = root
         for part in rel_parts[:-1]:
             ancestor = ancestor / part
@@ -2132,7 +2132,7 @@ def _resolves_under_root(path: Path, root: Path) -> bool:
 
 def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace: bool | None = None, extra_excludes: list[str] | None = None, cache_root: Path | None = None, gitignore: bool = True) -> dict:
     root = root.resolve()
-    # The project's extension->language declarations (#2961) shape
+    # The project's extension->language declarations shape
     # classification for this scan.
     activate_language_overrides(root)
     configured_out_dir = root / PILOTHIFY_OUT
@@ -2142,9 +2142,9 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
     except (OSError, RuntimeError):
         configured_out_dir = configured_out_dir.absolute()
     configured_out_names.add(configured_out_dir.name)
-    # .pilothifyinclude support was removed (#2112): its loader and matchers had
+    # .pilothifyinclude support was removed: its loader and matchers had
     # no consumers, so the file has been a silent no-op since dot directories
-    # became indexed by default (#873). Surface that once per scan so a
+    # became indexed by default. Surface that once per scan so a
     # leftover allowlist file is not a silent behavior change.
     if (root / ".pilothifyinclude").is_file():
         import sys as _sys
@@ -2169,9 +2169,9 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
 
     def _wc(path: Path) -> int:
         # Cache word counts against each file's stat signature so unchanged
-        # PDFs/docx aren't re-parsed on every run just to size the corpus (#1656).
+        # PDFs/docx aren't re-parsed on every run just to size the corpus.
         # cache_root (when given, e.g. from `extract --out`) keeps this cache out
-        # of the scanned corpus (#1747).
+        # of the scanned corpus.
         from pilothify import cache as _cache
         return _cache.cached_word_count(path, root, count_words, cache_root=cache_root)
 
@@ -2180,13 +2180,13 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
     skipped_asset_media: list[str] = []
     # Files/dirs dropped by a .gitignore/.pilothifyignore rule. Recorded so an
     # over-broad ignore (or a legitimately-ignored subtree) is visible instead
-    # of silently vanishing from the graph (#1922). Directory-level entries keep
+    # of silently vanishing from the graph. Directory-level entries keep
     # this bounded — a pruned `data/` is one entry, not one per contained file.
     ignored: list[str] = []
     pruned_noise: list[str] = []
     # JS/TS resolution inputs that _SKIP_FILES keeps out of the corpus. They are
     # not scan input, but they do steer resolution, so they are reported
-    # separately for the no-change gate to compare (#4740).
+    # separately for the no-change gate to compare.
     resolution_inputs: list[str] = []
     ignore_patterns = _load_pilothifyignore(root, gitignore=gitignore)
     explicit_ignore_patterns = _load_pilothifyignore(root, gitignore=False)
@@ -2200,7 +2200,7 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
     ignore_cache: dict[Path, bool] = {}  # shared across all _is_ignored calls in this scan
     explicit_ignore_cache: dict[Path, bool] = {}
     # CLI --exclude patterns are anchored at the scan root and appended last
-    # so they win over any .pilothifyignore/.gitignore rules (#947).
+    # so they win over any .pilothifyignore/.gitignore rules.
     if extra_excludes:
         for pat in extra_excludes:
             line = _parse_gitignore_line(pat)
@@ -2265,7 +2265,7 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
                 # reached by the walk is a descendant below the scan root, whose
                 # own .gitignore/.pilothifyignore is unknown until we get here.
                 # Load it now, before pruning dp's children, so a nested ignore
-                # file governs its own subtree the same way git honors it (#1206).
+                # file governs its own subtree the same way git honors it.
                 if dp != root:
                     ignore_patterns.extend(_load_dir_own_ignore(dp, gitignore=gitignore))
                     explicit_ignore_patterns.extend(
@@ -2298,12 +2298,12 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
                     if _is_noise_dir(d, dp):
                         # Record pruned-as-noise dirs so a wrongly-pruned real
                         # source dir is at least traceable in the output rather
-                        # than vanishing silently (#2058).
+                        # than vanishing silently.
                         pruned_noise.append(str(child) + os.sep)
                         continue
                     # A linked worktree whose main checkout is also inside the
                     # scan root is a second copy of the same repo — every file
-                    # counted twice (#4683). Neither the name-based rules (the
+                    # counted twice. Neither the name-based rules (the
                     # worktree's name is arbitrary) nor info/exclude (the scan
                     # root need not be a repo) reach this sibling layout, but
                     # its .git file + commondir back-pointer identify it.
@@ -2333,7 +2333,7 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
                     if is_resolution_input(fname):
                         # Not corpus input, but a JS/TS resolution input: record
                         # it so the no-change gate can compare its content
-                        # (#4740). It stays out of the scan exactly as before.
+                        #. It stays out of the scan exactly as before.
                         resolution_inputs.append(str(dp / fname))
                     continue
                 p = dp / fname
@@ -2381,7 +2381,7 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
             # Considered but unclassifiable: an extension not in any supported set,
             # or an extensionless, non-shebang file (Dockerfile, Gemfile, Makefile,
             # Rakefile, LICENSE, ...). Previously these left no trace at all — not
-            # counted, not listed — so a user couldn't tell they were seen (#1692).
+            # counted, not listed — so a user couldn't tell they were seen.
             unclassified.append(str(p))
             continue
         if ftype in (FileType.IMAGE, FileType.VIDEO) and asset_media_folder(p, root):
@@ -2402,7 +2402,7 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
                     skipped_sensitive.append(str(p) + f" [Google Workspace export failed: {exc}]")
                     continue
                 if md_path:
-                    # #3504: the sidecar lands under converted_dir, which the
+                    # the sidecar lands under converted_dir, which the
                     # documented .gitignore advice puts inside a gitignored
                     # pilothify-out/ -- an ignore check here would reject the
                     # tool's own output for the same reason it should be
@@ -2421,7 +2421,7 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
             if p.suffix.lower() in OFFICE_EXTENSIONS:
                 md_path = convert_office_file(p, converted_dir, root=root)
                 if md_path:
-                    # #3504: see the matching comment in the Google Workspace
+                    # see the matching comment in the Google Workspace
                     # branch above -- same sidecar-under-a-gitignored-output-dir
                     # trap, same exemption.
                     if _ignored_for_scan(md_path) and not md_path.is_relative_to(converted_dir):
@@ -2457,7 +2457,7 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
             f"Consider running on a subfolder."
         )
 
-    # #2942: a few unclassified files (lockfiles, binaries, stray config) are
+    # a few unclassified files (lockfiles, binaries, stray config) are
     # routine and already reported above by count. A large SHARE of the files
     # actually seen having no supported extractor at all is a different,
     # louder signal: the graph may look complete while structurally missing
@@ -2527,8 +2527,8 @@ def _nfc(s: str) -> str:
 
     On macOS, ``os.walk`` / ``getcwd`` yield NFD paths while path literals
     and many skill-substituted roots are NFC. Raw string compare then treats
-    every file as both deleted and new, forcing a full re-extract (#2221).
-    Same boundary as the Office sidecar hash fix (#1226).
+    every file as both deleted and new, forcing a full re-extract.
+    Same boundary as the Office sidecar hash fix.
     """
     import unicodedata
     return unicodedata.normalize("NFC", s)
@@ -2552,7 +2552,7 @@ def _to_relative_for_storage(key: str, root: Path) -> str:
     Both sides of ``relpath`` are NFC'd first: stamped keys may already be
     NFC while ``Path(root).resolve()`` is NFD on macOS, and a mixed-form
     compare would mark an in-root file as ``../…`` and keep it absolute
-    (#2221 / #777).
+   .
     """
     p = Path(key)
     if not p.is_absolute():
@@ -2622,7 +2622,7 @@ def _to_absolute_from_storage(key: str, root: Path) -> str:
     Uses ``Path(root).resolve()`` so the produced absolute path matches
     what :func:`detect` returns (which also resolves the scan root).
     NFC both sides so a relative key and an NFD-resolved root still join
-    to the same string form the rest of the manifest path uses (#2221).
+    to the same string form the rest of the manifest path uses.
 
     The joined result is lexically normalized (``os.path.normpath``, not
     ``.resolve()``) so a stray ``..``/``.`` segment collapses to the same
@@ -2631,7 +2631,7 @@ def _to_absolute_from_storage(key: str, root: Path) -> str:
     of mismatch a foreign tool or an older pilothify version can leave
     behind, per this function's own caller) fail to canonicalize to the
     same value and the duplicate collapse this function exists for misses
-    them (#1964 review). Only the key's own dot segments are normalized,
+    them (review). Only the key's own dot segments are normalized,
     never symlinks — ``normpath`` never touches the filesystem, matching
     :func:`_to_relative_for_storage`'s own choice not to resolve the key.
     """
@@ -2647,7 +2647,7 @@ def _collapse_manifest_duplicates(
 ) -> dict[str, Any]:
     """Canonicalize each raw key via ``key_fn``, keeping the more recently
     observed entry when two distinct raw keys collapse to the same
-    canonical one (#1964).
+    canonical one.
 
     A manifest written across a mix of pilothify versions/call sites — some
     passing ``root`` to relativize keys, some not (an outdated installed
@@ -2685,7 +2685,7 @@ def _collapse_manifest_duplicates(
 
 def _manifest_storage_anchor(manifest_path: str | Path | None, root: Path | None) -> Path | None:
     """When a manifest lives under <repo>/pilothify-out/manifest.json and root
-    is a subfolder of <repo>, stored relative keys are anchored to <repo> (#3785)."""
+    is a subfolder of <repo>, stored relative keys are anchored to <repo>."""
     if root is None or not manifest_path:
         return root
     try:
@@ -2718,7 +2718,7 @@ def load_manifest(
     to :func:`save_manifest`) remains readable.
 
     Keys are NFC-normalized on load so a manifest written under one Unicode
-    form still matches a scan that yields the other (#2221).
+    form still matches a scan that yields the other.
     """
     try:
         raw = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
@@ -2762,7 +2762,7 @@ def _previous_checkout_absolute_keys(
     storage_root: Path | None,
     relative_keys: set[str],
 ) -> set[str]:
-    """Absolute keys that still name a previous checkout (#3581).
+    """Absolute keys that still name a previous checkout.
 
     A key is a candidate only when :func:`_to_relative_for_storage` keeps it
     absolute against ``storage_root`` (a sibling row that becomes relative,
@@ -2813,11 +2813,11 @@ def save_manifest(
 
     When ``root`` is provided, keys are relativized against it before write
     (forward-slash, posix-style) so the on-disk manifest is portable across
-    machines and checkout locations (#777). Out-of-root entries are written
+    machines and checkout locations. Out-of-root entries are written
     as absolute so they continue to round-trip on the saving machine.
     When ``root`` is None the legacy absolute-keyed format is preserved.
 
-    ``scan_corpus`` (#1908): full-scan callers pass the COMPLETE detect
+    ``scan_corpus``: full-scan callers pass the COMPLETE detect
     corpus (absolute paths) so seeded rows for in-root files that are still
     alive on disk but no longer part of the scan (newly excluded via
     .pilothifyignore/.gitignore/--exclude) are dropped instead of surviving
@@ -2826,12 +2826,12 @@ def save_manifest(
     filtered set would erase rows the filter merely omitted (failed chunks,
     --code-only doc rows). When this argument is set, two or more absolute
     keys that share a directory prefix and match relative keys this save writes
-    are a previous checkout and are dropped (#3581). A single include row stays.
-    Callers saving a SUBSET of files (changed_paths hooks, skill runbooks, #917)
+    are a previous checkout and are dropped. A single include row stays.
+    Callers saving a SUBSET of files (changed_paths hooks, skill runbooks)
     must leave this None so their untouched rows, including out-of-root rows,
     are preserved.
 
-    ``clear_semantic`` (#1948): files that were dispatched this run but
+    ``clear_semantic``: files that were dispatched this run but
     produced no stamped output (e.g. the LLM omitted their chunk on a
     --force re-run) are absent from ``files``, so the seed loop below would
     otherwise copy their prior semantic_hash verbatim — masking the omission
@@ -2839,13 +2839,13 @@ def save_manifest(
     Pass the set of such files (any path form ``scan_corpus`` accepts) to
     force their seeded semantic_hash to "" instead of inheriting it.
 
-    ``clear_ast`` (#2543): same idea for AST failures (missing optional extra,
+    ``clear_ast``: same idea for AST failures (missing optional extra,
     zero-node anomalous extract). Blanks BOTH ``ast_hash`` and
     ``semantic_hash`` on the seeded row so either detect_incremental kind
     re-queues the file after the failure is fixed, without deleting
     pilothify-out/.
 
-    ``ast_empty`` (#2879): code files the AST extractor declined by design this
+    ``ast_empty``: code files the AST extractor declined by design this
     run (data JSON, etc.) — stamped as up-to-date yet contributing zero nodes.
     Marks their row ``ast_empty: true`` so the #2543 heal can tell an intentional
     empty from a poisoned stamp and stop re-queuing them. Preserved across
@@ -2857,7 +2857,7 @@ def save_manifest(
     existing = load_manifest(manifest_path, root=root)
 
     # Index both raw and NFC forms so scan/clear membership survives the
-    # same NFC/NFD mismatch that breaks manifest lookups (#2221).
+    # same NFC/NFD mismatch that breaks manifest lookups.
     def _path_index(paths: set[str] | list[str] | None) -> set[str] | None:
         if paths is None:
             return None
@@ -2945,16 +2945,16 @@ def save_manifest(
         return None
 
     # Seed from the existing manifest so incremental callers passing a subset
-    # of files don't silently erase entries for untouched files (#917).
+    # of files don't silently erase entries for untouched files.
     # Prune entries whose file no longer exists on disk — those are genuine
     # deletions that detect_incremental() should treat as gone. When the
     # caller supplied the full scan corpus, additionally prune in-root rows
     # the scan no longer covers: those files were excluded, not deleted, and
-    # keeping the row makes them look deleted on every future run (#1908).
+    # keeping the row makes them look deleted on every future run.
     all_files = [f for file_list in files.values() for f in file_list]
     storage_root = _manifest_storage_anchor(manifest_path, root) if root is not None else None
     # A subset save omits scan_corpus and must keep every live row it was not
-    # given (#917), including an include row and a previous checkout. The
+    # given, including an include row and a previous checkout. The
     # checkout drop runs only on a full scan.
     stale_checkout: set[str] = set()
     if scan_set is not None and storage_root is not None:
@@ -2977,18 +2977,18 @@ def save_manifest(
         except OSError:
             continue
         if f in stale_checkout:
-            continue  # previous checkout copied with pilothify-out (#3581)
+            continue  # previous checkout copied with pilothify-out
         if scan_set is not None and not _in_scan(f) and _in_root(f):
-            continue  # excluded-but-alive: drop the stale row (#1908)
+            continue  # excluded-but-alive: drop the stale row
         if clear_ast_set is not None and _in_clear_ast(f):
-            # AST failure this run (missing extra / zero nodes, #2543): blank
+            # AST failure this run (missing extra / zero nodes): blank
             # both hashes so either detect_incremental kind re-queues. A genuine
             # failure is not an intentional empty, so drop any stale marker too.
             normalised = {k: v for k, v in normalised.items() if k != "ast_empty"}
             normalised = {**normalised, "ast_hash": "", "semantic_hash": ""}
         elif clear_set is not None and _in_clear(f):
             # Dispatched-but-omitted this run: don't inherit the stale
-            # semantic_hash, or detect_incremental would call it unchanged (#1948).
+            # semantic_hash, or detect_incremental would call it unchanged.
             normalised = {**normalised, "semantic_hash": ""}
         manifest[f] = normalised
 
@@ -3042,7 +3042,7 @@ def save_manifest(
         if current_lang is not None:
             # No override keeps legacy rows unchanged.
             entry["language"] = current_lang
-        # Intentional-empty marker (#2879): set when the extractor declined the
+        # Intentional-empty marker: set when the extractor declined the
         # file this run; otherwise inherited across an unchanged incremental the
         # same way ast_hash is, and dropped once the file produces nodes.
         if _in_ast_empty(f):
@@ -3057,7 +3057,7 @@ def save_manifest(
     else:
         manifest = _collapse_manifest_duplicates(manifest.items(), _nfc)
 
-    # Avoid rewriting manifest.json when the serialized payload is identical (#2838).
+    # Avoid rewriting manifest.json when the serialized payload is identical.
     manifest_p = Path(manifest_path)
     if manifest_p.is_file():
         try:
@@ -3099,7 +3099,7 @@ def _mtime_may_hide_a_rewrite(current_mtime: float, stored: dict) -> bool:
     coarse = float(current_mtime).is_integer()
     window = _MTIME_COARSE_S if coarse else _MTIME_SUBSECOND_S
     if delta < 0:
-        # The row was stamped a hair BEFORE the mtime it describes (#5036). That
+        # The row was stamped a hair BEFORE the mtime it describes. That
         # is not "the file is newer": the caller only gets here when the stored
         # and current mtime are equal, and ``seen`` comes from time.time() while
         # mtime comes from the filesystem, so either clock can come out a few
@@ -3127,13 +3127,13 @@ def classify_manifest_files(
 
     Factored out so the ``pilothify update`` no-change gate in
     :func:`pilothify.watch._rebuild_code` reaches the same verdict from an
-    already-computed ``detect()`` result instead of paying for a second scan
-    (#4740). ``file_buckets`` is not required to come from ``detect()["files"]``:
+    already-computed ``detect()`` result instead of paying for a second scan.
+    ``file_buckets`` is not required to come from ``detect()["files"]``:
     the gate passes a synthetic bucket holding the JS/TS resolution inputs that
     the manifest stamps but the scan skips.
 
     ``unstamped_is_changed=False`` is for that gate. A file with no row (or a row
-    whose hash was blanked after a failed extraction, #2543) is then treated as
+    whose hash was blanked after a failed extraction) is then treated as
     unchanged: it contributed no nodes, so re-extraction cannot change the graph,
     and only the gate's own file-set digest can tell "same file, still failing"
     from "new file". The incremental path keeps the default, where such a file is
@@ -3144,7 +3144,7 @@ def classify_manifest_files(
 
     for ftype, file_list in file_buckets.items():
         for f in file_list:
-            # Manifest keys are NFC; scan paths may arrive NFD (#2221).
+            # Manifest keys are NFC; scan paths may arrive NFD.
             stored = manifest.get(_nfc(f))
             try:
                 current_mtime = os.stat(_os_path(Path(f))).st_mtime
@@ -3155,7 +3155,7 @@ def classify_manifest_files(
             # Compare with `!=` so backwards mtime motion (git checkout of an
             # older commit, tarball restore, rsync --times) still triggers a
             # re-extract; the previous `>` silently kept the stale cache and
-            # the graph drifted from disk (#1859). No stored hash means we
+            # the graph drifted from disk. No stored hash means we
             # cannot verify content — any mtime delta forces a re-extract,
             # and the next save promotes the entry into the dict schema.
             # A language change invalidates even identical bytes and legacy rows.
@@ -3177,7 +3177,7 @@ def classify_manifest_files(
                     changed = unstamped_is_changed
                 else:
                     stored_mtime = stored.get("mtime")
-                    # Schema-drift guard (#1163): tolerate a nested {mtime: ...}
+                    # Schema-drift guard: tolerate a nested {mtime: ...}
                     # dict or any non-numeric value without crashing.
                     if isinstance(stored_mtime, dict):
                         stored_mtime = stored_mtime.get("mtime")
@@ -3217,12 +3217,12 @@ def classify_manifest_deletions(
 
     A row whose file is gone from DISK is a genuine deletion (its cached nodes
     are ghosts); a row whose file still exists but is out of the current scan was
-    EXCLUDED by a changed ignore rule and must not be reported as deleted
-    (#1908). Mirrors the watch-side excluded-vs-deleted distinction (#1795).
+    EXCLUDED by a changed ignore rule and must not be reported as deleted.
+    Mirrors the watch-side excluded-vs-deleted distinction.
 
     ``scanned`` must name every row the caller expects to see, including sources
     that carry manifest rows without being part of the scan corpus
-    (``detect()["resolution_inputs"]``, #4740), or those rows read as excluded on
+    (``detect()["resolution_inputs"]``), or those rows read as excluded on
     every run.
     """
     try:
@@ -3299,7 +3299,7 @@ def detect_incremental(
     it, an incremental run with a ``--out`` destination outside the scan root
     falls back to anchoring the cache at the scan root itself, leaking
     ``pilothify-out/cache/stat-index.json`` there even though the fresh-scan
-    path stays clean (#3847).
+    path stays clean.
     """
     full = detect(
         root,
@@ -3309,7 +3309,7 @@ def detect_incremental(
         gitignore=gitignore,
         cache_root=cache_root,
     )
-    # Pass ``root`` so a manifest written with relative keys (post-#777) is
+    # Pass ``root`` so a manifest written with relative keys (post-) is
     # re-anchored to the absolute form the rest of this function compares
     # against. Legacy absolute-keyed manifests pass through unchanged.
     manifest = load_manifest(manifest_path, root=root)
@@ -3326,15 +3326,15 @@ def detect_incremental(
 
     new_files, unchanged_files = classify_manifest_files(full["files"], manifest, kind=kind)
 
-    # Manifest rows that left the corpus, split by disk existence (#1908):
+    # Manifest rows that left the corpus, split by disk existence:
     # a row whose file is gone from DISK is a genuine deletion (its cached
     # nodes are ghosts); a row whose file still exists but is out of the
     # current scan was EXCLUDED (ignore rules / --exclude changed) and must
     # not be reported as deleted. Mirrors the watch-side excluded-vs-deleted
-    # distinction (#1795). Resolution inputs carry manifest rows while being
+    # distinction. Resolution inputs carry manifest rows while being
     # deliberately kept out of detect()'s corpus, so they are named here too;
     # without that they would read as rows that left the scan on every run
-    # (#4740).
+    #.
     deleted_files, excluded_files = classify_manifest_deletions(
         manifest,
         [

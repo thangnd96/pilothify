@@ -1,4 +1,4 @@
-"""Kotlin and Java ``calls`` edges that were missing or wrong (#4935).
+"""Kotlin and Java ``calls`` edges that were missing or wrong.
 
 Three independent causes, one test group each:
 
@@ -7,7 +7,7 @@ Three independent causes, one test group each:
   resolver counted list entries instead of distinct ids and read one node as an
   ambiguous match.
 * ``init`` blocks. Kotlin's ``anonymous_initializer`` was never walked, so its
-  calls had no source to attach to. Property initializers (#2565) already feed
+  calls had no source to attach to. Property initializers already feed
   the same walker, so ``init`` follows them.
 * Inherited external methods. A bare ``getString(1)`` in a class that extends
   an out-of-repo class bound to the only ``getString`` in the corpus, a method

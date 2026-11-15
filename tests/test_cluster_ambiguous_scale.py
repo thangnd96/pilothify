@@ -81,7 +81,7 @@ def test_scale_zero_still_partitions(monkeypatch):
 
 
 def test_scale_one_leaves_weights_intact(monkeypatch):
-    """scale=1.0 is the escape hatch (pre-#4199 behavior). The copy-and-
+    """scale=1.0 is the escape hatch (pre- behavior). The copy-and-
     rescale step must be a no-op path when scale is exactly 1.0."""
     monkeypatch.delenv("PILOTHIFY_AMBIGUOUS_SCALE", raising=False)
     G = _two_cliques_joined_by_ambiguous()

@@ -1,4 +1,4 @@
-"""A node label can never break out of the embedded <script> block (#4124).
+"""A node label can never break out of the embedded <script> block.
 
 Node data is serialized to JSON and embedded inside a <script> element. Escaping
 only `</` is not enough: an unclosed `<!--` in one label followed by a later

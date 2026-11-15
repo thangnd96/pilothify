@@ -11,7 +11,7 @@ def _portable_root_label(root: str) -> str:
     GRAPH_REPORT.md is a tracked artifact in practice, so its header must not
     bake the generator host's absolute path into the file: the same graph would
     otherwise produce different bytes on different machines and leak the build
-    machine's directory layout into git history (#2628, same class as #2598).
+    machine's directory layout into git history.
 
     Taking the basename strips any leading absolute path without touching the
     filesystem, and makes `pilothify update .`, `pilothify update ./proj`, and
@@ -152,7 +152,7 @@ def generate(
             f"- {detection_result['total_files']} files · ~{detection_result['total_words']:,} words",
             "- Verdict: corpus is large enough that graph structure adds value.",
         ]
-        # #3511: files detect() saw but could not classify (no supported
+        # files detect() saw but could not classify (no supported
         # extension/shebang) were counted nowhere -- a corpus that is mostly
         # an unsupported language reported the same "well covered" verdict as
         # one that was actually extracted. Surface the count and its biggest
@@ -167,7 +167,7 @@ def generate(
                 f"- Unclassified: {len(unclassified)} file(s) not represented in "
                 f"the graph (top: {top})"
             )
-        # #2942: the plain count above reads as routine (lockfiles, binaries)
+        # the plain count above reads as routine (lockfiles, binaries)
         # even when it is most of the corpus. Say plainly, right next to the
         # "large enough to be worth graphing" verdict, that this graph may
         # look complete while actually missing a structurally significant
@@ -181,13 +181,13 @@ def generate(
     def _real_node(n) -> bool:
         # The one definition of "real" (structural, not file/concept/
         # rationale) every figure this function prints about itself must
-        # agree on (#3148) -- file nodes are structural scaffolding, concept
+        # agree on -- file nodes are structural scaffolding, concept
         # nodes are semantic-layer entities, and rationale nodes are
         # docstring fragments the LLM extracted for context, none of which
         # are a code declaration a reader would recognize as a "node" in
         # this list. A community-listing loop that filtered only file nodes
         # let rationale/concept content leak into "Nodes (N): ..." as if it
-        # were a real declaration, and inflated N by counting it (#3794).
+        # were a real declaration, and inflated N by counting it.
         return (
             not _is_file_node(G, n)
             and not _is_concept_node(G, n)
@@ -199,16 +199,16 @@ def generate(
 
     non_empty = {cid: nodes for cid, nodes in communities.items()
                  if any(_real_node(n) for n in nodes)}
-    # One predicate for every figure the report prints about itself (#3148):
+    # One predicate for every figure the report prints about itself:
     # "thin" is real < min_community_size (ZERO real nodes included), and
     # "shown" is what the render loop below actually renders (real >=
     # min_community_size) - previously shown was total-thin, which also
     # counted communities with ZERO real nodes that the loop skips,
-    # overstating the count (#2129's residual). A subsequent `0 <` guard on
+    # overstating the count ('s residual). A subsequent `0 <` guard on
     # "thin" fixed that overcount but introduced the opposite gap: an
     # all-file-node community (real == 0) is skipped by the SAME render loop
     # yet was excluded from "thin" too, so it went uncounted anywhere and
-    # `shown + thin` silently undercounted `len(communities)` (#3548).
+    # `shown + thin` silently undercounted `len(communities)`.
     thin_count_summary = sum(
         1 for nodes in communities.values()
         if _real_count(nodes) < min_community_size
@@ -241,7 +241,7 @@ def generate(
     # are only created by the opt-in `--obsidian` export, and the report is written
     # at build time (before any export runs), so emitting wikilinks by default left
     # every link dangling — polluting an Obsidian vault's graph view and rendering as
-    # literal brackets everywhere else (#1712). Emit wikilinks only when the caller
+    # literal brackets everywhere else. Emit wikilinks only when the caller
     # signals Obsidian output; otherwise a plain list, which navigates nowhere-to-break.
     if non_empty:
         lines += ["", "## Community Hubs (Navigation)"]
@@ -283,7 +283,7 @@ def generate(
     # Circular imports surfaced from file-level dependency graph. Only meaningful
     # for code — a documents-only corpus has no imports, so the section is pure
     # noise there ("None detected" on every run). Emit it only when the graph
-    # actually contains code (#1657).
+    # actually contains code.
     _has_code = any(
         d.get("file_type") == "code" for _, d in G.nodes(data=True)
     ) or any(
@@ -320,7 +320,7 @@ def generate(
         label = community_labels.get(cid, f"Community {cid}")
         score = cohesion_scores.get(cid, 0.0)
         # Filter file/concept/rationale nodes from display - they're
-        # structural noise or docstring prose, not a code declaration (#3794).
+        # structural noise or docstring prose, not a code declaration.
         real_nodes = [n for n in nodes if _real_node(n)]
         if not real_nodes:
             continue
@@ -351,11 +351,11 @@ def generate(
         n for n in G.nodes()
         if G.degree(n) <= 1 and _real_node(n) and not _is_contains_only_ast_node(G, n)
     ]
-    # Same threshold the Summary and Communities headers used (#3148): this
+    # Same threshold the Summary and Communities headers used: this
     # was a hardcoded 3, so with --min-community-size anything else the count
     # here disagreed with the label text beside it, which already printed
     # min_community_size. No `0 <` guard, matching thin_count_summary above
-    # (#3548): an all-file-node community is skipped by the same render loop
+    # an all-file-node community is skipped by the same render loop
     # as a genuinely thin one, so it belongs in this count too.
     thin_communities = {
         cid: nodes for cid, nodes in communities.items()
@@ -376,7 +376,7 @@ def generate(
             # "mentioned but never explained further." A code-only graph
             # (--code-only, or any run where semantic extraction never
             # happened) has no such nodes at all, so offering it as a live
-            # possibility on every report is misleading (#3801).
+            # possibility on every report is misleading.
             has_semantic_layer = any(
                 G.nodes[n].get("file_type") in ("document", "paper", "image")
                 for n in G.nodes()
@@ -404,7 +404,7 @@ def generate(
 
     if suggested_questions:
         no_signal = len(suggested_questions) == 1 and suggested_questions[0].get("type") == "no_signal"
-        # #4199 — split AMBIGUOUS-tagged questions out of the main list so
+        # split AMBIGUOUS-tagged questions out of the main list so
         # low-confidence hints do not crowd EXTRACTED/INFERRED bridges.
         high_conf = [q for q in suggested_questions if not q.get("low_confidence")]
         low_conf = [q for q in suggested_questions if q.get("low_confidence")]

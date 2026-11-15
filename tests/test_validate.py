@@ -134,7 +134,7 @@ def test_assert_valid_passes_silently():
 
 
 def test_legacy_aliases_valid_after_build_canonicalization():
-    # #2194: build_from_json folds legacy aliases (name->label,
+    # build_from_json folds legacy aliases (name->label,
     # path->source_file, type->relation, confidence_score->confidence) in
     # place BEFORE validation, so an alias-only extraction that fails
     # validation raw is fully schema-valid after canonicalization.

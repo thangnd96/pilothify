@@ -1,4 +1,4 @@
-"""Edge confidence scores in `path`, `explain` and neighbor output (#4882).
+"""Edge confidence scores in `path`, `explain` and neighbor output.
 
 graph.json stores `confidence_score` next to `confidence` (interface dispatch
 writes 0.85 / 0.75 / 0.65 by implementer count), but the text renderers only

@@ -3,7 +3,7 @@
 `routing.Wrap(s.Handle)` and `r.Get("/p", s.Handle)` are how Go registers a handler or a
 callback. The method is not called at that site, so the call walk never saw it and a
 handler reached only through its registration had no caller at all. It is recorded as
-an INFERRED `indirect_call`, like a callback passed by name in Python and JS (#1566),
+an INFERRED `indirect_call`, like a callback passed by name in Python and JS,
 typed through the receiver's declared type the way the member-call resolver types a
 direct call.
 """

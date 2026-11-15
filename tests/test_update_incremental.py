@@ -1,4 +1,4 @@
-"""The incremental path of ``_rebuild_code`` (#4740).
+"""The incremental path of ``_rebuild_code``.
 
 ``pilothify update`` used to re-extract the whole corpus on every run. These tests
 cover the change set it derives from the manifest instead, and the ways that
@@ -344,7 +344,7 @@ def test_cross_file_call_edge_survives_an_incremental_update(
 ) -> None:
     # Only uses.py changes, and its new caller lives there — but the callee is in
     # an untouched file, so the edge can only be rebuilt from the resolution
-    # context (the #2406/#3763 failure mode).
+    # context (the  failure mode).
     assert "uses.py:use() -> a.py:fa()" in _cross_file_calls(built)
 
     _add_caller_of_fa(built)

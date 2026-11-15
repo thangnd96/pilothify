@@ -1,4 +1,4 @@
-"""Tests for `.svelte` extraction (#3928).
+"""Tests for `.svelte` extraction.
 
 A `.svelte` file is markup with one or two `<script>` blocks. Tree-sitter fed
 the whole file produces a top-level ERROR node at line 1 because the template is
@@ -40,7 +40,7 @@ def _import_targets(result: dict, *, relation: str | None = None) -> set[str]:
 
 
 def test_extract_svelte_template_is_not_a_parse_error(tmp_path):
-    """The template is not JS; only `<script>` bodies are parsed (#3928).
+    """The template is not JS; only `<script>` bodies are parsed.
 
     Parsing the whole file reported every component as a syntax error at line 1
     and dropped every symbol declared inside `<script>`.

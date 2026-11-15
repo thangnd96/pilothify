@@ -25,7 +25,7 @@ def test_merge_chunks_skips_chunk_with_path_escape_id(tmp_path, monkeypatch, cap
     good = tmp_path / ".pilothify_chunk_0.json"
     _write(good, {"nodes": [{"id": "pkg.mod.good", "label": "G"}], "edges": [], "hyperedges": []})
     bad = tmp_path / ".pilothify_chunk_1.json"
-    # A node id with a path separator would escape the chunk directory (#825).
+    # A node id with a path separator would escape the chunk directory.
     _write(bad, {"nodes": [{"id": "../../etc/passwd", "label": "B"}], "edges": [], "hyperedges": []})
     out = tmp_path / "merged.json"
 
@@ -95,7 +95,7 @@ def test_merge_chunks_fails_closed_on_unmatched_glob(tmp_path, monkeypatch, caps
 
 def test_merge_chunks_accepts_synonym_file_type(tmp_path, monkeypatch):
     # file_type synonyms (markdown/tool/framework/...) are coerced by build, not
-    # a validation failure — the chunk must merge, not be silently dropped (#840).
+    # a validation failure — the chunk must merge, not be silently dropped.
     c = tmp_path / ".pilothify_chunk_0.json"
     _write(c, {"nodes": [{"id": "pkg.readme", "label": "Readme", "file_type": "markdown"},
                          {"id": "pkg.tool", "label": "Tool", "file_type": "tool"}],

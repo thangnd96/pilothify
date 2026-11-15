@@ -166,7 +166,7 @@ def resolve_ruby_member_calls(
             # A nested/compact declaration labels the node fully qualified
             # (`Billing::Processor`), but its receivers reference the bare last
             # segment (`Processor.new`), so index that too — the unique-match
-            # guard below still bails on genuine collisions (#2302).
+            # guard below still bails on genuine collisions.
             if "::" in clabel:
                 class_def_nids.setdefault(_key(clabel.split("::")[-1]), []).append(src)
         tnode = node_by_id.get(tgt)
@@ -176,7 +176,7 @@ def resolve_ruby_member_calls(
             method_owners.setdefault(tgt, set()).add(src)
     # Also register class/module container nodes that own no `method` edge — a
     # method-less `Class.new(StandardError)` or an empty module — so a constant
-    # receiver still resolves to a real node (#1640/#1634). External base stubs
+    # receiver still resolves to a real node. External base stubs
     # carry an empty source_file, so the `.rb` filter keeps them out.
     for n in all_nodes:
         nid = n.get("id")
@@ -329,7 +329,7 @@ def resolve_ruby_member_calls(
         Matches on the constant path rather than its tail: a class qualifies when its
         own label ends with the referenced segments, so ``Billing::Processor`` still
         finds an ``App::Billing::Processor`` while ``ActiveRecord::Base`` no longer
-        binds to an unrelated ``Thing::Base`` (#3078). A leading ``::`` pins the
+        binds to an unrelated ``Thing::Base``. A leading ``::`` pins the
         reference to top level, so it must match the label whole. Ambiguous, or
         matching nothing in the corpus (the usual case for a framework constant) ->
         no edge, never a guess.
@@ -412,8 +412,8 @@ def resolve_ruby_member_calls(
             matches[0]["confidence"] = "EXTRACTED"
             matches[0]["confidence_score"] = 1.0
 
-    # `include`/`extend`/`prepend <Const>` mixins (#1668): resolve the module
-    # reference lexically, the way Ruby constant lookup works (#2302) — try the
+    # `include`/`extend`/`prepend <Const>` mixins: resolve the module
+    # reference lexically, the way Ruby constant lookup works — try the
     # reference under each enclosing scope of the including class, innermost
     # first, then top level (a leading `::` pins it to top level). A qualified
     # external like `ActiveSupport::Concern` matches no in-corpus path and
@@ -486,7 +486,7 @@ def resolve_ruby_member_calls(
         # receiver's class under the single-owning-class god-node guard.
         receiver = rc.get("receiver")
         # `lstrip(":")` so a top-level-pinned `::Processor.call` is still recognised
-        # as a constant receiver now that the whole path is captured (#3078).
+        # as a constant receiver now that the whole path is captured.
         if receiver and str(receiver).lstrip(":")[:1].isupper():
             recv_raw = str(receiver)
             class_nid = (_class_by_const_path(recv_raw) if "::" in recv_raw

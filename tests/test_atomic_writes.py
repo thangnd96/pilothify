@@ -197,7 +197,7 @@ def test_write_text_atomic_windows_winerror_17_fallback(tmp_path, monkeypatch):
 def test_os_replace_with_fallback_replaces_a_symlink_destination_in_place(tmp_path, monkeypatch):
     """`os.replace` replaces a symlinked destination itself rather than
     following it -- install.py relies on exactly this for managed skill
-    symlinks (#3286). A naive `shutil.copy2(src, dst)` does the opposite when
+    symlinks. A naive `shutil.copy2(src, dst)` does the opposite when
     dst is a symlink: opening it for writing follows the link and overwrites
     its TARGET's content instead. The #3508 fallback must preserve replace's
     semantics, not copy2's, or a Windows quirk that triggers the fallback

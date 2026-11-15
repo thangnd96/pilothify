@@ -1,4 +1,4 @@
-"""Regression tests for atomic `.pilothify_version` stamp writes (#3286)."""
+"""Regression tests for atomic `.pilothify_version` stamp writes."""
 from __future__ import annotations
 
 import os

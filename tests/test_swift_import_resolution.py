@@ -25,7 +25,7 @@ def _import_edges(result: dict) -> list[dict]:
 
 
 def test_swift_import_resolves_to_module_node(tmp_path: Path):
-    # #1327: `import CoreKit` must anchor to a node, or build_from_json prunes
+    # `import CoreKit` must anchor to a node, or build_from_json prunes
     # the edge as a dangling/external reference.
     core = _write(tmp_path / "Sources/CoreKit/CoreKit.swift", "public struct CoreKit {}\n")
     feature = _write(
@@ -44,7 +44,7 @@ def test_swift_import_resolves_to_module_node(tmp_path: Path):
 
 
 def test_swift_same_module_imported_twice_collapses_to_one_node(tmp_path: Path):
-    # #1327: the same module imported from multiple files is ONE module, not N
+    # the same module imported from multiple files is ONE module, not N
     # file-qualified duplicates — collision-disambiguation must exempt modules.
     core = _write(tmp_path / "Sources/CoreKit/CoreKit.swift", "public struct CoreKit {}\n")
     a = _write(
@@ -70,7 +70,7 @@ def test_swift_same_module_imported_twice_collapses_to_one_node(tmp_path: Path):
 
 
 def test_swift_import_edges_survive_build(tmp_path: Path):
-    # #1327: edges must remain after graph assembly, deduped to one module node.
+    # edges must remain after graph assembly, deduped to one module node.
     core = _write(tmp_path / "Sources/CoreKit/CoreKit.swift", "public struct CoreKit {}\n")
     a = _write(tmp_path / "Sources/AKit/AKit.swift", "import CoreKit\n")
     b = _write(tmp_path / "Sources/BKit/BKit.swift", "import CoreKit\n")

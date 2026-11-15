@@ -19,7 +19,7 @@ to the single-owner guard `resolve_pascal_inherited_calls` and
 `resolve_ruby_member_calls` already use: an implementer that itself declares
 more than one method of the same name is ambiguous and is skipped on its own,
 independently of its siblings, unless the overloads pair up one-to-one by
-signature or parameter count (C#, #4584).
+signature or parameter count (C#).
 
 The join is per method rather than per call site, so one edge per implementer
 reconnects every call that reaches the interface method. Confidence is
@@ -30,7 +30,7 @@ forced, the source text just never names it — 0.75 for two, and a 0.65 floor
 precision the rubric does not have.
 
 The mechanism knows no language. Each language registers a thin wrapper
-(`pilothify.csharp_dispatch` for C# interfaces, #3003) that fixes the file
+(`pilothify.csharp_dispatch` for C# interfaces) that fixes the file
 suffixes both ends of a pair must be declared in: `implements` is resolved by
 name, so a same-named type from another language is a collision, not an
 implementation. A language whose interfaces have the same shape (Swift
@@ -66,7 +66,7 @@ def declared_in(node: dict | None, suffixes: tuple[str, ...]) -> bool:
     a dangling reference carries no members worth dispatching to, and a
     cross-language pair is a name collision rather than an implementation. The
     suffix is the effective one, so a `.pilothifyrc` language declaration counts
-    (#2961).
+   .
     """
     if not node:
         return False
@@ -198,7 +198,7 @@ def _overload_pairs(
 ) -> list[tuple[str, str]]:
     """Pair an interface's methods of one name with an implementer's.
 
-    One of each pairs up as always. Otherwise (C# overloads, #4584) each
+    One of each pairs up as always. Otherwise (C# overloads) each
     interface method pairs with the one implementer method of the same declared
     signature, else of the same parameter count among those no signature
     claimed; no unique match, no edge. An implementer method takes at most one

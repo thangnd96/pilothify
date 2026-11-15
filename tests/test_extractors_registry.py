@@ -1,6 +1,6 @@
-"""Facade / registry identity guards for the per-language extractor split (#1212).
+"""Facade / registry identity guards for the per-language extractor split.
 
-The ``extract.py`` decomposition (#1737) moved each language extractor into its
+The ``extract.py`` decomposition moved each language extractor into its
 own ``pilothify/extractors/<lang>.py`` module, kept a verbatim re-export in
 ``pilothify.extract`` (the facade every existing importer uses), and seeded a
 ``pilothify.extractors.LANGUAGE_EXTRACTORS`` registry. Three things must stay

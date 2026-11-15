@@ -1,7 +1,6 @@
 """`_collision_aware` picks the same caller as before, without a scan per use.
 
-The pass that credits a call inside ``_main`` to ``_main`` rather than ``main``
-(#4994) scanned every node id for every resolved use fact, and on a hit
+The pass that credits a call inside ``_main`` to ``_main`` rather than ``main`` scanned every node id for every resolved use fact, and on a hit
 scanned every node again: O(uses x nodes). That alone ran for 50 minutes on
 vscode without finishing. It now groups the salted ids by their plain id once.
 These tests pin the answers to a copy of the old loop and check that the

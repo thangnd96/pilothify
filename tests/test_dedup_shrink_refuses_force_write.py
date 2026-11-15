@@ -1,4 +1,4 @@
-"""A complete `pilothify extract` must not force-write a shrink that dedup caused (#3774).
+"""A complete `pilothify extract` must not force-write a shrink that dedup caused.
 
 A full build sets force=True, and to_json then skips the #479 node-count check.
 Dedup can merge a same-file duplicate and replace graph.json with no message.
@@ -171,7 +171,7 @@ def test_a_deleted_file_still_writes(monkeypatch, tmp_path):
 
 def test_to_json_does_not_store_shrink_accounting(tmp_path):
     """build() records the counters on the graph object. to_json must not
-    write them. Callers other than extract follow that path (#3774)."""
+    write them. Callers other than extract follow that path."""
     from pilothify.build import build
     from pilothify.export import to_json
 

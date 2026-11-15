@@ -1,4 +1,4 @@
-"""Fields declared on a superclass type receivers in a subclass (#3151).
+"""Fields declared on a superclass type receivers in a subclass.
 
 The `field -> TypeName` tables that type a `this.<field>` / `[self.<field> …]`
 receiver were looked up by the declaring class only, with no walk up the

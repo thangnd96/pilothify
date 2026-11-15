@@ -274,7 +274,7 @@ def test_ts_export_star_from_index_resolves_imported_symbol_to_origin(tmp_path: 
 
 
 def test_ts_export_star_skips_same_named_interface_method_and_binds_the_function(tmp_path: Path):
-    # #3436: `export *` can only forward top-level bindings. When the first
+    # `export *` can only forward top-level bindings. When the first
     # star target declares an interface with a METHOD of the same bare name as a
     # function exported by a later star target, the imported name must bind to
     # the function, and the call must land on it -- not on the method node.
@@ -1330,7 +1330,7 @@ def test_ts_type_relationships_and_contexts(tmp_path: Path):
 def test_tsconfig_alias_resolves_second_target_when_first_missing(tmp_path: Path):
     # tsc tries each `paths` target in declared order until one resolves on disk.
     # The file lives only at the SECOND target, so keeping only the first entry
-    # (#1531) dropped the edge.
+    # dropped the edge.
     _write(
         tmp_path / "tsconfig.json",
         json.dumps({"compilerOptions": {"baseUrl": ".", "paths": {"$lib/*": ["generated/*", "src/lib/*"]}}}),
@@ -1386,7 +1386,7 @@ def test_tsconfig_alias_none_exist_creates_no_false_edge(tmp_path: Path):
 
 
 def test_unresolved_relative_import_uses_stable_ref_target(tmp_path: Path):
-    """A missing local module must not leak the checkout path into graph IDs (#2457)."""
+    """A missing local module must not leak the checkout path into graph IDs."""
     importer = _write(
         tmp_path / "src/consumer.ts",
         "import { getFoo } from './generated/api'\n"
@@ -1413,7 +1413,7 @@ def test_unresolved_relative_require_uses_stable_ref_target(tmp_path: Path):
     """CommonJS require() of a missing local module took a separate path from
     static imports and still minted its target, and every destructured symbol
     under it, from the attempted absolute path: the checkout location and the
-    OS username ended up in node ids (#2457 residual)."""
+    OS username ended up in node ids (residual)."""
     importer = _write(
         tmp_path / "src/consumer.js",
         "const { loadFoundation } = require('./generated/api');\n"
@@ -1611,7 +1611,7 @@ def test_alias_import_edge_resolves_with_relative_input_paths(tmp_path, monkeypa
     # CRUCIAL: pass RELATIVE input paths (chdir into the project). Alias imports
     # resolve specifiers through .resolve(), so the import-target id is keyed off
     # the ABSOLUTE path; with relative inputs the id_remap (keyed on the input
-    # form) never rewrote it -> orphan -> dropped edge (#1529). Absolute/tmp_path
+    # form) never rewrote it -> orphan -> dropped edge. Absolute/tmp_path
     # inputs hide the bug because the two forms coincide.
     _write(
         tmp_path / "tsconfig.json",
@@ -1830,7 +1830,7 @@ def test_alias_import_does_not_remap_an_owned_symbol_id(tmp_path, monkeypatch):
     target_symbol = _make_id(_file_stem(target), "formatDate")
     mirror_symbol = _make_id(_file_stem(mirror), "formatDate")
     # as_posix, not str: source_file is canonical POSIX in extract() output
-    # (#2625), while str(Path(...)) is the native spelling and so only matched
+    # while str(Path(...)) is the native spelling and so only matched
     # on POSIX hosts.
     assert symbols[target.as_posix()] == target_symbol
     assert symbols[mirror.as_posix()] == mirror_symbol
@@ -1973,7 +1973,7 @@ def test_no_symbol_edge_target_contains_checkout_prefix(tmp_path, monkeypatch):
 def test_ambiguous_barrel_reexport_chain_does_not_guess(tmp_path, monkeypatch):
     """When a barrel re-exports the SAME local name from two different modules,
     the barrel-chain resolver must NOT collapse an importer's edge onto one of
-    them by last-write-wins (#2034 follow-up). With the ambiguity guard the chain
+    them by last-write-wins. With the ambiguity guard the chain
     leaves the import unresolved at the barrel symbol (dangling, dropped at build)
     rather than fabricating a specific target; without it the chain repoints to
     whichever module was learned last."""
@@ -2298,7 +2298,7 @@ def test_ts_paths_alias_behind_solution_file_references_resolves(tmp_path: Path)
     (`files: []` + `references`) with no `paths` of its own; the alias lives in
     the referenced project config. The loader followed `extends` but not
     `references`, so it found the solution file, saw no paths, and every alias
-    import silently got no edge (#3745). Following references resolves it."""
+    import silently got no edge. Following references resolves it."""
     _write(
         tmp_path / "tsconfig.json",
         json.dumps({"files": [], "references": [{"path": "./tsconfig.app.json"}]}),
@@ -2321,7 +2321,7 @@ def test_ts_paths_alias_behind_solution_file_references_resolves(tmp_path: Path)
 def test_ts_paths_alias_behind_directory_reference_resolves(tmp_path: Path):
     """A `references` entry may name a directory rather than a config file
     (`{path: "./packages/app"}`), which `tsc -b` resolves to that directory's
-    tsconfig.json. The alias declared there must still be reached (#3745)."""
+    tsconfig.json. The alias declared there must still be reached."""
     _write(
         tmp_path / "tsconfig.json",
         json.dumps({"files": [], "references": [{"path": "./packages/app"}]}),

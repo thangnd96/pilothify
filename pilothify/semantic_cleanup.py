@@ -36,7 +36,7 @@ VALID_SEMANTIC_FILE_TYPES = frozenset({"code", "document", "paper", "image", "ra
 # Unicode word characters are allowed: build's normalize_id preserves CJK /
 # Cyrillic / accented-Latin identifiers, so an ASCII-only gate would reject valid
 # ids that the loader accepts. The explicit path-separator / ".." check in
-# _validate_semantic_id still blocks directory escape (#825); "/", "\\", spaces,
+# _validate_semantic_id still blocks directory escape; "/", "\\", spaces,
 # "@", "#" etc. are not \w and remain rejected.
 _SEMANTIC_ID_RE = re.compile(r"^[\w.:-]+$")
 
@@ -84,7 +84,7 @@ def validate_semantic_fragment(fragment: object) -> list[str]:
         # file_type is intentionally NOT rejected here. It carries no security
         # risk (it can't exhaust memory or escape a directory), and
         # build_from_json already coerces every value via _FILE_TYPE_SYNONYMS
-        # (unknown -> "concept", #840). Rejecting a whole chunk over a synonym
+        # (unknown -> "concept"). Rejecting a whole chunk over a synonym
         # like "markdown"/"tool"/"framework" that the loader would happily map is
         # pure data loss, so leave file_type normalization to build.
 
@@ -110,7 +110,7 @@ def validate_semantic_fragment(fragment: object) -> list[str]:
             if not isinstance(he, dict):
                 errors.append(f"hyperedges[{i}] must be an object")
                 continue
-            # Fold alias member keys (members/node_ids) onto `nodes` (#1561) so
+            # Fold alias member keys (members/node_ids) onto `nodes` so
             # an alias-keyed hyperedge isn't rejected here for "nodes must be a
             # list" before it ever reaches build's normalization.
             _normalize_hyperedge_members(he)
@@ -278,7 +278,7 @@ def sanitize_semantic_fragment(fragment: dict) -> dict:
     for he in hyperedges:
         if not isinstance(he, dict):
             continue
-        # Fold alias member keys (members/node_ids) onto `nodes` (#1561) so an
+        # Fold alias member keys (members/node_ids) onto `nodes` so an
         # alias-keyed hyperedge isn't silently dropped below for a missing
         # `nodes` list before build can canonicalize it.
         _normalize_hyperedge_members(he)

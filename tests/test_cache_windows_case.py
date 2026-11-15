@@ -1,4 +1,4 @@
-"""Windows path normalization must not lowercase the file it opens (#4925).
+"""Windows path normalization must not lowercase the file it opens.
 
 The failure needs Windows path semantics and a case-sensitive filesystem.  A
 Linux host with a case-sensitive temp directory can exercise that combination

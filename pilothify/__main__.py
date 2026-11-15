@@ -24,7 +24,7 @@ except Exception:
 # Output directory — override with PILOTHIFY_OUT env var for worktrees or shared-output setups.
 # Accepts a relative name ("pilothify-out-feature") or an absolute path ("/shared/pilothify-out").
 # Defined once in pilothify.paths so the security/callflow path guards honour the
-# same override (#1423).
+# same override.
 from pilothify.paths import PILOTHIFY_OUT as _PILOTHIFY_OUT
 
 # Install/uninstall subsystem moved to pilothify/install.py; re-exported here so
@@ -157,7 +157,7 @@ def __getattr__(name: str) -> str:
     # PEP 562: lazily resolve the legacy always-on section constants for external
     # importers (e.g. the install-string tests). In-module code calls _always_on()
     # directly; nothing is read at import time, so a missing block can no longer
-    # brick the CLI on `import pilothify.__main__` (#1121 follow-up).
+    # brick the CLI on `import pilothify.__main__`.
     base = _ALWAYS_ON_ALIASES.get(name)
     if base is not None:
         return _always_on(base)
@@ -176,7 +176,7 @@ def _check_skill_version(skill_dst: Path, platform_names: "list[str] | None" = N
     ``platform_names`` are the platforms installing into this destination
     (resolved here when not given - the call site passes one positional
     argument only, because tests stub this function with one-arg lambdas), so
-    the warning can name the exact command that refreshes THIS copy (#3144):
+    the warning can name the exact command that refreshes THIS copy:
     a plain `pilothify install` only refreshes the detected platform, and a
     stale marker at another platform's destination made the warning permanent
     - the user followed the advice, the warning stayed, and only editing the
@@ -221,7 +221,7 @@ def _check_skill_version(skill_dst: Path, platform_names: "list[str] | None" = N
             # The skill on disk is NEWER than the running package. `pilothify install`
             # writes the package's OWN (older) bundled skill and re-stamps the version,
             # so following the old "run install" advice would silently DOWNGRADE the
-            # skill. The real fix is to upgrade the package (#1568). Common for a stale
+            # skill. The real fix is to upgrade the package. Common for a stale
             # `uv tool` CLI, or a contributor whose dev checkout stamped a newer skill.
             print(
                 f"  warning: skill is from pilothify {installed}, but the package is "
@@ -265,7 +265,7 @@ def _version_tuple(version: str) -> tuple[int, ...]:
 
 
 def _refresh_stale_skills() -> None:
-    """Refresh user-scope skills left behind by a package upgrade (#1805).
+    """Refresh user-scope skills left behind by a package upgrade.
 
     Upgrading the package (``uv tool upgrade pilothify``, ``pip install -U``)
     does not touch the installed skill copies, and a plain ``pilothify install``
@@ -280,7 +280,7 @@ def _refresh_stale_skills() -> None:
     nothing is installed that was not there before. Left alone, so the
     warning still fires for them:
 
-    * a stamp NEWER than the package - installing would downgrade it (#1568);
+    * a stamp NEWER than the package - installing would downgrade it;
     * a directory written by more than one installer (gemini + agents on
       Windows, copilot + ``pilothify vscode install``) - the stamp does not
       record which variant is there, and guessing would swap it.
@@ -288,8 +288,8 @@ def _refresh_stale_skills() -> None:
     Directories are grouped by their resolved path, so two platforms sharing
     one directory through a symlink count as shared too.
 
-    A locally edited SKILL.md is kept as ``SKILL.md.bak`` by _copy_skill_file
-    (#3144). Output goes to stderr so piped stdout (``--json``, the MCP stdio
+    A locally edited SKILL.md is kept as ``SKILL.md.bak`` by _copy_skill_file.
+    Output goes to stderr so piped stdout (``--json``, the MCP stdio
     server) stays clean. Set ``PILOTHIFY_NO_AUTO_REFRESH=1`` to opt out, e.g.
     for pinned or centrally managed skill directories.
     """
@@ -408,7 +408,7 @@ def _opencode_loads_current_plugin() -> bool:
 
 
 def _refresh_v1_opencode_plugins() -> None:
-    """Rewrite OpenCode plugins an older release left behind (#3554, #3732).
+    """Rewrite OpenCode plugins an older release left behind.
 
     Releases up to 0.9.74 wrote a plugin only OpenCode 1 can load, and an
     opencode.json entry OpenCode 2 fails on. Upgrading OpenCode to 2 turns both
@@ -524,7 +524,7 @@ def _refresh_v1_opencode_plugins() -> None:
 # `pilothify hook-guard` subcommand (see _run_hook_guard). The previous hooks
 # inlined POSIX bash (case/esac, [ -f ], single-quoted echo) which Windows
 # cmd.exe/PowerShell cannot parse, so on Windows the hook failed and the nudge
-# silently vanished — users had to invoke /pilothify by hand (#522). Moving the
+# silently vanished — users had to invoke /pilothify by hand. Moving the
 # logic into a Python subcommand invoked via an absolute exe path makes the hook
 # parse identically under sh, cmd.exe and PowerShell. Claude Code accepts
 # additionalContext on PreToolUse (Codex Desktop does not — that path stays a
@@ -571,7 +571,7 @@ def _refresh_v1_opencode_plugins() -> None:
 # when a graph exists. Emitted by `pilothify hook-guard gemini`. The old hook was a
 # `python -c "..."` one-liner that depended on a bare `python` on PATH (often
 # `python`/`py` or absent on Windows) and embedded backticks + escaped quotes that
-# Windows PowerShell mangles (#522 follow-up); the subcommand form has no such
+# Windows PowerShell mangles; the subcommand form has no such
 # dependency and parses under every shell.
 
 
@@ -738,7 +738,7 @@ _HASHSEED_PINNED_COMMANDS = frozenset({"update", "extract", "cluster-only", "lab
 
 def _pin_hash_seed_if_needed() -> None:
     """Re-exec with PYTHONHASHSEED=0 for commands whose output must be
-    deterministic run-to-run (#3641).
+    deterministic run-to-run.
 
     PYTHONHASHSEED is read once at interpreter startup; setting it on
     os.environ from inside an already-running process has no effect on that
@@ -777,7 +777,7 @@ def _pin_hash_seed_if_needed() -> None:
         # a `python -m pilothify` invocation, but a uv/pip/pipx console-script
         # launcher on Windows is a native .exe with no .py content, so
         # `python.exe <that .exe path>` fails outright with "can't open
-        # file" -- every command this function touches (#3779).
+        # file" -- every command this function touches.
         _reexec(
             [sys.executable, "-m", "pilothify", *sys.argv[1:]],
             {**os.environ, "PYTHONHASHSEED": "0"},
@@ -793,7 +793,7 @@ def _reexec(argv: list[str], env: dict[str, str], windows: bool | None = None) -
     the process: CPython spawns a new one and the calling process exits at
     once, so the caller sees the command "finish" while the work continues
     detached, and the exiting parent intermittently dies with an access
-    violation (exit 139 / 0xC0000005) instead (#3799). There the child is
+    violation (exit 139 / 0xC0000005) instead. There the child is
     run with subprocess and waited for, and its exit status is propagated.
     """
     if windows is None:
@@ -810,7 +810,7 @@ def main() -> None:
     """Console entry point. Wraps the CLI so that when a downstream consumer closes
     stdout early, pilothify treats it as success instead of crashing with an
     unhandled write-to-closed-pipe error and exit 255 — which made CI wrappers and
-    agent harnesses read a successful query as a command failure (#1807)."""
+    agent harnesses read a successful query as a command failure."""
     _pin_hash_seed_if_needed()
     try:
         _run_cli()
@@ -844,7 +844,7 @@ def _run_cli() -> None:
     _silent_cmds = {"install", "uninstall", "hook-check", "hook-guard"}
     _FREE_TEXT_CMDS = {"query", "explain", "path", "save-result", "install", "uninstall"}
     _help_flags = {"-h", "--help", "-?"}
-    # Version and help only report, so they leave installed files alone (#4545).
+    # Version and help only report, so they leave installed files alone.
     _informational = (
         len(sys.argv) < 2
         or sys.argv[1] in {"-v", "--version", "version", *_help_flags}
@@ -853,7 +853,7 @@ def _run_cli() -> None:
     if not any(arg in _silent_cmds for arg in sys.argv):
         # A package upgrade leaves every installed skill at the old version;
         # refresh them first, so the check below only fires for copies the
-        # refresh could not or must not touch (#1805).
+        # refresh could not or must not touch.
         if not _informational:
             _refresh_stale_skills()
             _refresh_v1_opencode_plugins()
@@ -874,7 +874,7 @@ def _run_cli() -> None:
         print("Commands:")
         # Derive the list from the same source as `pilothify install` usage
         # (_print_install_usage) so the two can never drift apart, rather than
-        # hand-maintaining it (amp, copilot, antigravity-windows had been missed, #4655).
+        # hand-maintaining it (amp, copilot, antigravity-windows had been missed).
         _platform_values = "|".join([*_PLATFORM_CONFIG, "gemini", "cursor"])
         print(f"  install [--platform P]  copy skill to platform config dir ({_platform_values})")
         print("  uninstall               remove pilothify from all detected platforms in one shot")
@@ -1102,7 +1102,7 @@ def _run_cli() -> None:
 
     # Universal help guard: -h/--help/-? anywhere after the command shows help
     # and stops — prevents flags from silently triggering destructive subcommands
-    # (e.g. "cursor install --help" was silently installing into Cursor, #821).
+    # (e.g. "cursor install --help" was silently installing into Cursor).
     # Exempt: free-text commands (user string may contain these tokens), and
     # "install"/"uninstall" which have their own per-subcommand help handlers.
     if cmd not in _FREE_TEXT_CMDS and any(a in _help_flags for a in sys.argv[2:]):

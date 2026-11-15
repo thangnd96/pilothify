@@ -1,5 +1,5 @@
 """A use through a CommonJS require of an external package must stay visible
-instead of silently losing its edge (#4688).
+instead of silently losing its edge.
 
 #4621/#4634 stopped minting a local node for a `const X = require('./m')`
 binding so it no longer shadowed the class the required file exports, which

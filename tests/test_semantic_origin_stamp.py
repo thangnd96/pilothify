@@ -1,4 +1,4 @@
-"""Semantic-tier items must carry `_origin`, never be guessed by shape (#2843).
+"""Semantic-tier items must carry `_origin`, never be guessed by shape.
 
 `build._is_ast_tier` reads `_origin` when present and otherwise falls back to
 the shape of `source_location`: `L<line>` means AST. extract() stamps its own

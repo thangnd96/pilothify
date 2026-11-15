@@ -208,7 +208,7 @@ def build_tree(
     Raises ``ValueError`` for negative ``max_children`` or when an explicit
     ``root`` matches none of the
     graph's ``source_file`` paths — every file would silently attach flat
-    to the root and the hierarchy would be lost (#2534).
+    to the root and the hierarchy would be lost.
     """
     if max_children < 0:
         raise ValueError("--max-children must be nonnegative")
@@ -275,7 +275,7 @@ def build_tree(
 
     # An explicit --root that matches NOTHING would silently flatten the whole
     # hierarchy (every file attaches to the root); the common case is passing an
-    # absolute checkout path while source_file is stored repo-relative (#2534).
+    # absolute checkout path while source_file is stored repo-relative.
     # A PARTIAL match stays fine — files outside the root legitimately attach flat.
     if explicit_root and total_matched == 0:
         raise ValueError(
@@ -685,7 +685,7 @@ def emit_html(
     svg_height: int = 8000,
 ) -> str:
     # Escape every `<` as < so embedded JSON cannot break out of the <script>
-    # element (escaping only `</` leaves the `<!--` + `<script` breakout open, #4124),
+    # element (escaping only `</` leaves the `<!--` + `<script` breakout open),
     # and HTML-escape values that land in <title>/<h1>.
     data_json = json.dumps(tree, ensure_ascii=True, separators=(",", ":")).replace("<", "\\u003c")
     return _HTML_TEMPLATE.format(

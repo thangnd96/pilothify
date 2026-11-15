@@ -66,10 +66,10 @@ def build_label_index(
     An enum member can never be the target of a call, in any language that
     reaches this shared index — but it is a node like any other, and its
     label can collide with an unrelated bare name (a delegate-typed field
-    named the same as one of its own enum's cases, #4245). When *edges* is
+    named the same as one of its own enum's cases). When *edges* is
     given, a node that is the target of a `case_of` edge is excluded, the
     same way `_build_csharp_type_def_index` already excludes it from TYPE
-    lookup (#3795).
+    lookup.
     """
 
     case_of_targets: set[str] = set()
@@ -428,7 +428,7 @@ def resolve_cross_file_raw_calls(
 
     label_index = build_label_index(all_nodes, all_edges)
     known_pairs = existing_edge_pairs(all_edges)
-    # nid -> source_file, for the shared god-node tie-breakers (#1553) so a
+    # nid -> source_file, for the shared god-node tie-breakers so a
     # same-named test mock no longer erases a real cross-file call.
     nid_to_source_file = {
         str(n.get("id")): str(n.get("source_file", ""))
@@ -449,12 +449,12 @@ def resolve_cross_file_raw_calls(
             # extractors/rust.py with its qualifier path. These must NEVER fall
             # through to the bare-name branch below — bare last-segment lookup
             # across crate boundaries is exactly what produced the spurious
-            # INFERRED edges that motivated dropping scoped calls (#908).
+            # INFERRED edges that motivated dropping scoped calls.
             # Instead the qualifier is verified against the candidate's file
             # path (see rust_scoped_call_survivors); require exactly one
             # survivor or bail (god-node guard preserved). Emitted as EXTRACTED
             # because the source names the module explicitly — same reasoning
-            # as the Python qualified-class-method pass (#1446/#1533).
+            # as the Python qualified-class-method pass.
             qualifier = str(raw_call.get("scope_qualifier", "")).strip()
             survivors = rust_scoped_call_survivors(
                 qualifier, label_index.get(callee.lower(), []), nid_to_source_file,
@@ -522,7 +522,7 @@ def resolve_cross_file_raw_calls(
                 "context": "call",
                 "confidence": "INFERRED",
                 # 0.85, not 0.8 — the extraction-spec rubric's INFERRED values
-                # are a discrete set and 0.8 is not one of them (#2813).
+                # are a discrete set and 0.8 is not one of them.
                 "confidence_score": 0.85,
                 "source_file": raw_call.get("source_file", ""),
                 "source_location": raw_call.get("source_location"),
@@ -534,7 +534,7 @@ def resolve_cross_file_raw_calls(
 
 
 def _bash_make_id(*parts: str) -> str:
-    """Bash symbol node ID via the single shared recipe (#1378).
+    """Bash symbol node ID via the single shared recipe.
 
     Previously an inline copy to dodge an import cycle; ``pilothify.ids`` is
     dependency-free, so it can be imported directly.
@@ -547,7 +547,7 @@ from pilothify.extractors.base import _file_stem as _bash_file_stem  # canonical
 
 def _file_node_id_for_path(path: Path, root: Path) -> str:
     # Produce the canonical {parent_dir}_{stem} file-node ID that extract()'s
-    # id_remap generates (#1033), so bash `source` edges land on the real file
+    # id_remap generates, so bash `source` edges land on the real file
     # node instead of an orphan. _bash_make_id / _bash_file_stem are exact copies
     # of extract._make_id / extract._file_stem, so IDs match.
     try:

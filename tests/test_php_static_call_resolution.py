@@ -1,5 +1,5 @@
 """PHP `Class::method()` static calls must resolve to the actual method with
-EXTRACTED confidence, not to a bare-name match on the class itself (#3872).
+EXTRACTED confidence, not to a bare-name match on the class itself.
 
 `scoped_call_expression` used the scope text (`Helper` in `Helper::format()`)
 as the callee name instead of the method name, so the shared cross-file
@@ -112,7 +112,7 @@ def test_dynamic_scope_produces_no_phantom_edge(tmp_path):
 def test_lowercase_class_name_still_resolves(tmp_path):
     """PHP class names are conventionally StudlyCase but the language does not
     enforce it - a lowercase-first class is still a class, not a variable, and
-    must resolve the same way (review finding on PR #3874)."""
+    must resolve the same way (review finding on PR)."""
     calls, _ = _extract(tmp_path, {
         "helper.php": (
             "<?php\nnamespace App;\nclass helper {\n"
@@ -129,7 +129,7 @@ def test_lowercase_class_name_still_resolves(tmp_path):
 def test_fully_qualified_scope_resolves_by_last_segment(tmp_path):
     """A fully-qualified scope (`\\App\\Helper::method()` or
     `App\\Helper::method()`) must match the class's own unqualified label,
-    not be left parked as unresolved (review finding on PR #3874)."""
+    not be left parked as unresolved (review finding on PR)."""
     calls, _ = _extract(tmp_path, {
         "Helper.php": (
             "<?php\nnamespace App;\nclass Helper {\n"

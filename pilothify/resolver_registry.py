@@ -75,7 +75,7 @@ def run_language_resolvers(
     exercise the driver in isolation.
     """
     active = _REGISTRY if resolvers is None else resolvers
-    # Honour project-level remaps (#2961): a `.inc` declared PHP must wake
+    # Honour project-level remaps: a `.inc` declared PHP must wake
     # the PHP resolvers, not Pascal's.
     from pilothify.rcfile import effective_suffix
     suffixes_present = {effective_suffix(p) for p in paths}

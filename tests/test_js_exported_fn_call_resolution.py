@@ -1,4 +1,4 @@
-"""Calls inside an exported function resolve through the import table (#3346).
+"""Calls inside an exported function resolve through the import table.
 
 `_js_top_level_function_bodies` scanned only direct program children, so a
 top-level `export function f(){}` / `export const g = () => {}` — wrapped in an

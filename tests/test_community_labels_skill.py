@@ -1,4 +1,4 @@
-"""Curated community labels must reach the persisted graph.json (#2490).
+"""Curated community labels must reach the persisted graph.json.
 
 Two guards:
 
@@ -93,7 +93,7 @@ def test_skill_step5_reexports_graph_json_with_curated_labels(path: Path):
     The Step-5 block is the only place the curated labels dict exists, so it is
     the block that must call ``to_json(..., community_labels=labels)``. Any
     ``to_json(...pilothify-out/graph.json...)`` call in that block without the
-    kwarg would ship graph.json nodes with no ``community_name`` (#2490).
+    kwarg would ship graph.json nodes with no ``community_name``.
     """
     text = path.read_text(encoding="utf-8")
     post_labels_blocks = [

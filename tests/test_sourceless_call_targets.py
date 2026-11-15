@@ -1,4 +1,4 @@
-"""Regression tests for unresolved external call targets (#3156)."""
+"""Regression tests for unresolved external call targets."""
 
 from __future__ import annotations
 

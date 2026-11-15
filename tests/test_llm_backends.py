@@ -105,7 +105,7 @@ def test_extract_files_direct_routes_gemini_through_openai_compat(tmp_path, monk
         "google-key",
         "gemini-3-flash-preview",
     )
-    # Source content is wrapped in an untrusted_source delimiter block (#1210)
+    # Source content is wrapped in an untrusted_source delimiter block
     # rather than the old `=== path ===` separator.
     user_msg = call.call_args.args[3]
     assert '<untrusted_source path="note.md" sha256=' in user_msg
@@ -126,7 +126,7 @@ def test_extract_files_direct_routes_gemini_through_openai_compat(tmp_path, monk
     ],
 )
 def test_openai_compat_backends_resolve_full_output_cap(tmp_path, monkeypatch, backend, env_key):
-    # #1365: these configs define `max_tokens: 16384`, but the dispatch used to
+    # these configs define `max_tokens: 16384`, but the dispatch used to
     # read only the `max_completion_tokens` key (which only gemini sets), so the
     # output cap silently fell back to 8192 and truncated deep-mode JSON. The
     # dispatch must resolve their configured 16384.
@@ -167,7 +167,7 @@ def test_missing_gemini_key_names_both_supported_env_vars(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# #1386: public entry points accept str paths, not just pathlib.Path
+# public entry points accept str paths, not just pathlib.Path
 # ---------------------------------------------------------------------------
 
 
@@ -204,7 +204,7 @@ def test_extract_corpus_parallel_accepts_str_and_mixed_paths(tmp_path, monkeypat
 def test_corpus_parallel_oversized_markdown_does_not_crash_on_fileslice(tmp_path, monkeypatch):
     # #1397/#1399 regression: a Markdown file large enough to be sliced into
     # FileSlice units must not crash extract_files_direct's Path() coercion
-    # (#1386). The earlier str-path tests used tiny files, so slicing never ran.
+    #. The earlier str-path tests used tiny files, so slicing never ran.
     from pilothify.llm import _FILE_CHAR_CAP
     _clear_backend_env(monkeypatch)
     monkeypatch.setenv("GOOGLE_API_KEY", "google-key")
@@ -331,7 +331,7 @@ def test_adaptive_retry_re_raises_unrelated_errors(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Adaptive retry: timeout recovery (#2866)
+# Adaptive retry: timeout recovery
 # ---------------------------------------------------------------------------
 
 
@@ -546,7 +546,7 @@ def _install_fake_openai(monkeypatch, fake_resp):
         def create(self, **__):
             return fake_resp
         def post(self, *_, **__):
-            # The ollama backend talks to Ollama's native /api/chat (#4413).
+            # The ollama backend talks to Ollama's native /api/chat.
             return _native_ollama_reply(fake_resp)
 
     fake_module = types.ModuleType("openai")
@@ -576,7 +576,7 @@ def test_call_openai_compat_labels_empty_content_hollow(monkeypatch):
     # Simulates an overwhelmed Ollama: HTTP 200, empty content, finish_reason
     # "stop", zero completion tokens. The chunk must not be dropped silently,
     # but it must not be labelled "length" either: bisecting a hollow response
-    # cannot converge and costs 2**max_retry_depth billed calls (#2880).
+    # cannot converge and costs 2**max_retry_depth billed calls.
     fake_resp = _fake_openai_response("", finish_reason="stop", completion_tokens=0)
     _install_fake_openai(monkeypatch, fake_resp)
 
@@ -646,7 +646,7 @@ def test_call_openai_compat_preserves_real_finish_reason(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Ollama context-window fix (#798): num_ctx + keep_alive in extra_body,
+# Ollama context-window fix: num_ctx + keep_alive in extra_body,
 # serial execution by default.
 # ---------------------------------------------------------------------------
 
@@ -672,7 +672,7 @@ def _install_capturing_openai(monkeypatch):
             )
 
         def post(self, path, *, body, **__):
-            # Ollama's native /api/chat request (#4413), kept apart from the
+            # Ollama's native /api/chat request, kept apart from the
             # /v1 kwargs so tests can tell which endpoint was used.
             captured["native_url"] = path
             captured["native"] = body
@@ -943,7 +943,7 @@ def test_openai_compat_forces_non_streaming_response(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Claude prompt caching (#4835): the extraction system prompt goes out as one
+# Claude prompt caching: the extraction system prompt goes out as one
 # content block marked cache_control=ephemeral, identical on every call.
 # ---------------------------------------------------------------------------
 
@@ -1123,7 +1123,7 @@ def test_call_openai_compat_extra_body_wins_over_moonshot_default(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Custom-provider extra_headers (#3680): gateways such as OpenCode Go reject a
+# Custom-provider extra_headers: gateways such as OpenCode Go reject a
 # request without their own header (x-opencode-session). providers.json passes
 # them to the OpenAI client as default_headers, at extraction and at _call_llm.
 # ---------------------------------------------------------------------------
@@ -1243,7 +1243,7 @@ def test_provider_extra_headers_unusable_values_send_no_default_headers(monkeypa
 # ---------------------------------------------------------------------------
 # PILOTHIFY_DISABLE_THINKING: opt-in disable-thinking for reasoning models like
 # deepseek-v4-flash. Off by default — disabling thinking trades a rare reasoning
-# leak for lower extraction quality/coverage, so it must not be forced (#1621).
+# leak for lower extraction quality/coverage, so it must not be forced.
 # ---------------------------------------------------------------------------
 
 
@@ -1314,7 +1314,7 @@ def test_explicit_extra_body_wins_over_thinking_env(monkeypatch):
 
 def test_ollama_thinking_disabled_via_env_survives_num_ctx(monkeypatch):
     # The ollama num_ctx/keep_alive defaults must be merged into extra_body, not
-    # assigned over it, or the env toggle is silently dropped on ollama (#3988).
+    # assigned over it, or the env toggle is silently dropped on ollama.
     monkeypatch.setenv("PILOTHIFY_DISABLE_THINKING", "1")
     monkeypatch.setenv("PILOTHIFY_OLLAMA_NUM_CTX", "65536")
     monkeypatch.delenv("PILOTHIFY_OLLAMA_KEEP_ALIVE", raising=False)
@@ -1513,7 +1513,7 @@ def test_estimate_cost_azure_no_keyerror():
 
 
 # ---------------------------------------------------------------------------
-# Temperature resolution (#1191): omit temperature for reasoning models
+# Temperature resolution: omit temperature for reasoning models
 # (o1/o3/o4/gpt-5) and honour PILOTHIFY_LLM_TEMPERATURE.
 # ---------------------------------------------------------------------------
 
@@ -1653,9 +1653,9 @@ def test_native_extraction_prompt_requests_rationale():
 def test_native_extraction_prompt_pins_source_file_to_the_dispatched_file():
     """The native-backend prompt must say what source_file means. Without it the
     model attributes a document's entities to the files the document cites or
-    links, and the out-of-scope filter (#1895) drops them on incremental runs
-    (#2297, #3377), or a doc-described API lands on the code file (#2270), or a
-    path reconstructed from a mention reaches the graph (#2217).
+    links, and the out-of-scope filter drops them on incremental runs,
+    or a doc-described API lands on the code file, or a
+    path reconstructed from a mention reaches the graph.
     """
     for deep in (False, True):
         # Collapse whitespace so reflowing the prompt doesn't break the asserts.
@@ -1684,7 +1684,7 @@ def test_native_extraction_prompt_shares_skill_spec_source_file_rule_heading():
     assert shared in native, "native prompt lacks the skill's source_file rule heading"
 
 
-# --- *_BASE_URL env overrides for kimi / gemini / deepseek (#1458) -------------
+# --- *_BASE_URL env overrides for kimi / gemini / deepseek -------------
 # BACKENDS reads the env at import time, so each case runs in a fresh interpreter
 # (subprocess) to avoid reload contamination of the test session.
 import subprocess
@@ -1731,7 +1731,7 @@ def test_base_url_defaults_without_env(backend, default):
 
 
 # ---------------------------------------------------------------------------
-# #1505: claude-cli subprocess.run must use errors="replace" so non-UTF-8
+# claude-cli subprocess.run must use errors="replace" so non-UTF-8
 # bytes from claude.cmd on Chinese Windows (GBK/cp936) don't crash the reader
 # thread.
 # ---------------------------------------------------------------------------
@@ -1747,7 +1747,7 @@ def _make_cli_envelope(result_text: str) -> str:
 def test_call_claude_cli_passes_errors_replace_to_subprocess():
     """subprocess.run must be called with errors='replace' so non-UTF-8 output
     bytes (e.g. GBK from claude.cmd on Chinese Windows) are tolerated instead
-    of crashing the reader thread with UnicodeDecodeError (#1505)."""
+    of crashing the reader thread with UnicodeDecodeError."""
     from unittest.mock import patch, MagicMock
 
     valid_envelope = _make_cli_envelope('{"nodes":[],"edges":[],"hyperedges":[]}')
@@ -1783,7 +1783,7 @@ def test_call_claude_cli_tolerates_non_utf8_in_stderr():
 
 
 def test_resolve_max_retries_default_and_env(monkeypatch):
-    """Default retry count is generous (so 429s are absorbed, #1523); env overrides."""
+    """Default retry count is generous (so 429s are absorbed); env overrides."""
     monkeypatch.delenv("PILOTHIFY_MAX_RETRIES", raising=False)
     assert llm._resolve_max_retries() >= 5
     monkeypatch.setenv("PILOTHIFY_MAX_RETRIES", "10")

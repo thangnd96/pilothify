@@ -1,4 +1,4 @@
-"""Robot Framework extractor for .robot/.resource files (issue #3192)."""
+"""Robot Framework extractor for .robot/.resource files."""
 from __future__ import annotations
 
 import os

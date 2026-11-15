@@ -1,4 +1,4 @@
-"""Every edge endpoint in graph.json must be a declared node (#2873).
+"""Every edge endpoint in graph.json must be a declared node.
 
 `graph.json` used to ship `imports`/`imports_from`/`re_exports` edges whose
 target was an external module (stdlib, a third-party dependency) with no
@@ -58,7 +58,7 @@ def test_external_stub_makes_serialized_graph_self_consistent():
 
 
 def test_non_import_dangling_edge_is_still_dropped():
-    """A sourceless external CALL target is deliberately suppressed (#3156) to
+    """A sourceless external CALL target is deliberately suppressed to
     avoid a phantom god-node: only import-family relations get a stub."""
     G = build_from_json(_import_extraction("some_external_fn", relation="calls"))
     assert "some_external_fn" not in G.nodes

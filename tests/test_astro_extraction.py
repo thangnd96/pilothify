@@ -1,4 +1,4 @@
-"""Tests for `.astro` extraction (#850).
+"""Tests for `.astro` extraction.
 
 Astro files have a TypeScript frontmatter block (`---...---`) at the top where
 nearly all imports live, followed by an HTML-with-expressions template and
@@ -33,7 +33,7 @@ def _import_targets(result: dict, *, relation: str | None = None) -> set[str]:
 
 
 def test_astro_is_in_code_extensions():
-    """Without this, detect.py silently drops `.astro` from the AST pass (#850)."""
+    """Without this, detect.py silently drops `.astro` from the AST pass."""
     assert ".astro" in CODE_EXTENSIONS
 
 
@@ -153,7 +153,7 @@ def _labels(result: dict) -> dict[str, str]:
 
 
 def test_extract_astro_template_is_not_a_parse_error(tmp_path):
-    """The template is not TS; only frontmatter and <script> bodies are parsed (#2788).
+    """The template is not TS; only frontmatter and <script> bodies are parsed.
 
     Parsing the whole file as JS reported every page as a syntax error, and
     symbols the parser could not recover past the template were dropped.
@@ -200,7 +200,7 @@ def test_extract_astro_scripts_on_one_line_do_not_merge(tmp_path):
 
 
 def test_extract_astro_trailing_comment_does_not_hide_next_script(tmp_path):
-    """A comment at the closing tag must end before the next script (#4072)."""
+    """A comment at the closing tag must end before the next script."""
     page = _write(
         tmp_path / "inline-comment.astro",
         "<script>const a = 1 // trailing comment</script>"

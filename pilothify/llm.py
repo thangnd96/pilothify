@@ -32,10 +32,10 @@ from pilothify.file_slice import (
 # the user message. Token estimates use the same cap so packing matches reality.
 _FILE_CHAR_CAP = 20_000
 # Warn at most once per run when a file exceeds _FILE_CHAR_CAP, so corpora with
-# multiple oversized files do not spam stderr (#3773).
+# multiple oversized files do not spam stderr.
 _file_truncation_warned = False
 # `_read_files` wraps each file in an `<untrusted_source path=... sha256=...>`
-# delimiter block (see issue #1210); this is roughly the per-file overhead in
+# delimiter block; this is roughly the per-file overhead in
 # characters that wrapper adds (open tag + 64-char sha + close tag + newlines).
 _PER_FILE_OVERHEAD_CHARS = 160
 # Coarse fallback used only when `tiktoken` is not installed. 1 token ≈ 4 chars
@@ -81,7 +81,7 @@ def _estimate_prompt_tokens(text: str) -> int:
 
 def _resolve_ollama_base_url(default: str) -> str:
     """Resolve the Ollama base URL. Honors an explicit OLLAMA_BASE_URL first
-    (verbatim), else falls back to Ollama's own OLLAMA_HOST (#1940), else the
+    (verbatim), else falls back to Ollama's own OLLAMA_HOST, else the
     default. OLLAMA_HOST may be a bare host, host:port, ``:port`` or bare port —
     normalized the way the ollama client does: add ``http://`` when the scheme is
     missing, default the port to 11434 when absent, and append the OpenAI-compat
@@ -201,7 +201,7 @@ BACKENDS: dict[str, dict] = {
         # Default (gpt-4.1-mini) accepts temperature=0. Reasoning models
         # (o1/o3/o4/gpt-5) reject any explicit temperature and have it omitted
         # automatically by _resolve_temperature; PILOTHIFY_LLM_TEMPERATURE
-        # overrides either way (#1191).
+        # overrides either way.
         "temperature": 0,
         "vision": True,
     },
@@ -219,7 +219,7 @@ BACKENDS: dict[str, dict] = {
         # $0.014/1M in. Source: api-docs.deepseek.com/quick_start/pricing
         # deepseek-reasoner silently ignores temperature; deepseek-chat / v4-flash
         # accept 0-2, so sending 0 is safe. Note: deepseek-v4-flash (and v4-pro) have
-        # thinking ENABLED by default (verified against the live API, #1621) — set
+        # thinking ENABLED by default (verified against the live API) — set
         # PILOTHIFY_DISABLE_THINKING=1 to turn it off (tradeoff documented on the flag).
         "temperature": 0,
         "max_tokens": 16384,
@@ -367,7 +367,7 @@ def _openai_max_tokens_kwarg(backend: str, max_tokens: int) -> dict[str, int]:
 
 
 def _provider_extra_headers(raw: object, name: str = "") -> dict[str, str] | None:
-    """Validate a custom provider's providers.json ``extra_headers`` map (#3680).
+    """Validate a custom provider's providers.json ``extra_headers`` map.
 
     Some OpenAI-compatible gateways need request headers beyond Authorization
     (OpenCode Go rejects a request without ``x-opencode-session``). They are
@@ -399,7 +399,7 @@ def _provider_extra_headers(raw: object, name: str = "") -> dict[str, str] | Non
 # does not support 0 with this model. Only the default (1) value is supported."
 # Covers the o1/o3/o4 reasoning series and the gpt-5 family, which share the
 # same restriction. Matched case-insensitively against the resolved model id
-# (issue #1191).
+#.
 _FIXED_TEMPERATURE_MODEL_MARKERS = ("o1", "o1-", "o3", "o3-", "o4", "o4-", "gpt-5")
 
 
@@ -408,7 +408,7 @@ def _model_requires_default_temperature(model: str) -> bool:
 
     OpenAI's o-series (o1, o3, o4...) and gpt-5 family only accept the default
     temperature (1) and return HTTP 400 if any value — including 0 — is sent.
-    We must omit the parameter entirely for these (#1191).
+    We must omit the parameter entirely for these.
     """
     m = (model or "").lower()
     # Strip a leading "openai/" or provider prefix some gateways prepend.
@@ -425,7 +425,7 @@ def _model_requires_default_temperature(model: str) -> bool:
 def _resolve_temperature(default: float | None, model: str = "") -> float | None:
     """Resolve the temperature to send, honouring PILOTHIFY_LLM_TEMPERATURE.
 
-    Precedence (issue #1191):
+    Precedence:
       1. PILOTHIFY_LLM_TEMPERATURE env var, if set:
            - a numeric value (e.g. "0", "0.2", "1") is used verbatim;
            - the literal "none"/"omit"/"default" (case-insensitive) means
@@ -498,7 +498,7 @@ def _resolve_max_retries(default: int = 6) -> int:
     rate limits) before giving up. The OpenAI/Anthropic/Azure SDKs already back off
     exponentially and honour ``Retry-After``; the SDK default of 2 is too low for
     strict per-org concurrency/RPM caps (e.g. Moonshot/kimi), where a parallel run
-    429s and the chunk is then dropped — incomplete graph plus console spam (#1523).
+    429s and the chunk is then dropped — incomplete graph plus console spam.
     A higher cap lets a rate-limited chunk wait out the window instead of failing.
     Honour PILOTHIFY_MAX_RETRIES; 0 is allowed (disable retries)."""
     raw = os.environ.get("PILOTHIFY_MAX_RETRIES", "").strip()
@@ -518,7 +518,7 @@ def _resolve_max_retry_depth(default: int = 3) -> int:
     A chunk of N files can split into up to ``2**depth`` pieces, so this is the
     knob that bounds worst-case cost. It used to be a Python-API kwarg only,
     with no way for a `pilothify extract` operator to lower it — or set it to 0 —
-    as a mitigation (#2880). Honour PILOTHIFY_MAX_RETRY_DEPTH.
+    as a mitigation. Honour PILOTHIFY_MAX_RETRY_DEPTH.
 
     ``0`` means no retries of any kind: no bisection, and no same-chunk retry of
     a hollow response either. It is set to cap spend, so it has to hold for
@@ -540,7 +540,7 @@ def _thinking_disabled_via_env() -> bool:
     """Opt-in (PILOTHIFY_DISABLE_THINKING) to send ``{"thinking": {"type": "disabled"}}``
     to reasoning-capable OpenAI-compatible models such as ``deepseek-v4-flash``.
 
-    Off by default and deliberately so (#1621): a thinking-on model can occasionally
+    Off by default and deliberately so: a thinking-on model can occasionally
     leak reasoning prose instead of JSON, but that response is caught and re-tried by
     the adaptive extraction/labeling retry, so it is a rare, recoverable failure.
     Disabling thinking removes that failure mode but, measured on real corpora, trades
@@ -645,7 +645,7 @@ def _resolve_under_root(path: Path, root: Path) -> Path | None:
 # a file cannot forge an early `</untrusted_source>` and smuggle instructions out.
 _INJECTION_SENTINELS = re.compile(
     r"</?untrusted_source\b[^>]*>"
-    # ANY <|token|> chat-template marker, not an enumerated few (#3183): the
+    # ANY <|token|> chat-template marker, not an enumerated few: the
     # old list named six and missed <|start_header_id|>/<|eot_id|> (Llama 3),
     # <|endofprompt|>, and whatever the next template calls its turns. The
     # form itself is the hazard - no legitimate source construct needs an
@@ -689,9 +689,9 @@ def _read_files(units: "list[Path | FileSlice]", root: Path) -> str:
 
     Each unit is wrapped in an <untrusted_source> delimiter block and known
     injection sentinels are defanged, so attacker-controlled source text cannot
-    be confused with the trusted system instructions (see issue #1210).
+    be confused with the trusted system instructions.
 
-    A ``FileSlice`` (one chunk of an oversized document, #1369) reports its
+    A ``FileSlice`` (one chunk of an oversized document) reports its
     **parent file path** as ``rel`` so every slice of a file shares one
     source_file and the graph isn't fragmented per-slice.
     """
@@ -706,7 +706,7 @@ def _read_files(units: "list[Path | FileSlice]", root: Path) -> str:
             # as_posix, not str: `rel` is handed to the model as the literal
             # source_file to emit, so a native backslash spelling on Windows
             # lands in the graph and splits one file across two source_file
-            # forms (#683 / #2259).
+            # forms.
             rel = p.relative_to(root).as_posix()
         except ValueError:
             rel = Path(p).as_posix()
@@ -738,7 +738,7 @@ def _read_files(units: "list[Path | FileSlice]", root: Path) -> str:
 # document (a name in a fenced code block, an API referenced in a paper). Verify
 # that such a symbol actually occurs in the source bytes the model was shown; a
 # node the model asserts with no evidence in its source is a likely fabrication.
-# `_out_of_scope` (#1895) only rejects a node attributed to a real file that was
+# `_out_of_scope` only rejects a node attributed to a real file that was
 # NOT dispatched; a fabricated symbol attributed to a file that WAS dispatched
 # slips through it. This closes that intra-file gap with a lenient substring
 # check and FLAGS (never drops) an unverifiable node with ``verification =
@@ -802,7 +802,7 @@ def _bind_node_evidence(result: dict, text_units: "list[Path | FileSlice]", root
         usually carries the verbatim symbol even when the label is prettified,
         cutting false flags on human-readable labels.
       - Nodes without a ``source_file``, and nodes attributed to a file not
-        dispatched in this call (left to #1895), are never touched.
+        dispatched in this call (left to), are never touched.
       - Verification is lenient: any identifier occurring as a substring
         (case-insensitive) passes; a node is flagged only when NONE occur.
       - A node with no checkable identifier (all short / non-ASCII) is left as-is.
@@ -847,7 +847,7 @@ def _bind_node_evidence(result: dict, text_units: "list[Path | FileSlice]", root
         # No evidence. Flag only a node the model itself presented as solid
         # (EXTRACTED/unset) — one it already hedged (INFERRED/AMBIGUOUS) needs no
         # second flag. Idempotent: never overwrites an existing verification.
-        # Matched case-insensitively, the way build._fold_confidence (#4529)
+        # Matched case-insensitively, the way build._fold_confidence
         # reads it: a mis-cased enum value IS that enum value there and is
         # corrected to the canonical spelling, so a node the model wrote as
         # `"extracted"` reaches graph.json just as solid as `"EXTRACTED"` and
@@ -959,7 +959,7 @@ def _build_image_refs(image_files: list[Path], root: Path, *, read_bytes: bool =
             # as_posix, not str: `rel` is handed to the model as the literal
             # source_file to emit, so a native backslash spelling on Windows
             # lands in the graph and splits one file across two source_file
-            # forms (#683 / #2259).
+            # forms.
             rel = p.relative_to(root).as_posix()
         except ValueError:
             rel = Path(p).as_posix()
@@ -1109,7 +1109,7 @@ def _sanitize_fragment(parsed: dict) -> dict:
             parsed[key] = []
             continue
         parsed[key] = [entry for entry in value if isinstance(entry, dict)]
-    # Coerce hyperedge member refs to hashable scalar ids (#2486): a model can
+    # Coerce hyperedge member refs to hashable scalar ids: a model can
     # emit a member as an object ({"id": "a_ts"}) instead of a bare id. The
     # per-entry filter above only checks the hyperedge dicts themselves, so the
     # bad member shape used to persist into the semantic cache and crash
@@ -1125,7 +1125,7 @@ def _sanitize_fragment(parsed: dict) -> dict:
 
 
 # Keys that identify an extraction fragment. Used to tell the graph object
-# apart from a brace that merely appeared in the model's narration (#2882).
+# apart from a brace that merely appeared in the model's narration.
 _FRAGMENT_KEYS = ("nodes", "edges", "hyperedges")
 _FRAGMENT_KEY_TOKENS = tuple(f'"{k}"' for k in _FRAGMENT_KEYS)
 # Bound on how many `{` positions are probed, so a pathological response with
@@ -1173,7 +1173,7 @@ def _json_object_candidates(text: str) -> list[int]:
     Braces followed shortly by one of ``_FRAGMENT_KEYS`` are tried first, so a
     model that narrates before answering — "Here's a thinking process: 1.
     **Analyze User Input:** …" with braces in the narration — does not have its
-    real answer masked by the first brace in the text (#2882).
+    real answer masked by the first brace in the text.
 
     Known limit: each bucket is capped at ``_MAX_OBJECT_CANDIDATES`` from the
     front, so a reply with more than that many *keyed* braces before the real
@@ -1213,7 +1213,7 @@ def _json_fragment_candidates(text: str) -> "Iterator[str]":
 
     Both read the ORIGINAL text. Rewriting it in place — as the old fence
     handling did, cutting from the first ``` to the last — let a fence in the
-    narration truncate the real answer before it was ever parsed (#2882).
+    narration truncate the real answer before it was ever parsed.
     """
     for _lang, body in sorted(
         _FENCE_RE.findall(text), key=lambda b: b[0].strip().lower() not in ("json", "")
@@ -1233,7 +1233,7 @@ def _parse_llm_json(raw: str) -> dict:
 
     Plenty of models will not return a bare JSON object no matter how the
     prompt is worded: they think out loud first, wrap the answer in a fence, or
-    do both (#2882). So the whole reply is tried first, then each candidate
+    do both. So the whole reply is tried first, then each candidate
     :func:`_json_fragment_candidates` finds. An object carrying none of the
     extraction keys is kept only as a last resort — reasoning-first models
     routinely restate the schema (``{"description": "graph fragment"}``) before
@@ -1263,7 +1263,7 @@ def _parse_llm_json(raw: str) -> dict:
     # before answering — "the schema is `{"nodes": [], "edges": []}`" — produces
     # a candidate that carries the extraction keys but no content, and taking it
     # would let the restatement shadow the answer just as surely as a prose
-    # object would (#2882).
+    # object would.
     empty_fragment: dict | None = None   # right shape, nothing in it
     fallback: dict | None = None         # parses, but not a fragment at all
     for candidate in _json_fragment_candidates(stripped):
@@ -1309,7 +1309,7 @@ def _anthropic_response_text(content, default: str | None = None) -> str | None:
     Current Claude models emit a ``ThinkingBlock`` ahead of the ``TextBlock``
     when extended thinking is enabled (including the default-on path where the
     thinking text is omitted). Indexing ``content[0]`` therefore raises or
-    yields no text (#2697). Select on the block's type instead of its position.
+    yields no text. Select on the block's type instead of its position.
     """
     if not content:
         return default
@@ -1367,7 +1367,7 @@ def _response_is_hollow(raw_content: str | None, parsed: dict) -> bool:
     return not nodes and not edges and not hyperedges
 
 
-# Backoff between same-chunk retries of a hollow response (#2880). Two entries
+# Backoff between same-chunk retries of a hollow response. Two entries
 # ⇒ at most three calls per chunk, versus the 15 the bisection path could spend.
 _HOLLOW_BACKOFF_S = (2.0, 8.0)
 
@@ -1376,7 +1376,7 @@ def _mark_hollow(result: dict, raw_content: str | None, backend: str | None) -> 
     """Label a hollow response so adaptive retry retries it, without bisecting.
 
     Hollow and truncated are different failures with different remedies, and
-    labelling hollow as `finish_reason="length"` conflated them (#2880):
+    labelling hollow as `finish_reason="length"` conflated them:
 
     - **truncated** — the model ran out of `max_completion_tokens` mid-JSON.
       Bisecting is the correct recovery: smaller input ⇒ shorter output.
@@ -1461,10 +1461,10 @@ def _ollama_request_extras(user_message: str, max_completion_tokens: int,
     """num_ctx/keep_alive for an Ollama request, sized to the prompt."""
     # Ollama defaults num_ctx to 2048 and silently truncates prompts larger
     # than that — the symptom is hollow 200 OK responses after the first few
-    # chunks (#798). We derive num_ctx from the actual prompt size so we don't
+    # chunks. We derive num_ctx from the actual prompt size so we don't
     # over-allocate KV-cache VRAM. Over-allocation (e.g. 128k slots for an 8k
     # prompt on a 31B model) exhausts VRAM by chunk 4 and produces the same
-    # hollow-200 symptom — just from a different direction (#798 follow-up).
+    # hollow-200 symptom — just from a different direction.
     # Formula: input tokens (user message + system prompt) + output cap + margin.
     # Capped at 131072 (enough for the default 60k token_budget); env var wins.
     num_ctx_raw = os.environ.get("PILOTHIFY_OLLAMA_NUM_CTX", "").strip()
@@ -1507,7 +1507,7 @@ def _ollama_request_extras(user_message: str, max_completion_tokens: int,
 # Ollama's OpenAI-compatible /v1 endpoint ignores `options`, so the num_ctx
 # from _ollama_request_extras never reached the server and every prompt was cut
 # to Ollama's default context (4096 on Ollama 0.17.5) — the model lost the JSON
-# instructions and answered in prose (#4413). The native /api/chat endpoint honours it. Servers
+# instructions and answered in prose. The native /api/chat endpoint honours it. Servers
 # that only speak /v1 (LM Studio, llama.cpp behind the ollama backend) 404 on
 # /api/chat; remember them so each chunk doesn't pay for a failed request.
 _OLLAMA_NO_NATIVE: set[str] = set()
@@ -1601,11 +1601,11 @@ def _call_openai_compat(
     # single chunk on a large model — far longer than the openai SDK's
     # default. Honour PILOTHIFY_API_TIMEOUT (seconds) for explicit override;
     # default to 600s, which is long enough for a 31B model on a 16k chunk
-    # but still bounds runaway connections (issue #792 addendum).
+    # but still bounds runaway connections (issue  addendum).
     # The SDK's transient-error retries (default 6) exist for cloud rate limits
     # (429). A local Ollama server does not rate-limit, and if it wedges it will
     # not recover by retrying, so 6 retries turn a 180s --api-timeout into a
-    # ~21min block (7 attempts x 180s) with no progress (#1686). Default ollama
+    # ~21min block (7 attempts x 180s) with no progress. Default ollama
     # to 0 SDK retries so --api-timeout is the hard wall-clock bound and a hung
     # request fails fast into the chunk-level retry/skip. An explicit
     # PILOTHIFY_MAX_RETRIES still wins for users who want it.
@@ -1640,14 +1640,14 @@ def _call_openai_compat(
     elif "moonshot" in base_url:
         kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
     # Opt-in only: disable thinking for reasoning models like deepseek-v4-flash
-    # (#1621). Not a default — see _thinking_disabled_via_env for the tradeoff.
+    #. Not a default — see _thinking_disabled_via_env for the tradeoff.
     elif _thinking_disabled_via_env():
         kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
     # The ollama num_ctx auto-derive is a default. A custom provider that
     # explicitly sets extra_body has opted out — respect their request shape.
     if backend == "ollama" and extra_body is None:
         # Merge, don't assign: PILOTHIFY_DISABLE_THINKING may have set extra_body
-        # above, and replacing it here made the flag silently inert on ollama (#3988).
+        # above, and replacing it here made the flag silently inert on ollama.
         kwargs["extra_body"] = {
             **kwargs.get("extra_body", {}),
             **_ollama_request_extras(user_message, max_completion_tokens,
@@ -1663,7 +1663,7 @@ def _call_openai_compat(
         if not resp.choices or resp.choices[0].message is None:
             raise ValueError("LLM returned empty or filtered response")
         raw_content = resp.choices[0].message.content
-        # Some OpenAI-compatible gateways report null token counts (#4325) — coerce
+        # Some OpenAI-compatible gateways report null token counts — coerce
         # to 0 so the ollama low-token warning and the per-chunk merge below don't
         # crash comparing/adding None.
         input_tokens = (resp.usage.prompt_tokens or 0) if resp.usage else 0
@@ -1727,7 +1727,7 @@ def _call_claude(api_key: str, model: str, user_message: str, max_tokens: int = 
         model=model,
         max_tokens=max_tokens,
         # The system prompt is identical on every per-file call, so mark it
-        # cacheable: later calls bill it as a cache read, not full input (#4835).
+        # cacheable: later calls bill it as a cache read, not full input.
         system=[{
             "type": "text",
             "text": _extraction_system(deep=deep_mode),
@@ -1832,7 +1832,7 @@ def _claude_cli_error(stdout: str) -> str:
     printed a bare "exited 1: " with no cause, and a zero exit fed the error
     string to the JSON parser, producing an empty graph that `_response_is_hollow`
     misread as truncation and adaptive retry then bisected, re-issuing requests
-    that were still being refused (#2554). Best-effort: unparseable stdout is not
+    that were still being refused. Best-effort: unparseable stdout is not
     this function's problem, the caller's `_claude_cli_envelope` reports that.
     """
     try:
@@ -1996,7 +1996,7 @@ def _call_claude_cli(user_message: str, max_tokens: int = 8192, *, deep_mode: bo
     # Claude Code releases increasingly treat a bare file-dump prompt as an
     # agentic task and REPORT the extraction in prose ("Knowledge graph
     # extracted — 21 nodes, 20 edges…") instead of returning it; that parses to
-    # zero nodes and reads as hollow (#2076 — and before #2880, as truncation
+    # zero nodes and reads as hollow (and before #2880, as truncation
     # to be bisected without ever converging). --json-schema pins the shape regardless of
     # that framing; the user-turn prompt above stays as the fallback for older
     # CLIs that predate the flag.
@@ -2027,7 +2027,7 @@ def _call_claude_cli(user_message: str, max_tokens: int = 8192, *, deep_mode: bo
     # text, which on a "reporting" turn is prose even with the flag set (verified
     # live on Claude Code 2.1.185). Prefer the structured channel and route it
     # through the same _parse_llm_json normalizer; fall back to parsing `result`
-    # for older CLIs that don't emit structured_output (#2076 review).
+    # for older CLIs that don't emit structured_output (review).
     structured = envelope.get("structured_output")
     if isinstance(structured, dict):
         raw_content = json.dumps(structured)
@@ -2174,9 +2174,9 @@ def extract_files_direct(
 
     Accepts ``str`` paths as well as ``Path``; string entries are coerced up
     front so downstream helpers (``_partition_semantic_files``, ``_read_files``,
-    ``_build_image_refs``) can rely on ``Path`` semantics (#1386). FileSlice units
-    (from extract_corpus_parallel's oversized-doc slicing, #1369) pass through
-    untouched — Path(FileSlice) would raise (#1397/#1399).
+    ``_build_image_refs``) can rely on ``Path`` semantics. FileSlice units
+    (from extract_corpus_parallel's oversized-doc slicing) pass through
+    untouched — Path(FileSlice) would raise.
     """
     files = [f if isinstance(f, (Path, FileSlice)) else Path(f) for f in files]
     if backend is None:
@@ -2264,7 +2264,7 @@ def extract_files_direct(
             # Honour max_completion_tokens (gemini) or the older max_tokens key
             # (ollama/deepseek/kimi/openai) -- most openai-compat configs define the
             # latter, so reading only max_completion_tokens silently capped their
-            # output at the 8192 fallback and truncated deep-mode JSON (#1365).
+            # output at the 8192 fallback and truncated deep-mode JSON.
             max_completion_tokens=_resolve_max_tokens(
                 cfg.get("max_completion_tokens") or cfg.get("max_tokens", 8192)
             ),
@@ -2353,7 +2353,7 @@ def _estimate_file_tokens(unit: "Path | FileSlice") -> int:
     # 1,334 tokens uncompressed-vs-4,598 actual, and 1,334 vs 4,599 once
     # FlateDecode was applied — a 3.45x undercount, which is what a real PDF
     # looks like. The chunk then blows the context window and falls into
-    # adaptive bisection, paying for the same content several times (#2903).
+    # adaptive bisection, paying for the same content several times.
     if path.suffix.lower() == ".pdf":
         try:
             content = _pdf_text_for_estimate(path)[:_FILE_CHAR_CAP]
@@ -2388,7 +2388,7 @@ def _pack_chunks_by_tokens(
     than across chunks). Within each directory, units are added one at a
     time; a chunk is closed when adding the next would exceed the budget.
     Oversized splittable documents are pre-split into ``FileSlice`` units by
-    ``expand_oversized_files`` before packing (#1369), so the old "one file
+    ``expand_oversized_files`` before packing, so the old "one file
     larger than the budget" case no longer silently drops content.
     """
     if token_budget <= 0:
@@ -2494,7 +2494,7 @@ def _mark_partial(result: dict) -> None:
 
 def _chunk_partial_files(chunk) -> list[str]:
     """Source paths covered by a chunk, for marking a chunk that truncated to an
-    EMPTY parse partial (#1950 gap): a mid-JSON cut yields zero items, so
+    EMPTY parse partial (gap): a mid-JSON cut yields zero items, so
     ``_mark_partial`` has nothing to tag and the file it covered would be stamped
     complete. Recording the chunk's own paths closes that. ``unit_path`` folds a
     FileSlice back to its parent file so one truncated slice marks the whole doc."""
@@ -2568,7 +2568,7 @@ def _extract_with_adaptive_retry(
       null, or unparseable content (typical of a local Ollama under load).
       These do NOT bisect: a hollow response is a backend problem, not a size
       problem, and both halves come back hollow from the same backend, so
-      bisection cannot converge and costs `2**max_depth` billed calls (#2880).
+      bisection cannot converge and costs `2**max_depth` billed calls.
       The *same* chunk is retried with backoff instead, and the chunk fails
       loudly if it is still hollow.
 
@@ -2585,7 +2585,7 @@ def _extract_with_adaptive_retry(
     warning rather than infinite-loop.
 
     A single-file chunk that overflows is recoverable only when it's a slice of
-    a splittable document: the slice is bisected and retried (#1369). A whole
+    a splittable document: the slice is bisected and retried. A whole
     non-splittable file (e.g. one huge code file) can't be made smaller than
     itself, so we return what we got and warn.
     """
@@ -2610,7 +2610,7 @@ def _extract_with_adaptive_retry(
     def _split_lone_slice() -> "tuple[FileSlice, FileSlice] | None":
         # When a single-unit chunk is a slice (or an eligible splittable text file
         # below the char cap), bisect the slice so we can retry on a smaller
-        # range rather than give up (#1369, #5072).
+        # range rather than give up.
         if len(chunk) == 1 and _depth < max_depth:
             unit = chunk[0]
             if isinstance(unit, FileSlice):
@@ -2628,7 +2628,7 @@ def _extract_with_adaptive_retry(
         # A hollow response is retried as-is, with backoff — see _mark_hollow.
         # Bounded by a fixed number of attempts, so one misbehaving backend
         # costs at most _HOLLOW_BACKOFF_S + 1 calls per chunk instead of the
-        # 2**max_depth the bisection path used to spend (#2880).
+        # 2**max_depth the bisection path used to spend.
         #
         # max_depth=0 means "no retries", and an operator sets it to cap spend,
         # so it has to hold for the hollow path too: one call per chunk, full
@@ -2700,7 +2700,7 @@ def _extract_with_adaptive_retry(
 
     if result.get("finish_reason") == "hollow":
         # Still hollow after every retry. Fail the chunk loudly rather than
-        # bisecting into a fan-out that cannot converge (#2880): the files are
+        # bisecting into a fan-out that cannot converge: the files are
         # marked partial so the next run re-dispatches them, and they are not
         # promoted to the semantic cache as authoritative.
         _attempts = (len(_HOLLOW_BACKOFF_S) + 1) if max_depth > 0 else 1
@@ -2739,7 +2739,7 @@ def _extract_with_adaptive_retry(
         # The node set is incomplete; mark it so it is not promoted to the
         # semantic cache as authoritative and is re-dispatched next run. Also
         # record the chunk's files so a truncation that parsed to nothing (an
-        # empty item set) still marks the file partial (#1950 empty-parse gap).
+        # empty item set) still marks the file partial (empty-parse gap).
         _mark_partial(result)
         result["_partial_files"] = sorted(
             set(_chunk_partial_files(chunk)) | set(result.get("_partial_files", []) or [])
@@ -2826,7 +2826,7 @@ def extract_corpus_parallel(
           re-extracted recursively, up to `max_retry_depth` levels deep
           (default 3 → max 8x expansion of one chunk). Leave it None to take
           the default, overridable by PILOTHIFY_MAX_RETRY_DEPTH so an operator
-          can lower it without a code change (#2880).
+          can lower it without a code change.
         - This is signal-driven: chunks too dense to fit in one response
           self-heal by splitting until they do, while well-sized chunks pay
           no extra cost.
@@ -2847,21 +2847,21 @@ def extract_corpus_parallel(
 
     ``cache_root`` (when given) is where per-chunk checkpoint cache entries are
     written, decoupled from ``root`` which anchors content-hash keys and
-    ``source_file`` resolution — the same split the AST cache uses (#1774).
+    ``source_file`` resolution — the same split the AST cache uses.
     With ``--out``, cli.py passes the corpus as ``root`` and the output
     directory as ``cache_root`` so checkpoints land where the recovery read
     looks, instead of creating an unwanted ``pilothify-out/`` inside the
-    analyzed source tree (#1990).
+    analyzed source tree.
 
     Accepts ``str`` paths as well as ``Path``; string entries are coerced up
-    front so packing/slicing helpers can rely on ``Path`` semantics (#1386).
+    front so packing/slicing helpers can rely on ``Path`` semantics.
     """
     if max_retry_depth is None:
         max_retry_depth = _resolve_max_retry_depth()
     files = [f if isinstance(f, (Path, FileSlice)) else Path(f) for f in files]
     # Split oversized splittable documents into slices that cover the whole file
     # before packing, so content past _FILE_CHAR_CAP is extracted instead of
-    # silently dropped (#1369). Files at/under the cap pass through unchanged.
+    # silently dropped. Files at/under the cap pass through unchanged.
     files = expand_oversized_files(files, _FILE_CHAR_CAP)
     if token_budget is not None:
         chunks = _pack_chunks_by_tokens(files, token_budget=token_budget)
@@ -2875,7 +2875,7 @@ def extract_corpus_parallel(
     }
     total = len(chunks)
     # Files whose chunk raised before returning a response. The #1890
-    # reconciliation below must not describe them as omitted by the model (#3616).
+    # reconciliation below must not describe them as omitted by the model.
     failed_files: set[Path] = set()
 
     def _run_one(idx: int, chunk: "list[Path | FileSlice]") -> tuple[int, dict | None, Exception | None]:
@@ -2897,7 +2897,7 @@ def extract_corpus_parallel(
 
     # Ollama serves one request at a time per loaded model on a single GPU.
     # Four concurrent 60k-token requests cause VRAM pressure and hollow
-    # responses after 3-4 chunks (#798). Force serial unless the user opts in.
+    # responses after 3-4 chunks. Force serial unless the user opts in.
     if backend == "ollama" and os.environ.get("PILOTHIFY_OLLAMA_PARALLEL", "").strip() != "1":
         max_concurrency = 1
     # claude-cli shells out to a Claude Code session; parallel subprocesses conflict
@@ -2905,7 +2905,7 @@ def extract_corpus_parallel(
     if backend == "claude-cli" and os.environ.get("PILOTHIFY_CLAUDE_CLI_PARALLEL", "").strip() != "1":
         max_concurrency = 1
     # A file split into slices is complete only once every slice has returned
-    # (#4943). Checkpointing each slice as it lands stamped the parent's entry
+    #. Checkpointing each slice as it lands stamped the parent's entry
     # complete after its first slice, so an interrupted run served the head of
     # the file as the whole file. Its results wait here until the last slice
     # succeeds, then go out in one write; a slice that fails keeps it unsaved.
@@ -2938,12 +2938,12 @@ def extract_corpus_parallel(
             held_results.setdefault(parent, []).append((idx, result))
             if slices_left[parent] == 0:
                 # Chunk order, not completion order, so the entry is the same
-                # whichever slice returned first (#1632).
+                # whichever slice returned first.
                 held = [r for _, r in sorted(held_results.pop(parent), key=lambda p: p[0])]
                 if parent in incomplete_parents:
                     # Incomplete parent coverage: precomputed slices did not cover
                     # the full file, so keep it unsaved to prevent caching as
-                    # complete (#5106).
+                    # complete.
                     continue
                 combined: dict = {
                     bucket: [item for r in held for item in r.get(bucket, [])]
@@ -2964,17 +2964,17 @@ def extract_corpus_parallel(
         try:
             from .cache import save_semantic_cache as _scs
             # Scope the write to the files actually dispatched in this chunk
-            # (#1757). The model can attribute a node's source_file to another
+            #. The model can attribute a node's source_file to another
             # corpus file; without this bound, that stray node would clobber the
             # other file's complete cache entry (or, with merge_existing, pollute
             # it). Use unit_path so a FileSlice (one slice of an oversized doc)
-            # resolves to its parent file; a bare Path passes through. (#1870: the
+            # resolves to its parent file; a bare Path passes through. (the
             # old `.rel` attribute does not exist on FileSlice, so every sliced
             # chunk leaked the FileSlice object into the allowlist and the write
             # raised TypeError, silently defeating the checkpoint.)
             # Deep-mode results checkpoint into their own namespace
             # (cache/semantic-deep/) so a deep run never overwrites standard
-            # entries — and a later standard run never serves deep ones (#1894).
+            # entries — and a later standard run never serves deep ones.
             _scs(
                 result.get("nodes", []),
                 result.get("edges", []),
@@ -2986,7 +2986,7 @@ def extract_corpus_parallel(
                 mode="deep" if deep_mode else None,
                 # Stamp the entry with the prompt that produced it, so a release
                 # that changes _EXTRACTION_SYSTEM re-extracts instead of replaying
-                # this vintage forever (#1939).
+                # this vintage forever.
                 prompt=_extraction_system(deep=deep_mode),
                 # A truncated/partial chunk must not be checkpointed as
                 # authoritative: pass the partial file set so its entry is
@@ -3016,7 +3016,7 @@ def extract_corpus_parallel(
         # Merge in deterministic submission order, NOT completion order. Merging
         # as chunks finish makes the node/edge ordering in the returned corpus
         # (and therefore graph.json) depend on which network call happened to
-        # return first — so identical input churned run-to-run (#1632). Collect
+        # return first — so identical input churned run-to-run. Collect
         # results keyed by chunk index and merge in sorted order after the pool
         # drains; this matches the serial path's order. The progress callback
         # still fires in completion order so long local runs aren't silent.
@@ -3043,8 +3043,8 @@ def extract_corpus_parallel(
 
     # A failed slice leaves its parent with nodes from the other slices, so the
     # parent looks covered and the caller's final save would write it complete
-    # (#4943). Incomplete precomputed slice coverage similarly must not be
-    # promoted to complete (#5106). Name both partial so any downstream save
+    #. Incomplete precomputed slice coverage similarly must not be
+    # promoted to complete. Name both partial so any downstream save
     # stamps them and a future run retries.
     failed_parents = {
         unit_path(u) for chunk in chunks for u in chunk
@@ -3066,14 +3066,14 @@ def extract_corpus_parallel(
             file=sys.stderr,
         )
 
-    # Dispatch/return reconciliation (#1890). A chunk can return a clean, non-empty
+    # Dispatch/return reconciliation. A chunk can return a clean, non-empty
     # response that simply omits some of the documents it was given; those docs then
     # vanish from the graph with no node, no warning, and no cache/manifest stamp, so
     # they are silently re-dispatched (and re-omitted) forever. Diff the files we
     # dispatched against the source_files that actually came back and surface the gap.
     dispatched = {unit_path(f) for chunk in chunks for f in chunk}
 
-    # Out-of-scope node filter (#1895). The #1757 cache guard already refuses
+    # Out-of-scope node filter. The #1757 cache guard already refuses
     # to WRITE a cache entry for a node whose source_file is a real file that
     # was not dispatched, but the node itself still flowed into the merged
     # result and landed in graph.json. Mirror the #1757 condition here: resolve
@@ -3119,7 +3119,7 @@ def extract_corpus_parallel(
         merged["nodes"] = kept_nodes
         # Keep the graph consistent: drop an edge that references a dropped
         # node's id. An edge attributed to an undispatched file is kept when
-        # both endpoints are kept nodes (#2276). Hyperedges stay on the
+        # both endpoints are kept nodes. Hyperedges stay on the
         # out-of-scope predicate.
         merged["edges"] = [
             e for e in merged.get("edges", [])
@@ -3144,7 +3144,7 @@ def extract_corpus_parallel(
             f"[pilothify] WARNING: dropped {dropped_node_count} out-of-scope node(s) "
             f"attributed to file(s) not dispatched for extraction: {shown}{more}. "
             "The model mis-attributed them to another corpus file; they were "
-            "excluded from the graph (#1895).",
+            "excluded from the graph.",
             file=sys.stderr,
         )
 
@@ -3160,7 +3160,7 @@ def extract_corpus_parallel(
     )
     merged["uncovered_files"] = [str(p) for p in uncovered]
     _stamp_semantic_origin(merged)
-    # Split the gap by cause (#3616): a file whose chunk raised never got a
+    # Split the gap by cause: a file whose chunk raised never got a
     # response, so only the rest were actually omitted by the model.
     unanswered = [p for p in uncovered if p in failed_files]
     omitted = [p for p in uncovered if p not in failed_files]
@@ -3193,7 +3193,7 @@ def _stamp_semantic_origin(result: dict) -> dict:
     from the shape of ``source_location``: ``L<line>`` means AST. A backend
     or subagent that reports line numbers for a document's sections made
     those nodes read as AST, and the next incremental rebuild deleted them
-    with the re-extracted code file they seemed to belong to (#2843).
+    with the re-extracted code file they seemed to belong to.
     extract() stamps its items ``ast``; this is the semantic counterpart.
     Existing stamps are kept (``setdefault``); returns ``result``.
     """
@@ -3211,7 +3211,7 @@ def _merge_into(merged: dict, result: dict) -> None:
     merged["hyperedges"].extend(result.get("hyperedges", []))
     merged["input_tokens"] += result.get("input_tokens", 0)
     merged["output_tokens"] += result.get("output_tokens", 0)
-    # Carry forward files a chunk truncated to an empty parse (#1950): these have
+    # Carry forward files a chunk truncated to an empty parse: these have
     # no items to ride the merge, so they'd otherwise be lost from the run-level
     # partial set the manifest stamp consults.
     incoming = result.get("_partial_files")
@@ -3233,7 +3233,7 @@ def _call_llm(
 
     When ``usage_out`` is provided it is accumulated in place with ``input`` and
     ``output`` token counts from the response, so callers (community labeling)
-    can total the cost of otherwise-uninstrumented LLM calls (#1694). Existing
+    can total the cost of otherwise-uninstrumented LLM calls. Existing
     callers that omit it are unaffected.
 
     Used by lightweight callers (e.g. `pilothify.dedup` LLM tiebreaker) that
@@ -3319,7 +3319,7 @@ def _call_llm(
             raise RuntimeError(f"claude -p exited {proc.returncode}: {detail[:500]}")
         if cli_error:
             # Without this the error text is returned as the model's reply and
-            # the caller writes it into the graph as a community label (#2554).
+            # the caller writes it into the graph as a community label.
             raise RuntimeError(f"claude -p reported an error: {cli_error[:500]}")
         envelope = _claude_cli_envelope(proc.stdout)
         cli_usage = envelope.get("usage") or {}
@@ -3398,7 +3398,7 @@ def _call_llm(
         # Force a single non-streamed response: some OpenAI-compatible gateways
         # default to SSE streaming when `stream` is omitted, but the result here
         # is always read as resp.choices[0]. Same fix as _call_openai_compat
-        # (#1223) — this path feeds the --dedup-llm tiebreaker.
+        # — this path feeds the --dedup-llm tiebreaker.
         "stream": False,
     }
     temperature = _resolve_temperature(cfg.get("temperature", 0), mdl)
@@ -3417,7 +3417,7 @@ def _call_llm(
     elif _thinking_disabled_via_env():
         kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
     # Community-labeling batches are sized for a 16k context, so without this
-    # Ollama cut them to its default the same way as extraction chunks (#4413).
+    # Ollama cut them to its default the same way as extraction chunks.
     if backend == "ollama" and cfg.get("extra_body") is None:
         kwargs["extra_body"] = {
             **kwargs.get("extra_body", {}),
@@ -3521,7 +3521,7 @@ def _validate_ollama_base_url(url: str, *, warn: bool = True) -> None:
 
 # Everything detect_backend() reads besides the per-backend API keys. Kept next to
 # the function so a new probe below is added here too; tests clear this whole set
-# (tests/conftest.py) so a developer's own keys can never steer them (#3481).
+# (tests/conftest.py) so a developer's own keys can never steer them.
 _BACKEND_DETECTION_EXTRA_ENV = (
     "AZURE_OPENAI_ENDPOINT",
     "AWS_PROFILE", "AWS_REGION", "AWS_DEFAULT_REGION",
@@ -3555,7 +3555,7 @@ def _pilothify_backend_setting() -> str | None:
 
     Unlike the ambient API-key variables, this is a deliberate choice the user
     makes, so it wins over auto-detection. ``none`` (and its synonyms) turns
-    every LLM backend off. Documented in the README's data-residency note (#4361).
+    every LLM backend off. Documented in the README's data-residency note.
     """
     value = os.environ.get("PILOTHIFY_BACKEND", "").strip()
     return value or None
@@ -3566,7 +3566,7 @@ def backend_disabled_by_env() -> bool:
 
     Lets a caller tell "the user told us not to call any provider" apart from
     "no provider was found", so it can skip the LLM step with the right message
-    instead of reporting a missing key (#4361).
+    instead of reporting a missing key.
     """
     value = _pilothify_backend_setting()
     return value is not None and value.lower() in _BACKEND_DISABLE_SENTINELS
@@ -3585,7 +3585,7 @@ def detect_backend_with_source() -> "tuple[str | None, str]":
 
     ``source`` is a short human string for a log line that names the exact
     setting which chose the backend, so an auto-detected cloud run is never a
-    surprise (#4361).
+    surprise.
 
     An explicit ``PILOTHIFY_BACKEND`` wins — a backend name selects it, a disable
     sentinel returns ``None``. Otherwise the ambient environment is probed, in
@@ -3611,7 +3611,7 @@ def detect_backend_with_source() -> "tuple[str | None, str]":
         return "azure", "auto-detected from AZURE_OPENAI_ENDPOINT"
     if os.environ.get("AWS_PROFILE") or os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION"):
         return "bedrock", "auto-detected from AWS credentials"
-    # Honor Ollama's own OLLAMA_HOST here too, not just OLLAMA_BASE_URL (#1940) —
+    # Honor Ollama's own OLLAMA_HOST here too, not just OLLAMA_BASE_URL —
     # otherwise a user who set the standard Ollama var but no --backend still
     # gets "no LLM API key found". Empty default -> falsy when neither is set,
     # so ollama stays opt-in and never shadows a paid key (checked first above).
@@ -3632,7 +3632,7 @@ def detect_backend() -> str | None:
 
     Thin wrapper over :func:`detect_backend_with_source` that keeps the
     historical ``str | None`` return type; see it for the priority order and the
-    explicit ``PILOTHIFY_BACKEND`` override/disable (#4361).
+    explicit ``PILOTHIFY_BACKEND`` override/disable.
     """
     return detect_backend_with_source()[0]
 
@@ -3659,7 +3659,7 @@ def _claude_cli_available() -> bool:
 # pilothify is run as a bare CLI (``pilothify extract . --backend X``), there is no
 # agent to do that step, so community labels stay ``Community 0/1/2...``. These
 # helpers fill that gap: ask the configured backend to name communities in ONE
-# batched call and return a complete ``{cid: name}`` map (#1097).
+# batched call and return a complete ``{cid: name}`` map.
 
 _LABEL_FENCE_RE = re.compile(r"^\s*```(?:json)?\s*|\s*```\s*$", re.IGNORECASE)
 _LABEL_MAX_COMMUNITIES = 200   # legacy soft-cap; kept for callers that pin it.
@@ -3697,7 +3697,7 @@ def _community_label_lines(G, communities, gods, max_communities, top_k):
             # Bare id key, NOT "Community {cid}: ..." — that string doubles as the
             # placeholder sentinel (_placeholder_community_labels), so a model that
             # echoed the key back produced a "name" indistinguishable from the
-            # no-backend fallback and the caller's sentinel filter dropped it (#2534).
+            # no-backend fallback and the caller's sentinel filter dropped it.
             lines.append(f"{cid}: {', '.join(names)}")
             labeled_cids.append(int(cid))
     return lines, labeled_cids
@@ -3732,7 +3732,7 @@ def _parse_label_response(text: str, labeled_cids: list[int]) -> dict[int, str]:
         # Salvage: pull the complete "<cid>": "<name>" pairs directly. A model
         # can truncate its reply mid-object (a stingy token budget or a preamble
         # eating the completion), which used to hard-fail the whole batch with
-        # e.g. `Expecting value: line 1 column 6` on a `{"0":` fragment (#1690).
+        # e.g. `Expecting value: line 1 column 6` on a `{"0":` fragment.
         # Recovering the pairs that DID arrive labels those communities instead
         # of dropping the entire batch to placeholders.
         pairs = re.findall(r'"?(-?\d+)"?\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"', cleaned)
@@ -3765,8 +3765,8 @@ def _label_batch_with_retry(
 ) -> dict[int, str]:
     """Label a batch of communities, splitting in half and retrying on parse failure.
 
-    Mirrors `_extract_with_adaptive_retry`'s recovery shape for the labeling path
-    (#1278). When the LLM returns malformed JSON or a non-object payload, the
+    Mirrors `_extract_with_adaptive_retry`'s recovery shape for the labeling path.
+    When the LLM returns malformed JSON or a non-object payload, the
     batch is split at the midpoint and each half is retried recursively. Recursion
     is capped at ``max_depth`` to bound cost.
 
@@ -3790,7 +3790,7 @@ def _label_batch_with_retry(
     # Budget generously: a 2-5 word name is ~10 tokens, but models (notably
     # gemini) often prepend a short preamble or reasoning that eats the
     # completion and truncates the JSON mid-object, which used to fail the whole
-    # batch (#1690). The old 64 + 24*n floor left no headroom.
+    # batch. The old 64 + 24*n floor left no headroom.
     max_tokens = _resolve_max_tokens(min(256 + 48 * len(batch_cids), 8192))
     call_kwargs: dict = {"backend": backend, "max_tokens": max_tokens}
     if model is not None:
@@ -3821,8 +3821,8 @@ def _label_batch_with_retry(
     # Salvage can produce a valid partial map from a truncated JSON object.
     # Keep those names, but retry only the missing ids in smaller batches so a
     # reasoning model's completion cap cannot silently turn 3/16 labels into
-    # an apparent success (#3671). After a parse failure nothing was kept, so
-    # every id is missing and this is the plain split-and-retry (#1278).
+    # an apparent success. After a parse failure nothing was kept, so
+    # every id is missing and this is the plain split-and-retry.
     missing = [
         (cid, line) for cid, line in zip(batch_cids, batch_lines) if cid not in parsed
     ]
@@ -3890,7 +3890,7 @@ def label_communities(
 
     # Mirror extract_corpus_parallel's backend guards: Ollama serves one request at
     # a time per loaded model (parallel batches cause VRAM pressure and hollow
-    # replies, #798) and claude-cli shells out to a single Claude Code session that
+    # replies) and claude-cli shells out to a single Claude Code session that
     # parallel subprocesses corrupt. Force serial for these unless the user opts in
     # via the same env switches.
     if backend == "ollama" and os.environ.get("PILOTHIFY_OLLAMA_PARALLEL", "").strip() != "1":
@@ -3904,7 +3904,7 @@ def label_communities(
         end = min(start + batch_size, len(labeled_cids))
         # Accumulate token usage into a per-batch dict so concurrent workers
         # never race on the shared accumulator; it is merged on the main thread
-        # in _merge (#1694).
+        # in _merge.
         batch_usage: dict = {} if usage_out is not None else None
         batch_kwargs = {"usage_out": batch_usage} if usage_out is not None else {}
         try:
@@ -3976,7 +3976,7 @@ def generate_community_labels(
 
     ``PILOTHIFY_BACKEND=none`` disables the whole step, including the ``claude
     -p`` fallback below, so a user can keep LLM work off no matter what is on
-    PATH (#4361)."""
+    PATH."""
     if backend is None and backend_disabled_by_env():
         if not quiet:
             print(
@@ -3998,7 +3998,7 @@ def generate_community_labels(
         # a SILENT DOWNGRADE: replacing every real community name with
         # "Community N" and exiting 0, which overwrites a good graph with a worse
         # one while reporting success. An installed CLI is better than that. The
-        # fallback is announced and PILOTHIFY_BACKEND=none opts out of it (#4361).
+        # fallback is announced and PILOTHIFY_BACKEND=none opts out of it.
         if not quiet:
             print(
                 "[pilothify label] no API key found; naming communities via the "

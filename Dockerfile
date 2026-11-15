@@ -1,4 +1,4 @@
-# pilothify MCP server as a shared HTTP service (issue #1143).
+# pilothify MCP server as a shared HTTP service.
 #
 # Build:  docker build -t pilothify .
 # Run:    docker run -p 8080:8080 -v "$(pwd)/pilothify-out:/data" pilothify \

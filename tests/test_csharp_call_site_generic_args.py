@@ -114,7 +114,7 @@ def test_member_call_with_multiple_type_arguments(tmp_path):
 
 def test_null_conditional_member_call_with_type_argument(tmp_path):
     """`r?.Do<T>()` carries its type arguments on the member_binding_expression
-    name, not on a member_access_expression, so it needs the same walk (#3797)."""
+    name, not on a member_access_expression, so it needs the same walk."""
     refs = _refs(tmp_path, {
         "T.cs": _TYPES,
         "P.cs": "public class Probe { public void A(Registry r) => r?.Do<IThing>(); }\n",

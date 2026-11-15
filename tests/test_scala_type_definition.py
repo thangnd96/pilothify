@@ -7,7 +7,7 @@ these produced zero `references` edges of any kind in any context -- in
 contrast to a `val`/`var`, whose annotation *is* walked. The `match_type` case
 has a second, independent gap: the type-reference walker's own recursion
 whitelist does not know `match_type`/`type_case_clause`, so even a correctly
-dispatched call on a match type's right-hand side resolves nothing (#2049).
+dispatched call on a match type's right-hand side resolves nothing.
 
 Scope note: the alias node itself (`type Alias = ...`) still gets no node of its
 own. That is a separate, already-accepted tradeoff shared with `val`/`given`
@@ -92,7 +92,7 @@ def test_match_type_emits_reference_to_matched_type(tmp_path):
 
 def test_file_scope_type_alias_is_owned_by_the_file_node(tmp_path):
     # File-scope aliases need the same anchor fallback as file-scope `val`
-    # (#2054); without it this edge is dropped by the same missing-container
+    # without it this edge is dropped by the same missing-container
     # defect.
     r, nid = _build(tmp_path)
     refs = _refs_from(r, "Aliases.scala", nid)

@@ -67,7 +67,7 @@ def test_same_size_rewrite_in_one_tick_is_requeued(corpus):
 
 
 def test_a_row_stamped_just_before_the_mtime_still_hashes(corpus):
-    """`seen` from time.time() can land a few hundred ns BEFORE the mtime (#5036).
+    """`seen` from time.time() can land a few hundred ns BEFORE the mtime.
 
     Both clocks describe the same write, so the old `seen - mtime < 0 -> trust
     stat` shortcut skipped the hash on a row that could still hide a rewrite.

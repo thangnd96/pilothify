@@ -58,7 +58,7 @@ def push_to_neo4j(
         # Index (label, id) before any upsert, for the same reason as the
         # FalkorDB path: MERGE matches on (label, id), so an unindexed match
         # pattern scans the whole label and the push degrades to O(n^2)
-        # (#3804). IF NOT EXISTS keeps this idempotent across re-pushes.
+        #. IF NOT EXISTS keeps this idempotent across re-pushes.
         for label in _distinct_node_labels(G):
             try:
                 session.run(f"CREATE INDEX IF NOT EXISTS FOR (n:{label}) ON (n.id)")
@@ -167,7 +167,7 @@ def push_to_falkordb(
     # Index (label, id) before any upsert. The MERGE below matches on
     # (label, id), so with no index FalkorDB scans every existing node carrying
     # that label to decide whether the node is new: each upsert costs
-    # O(nodes with that label) and the whole push degrades to O(n^2) (#3804).
+    # O(nodes with that label) and the whole push degrades to O(n^2).
     # Measured on a 167k-node / 209k-edge graph, adding these indexes first
     # restored the throughput the push started at. FalkorDB's CREATE INDEX has
     # no IF NOT EXISTS, so a re-run against an already-indexed graph raises —

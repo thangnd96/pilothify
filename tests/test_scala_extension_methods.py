@@ -1,4 +1,4 @@
-"""Scala 3 `extension` methods are members of the receiver type, not file scope (#2044).
+"""Scala 3 `extension` methods are members of the receiver type, not file scope.
 
 `extension (p: Point) def flip` adds `flip` to `Point`, but tree-sitter-scala has
 no name on `extension_definition` (the receiver sits inside its `parameters`), so
@@ -119,7 +119,7 @@ def test_extension_is_deterministic(tmp_path):
 
 def test_extension_in_another_file_attaches_to_the_real_class(tmp_path):
     # A sourced per-file `Point` copy would be a phantom duplicate of the real
-    # class (#1402); the receiver must be the sourceless stub the corpus rewire
+    # class; the receiver must be the sourceless stub the corpus rewire
     # collapses onto `geo/Point.scala`'s node.
     (tmp_path / "geo").mkdir()
     point = tmp_path / "geo" / "Point.scala"

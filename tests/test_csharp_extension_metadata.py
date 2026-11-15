@@ -1,4 +1,4 @@
-"""C# extension-method declaration facts and primitive receiver typing (#4828).
+"""C# extension-method declaration facts and primitive receiver typing.
 
 The member-call resolvers can only bind a call to an extension method if the
 declaration carries the join key: which type the `this` parameter extends. These

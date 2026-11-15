@@ -74,7 +74,7 @@ if [ -z "$PILOTHIFY_PYTHON" ]; then
         # shell warns about ignored null bytes on every commit. Gate on a
         # leading '#!': a launcher can also be a binary trampoline with no
         # shebang at all (uv tool installs on Windows), and its bytes must
-        # never reach the shebang parse (#2852).
+        # never reach the shebang parse.
         case "$PILOTHIFY_BIN" in
             *.exe) _GFY_HEAD="" ;;
             *)     _GFY_HEAD=$(head -c 256 "$PILOTHIFY_BIN" 2>/dev/null | tr -d '\\000') ;;
@@ -101,7 +101,7 @@ fi
 # recommended method) puts pilothify in an isolated venv that no ambient
 # python can import, and on Windows its launcher on PATH is a binary
 # trampoline with no shebang to parse — so the probes above can all miss a
-# healthy install and the hook dies at the last-resort fallback (#2852).
+# healthy install and the hook dies at the last-resort fallback.
 # Scan the uv tool envs directly; UV_TOOL_DIR overrides the default
 # location. A tool env is adopted only if its python passes the probe, so a
 # co-installed tool without pilothify never satisfies it.
@@ -206,7 +206,7 @@ try:
                 # TimeoutError starts propagating it passes straight through
                 # the ProcessPoolExecutor with-block's own __exit__, which
                 # calls shutdown(wait=True) and blocks until every worker
-                # exits -- forever, for a worker stuck the way #3341 was,
+                # exits -- forever, for a worker stuck in a native call,
                 # since the alarm firing never actually stops it. Killing the
                 # workers first means shutdown has nothing left to wait for.
                 for _child in multiprocessing.active_children():
@@ -278,7 +278,7 @@ try:
                 # TimeoutError starts propagating it passes straight through
                 # the ProcessPoolExecutor with-block's own __exit__, which
                 # calls shutdown(wait=True) and blocks until every worker
-                # exits -- forever, for a worker stuck the way #3341 was,
+                # exits -- forever, for a worker stuck in a native call,
                 # since the alarm firing never actually stops it. Killing the
                 # workers first means shutdown has nothing left to wait for.
                 for _child in multiprocessing.active_children():
@@ -339,7 +339,7 @@ except Exception as exc:
     sys.exit(1)
 """
 
-# Cross-platform detached-launch shim (#1161). The hooks used to background the
+# Cross-platform detached-launch shim. The hooks used to background the
 # rebuild with `nohup "$PILOTHIFY_PYTHON" -c "..." &`, but Git for Windows' bundled
 # MSYS shell ships no nohup (nor setsid), so that line died with
 # 'nohup: command not found' and the rebuild silently never ran — git commit/pull
@@ -386,7 +386,7 @@ def _detached_launch(rebuild_body: str) -> str:
     Python process via ``$PILOTHIFY_PYTHON``.
 
     Replaces the old ``nohup ... &`` form, which failed on Git for Windows'
-    shell (no nohup/setsid) and let the rebuild silently never run (#1161).
+    shell (no nohup/setsid) and let the rebuild silently never run.
     The launcher writes the child's output to ``$PILOTHIFY_REBUILD_LOG`` and
     returns the instant the child is spawned, so the git hook never blocks.
     """
@@ -399,7 +399,7 @@ def _detached_launch(rebuild_body: str) -> str:
 # fires these hooks; the canonical pilothify-out/ belongs to the primary checkout,
 # so rebuilding from a worktree is wasteful, writes a rogue delta-only graph the
 # user never asked for, and races deploy/CI `git clean` against the detached
-# rebuild ("failed to remove pilothify-out/: Directory not empty") (#1809, #1806).
+# rebuild ("failed to remove pilothify-out/: Directory not empty").
 # A linked worktree has git-dir != git-common-dir. Both are resolved to absolute
 # via `cd ... && pwd` before comparing: git's exported GIT_DIR / --git-dir can be
 # absolute while --git-common-dir is the relative ".git", and a raw compare would
@@ -421,7 +421,7 @@ fi
 # caller's cwd as the work tree, and `--show-toplevel` echoes that same
 # subdirectory. A stray pilothify-out/ left there by an earlier run then roots the
 # rebuild at the subdirectory - for .claude/worktrees/ that is every linked
-# worktree (#3258). In the standard layout the work tree is the parent of the
+# worktree. In the standard layout the work tree is the parent of the
 # common .git dir; GIT_WORK_TREE and --separate-git-dir layouts keep git's own
 # answer. GIT_DIR is rewritten to its absolute form (not newly exported) so the
 # git calls below still resolve after the cd.
@@ -442,7 +442,7 @@ fi
 # bare `exit 0`, which in a flat script ends the WHOLE hook, silently dropping
 # anything after pilothify's end marker - on every root commit (HEAD~1 does
 # not exist), every rebase/merge, every linked worktree, every
-# PILOTHIFY_SKIP_HOOK=1 (#2986). Inside the subshell an `exit` ends only
+# PILOTHIFY_SKIP_HOOK=1. Inside the subshell an `exit` ends only
 # pilothify's section; the detached rebuild launch is unaffected, and the
 # hook's own exit status stays 0 as before.
 _HOOK_SCRIPT = """\
@@ -474,7 +474,7 @@ GIT_DIR=${GIT_DIR:-$(git rev-parse --git-dir 2>/dev/null)}
 
 """ + _WORKTREE_GUARD + _TOPLEVEL_ANCHOR + """
 # CHERRY_PICK_HEAD can't be the skip signal: git leaves it on disk while post-commit
-# runs, so every pick was silenced (#4490, same trap as MERGE_HEAD in #4463). For a
+# runs, so every pick was silenced (same trap as MERGE_HEAD in). For a
 # range pick or revert, skip every step but the last and rebuild once from
 # sequencer/head, so a tracked graph.json isn't rewritten between steps. sequencer/ is
 # trusted only when its first todo line is the commit just made; a stale one left by
@@ -518,7 +518,7 @@ fi
 
 # Skip when only output-dir artifacts changed (avoids rebuild loop when graph
 # outputs are tracked in git). The dir is whatever PILOTHIFY_OUT names, the same
-# source the rebuild body reads (#1423): a literal pilothify-out/ here let a
+# source the rebuild body reads: a literal pilothify-out/ here let a
 # commit touching only a renamed output dir's graph.json trigger a full rebuild.
 _GFY_OUT="${PILOTHIFY_OUT:-pilothify-out}"
 _GFY_OUT="${_GFY_OUT%/}"
@@ -540,7 +540,7 @@ export PILOTHIFY_CHANGED="$CHANGED"
 # Run the rebuild detached so git commit returns immediately. Full-repo rebuilds
 # can take hours; blocking the post-commit hook stalls the shell. The Python
 # launcher below detaches the child cross-platform, so it works on Git for
-# Windows' shell too (which lacks the coreutils backgrounding tools) (#1161).
+# Windows' shell too (which lacks the coreutils backgrounding tools).
 _PILOTHIFY_LOG="${HOME}/.cache/pilothify-rebuild.log"
 mkdir -p "$(dirname "$_PILOTHIFY_LOG")"
 export PILOTHIFY_REBUILD_LOG="$_PILOTHIFY_LOG"
@@ -578,11 +578,11 @@ if [ "$BRANCH_SWITCH" != "1" ]; then
 fi
 
 # A no-op checkout (e.g. `git checkout -b` with no start point) reports a
-# branch switch but leaves the tree unchanged ΓÇö nothing to rebuild (#2421).
+# branch switch but leaves the tree unchanged ΓÇö nothing to rebuild.
 [ "$PREV_HEAD" = "$NEW_HEAD" ] && exit 0
 
 # Only run if the output dir exists (graph has been built before). Resolve it
-# from PILOTHIFY_OUT like the rebuild body does (#1423): a literal pilothify-out/
+# from PILOTHIFY_OUT like the rebuild body does: a literal pilothify-out/
 # here made the branch-switch rebuild a silent no-op for every renamed output dir.
 _GFY_OUT="${PILOTHIFY_OUT:-pilothify-out}"
 if [ ! -d "${_GFY_OUT%/}" ]; then
@@ -599,7 +599,7 @@ GIT_DIR=${GIT_DIR:-$(git rev-parse --git-dir 2>/dev/null)}
 [ -f "$GIT_DIR/CHERRY_PICK_HEAD" ] && exit 0
 
 # Honor the same opt-out as post-commit: without this, PILOTHIFY_SKIP_HOOK=1
-# suppressed commit-triggered rebuilds but not branch-switch ones (#1809).
+# suppressed commit-triggered rebuilds but not branch-switch ones.
 [ "${PILOTHIFY_SKIP_HOOK:-0}" = "1" ] && exit 0
 
 """ + _WORKTREE_GUARD + _TOPLEVEL_ANCHOR + _PYTHON_DETECT + """
@@ -617,7 +617,7 @@ _MERGE_SCRIPT = """\
 # Auto-rebuilds the knowledge graph (code only) after a merge, unscoped.
 # The git merge driver pilothify registers for graph.json does a pure union
 # of both sides, which can resurrect a symbol that was deleted on one side
-# (#2418). Nothing else ever re-extracts that symbol's file unless it is
+#. Nothing else ever re-extracts that symbol's file unless it is
 # touched again, so the phantom node would otherwise persist indefinitely;
 # an unscoped rebuild here re-derives the graph from the merged tree and
 # drops it like any other stale node.
@@ -643,7 +643,7 @@ fi
 
 # git leaves MERGE_HEAD on disk while post-merge runs and deletes it only
 # after the hook returns, so it must not be checked here: that skipped every
-# merge that makes a merge commit (#4463). The checks below are belt and
+# merge that makes a merge commit. The checks below are belt and
 # braces for any quirk that lands here mid rebase or cherry-pick.
 # git exports GIT_DIR to hooks; the rev-parse fallback only runs when invoked
 # by hand (each git exec costs 1s+ on AV-scanned Windows machines).
@@ -670,7 +670,7 @@ _REWRITE_SCRIPT = """\
 # Auto-rebuilds the knowledge graph (code only) when a rebase finishes, including
 # `git pull --rebase`. post-commit cannot cover it: it skips while rebase-merge/
 # exists, and every replayed commit is made under it. git runs post-rewrite once,
-# after the last commit, with the tree in its final state (#4490).
+# after the last commit, with the tree in its final state.
 # Installed by: pilothify hook install
 (
 
@@ -694,7 +694,7 @@ fi
 [ "${1:-}" = "rebase" ] || exit 0
 
 # Only run if the output dir exists (graph has been built before). Resolve it from
-# PILOTHIFY_OUT like the rebuild body does (#1423), not a literal pilothify-out/.
+# PILOTHIFY_OUT like the rebuild body does, not a literal pilothify-out/.
 _GFY_OUT="${PILOTHIFY_OUT:-pilothify-out}"
 if [ ! -d "${_GFY_OUT%/}" ]; then
     exit 0
@@ -702,7 +702,7 @@ fi
 
 # No rebase-merge/ or rebase-apply/ check, unlike post-commit and post-checkout: git
 # removes rebase-merge/ only after post-rewrite returns, so it is still on disk here
-# and would skip every rebase (the same trap as MERGE_HEAD in post-merge, #4463).
+# and would skip every rebase (the same trap as MERGE_HEAD in post-merge).
 
 # Honor the same opt out the commit and checkout hooks already respect.
 [ "${PILOTHIFY_SKIP_HOOK:-0}" = "1" ] && exit 0
@@ -740,7 +740,7 @@ _WINDOWS_DRIVE_RE = re.compile(r"^[A-Za-z]:[\\/]")
 
 
 def _reject_windows_path(value: str, source: str) -> None:
-    """Raise if a hooks path looks like a Windows absolute path (#1385).
+    """Raise if a hooks path looks like a Windows absolute path.
 
     On POSIX/WSL ``Path("C:\\Users\\...").is_absolute()`` is False, so an absolute
     Windows hooks path gets joined under the repo root and mkdir'd as a literal
@@ -809,7 +809,7 @@ def _hooks_path_allowed(root: Path, candidate: Path) -> bool:
     """Allow in-repo hook dirs (Husky) and git's own hooks dir only.
 
     A core.hooksPath that resolves anywhere else is repository-controlled
-    local config. Honoring it makes `hook install` write outside the repo (#3869).
+    local config. Honoring it makes `hook install` write outside the repo.
     """
     if _is_within(candidate, root):
         return True
@@ -824,14 +824,14 @@ def _hooks_dir(root: Path) -> Path:
     ``.git/config`` with configparser: git legally allows duplicate keys and
     sections (VS Code writes such configs), which a strict configparser rejects
     with DuplicateOptionError/DuplicateSectionError, so every hook command
-    printed a spurious "could not read core.hooksPath" warning (#1907). git
+    printed a spurious "could not read core.hooksPath" warning. git
     resolves core.hooksPath, includeIf, and linked worktrees (where .git is a
     file, not a directory) correctly in one place. Genuinely corrupt configs
     are still surfaced: git itself fails on them, and its stderr is printed.
     """
     # NOTE: do NOT pass --path-format=absolute — added in git 2.31; older git
     # echoes it back as a literal argument, contaminating stdout and causing a
-    # phantom directory to be created (#907). git -C <root> already returns an
+    # phantom directory to be created. git -C <root> already returns an
     # absolute path for worktree/external-gitdir cases, and a path relative to
     # <root> for normal repos — anchoring on root covers both.
     import subprocess as _sp
@@ -863,7 +863,7 @@ def _hooks_dir(root: Path) -> Path:
                 print(
                     f"[pilothify hooks] refusing hooks path {d}: it is outside "
                     f"{root.resolve()}. Installing into the default git hooks "
-                    f"directory instead (#3869).",
+                    f"directory instead.",
                     file=sys.stderr,
                 )
                 default = _builtin_hooks_dir(root)
@@ -940,7 +940,7 @@ def _pinned_python() -> str:
     Windows profile paths (C:\\Users\\First Last\\...) are too — a space cannot
     start a substitution or a new command, and every consumer quotes the value:
     the hook scripts embed it as '$_PINNED' (single-quoted, then referenced as
-    "$_PINNED") and _register_merge_driver double-quotes it (#2166). Before that
+    "$_PINNED") and _register_merge_driver double-quotes it. Before that
     a space rejected the whole path, so hooks installed under any Windows user
     whose profile name contains a space silently pinned nothing. An empty return
     means callers must fall back to the `pilothify` launcher on PATH — safe
@@ -1001,7 +1001,7 @@ def _has_merge_attr(content: str) -> bool:
 
 
 def _register_merge_driver(root: Path) -> str:
-    """Register the graph.json union merge driver in git config + .gitattributes (#1902).
+    """Register the graph.json union merge driver in git config + .gitattributes.
 
     README and CHANGELOG 0.7.0 document `pilothify merge-driver` as being set up
     by `hook install`, but install never actually registered it. Writes go
@@ -1016,7 +1016,7 @@ def _register_merge_driver(root: Path) -> str:
         # Double-quoted: the allowlist in _pinned_python() permits a space (Windows
         # profile paths), and git runs this driver string through a shell, so an
         # unquoted "C:\\Users\\First Last\\...\\python.exe" would split into two
-        # words and the driver would never run (#2166). The same allowlist keeps
+        # words and the driver would never run. The same allowlist keeps
         # '$' and backticks out, so double quotes cannot introduce expansion.
         driver = f'"{pinned}" -m pilothify merge-driver %O %A %B'
     else:
@@ -1106,7 +1106,7 @@ def _user_hooks_dir(hooks_dir: Path) -> Path:
     Husky 9 sets core.hooksPath to .husky/_ (wrapper scripts auto-generated by
     Husky), while user-editable hooks live in the parent .husky/. Return the
     parent when the resolved dir ends in '_' so install/status/uninstall target
-    the correct location (#987).
+    the correct location.
     """
     if hooks_dir.name == "_":
         return hooks_dir.parent
@@ -1232,7 +1232,7 @@ def status(path: Path = Path(".")) -> str:
                     f".pilothifyrc has {cfg_limit})"
                 )
         # Upgrading the package does not touch hooks already on disk, so a block
-        # from an older release keeps running its old script (#3771).
+        # from an older release keeps running its old script.
         installed = _comparable_block(text, marker, marker_end)
         current = _comparable_block(script.replace("__VIZ_LIMIT_EXPORT__", ""), marker, marker_end)
         if installed is not None and installed != current:

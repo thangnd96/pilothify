@@ -1,8 +1,8 @@
-"""Indirect-call argument shadowing across untracked JS/TS closures (#2241).
+"""Indirect-call argument shadowing across untracked JS/TS closures.
 
 An inline arrow / function-expression argument that is not separately tracked
 (`_tracked_body_ids`) has its calls attributed to the ENCLOSING named
-function's `caller_nid` (#1630). But the closure's own parameters and locals
+function's `caller_nid`. But the closure's own parameters and locals
 were never folded into that enclosing function's shadow set, so a call
 argument inside the closure that happened to share a name with an unrelated
 callable elsewhere in the corpus produced a fabricated `indirect_call` edge —
@@ -52,7 +52,7 @@ def _rels(r, relation):
 
 
 def test_untracked_arrow_param_shadow_emits_no_indirect_call(tmp_path):
-    """Reported shape (#2241): a one-letter test helper `r` must not become a
+    """Reported shape: a one-letter test helper `r` must not become a
     fabricated indirect_call target when an unrelated function's inline `.map`
     callback has its own parameter named `r`, later passed on as a plain call
     argument deeper in the arrow body."""

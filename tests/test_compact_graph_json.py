@@ -1,4 +1,4 @@
-"""graph.json is one line of compact JSON (#3413).
+"""graph.json is one line of compact JSON.
 
 A pretty-printed graph.json makes every PR that commits a rebuilt graph report
 tens of thousands of changed lines, and GitHub's line counts ignore

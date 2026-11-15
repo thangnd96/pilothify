@@ -20,7 +20,7 @@ _STALE_STAMP = "0.0.1-old"
 def test_install_does_not_bump_other_platforms_stamp(tmp_path, monkeypatch):
     """Installing one platform must leave a different, already-installed
     platform's `.pilothify_version` untouched, so its staleness warning stays
-    truthful (#2694)."""
+    truthful."""
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.chdir(tmp_path)
@@ -50,7 +50,7 @@ def test_install_does_not_bump_other_platforms_stamp(tmp_path, monkeypatch):
 
 
 def test_stale_untouched_platform_still_emits_warning(tmp_path, monkeypatch, capsys):
-    """End-to-end (#2694): after installing one platform, a different stale
+    """End-to-end: after installing one platform, a different stale
     platform must actually EMIT the staleness warning — the behavior the
     over-stamping bug suppressed."""
     home = tmp_path / "home"

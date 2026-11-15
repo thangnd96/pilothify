@@ -4,7 +4,7 @@ Context bounds are the standard sugar for typeclass-parameter wiring in
 idiomatic Scala, and are more common in modern code than the desugared
 `(implicit ...)` form they compile to. The `context_bound` node type was not
 referenced anywhere in the extractor, so a type parameter's constraint was
-invisible no matter where in the file it appeared (#2046).
+invisible no matter where in the file it appeared.
 
 The grammar shapes this precisely, and two of them drive the fix:
 
@@ -139,7 +139,7 @@ def test_bound_never_points_at_the_function_itself(tmp_path):
         assert nid[label] not in _bound_targets(r, label, nid)
 
 
-# Class-level context bounds (#4080). `class_definition`, `trait_definition`
+# Class-level context bounds. `class_definition`, `trait_definition`
 # and `enum_definition` carry the same `type_parameters` node as a method, so
 # the bound is the same typeclass dependency, attributed to the type itself.
 CLASS_SRC = '''\
@@ -230,7 +230,7 @@ def test_class_bound_edge_is_tagged_extracted_with_a_location(tmp_path):
         assert e.get("source_location") == "L7", e
 
 
-# `derives` clauses (#2048) name typeclasses the type depends on, the same kind
+# `derives` clauses name typeclasses the type depends on, the same kind
 # of dependency as a context bound, so each one is a `references` edge with the
 # `derives` context. Grammar: a `derive` field on class_definition and
 # enum_definition, one `type` child per derived typeclass.

@@ -70,7 +70,7 @@ def test_resolve_cross_file_raw_calls_emits_unique_unqualified_call() -> None:
             "relation": "calls",
             "context": "call",
             "confidence": "INFERRED",
-            "confidence_score": 0.85,  # rubric value; 0.8 is not on the scale (#2813)
+            "confidence_score": 0.85,  # rubric value; 0.8 is not on the scale
             "source_file": "caller.py",
             "source_location": "L2",
             "weight": 1.0,
@@ -102,7 +102,7 @@ def test_resolve_cross_file_raw_calls_skips_member_calls() -> None:
 def test_resolve_cross_file_raw_calls_skips_ambiguous_duplicate_labels() -> None:
     """Two genuine NON-test defs of the same name: the god-node guard must still
     hold even with the #1553 tie-breakers, because neither the non-test filter
-    nor path proximity yields a unique winner (#543/#1219 stays closed)."""
+    nor path proximity yields a unique winner (stays closed)."""
     per_file = [
         {
             "raw_calls": [
@@ -126,7 +126,7 @@ def test_resolve_cross_file_raw_calls_skips_ambiguous_duplicate_labels() -> None
 
 def test_resolve_cross_file_raw_calls_real_edge_survives_test_mock() -> None:
     """A real cross-file call must resolve to the SRC definition even when a
-    same-named TEST mock exists in the corpus (#1553)."""
+    same-named TEST mock exists in the corpus."""
     per_file = [
         {
             "raw_calls": [
@@ -180,7 +180,7 @@ def test_resolve_cross_file_raw_calls_n_mock_scale() -> None:
 
 def test_resolve_cross_file_raw_calls_call_site_is_test_prefers_test_local() -> None:
     """A test file calling save() with both a src def and a test-local def present
-    resolves to the test-local def (call-site-is-test symmetry, #1553)."""
+    resolves to the test-local def (call-site-is-test symmetry)."""
     per_file = [
         {
             "raw_calls": [

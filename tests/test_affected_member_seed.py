@@ -1,5 +1,5 @@
 """#1669 — affected <Class> must reach callers that bind to the class's method
-nodes (post-#1634 method-granularity resolution), by seeding the reverse walk
+nodes (post- method-granularity resolution), by seeding the reverse walk
 with the root's member nodes (one method/contains hop). method/contains stay out
 of the general relation-filtered walk, so no forward noise is added elsewhere.
 """
@@ -19,7 +19,7 @@ def _g():
         g.add_node(nid, label=label)
     g.add_edge("proc", "proc_call", relation="method")       # class owns method
     g.add_edge("runner", "runner_run", relation="method")
-    g.add_edge("runner_run", "proc_call", relation="calls")  # caller binds to method node (#1634)
+    g.add_edge("runner_run", "proc_call", relation="calls")  # caller binds to method node
     return g
 
 

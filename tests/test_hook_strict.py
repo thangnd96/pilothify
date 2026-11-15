@@ -87,7 +87,7 @@ def test_fresh_query_stamp_suppresses_deny(tmp_path, monkeypatch):
     stamp.write_text(str(time.time()), encoding="utf-8")
     out = _invoke("read", _read(f), tmp_path, monkeypatch, strict=True)
     # Recently oriented: no block. This session's first nudge still fires, since
-    # the project-wide stamp cannot tell which agent queried (#3435).
+    # the project-wide stamp cannot tell which agent queried.
     assert not _is_deny(out) and "knowledge graph at" in out
     assert _invoke("read", _read(f), tmp_path, monkeypatch, strict=True) == ""
 

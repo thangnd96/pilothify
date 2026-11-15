@@ -23,7 +23,7 @@ to the code node that defines it:
 * a bare mention resolves only when exactly one callable or type in the
   corpus carries that label (case-sensitive; language built-ins excluded).
   Only nodes the extractors marked ``_callable`` qualify, for the reason the
-  indirect-call pass gives (#1566): a by-name match must land on a real
+  indirect-call pass gives: a by-name match must land on a real
   function, method or class, never on a same-named data symbol such as a
   JSON key. A dotted mention (``pkg.Widget``, ``Widget.render``) keeps its
   qualifiers, and a candidate survives only when every qualifier is a label
@@ -33,10 +33,10 @@ to the code node that defines it:
   tie-breaking: an ambiguous name is a guess, and a guess is not an edge.
   A bare, parenthesis-less method name is held to one more test: a word like
   ``redis`` is prose as often as it is a reference, so a method match survives
-  only when the citing section also names the class that owns it (#4609).
+  only when the citing section also names the class that owns it.
   A bare free function name is held to the same test with its defining file in
   place of the owner class: prose-like words (``token``, ``raw``) require the
-  citing section to cite that file or a symbol from it (#4804). Evidence is
+  citing section to cite that file or a symbol from it. Evidence is
   section-scoped. Classes, snake_case, camelCase, trailing ``()``, or PascalCase
   in export languages carry sufficient evidence on their own. Links to scanned
   source files also mint doc->file references edges.
@@ -77,7 +77,7 @@ def _symbol_label(node: dict[str, Any]) -> str:
 
 _CAMEL_CASE_RE = re.compile(r'[a-z][A-Z]')
 
-# Languages where exported identifiers are PascalCase by convention (#4804).
+# Languages where exported identifiers are PascalCase by convention.
 _PASCAL_EXPORT_SUFFIXES = frozenset({
     ".go", ".cs", ".vb", ".swift", ".scala", ".pas", ".dpr", ".lpr",
     ".ps1", ".psm1",
@@ -89,7 +89,7 @@ def _is_prose_like_label(label: str) -> bool:
 
     Distinct code identifiers — snake_case (containing ``_``) or camelCase (a
     lowercase letter followed by uppercase) — are exempt from the bare
-    free-function evidence test (#4804), while plain single-word lowercase
+    free-function evidence test, while plain single-word lowercase
     names (``token``, ``raw``, ``fail``, ``config``) require evidence. A
     PascalCase label is exempt only in a PascalCase-export language, checked
     by the caller against the target's source file.
@@ -352,7 +352,7 @@ def resolve_markdown_mentions(
             # A PSR-4 namespace root (`App\`) maps to the scan directory and has
             # no path segment, so when no candidate accounts for the whole chain,
             # the leading qualifiers a candidate cannot account for are dropped
-            # (#4610). Only then: a qualifier that does match a candidate keeps
+            #. Only then: a qualifier that does match a candidate keeps
             # discriminating (`Mailer::send()` still picks the right `send`).
             def _dropped(c: str) -> bool:
                 evidence = _evidence(c, nodes_by_id, parents)
@@ -377,7 +377,7 @@ def resolve_markdown_mentions(
 
         A citation recorded under a heading licenses bare mentions in that
         heading's own section and every section nested inside it; a sibling
-        section is not covered (#4804).
+        section is not covered.
         """
         chain = {caller}
         frontier = [caller]
@@ -393,7 +393,7 @@ def resolve_markdown_mentions(
     #: section-scoped evidence in passes 2b and 2c.
     cited_targets: dict[str, set[str]] = {}
 
-    # Files cited via file spans, path-qualified mentions, or links (#4804).
+    # Files cited via file spans, path-qualified mentions, or links.
     code_file_nodes = {
         _posix(str(n.get("source_file"))): n["id"]
         for n in all_nodes
@@ -427,7 +427,7 @@ def resolve_markdown_mentions(
         if source_file is not None:
             cited_files.setdefault(caller, set()).add(source_file)
 
-    # Mint page --references--> file edges for links to scanned files (#4804).
+    # Mint page --references--> file edges for links to scanned files.
     for rc in mentions:
         if not rc.get("file_link"):
             continue
@@ -469,7 +469,7 @@ def resolve_markdown_mentions(
         if target is None or target == caller:
             return
         if (caller, target) in existing:
-            # Retain target as section-scoped citation evidence (#4609, #4804).
+            # Retain target as section-scoped citation evidence.
             cited_targets.setdefault(caller, set()).add(target)
             return
         existing.add((caller, target))
@@ -523,14 +523,14 @@ def resolve_markdown_mentions(
             else:
                 _add(rc, target, confidence, score)
 
-    # Pass 2b: bare method mentions require the owner class to be cited (#4609).
+    # Pass 2b: bare method mentions require the owner class to be cited.
     for rc, target, confidence, score in method_mentions:
         chain = _section_chain(str(rc.get("caller_nid", "")))
         cited = {t for c in chain for t in cited_targets.get(c, ())}
         if _method_owner(target) in cited:
             _add(rc, target, confidence, score)
 
-    # Pass 2c: bare prose-like free function names require defining file or symbol evidence (#4804).
+    # Pass 2c: bare prose-like free function names require defining file or symbol evidence.
     for rc, target, confidence, score in function_mentions:
         target_file = _posix(str(nodes_by_id.get(target, {}).get("source_file") or ""))
         if not target_file:

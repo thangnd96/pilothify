@@ -9,8 +9,7 @@ and compares every node and edge with all attributes:
 - an LF checkout and a CRLF checkout of the same files,
 - and, for the raw ``--no-cluster`` output, every edge endpoint is a declared node.
 
-Bugs of this shape were found one at a time by diffing builds by hand (#4152,
-#4154, #4156, #4164, #4180, #4182, #4188); this pins the invariants for every
+Bugs of this shape were found one at a time by diffing builds by hand; this pins the invariants for every
 extractor at once, so a new extractor or a change to the write paths cannot
 silently break them.
 """
@@ -28,7 +27,7 @@ import pytest
 
 FIXTURES = Path(__file__).parent / "fixtures"
 # Attributes that are not a function of the source tree: community ids are
-# assigned by clustering and are compared elsewhere (#3761).
+# assigned by clustering and are compared elsewhere.
 _UNSTABLE_KEYS = frozenset({"community", "community_name"})
 
 

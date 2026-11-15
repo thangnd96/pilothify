@@ -179,7 +179,7 @@ def test_kind_mcp_query(tmp_path, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# #1797 — query log is opt-in (default OFF)
+# query log is opt-in (default OFF)
 # ---------------------------------------------------------------------------
 
 def _clear_log_env(monkeypatch):

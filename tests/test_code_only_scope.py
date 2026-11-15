@@ -107,7 +107,7 @@ def test_code_only_rebuild_still_tracks_deleted_code(code_only_repo):
 
 
 def test_default_graph_still_gets_doc_nodes(tmp_path):
-    """No code-only scope recorded => behaviour unchanged (#4750 feature)."""
+    """No code-only scope recorded => behaviour unchanged (feature)."""
     _write_corpus(tmp_path)
     assert _rebuild_code(tmp_path, acquire_lock=False) is True
     assert _doc_nodes(_graph(tmp_path)) != []

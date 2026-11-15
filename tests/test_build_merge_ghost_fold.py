@@ -1,5 +1,5 @@
 """#4955: build_merge's #479 guard and to_json's write guard must not count
-the intentional ghost folds of build_from_json (#1145, #3344, #3705) as drops.
+the intentional ghost folds of build_from_json as drops.
 """
 import json
 
@@ -64,7 +64,7 @@ def test_prune_sources_still_removes(tmp_path):
 # --- to_json: a ghost fold is not a lost saved node ---
 
 def test_to_json_accepts_a_method_ghost_fold(tmp_path):
-    # #3705: Pass 2's method branch folds `run` into `.run()`. to_json's own
+    # Pass 2's method branch folds `run` into `.run()`. to_json's own
     # shrink guard used to read the saved `run` as a lost semantic node.
     path = _save(tmp_path, [_n("c_run", ".run()", "src/c.py", "L3"),
                             _n("run", "run", "src/c.py")])
@@ -107,7 +107,7 @@ def test_directory_qualified_file_label_folds(tmp_path):
 
 
 def test_method_ghost_is_not_an_unexplained_drop(tmp_path):
-    # #3705: the branch of Pass 2 that has no dedup check of its own
+    # the branch of Pass 2 that has no dedup check of its own
     G = _merge(tmp_path, [_n("c_run", ".run()", "src/c.py", "L3"),
                           _n("run", "run", "src/c.py")])
     assert set(G.nodes) == {"c_run"}

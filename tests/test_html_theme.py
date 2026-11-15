@@ -1,4 +1,4 @@
-"""graph.html light/dark/system theme toggle (#3894)."""
+"""graph.html light/dark/system theme toggle."""
 import re
 
 import networkx as nx

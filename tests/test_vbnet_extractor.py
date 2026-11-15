@@ -298,7 +298,7 @@ def test_vbnet_missing_parser_reports_install_hint(tmp_path, monkeypatch, capsys
 @_needs_vbnet
 def test_vbnet_enum_members_emit_case_of_not_contains(tmp_path):
     """A VB.NET enum member is a discriminant case, so it must get a `case_of`
-    edge like every other language with enums (Java #1719, C#, Swift, Scala),
+    edge like every other language with enums (Java , C#, Swift, Scala),
     not the `contains` edge used for real fields. VB.NET was the lone outlier,
     routing enum members through the same `contains` path as class fields. The
     relation also matters to resolution: `case_of` targets are excluded from

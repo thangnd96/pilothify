@@ -1,4 +1,4 @@
-"""C# overloads get a node each, and calls pick theirs by argument count (#4584).
+"""C# overloads get a node each, and calls pick theirs by argument count.
 
 Overloads share a name, so they minted one id: ``add_node`` kept the first
 declaration, the others vanished, every caller of any overload pointed at the

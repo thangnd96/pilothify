@@ -1,7 +1,7 @@
-"""Two files importing each other are an Import Cycle in the default build (#4839).
+"""Two files importing each other are an Import Cycle in the default build.
 
 The undirected build keeps one edge per file pair and drops the reverse-direction
-duplicate (#1061). For `imports_from`/`re_exports` that dropped leg is the other
+duplicate. For `imports_from`/`re_exports` that dropped leg is the other
 half of the cycle, so it is kept as a `reverse_import` stamp on the surviving
 edge and `find_import_cycles` reads it back.
 """
@@ -55,7 +55,7 @@ _PY_CYCLE = {
 def test_two_file_cycle_is_reported_in_the_undirected_build(tmp_path, files, expected):
     G = _build(tmp_path, files)
     imports = [d for *_e, d in G.edges(data=True) if d.get("relation") == "imports_from"]
-    assert len(imports) == 1  # still one stored edge per pair (#1061)
+    assert len(imports) == 1  # still one stored edge per pair
     assert imports[0].get("reverse_import") is True
     assert _names(find_import_cycles(G)) == expected
 

@@ -570,7 +570,7 @@ def test_csharp_alias_using_scoped_to_its_block(tmp_path: Path):
 
 
 def test_csharp_same_file_enum_member_does_not_preempt_class_inheritance(tmp_path: Path):
-    # Repro A (#3795): enum member Follow must not take the inheritance edge from class Follow.
+    # Repro A: enum member Follow must not take the inheritance edge from class Follow.
     f = _write(
         tmp_path / "effects.cs",
         "namespace Demo {\n"
@@ -598,7 +598,7 @@ def test_csharp_same_file_enum_member_does_not_preempt_class_inheritance(tmp_pat
 
 
 def test_csharp_enum_member_cannot_steal_external_parameter_type(tmp_path: Path):
-    # Repro B (#3795): Vector2 parameter must not bind to Channel.Vector2 enum member.
+    # Repro B: Vector2 parameter must not bind to Channel.Vector2 enum member.
     kinds = _write(
         tmp_path / "Kinds.cs",
         "namespace Demo {\n"
@@ -635,7 +635,7 @@ def test_csharp_enum_member_cannot_steal_external_parameter_type(tmp_path: Path)
 
 
 def test_csharp_property_cannot_steal_external_parameter_type(tmp_path: Path):
-    # Repro B (#3795): System.Type parameter must not bind to Node.Type property.
+    # Repro B: System.Type parameter must not bind to Node.Type property.
     node = _write(
         tmp_path / "Node.cs",
         "namespace Demo {\n"
@@ -1343,7 +1343,7 @@ def test_csharp_static_import_vs_namespace_conflict_dangles(tmp_path: Path):
 
 
 def test_csharp_external_type_shares_one_placeholder_across_files(tmp_path: Path):
-    # #4247: an external type referenced from several files must get ONE sourceless
+    # an external type referenced from several files must get ONE sourceless
     # placeholder keyed by its name, shared by every file -- not a separate
     # per-file placeholder (`a_cs_list`, `b_cs_list`) that leaves the files
     # unconnected.

@@ -139,7 +139,7 @@ def test_purge_custom_relative_out(env, monkeypatch):
 
 
 def test_purge_custom_absolute_out_outside_project(env, monkeypatch):
-    """A shared output dir outside the project (#686, #1423) stays purgeable."""
+    """A shared output dir outside the project stays purgeable."""
     project = env["project"]
     shared = env["tmp"] / "shared-out"
     shared.mkdir()

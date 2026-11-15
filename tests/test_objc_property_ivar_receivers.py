@@ -1,4 +1,4 @@
-"""ObjC property/ivar receivers must type through the class's field table (#1556).
+"""ObjC property/ivar receivers must type through the class's field table.
 
 `[self.bar doIt]` and `[_ivarBar doIt]` are the ordinary ways an ObjC object talks
 to a collaborator held in a `@property` or ivar, but neither ever resolved: the

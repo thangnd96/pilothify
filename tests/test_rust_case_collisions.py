@@ -1,4 +1,4 @@
-"""Rust file-level items whose names fold to one node id (#3302's rule, Rust shape).
+"""Rust file-level items whose names fold to one node id ('s rule, Rust shape).
 
 ``make_id`` casefolds, so ``fn ignore`` / ``struct Ignore`` (ripgrep's
 ``crates/ignore/src/dir.rs``) or ``fn e`` / ``fn E`` (``crates/regex/src/literal.rs``)

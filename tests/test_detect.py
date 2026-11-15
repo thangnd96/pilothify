@@ -19,7 +19,7 @@ def _git(repo: Path, *args: str) -> None:
 
 
 def _make_git_dir(repo: Path) -> Path:
-    """A minimal .git directory git itself accepts: HEAD, objects/, refs/ (#4444)."""
+    """A minimal .git directory git itself accepts: HEAD, objects/, refs/."""
     dot_git = repo / ".git"
     (dot_git / "objects").mkdir(parents=True)
     (dot_git / "refs").mkdir()
@@ -71,18 +71,18 @@ def test_detect_incremental_requeues_changed_verilog_header(tmp_path):
     }
 
 def test_classify_powershell_module():
-    # #1315: .psm1 modules were never indexed (CODE_EXTENSIONS gap).
+    # .psm1 modules were never indexed (CODE_EXTENSIONS gap).
     assert classify_file(Path("Utils.psm1")) == FileType.CODE
 
 def test_classify_powershell_manifest():
-    # #1331: .psd1 manifests must be classified as CODE so the manifest extractor runs.
+    # .psd1 manifests must be classified as CODE so the manifest extractor runs.
     assert classify_file(Path("MyModule.psd1")) == FileType.CODE
 
 def test_classify_markdown():
     assert classify_file(Path("README.md")) == FileType.DOCUMENT
 
 def test_classify_skill():
-    # #1901: .skill agent files (Markdown with YAML frontmatter) were dropped as unclassified.
+    # .skill agent files (Markdown with YAML frontmatter) were dropped as unclassified.
     assert classify_file(Path("10_Orchestrator.skill")) == FileType.DOCUMENT
 
 def test_classify_pdf():
@@ -121,7 +121,7 @@ def test_detect_warns_small_corpus():
     assert result["warning"] is not None
 
 def test_detect_skips_noise_dot_dirs():
-    """Noise dot dirs (.next, .nuxt, .pilothify cache, …) are skipped (#873).
+    """Noise dot dirs (.next, .nuxt, .pilothify cache, …) are skipped.
     Non-noise dot dirs (.github, .claude, …) are now allowed through."""
     result = detect(FIXTURES)
     for files in result["files"].values():
@@ -134,7 +134,7 @@ def test_detect_skips_noise_dot_dirs():
 
 
 def test_detect_skips_obsidian_vault_metadata_dirs(tmp_path):
-    """Obsidian metadata and plugin caches are not part of the source corpus (#2493)."""
+    """Obsidian metadata and plugin caches are not part of the source corpus."""
     for directory in (".obsidian", ".smart-env"):
         metadata_dir = tmp_path / directory
         metadata_dir.mkdir()
@@ -261,7 +261,7 @@ def test_pilothifyignore_comments_ignored(tmp_path):
 
 def test_pilothifyignore_utf8_bom_first_pattern_honored(tmp_path):
     """A UTF-8 BOM at the start of .pilothifyignore must not corrupt the first
-    pattern (#2163): git strips a single leading BOM, so `*.log` on line 1
+    pattern: git strips a single leading BOM, so `*.log` on line 1
     must still exclude app.log."""
     (tmp_path / ".pilothifyignore").write_bytes(b"\xef\xbb\xbf*.log\nbuild/\n")
     build = tmp_path / "build"
@@ -279,7 +279,7 @@ def test_pilothifyignore_utf8_bom_first_pattern_honored(tmp_path):
 
 
 def test_gitignore_utf8_bom_matches_git(tmp_path):
-    """A BOM'd .gitignore first pattern must match, exactly like git (#2163)."""
+    """A BOM'd .gitignore first pattern must match, exactly like git."""
     (tmp_path / ".gitignore").write_bytes(b"\xef\xbb\xbf*.log\n")
     (tmp_path / "app.log").write_text("log line")
     (tmp_path / "main.py").write_text("print('hi')")
@@ -292,7 +292,7 @@ def test_gitignore_utf8_bom_matches_git(tmp_path):
 
 def test_pilothifyignore_bom_only_file(tmp_path):
     """A .pilothifyignore containing only a BOM yields zero patterns, not one
-    bogus U+FEFF pattern (#2163)."""
+    bogus U+FEFF pattern."""
     (tmp_path / ".pilothifyignore").write_bytes(b"\xef\xbb\xbf")
     (tmp_path / "main.py").write_text("x = 1")
 
@@ -303,7 +303,7 @@ def test_pilothifyignore_bom_only_file(tmp_path):
 
 def test_pilothifyignore_bom_then_comment(tmp_path):
     """A BOM followed by a comment must still parse as a comment, not become
-    a `\\ufeff# comment` pattern (#2163)."""
+    a `\\ufeff# comment` pattern."""
     (tmp_path / ".pilothifyignore").write_bytes(b"\xef\xbb\xbf# comment\nmain.py\n")
     (tmp_path / "main.py").write_text("x = 1")
     (tmp_path / "other.py").write_text("x = 2")
@@ -316,7 +316,7 @@ def test_pilothifyignore_bom_then_comment(tmp_path):
 
 def test_nested_gitignore_utf8_bom(tmp_path):
     """A BOM'd .gitignore below the scan root (loaded live during the walk,
-    #1206 path) must also have its first pattern honored (#2163)."""
+    #1206 path) must also have its first pattern honored."""
     sub = tmp_path / "sub"
     sub.mkdir()
     (sub / ".gitignore").write_bytes(b"\xef\xbb\xbf*.log\n")
@@ -331,7 +331,7 @@ def test_nested_gitignore_utf8_bom(tmp_path):
 
 def test_git_info_exclude_utf8_bom(tmp_path):
     """A BOM at the start of $GIT_DIR/info/exclude must not corrupt the first
-    pattern either (#2163) — second read site in _load_pilothifyignore."""
+    pattern either — second read site in _load_pilothifyignore."""
     (tmp_path / ".git" / "info").mkdir(parents=True)
     (tmp_path / ".git" / "info" / "exclude").write_bytes(b"\xef\xbb\xbfsecrets/\n")
     secrets = tmp_path / "secrets"
@@ -442,7 +442,7 @@ def test_pilothifyignore_at_git_root_is_included(tmp_path):
 
 
 def test_gitignore_nested_below_root_excludes_file(tmp_path):
-    """A .gitignore in a subdirectory below the scan root is honored too (#1206).
+    """A .gitignore in a subdirectory below the scan root is honored too.
 
     Previously only the scan root and its ancestors were read, so a
     .gitignore sitting inside e.g. vendor/sub/ was silently skipped.
@@ -466,7 +466,7 @@ def test_gitignore_nested_below_root_excludes_file(tmp_path):
 
 
 def test_gitignore_keeps_tracked_file_but_drops_untracked_sibling(tmp_path):
-    """Gitignore rules do not apply to tracked files, matching Git itself (#2759)."""
+    """Gitignore rules do not apply to tracked files, matching Git itself."""
     _git(tmp_path, "init", "-q")
     storage = tmp_path / "storage"
     storage.mkdir()
@@ -521,7 +521,7 @@ def test_tracked_gitignore_exemption_works_for_subdirectory_scan(tmp_path):
 
 
 def test_ignored_predicate_keeps_git_tracked_ignored_file(tmp_path):
-    """Watch reconciliation must agree with detect() for tracked paths (#2759)."""
+    """Watch reconciliation must agree with detect() for tracked paths."""
     _git(tmp_path, "init", "-q")
     tracked = tmp_path / "tracked.py"
     tracked.write_text("value = 1\n", encoding="utf-8")
@@ -568,7 +568,7 @@ def test_git_tracking_probe_failure_preserves_ignore_behavior(
 
 
 def test_git_lsfiles_skipped_when_no_gitignore_contributes(tmp_path, monkeypatch):
-    """Optimization (#2759): a git repo with no .gitignore in play must not pay
+    """Optimization: a git repo with no .gitignore in play must not pay
     the `git ls-files` subprocess — nothing can be gitignore-dropped, so the
     tracked-exemption is moot. A .gitignore that DOES contribute still probes."""
     _git(tmp_path, "init", "-q")
@@ -660,7 +660,7 @@ def _git_init(path):
 
 def test_configured_core_excludes_file_is_honoured(tmp_path):
     """A file git ignores only through core.excludesFile must stay out of the
-    graph too (#4335)."""
+    graph too."""
     repo = tmp_path / "repo"
     repo.mkdir()
     _git_init(repo)
@@ -678,7 +678,7 @@ def test_configured_core_excludes_file_is_honoured(tmp_path):
 
 def test_default_global_git_ignore_is_honoured(tmp_path):
     """With core.excludesFile unset git still reads ~/.config/git/ignore (or
-    $XDG_CONFIG_HOME/git/ignore); HOME is sandboxed by conftest (#4335)."""
+    $XDG_CONFIG_HOME/git/ignore); HOME is sandboxed by conftest."""
     (Path.home() / ".config" / "git").mkdir(parents=True)
     (Path.home() / ".config" / "git" / "ignore").write_text("**/config.local.json\nsecret.py\n")
     (tmp_path / ".git").mkdir()
@@ -842,7 +842,7 @@ def test_detect_incremental_propagates_follow_symlinks(requires_symlinks, tmp_pa
 
 def test_detect_incremental_survives_dict_valued_mtime(tmp_path, monkeypatch):
     """A schema-drifted manifest whose entry stores mtime as a nested dict
-    (instead of a float) must not crash detect_incremental (#1163). The guard
+    (instead of a float) must not crash detect_incremental. The guard
     coerces the bad mtime to None so the file is re-verified by content hash and
     treated as new, rather than blowing up on the int/float comparison.
     """
@@ -878,7 +878,7 @@ def test_detect_incremental_survives_dict_valued_mtime(tmp_path, monkeypatch):
 
 
 def test_detect_incremental_legacy_float_reextracts_on_backwards_mtime(tmp_path, monkeypatch):
-    """Legacy float manifests must re-extract when mtime moves BACKWARDS (#1859).
+    """Legacy float manifests must re-extract when mtime moves BACKWARDS.
 
     Pre-fix the legacy branch used `current_mtime > stored`, which silently kept
     the cached entry after operations that restore older mtimes: `git checkout`
@@ -1013,7 +1013,7 @@ def test_detect_office_sidecar_survives_a_gitignored_output_dir(tmp_path, monkey
 
 
 def test_detect_google_workspace_sidecar_survives_a_gitignored_output_dir(tmp_path, monkeypatch):
-    """Same trap as the Office sidecar case (#3504), for the Google Workspace
+    """Same trap as the Office sidecar case, for the Google Workspace
     conversion branch, which writes into the same converted/ directory."""
     (tmp_path / ".gitignore").write_text("pilothify-out/\n", encoding="utf-8")
     shortcut = tmp_path / "notes.gdoc"
@@ -1062,7 +1062,7 @@ def test_detect_video_not_in_words(tmp_path):
 
 
 def test_detect_skips_coverage_dir(tmp_path):
-    """coverage/ and lcov-report/ are noise dirs — HTML reports inside must be excluded (#870)."""
+    """coverage/ and lcov-report/ are noise dirs — HTML reports inside must be excluded."""
     cov = tmp_path / "coverage" / "lcov-report"
     cov.mkdir(parents=True)
     (cov / "index.html").write_text("<html>coverage report</html>")
@@ -1077,7 +1077,7 @@ def test_detect_skips_coverage_dir(tmp_path):
 
 def test_detect_skips_coverage_dir_by_lcov_info(tmp_path):
     """A coverage/ dir is still pruned on any single artefact file — an lcov.info
-    with no lcov-report/ subtree is enough evidence (#870, #2339)."""
+    with no lcov-report/ subtree is enough evidence."""
     cov = tmp_path / "coverage"
     cov.mkdir()
     (cov / "lcov.info").write_text("TN:\nSF:src/app.ts\nend_of_record\n")
@@ -1155,7 +1155,7 @@ def test_is_noise_dir_coverage_is_evidence_gated(tmp_path):
 
 
 def test_detect_skips_visual_tests_dir(tmp_path):
-    """visual-tests/ bundles and snapshots are noise — must be excluded (#869)."""
+    """visual-tests/ bundles and snapshots are noise — must be excluded."""
     vt = tmp_path / "visual-tests"
     vt.mkdir()
     (vt / "bundle.js").write_text("var u3=function(){};var d2=function(){}")
@@ -1213,7 +1213,7 @@ def test_detect_skips_storybook_static_dir(tmp_path):
 # --- #873: dot dirs allowed, framework caches blocked ---
 
 def test_detect_allows_github_dir(tmp_path):
-    """Files inside .github/ (workflows etc.) are now indexed (#873)."""
+    """Files inside .github/ (workflows etc.) are now indexed."""
     gh = tmp_path / ".github" / "workflows"
     gh.mkdir(parents=True)
     (gh / "ci.yml").write_text("name: CI\non: push\njobs:\n  test:\n    runs-on: ubuntu-latest\n")
@@ -1224,7 +1224,7 @@ def test_detect_allows_github_dir(tmp_path):
 
 
 def test_detect_skips_next_cache(tmp_path):
-    """.next/ (Next.js build cache) must be excluded even after dot-dir fix (#873)."""
+    """.next/ (Next.js build cache) must be excluded even after dot-dir fix."""
     next_dir = tmp_path / ".next" / "cache"
     next_dir.mkdir(parents=True)
     (next_dir / "build.js").write_text("(function(){var s=1;})()")
@@ -1238,7 +1238,7 @@ def test_detect_skips_next_cache(tmp_path):
 
 
 def test_detect_skips_nox_virtualenv(tmp_path):
-    """.nox/ (nox virtualenvs, tox's successor) must be excluded like .tox (#1804)."""
+    """.nox/ (nox virtualenvs, tox's successor) must be excluded like .tox."""
     nox = tmp_path / ".nox" / "tests" / "lib" / "site-packages" / "pydeck"
     nox.mkdir(parents=True)
     (nox / "widget.py").write_text("class Deck: pass")
@@ -1252,7 +1252,7 @@ def test_detect_skips_nox_virtualenv(tmp_path):
 def test_detect_honors_git_info_exclude(tmp_path):
     """.git/info/exclude (where `git worktree add` records nested worktree paths,
     and where local-only excludes live) must be honored, not just .gitignore /
-    .pilothifyignore — otherwise nested worktree copies get fully indexed (#1810)."""
+    .pilothifyignore — otherwise nested worktree copies get fully indexed."""
     (tmp_path / ".git" / "info").mkdir(parents=True)
     (tmp_path / ".git" / "info" / "exclude").write_text("worktrees/\n")
     wt = tmp_path / "worktrees" / "foo"
@@ -1267,7 +1267,7 @@ def test_detect_honors_git_info_exclude(tmp_path):
 
 def test_git_info_exclude_ranks_below_gitignore_negation(tmp_path):
     """info/exclude is loaded at lowest priority, so a later .gitignore `!` negation
-    of the same (non-directory) pattern still wins under last-match-wins (#1810)."""
+    of the same (non-directory) pattern still wins under last-match-wins."""
     from pilothify.detect import _load_pilothifyignore, _is_ignored
     (tmp_path / ".git" / "info").mkdir(parents=True)
     (tmp_path / ".git" / "info" / "exclude").write_text("secret*.txt\n")
@@ -1280,7 +1280,7 @@ def test_git_info_exclude_ranks_below_gitignore_negation(tmp_path):
 
 
 def test_detect_skips_pilothify_own_cache(tmp_path):
-    """.pilothify/ (extraction cache) must never be re-indexed as source (#873)."""
+    """.pilothify/ (extraction cache) must never be re-indexed as source."""
     cache = tmp_path / ".pilothify" / "cache"
     cache.mkdir(parents=True)
     (cache / "abc123.json").write_text('{"nodes": [], "edges": []}')
@@ -1294,7 +1294,7 @@ def test_detect_skips_pilothify_own_cache(tmp_path):
 # --- #882: gitignore parent-exclusion rule for ! re-includes ---
 
 def test_anchored_root_wildcard_negation_reincludes_subtree(tmp_path):
-    """`/*` stays at the root, so `!/src/` makes the subtree walkable (#1975)."""
+    """`/*` stays at the root, so `!/src/` makes the subtree walkable."""
     for rel in ("src/app/main.py", "src/lib/util.py", "docs/guide.md", "README.md"):
         path = tmp_path / rel
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -1366,7 +1366,7 @@ def test_anchored_double_star_crosses_path_segments(tmp_path):
     assert detect(tmp_path)["total_files"] == 0
 
 def test_negation_cannot_rescue_file_under_excluded_dir(tmp_path):
-    """A ! re-include cannot un-ignore a file whose parent dir is excluded (#882)."""
+    """A ! re-include cannot un-ignore a file whose parent dir is excluded."""
     from pilothify.detect import _is_ignored, _load_pilothifyignore
     android = tmp_path / "android" / "app" / "src"
     android.mkdir(parents=True)
@@ -1381,7 +1381,7 @@ def test_negation_cannot_rescue_file_under_excluded_dir(tmp_path):
 
 
 def test_negation_works_when_no_ancestor_excluded(tmp_path):
-    """A ! re-include must still un-ignore a file when no ancestor is excluded (#882)."""
+    """A ! re-include must still un-ignore a file when no ancestor is excluded."""
     from pilothify.detect import _is_ignored, _load_pilothifyignore
     src = tmp_path / "src"
     src.mkdir()
@@ -1395,7 +1395,7 @@ def test_negation_works_when_no_ancestor_excluded(tmp_path):
 
 
 def test_negation_ancestor_itself_reincluded(tmp_path):
-    """If the ancestor dir itself is re-included, its children should not be blocked (#882)."""
+    """If the ancestor dir itself is re-included, its children should not be blocked."""
     from pilothify.detect import _is_ignored, _load_pilothifyignore
     vendor = tmp_path / "vendor" / "lib"
     vendor.mkdir(parents=True)
@@ -1706,7 +1706,7 @@ def test_anchored_multi_segment_pattern(tmp_path):
 
 def test_detect_does_not_ignore_scan_root_itself_via_parent_gitignore(tmp_path):
     """If a parent `.gitignore` (at the repo root) ignores the directory being scanned
-    (the scan root itself), files inside the scan root must not be ignored (#2468)."""
+    (the scan root itself), files inside the scan root must not be ignored."""
     (tmp_path / ".git").mkdir()
 
     corpus_dir = tmp_path / "pilothify-corpus"
@@ -1732,7 +1732,7 @@ def test_detect_does_not_ignore_scan_root_itself_via_parent_gitignore(tmp_path):
 
 def test_detect_preserves_unrelated_parent_ignores_inside_scan_root(tmp_path):
     """A parent `.gitignore` should still ignore unrelated directories (like `node_modules/`)
-    inside the scan root, even while the scan root itself is not ignored (#2468)."""
+    inside the scan root, even while the scan root itself is not ignored."""
     (tmp_path / ".git").mkdir()
 
     corpus_dir = tmp_path / "pilothify-corpus"
@@ -1769,7 +1769,7 @@ def test_is_ignored_cache_matches_uncached_results(tmp_path):
 
     Builds a tree with a normal ignore pattern and a negation pattern, then
     asserts that evaluating every path with a cache yields identical results
-    to evaluating without one (#1235).
+    to evaluating without one.
     """
     from pilothify.detect import _is_ignored, _load_pilothifyignore
 
@@ -1810,7 +1810,7 @@ def test_is_ignored_cache_matches_uncached_results(tmp_path):
 
 
 def test_is_ignored_cache_evaluates_each_dir_once():
-    """Siblings under the same subtree must share the cached parent result (#1235).
+    """Siblings under the same subtree must share the cached parent result.
 
     Counts how many times each unique target path is evaluated through the
     cache: every directory (ancestor) should be evaluated exactly once across
@@ -2062,7 +2062,7 @@ def test_sensitive_does_not_flag_tokenize_py():
     assert not _is_sensitive(Path("tokenize.py"))
 
 def test_sensitive_does_not_flag_passwords_py():
-    # #1666: a programming-language source file named after a domain noun is a
+    # a programming-language source file named after a domain noun is a
     # module, not a secret store. Silently dropping it hid real code from the graph.
     # Genuine secret stores are .env/.pem/credentials.json etc. (still flagged below).
     assert not _is_sensitive(Path("passwords.py"))
@@ -2138,7 +2138,7 @@ def test_sensitive_still_flags_data_under_secrets_dir():
     assert _is_sensitive(Path("internal/secrets/README.md"))  # docs are not source
 
 def test_sensitive_flags_everything_under_credential_store_dirs():
-    # #1943: dedicated stores get no carve-out — even source-classified files
+    # dedicated stores get no carve-out — even source-classified files
     # inside .ssh/.gnupg/.aws/.gcloud stay dropped.
     assert _is_sensitive(Path("/home/user/.ssh/config"))
     assert _is_sensitive(Path(".aws/credentials"))
@@ -2146,12 +2146,12 @@ def test_sensitive_flags_everything_under_credential_store_dirs():
     assert _is_sensitive(Path("backup/.gcloud/sync.sh"))
 
 def test_sensitive_dir_carveout_does_not_bypass_name_screens():
-    # #1943: rescued source still falls through to Stages 2-3, so a NON-source
+    # rescued source still falls through to Stages 2-3, so a NON-source
     # file whose name/extension is sensitive stays dropped even though the dir
     # carve-out spared genuine source beside it.
     assert _is_sensitive(Path("credentials/id_rsa"))           # extensionless key
     assert _is_sensitive(Path("secrets/deploy.pem"))           # Stage 2 extension
-    # #2106: `service_account.py` is real source (e.g. Google's oauth2 lib), not a
+    # `service_account.py` is real source (e.g. Google's oauth2 lib), not a
     # secret. The old unbounded `service.account` substring wrongly dropped it;
     # it is now indexed. A downloaded `service-account.json` key still drops.
     assert not _is_sensitive(Path("secrets/service_account.py"))
@@ -2198,7 +2198,7 @@ def test_sensitive_flags_plural_tokens_txt():
 
 def test_save_manifest_skips_semantic_hash_for_files_without_cache(tmp_path):
     """Files in failed chunks have no semantic cache entry; save_manifest must
-    leave their semantic_hash empty so detect_incremental re-queues them (#933)."""
+    leave their semantic_hash empty so detect_incremental re-queues them."""
     import json
     from pilothify.cache import save_cached
 
@@ -2232,7 +2232,7 @@ def test_save_manifest_skips_semantic_hash_for_files_without_cache(tmp_path):
 
 def test_save_manifest_clear_semantic_erases_stale_hash_for_omitted_file(tmp_path):
     """#1948: a file stamped in an earlier run, then omitted from ``files`` on
-    a later run (LLM dropped its chunk / #1890 retry), must not keep surviving
+    a later run (LLM dropped its chunk retry), must not keep surviving
     with its stale semantic_hash from the prior run — the seed loop copies
     the on-disk row verbatim otherwise, and detect_incremental(kind='semantic')
     reports it unchanged, silently defeating the #1890 retry promise."""
@@ -2327,7 +2327,7 @@ def test_save_manifest_without_filter_unchanged_for_code(tmp_path):
 # Regression tests for #945 - .gitignore fallback when no .pilothifyignore exists
 
 def test_gitignore_fallback_when_no_pilothifyignore(tmp_path):
-    """When no .pilothifyignore exists, .gitignore patterns are honored (#945)."""
+    """When no .pilothifyignore exists, .gitignore patterns are honored."""
     (tmp_path / ".git").mkdir()
     (tmp_path / ".gitignore").write_text("vendor/\n*.generated.py\n")
     vendor = tmp_path / "vendor"
@@ -2345,8 +2345,8 @@ def test_gitignore_fallback_when_no_pilothifyignore(tmp_path):
 
 def test_pilothifyignore_and_gitignore_are_merged(tmp_path):
     """When both exist, their patterns are MERGED — a file excluded only by
-    .gitignore stays excluded even though .pilothifyignore says nothing about it
-    (#1363). Previously the presence of a .pilothifyignore silently disabled the
+    .gitignore stays excluded even though .pilothifyignore says nothing about it.
+    Previously the presence of a .pilothifyignore silently disabled the
     dir's .gitignore, leaking gitignore-only secrets into the graph."""
     (tmp_path / ".git").mkdir()
     (tmp_path / ".gitignore").write_text("main.py\n")        # gitignore-only exclusion
@@ -2364,7 +2364,7 @@ def test_pilothifyignore_and_gitignore_are_merged(tmp_path):
 
 def test_pilothifyignore_negation_overrides_gitignore(tmp_path):
     """.pilothifyignore is evaluated after .gitignore, so a `!` negation in it can
-    re-include a file the .gitignore excluded (last-match-wins, #1363)."""
+    re-include a file the .gitignore excluded (last-match-wins)."""
     (tmp_path / ".git").mkdir()
     (tmp_path / ".gitignore").write_text("*.py\n")           # exclude all .py
     (tmp_path / ".pilothifyignore").write_text("!keep.py\n")  # but rescue keep.py
@@ -2380,7 +2380,7 @@ def test_pilothifyignore_negation_overrides_gitignore(tmp_path):
 # Regression tests for #947 - .worktrees/ skipped and --exclude flag
 
 def test_detect_skips_worktrees_dir(tmp_path):
-    """Files inside .worktrees/ are never indexed (#947)."""
+    """Files inside .worktrees/ are never indexed."""
     wt = tmp_path / ".worktrees" / "feature-branch"
     wt.mkdir(parents=True)
     (wt / "main.py").write_text("x = 1")
@@ -2393,7 +2393,7 @@ def test_detect_skips_worktrees_dir(tmp_path):
 
 
 def test_detect_skips_nested_worktrees_dir(tmp_path):
-    """Files inside .claude/worktrees/ (nested placement) are never indexed (#1023)."""
+    """Files inside .claude/worktrees/ (nested placement) are never indexed."""
     wt = tmp_path / ".claude" / "worktrees" / "feature-branch"
     wt.mkdir(parents=True)
     (wt / "main.py").write_text("x = 1")
@@ -2414,7 +2414,7 @@ def _all_detected(result) -> list[str]:
 def test_detect_skips_installed_pilothify_skill(tmp_path):
     """The skill `pilothify install --project --platform claude` writes (SKILL.md
     plus references/) is never indexed; the user's code and their own skills
-    in the same .claude/skills/ dir still are (#4057)."""
+    in the same .claude/skills/ dir still are."""
     from pilothify.install import _copy_skill_file
 
     (tmp_path / "auth.py").write_text("def login():\n    return 1\n")
@@ -2437,7 +2437,7 @@ def test_detect_skips_installed_pilothify_skill(tmp_path):
 def test_detect_skips_pilothify_skill_for_every_project_platform(tmp_path):
     """Every project-scope skill destination install.py knows about is pruned,
     so a new platform with a new layout fails here instead of silently being
-    indexed (#4057)."""
+    indexed."""
     from pilothify.install import _PLATFORM_CONFIG, _platform_skill_destination
 
     platforms = [*_PLATFORM_CONFIG, "gemini"]
@@ -2456,7 +2456,7 @@ def test_detect_skips_pilothify_skill_for_every_project_platform(tmp_path):
 
 def test_detect_keeps_skills_pilothify_source_layouts(tmp_path):
     """Only pilothify's installed skill path shape is pruned, not the bare names
-    "skills" or "pilothify" (#2479): pilothify's own repo layout
+    "skills" or "pilothify": pilothify's own repo layout
     (pilothify/skills/<host>/references/), a top-level skills/pilothify/ as
     published by a skills repo, and similar names outside a hidden dir stay."""
     keep = [
@@ -2495,7 +2495,7 @@ def test_detect_skips_every_file_pilothify_install_writes(tmp_path, monkeypatch)
     """Run every project install in install.py (plus the CLI installers that
     write into the project directly) and check that nothing pilothify wrote
     whole is indexed: skill folders, always-on rules/steering/workflow files
-    and hook plugins. A new platform that writes a new file fails here (#4057)."""
+    and hook plugins. A new platform that writes a new file fails here."""
     from pilothify import install as inst
     from pilothify.extract import collect_files
 
@@ -2567,7 +2567,7 @@ def test_is_noise_dir_pilothify_skill_needs_parent():
 
 
 def test_detect_extra_excludes_pattern(tmp_path):
-    """extra_excludes patterns exclude matching files from detect() (#947)."""
+    """extra_excludes patterns exclude matching files from detect()."""
     (tmp_path / "main.py").write_text("x = 1")
     (tmp_path / "secret.py").write_text("API_KEY = 'abc'")
     subdir = tmp_path / "legacy"
@@ -3101,7 +3101,7 @@ def test_to_absolute_from_storage_keeps_a_foreign_key_in_its_own_syntax(tmp_path
 
 def test_save_manifest_relativize_step_collapses_seeded_duplicates(tmp_path, monkeypatch):
     """#1964: the same collapse must happen on the WRITE side too. If the
-    seeded rows hold two keys for a file untouched by this save (#917) that
+    seeded rows hold two keys for a file untouched by this save that
     relativize to the same stored key, the relativize step must not silently
     keep the stale one just because it happens to iterate last.
 
@@ -3169,7 +3169,7 @@ def test_save_manifest_out_of_root_keeps_absolute(tmp_path):
 
 def test_detect_incremental_portable_across_paths(tmp_path):
     """End-to-end: a manifest written at one root must be readable from a
-    different absolute prefix (the cross-machine case #777 is about).
+    different absolute prefix (the cross-machine case  is about).
     Simulates two checkouts of the same corpus by hard-linking files into a
     second tmp dir and comparing detection results."""
     import json
@@ -3209,7 +3209,7 @@ def test_detect_incremental_portable_across_paths(tmp_path):
 def _rewrite_manifest_keys_nfd(manifest_path):
     """Rewrite a saved manifest so every key is in NFD form, simulating a
     manifest written by a macOS run where os.walk/getcwd yielded decomposed
-    paths (#2221). Returns the rewritten key list for sanity checks."""
+    paths. Returns the rewritten key list for sanity checks."""
     import json
     p = Path(manifest_path)
     raw = json.loads(p.read_text(encoding="utf-8"))
@@ -3330,7 +3330,7 @@ def test_convert_office_file_hash_stable_across_nfc_nfd(tmp_path, monkeypatch):
     NFC or NFD form. On macOS os.walk/rglob yield NFD paths while directly
     constructed Paths are NFC; without NFC-normalizing before hashing the same
     .docx would get a different sidecar name (and manifest key) on every run,
-    forcing a full re-extraction under --update (#1226).
+    forcing a full re-extraction under --update.
     """
     monkeypatch.setattr(detect_mod, "docx_to_markdown", lambda p: "hello world")
 
@@ -3356,7 +3356,7 @@ def test_convert_office_file_hash_stable_across_nfc_nfd(tmp_path, monkeypatch):
 def test_convert_office_file_does_not_rewrite_existing_sidecar(tmp_path, monkeypatch):
     """A second conversion of an unchanged source must not rewrite the sidecar,
     so its mtime stays put and detect_incremental keeps treating it as
-    unchanged (#1226)."""
+    unchanged."""
     monkeypatch.setattr(detect_mod, "docx_to_markdown", lambda p: "hello world")
 
     out_dir = tmp_path / "converted"
@@ -3628,7 +3628,7 @@ def test_nested_pilothify_out_prunes_only_configured_path(
 
 
 def test_detect_records_unclassified_extensionless_files(tmp_path):
-    # #1692: extensionless, non-shebang project files (Dockerfile, Makefile, ...)
+    # extensionless, non-shebang project files (Dockerfile, Makefile, ...)
     # were considered but left no trace. detect() now lists them under
     # "unclassified" so they can be surfaced instead of silently vanishing.
     (tmp_path / "app.py").write_text("def f():\n    return 1\n")
@@ -3650,7 +3650,7 @@ def test_detect_unclassified_empty_when_all_supported(tmp_path):
 
 
 def test_unclassified_warning_fires_when_most_of_the_corpus_has_no_extractor(tmp_path):
-    # #2942: a repo whose business logic lives in a language pilothify cannot
+    # a repo whose business logic lives in a language pilothify cannot
     # parse (here: generic .xml) produces a graph that looks complete but
     # represents only part of the codebase. Past the absolute-count floor
     # and the fraction threshold, detect() must say so plainly, not just
@@ -3693,7 +3693,7 @@ def test_unclassified_warning_silent_under_the_fraction_threshold(tmp_path):
 
 
 def test_pilothifyinclude_is_inert_and_not_unclassified(tmp_path, capsys):
-    """#2112: .pilothifyinclude support was removed (dead since #873).
+    """#2112: .pilothifyinclude support was removed (dead since).
 
     A leftover .pilothifyinclude must not error, must not surface in the
     unclassified list, and must not change which real files are indexed.
@@ -3743,7 +3743,7 @@ def test_detect_surfaces_unreadable_dir_instead_of_silent_skip(tmp_path, capsys)
     anything. Shimming geteuid would not help — Windows ignores POSIX mode bits,
     so `chmod 000` leaves the directory readable and the test fails on its real
     assertion instead. Both reasons say the same thing: this test cannot run here
-    (#2643).
+   .
     """
     if os.geteuid() == 0:
         pytest.skip("running as root: chmod 000 does not block scandir")
@@ -3797,7 +3797,7 @@ def test_nested_gitignore_patterns_still_apply_inside_their_dir(tmp_path):
 def test_nested_gitignore_does_not_govern_sibling_project(tmp_path):
     """A nested .gitignore ('data/') in one project must not drop a sibling
     project's data/ files, and the drop must be recorded in the `ignored`
-    diagnostic field rather than silently vanishing (#1922)."""
+    diagnostic field rather than silently vanishing."""
     (tmp_path / "run.py").write_text("x = 1")
     pa = tmp_path / "project_a" / "data"
     pa.mkdir(parents=True)
@@ -3822,9 +3822,9 @@ def test_nested_gitignore_does_not_govern_sibling_project(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# #1908: manifest must not retain scan-excluded files as permanent
+# manifest must not retain scan-excluded files as permanent
 # "deleted" entries. Full-scan saves prune excluded-but-alive rows; subset
-# saves keep preserving untouched rows (#917); out-of-root rows never prune.
+# saves keep preserving untouched rows; out-of-root rows never prune.
 # ---------------------------------------------------------------------------
 
 def test_save_manifest_full_scan_prunes_excluded_but_alive_row(tmp_path):
@@ -3872,7 +3872,7 @@ def test_save_manifest_full_scan_still_prunes_missing_file(tmp_path):
 
 
 def test_save_manifest_subset_save_preserves_untouched_rows(tmp_path):
-    """Without scan_corpus (changed_paths hooks, skill runbooks, #917) a
+    """Without scan_corpus (changed_paths hooks, skill runbooks) a
     subset save must keep seeding rows for files it wasn't given."""
     import json
     a = tmp_path / "a.py"
@@ -3918,7 +3918,7 @@ def test_save_manifest_full_scan_keeps_out_of_root_rows(tmp_path):
 
 
 def _write_checkout_files(checkout: Path) -> list[Path]:
-    """Three files under one checkout: a.py, b.py, and src/c.py (#3581)."""
+    """Three files under one checkout: a.py, b.py, and src/c.py."""
     files = [checkout / "a.py", checkout / "b.py", checkout / "src" / "c.py"]
     (checkout / "src").mkdir(parents=True)
     files[0].write_text("a = 1\n", encoding="utf-8")
@@ -3941,7 +3941,7 @@ def _save_checkout_manifest(checkout: Path, files: list[Path], *, root, scan_cor
 
 def test_save_manifest_reclone_drops_other_checkout_when_scan_corpus_is_set(tmp_path):
     """A copied pilothify-out must not keep the old checkout's absolute keys
-    when the new save passes the full scan corpus (#3581)."""
+    when the new save passes the full scan corpus."""
     import json
     import shutil
     checkout_a = tmp_path / "checkout-a"
@@ -3962,7 +3962,7 @@ def test_save_manifest_reclone_drops_other_checkout_when_scan_corpus_is_set(tmp_
 
 
 def test_save_manifest_subset_save_keeps_other_checkout_absolute_keys(tmp_path):
-    """Omitting scan_corpus is a subset save (#917). It must keep absolute
+    """Omitting scan_corpus is a subset save. It must keep absolute
     keys that point at the other checkout."""
     import json
     import shutil
@@ -4017,7 +4017,7 @@ def test_save_manifest_subset_save_keeps_includes_that_share_basenames(tmp_path)
 
 def test_save_manifest_move_has_no_absolute_key_when_scan_corpus_is_set(tmp_path):
     """Deleting the old checkout before the save already yields relative keys
-    when scan_corpus is set (#3581)."""
+    when scan_corpus is set."""
     import json
     import shutil
     checkout_a = tmp_path / "checkout-a"
@@ -4040,7 +4040,7 @@ def test_save_manifest_move_has_no_absolute_key_when_scan_corpus_is_set(tmp_path
 
 def test_save_manifest_move_has_no_absolute_key_when_scan_corpus_is_unset(tmp_path):
     """Deleting the old checkout before the save already yields relative keys
-    when scan_corpus is omitted (#3581)."""
+    when scan_corpus is omitted."""
     import json
     import shutil
     checkout_a = tmp_path / "checkout-a"
@@ -4062,7 +4062,7 @@ def test_save_manifest_move_has_no_absolute_key_when_scan_corpus_is_unset(tmp_pa
 
 def test_save_manifest_drops_other_checkout_keys_mixed_with_relative_keys(tmp_path):
     """A manifest that already holds the new relative keys plus the old
-    absolute keys drops the old checkout on the next save (#3581)."""
+    absolute keys drops the old checkout on the next save."""
     import json
     import shutil
     checkout_a = tmp_path / "checkout-a"
@@ -4150,7 +4150,7 @@ def test_save_manifest_keeps_includes_whose_paths_are_not_this_tree(tmp_path):
 
 def test_detect_incremental_reports_excluded_not_deleted(tmp_path):
     """A previously-indexed file that becomes excluded (still on disk) must
-    land in excluded_files, not deleted_files (#1908)."""
+    land in excluded_files, not deleted_files."""
     a = tmp_path / "a.py"
     b = tmp_path / "b.py"
     a.write_text("x = 1\n")
@@ -4420,14 +4420,14 @@ def test_sensitive_bare_keyword_prose_still_dropped():
 def test_sensitive_bare_plural_tokens_prose_indexed(path):
     """Bare plural "tokens" in a prose file is a design-token reference doc,
     not a credential dump — unlike "token.md" (singular) or "secrets.md"
-    (another keyword's bare plural), which still read as dumps (#3527)."""
+    (another keyword's bare plural), which still read as dumps."""
     from pilothify.detect import _is_sensitive
     assert not _is_sensitive(Path(path))
 
 
 def test_sensitive_bare_plural_tokens_still_flagged_outside_prose():
     """The plural exemption is scoped to prose extensions only — "tokens.txt"
-    is still a plausible secret store and stays excluded (#3527)."""
+    is still a plausible secret store and stays excluded."""
     from pilothify.detect import _is_sensitive
     assert _is_sensitive(Path("tokens.txt"))
     assert _is_sensitive(Path("tokens.json"))
@@ -4489,7 +4489,7 @@ def test_lexical_relative_matches_pathlib_relative_to():
     """The string-space `_lexical_relative` must return exactly what
     `_nfc(str(target.relative_to(anchor)).replace(os.sep, "/"))` would — including
     None where relative_to raises (target not under anchor). Guards the
-    reimplemented relative_to against silent drift (#2226)."""
+    reimplemented relative_to against silent drift."""
     from pathlib import Path
     from pilothify.detect import _lexical_relative, _nfc
 
@@ -4530,7 +4530,7 @@ def test_globstar_matcher_leaves_no_reference_cycle():
 
 
 def _home_with_invalid_git(tmp_path, monkeypatch):
-    """A HOME holding a .git git would reject, plus a .gitignore, above a project (#4444)."""
+    """A HOME holding a .git git would reject, plus a .gitignore, above a project."""
     home = tmp_path / "home"
     (home / ".git").mkdir(parents=True)
     (home / ".gitignore").write_text("node_modules\n")
@@ -4544,7 +4544,7 @@ def _home_with_invalid_git(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize("contents", [[], ["config"], ["HEAD"], ["HEAD", "objects"]])
 def test_invalid_git_dir_is_not_a_vcs_root(tmp_path, monkeypatch, contents):
-    """An empty or incomplete .git dir is skipped, so a home .gitignore does not leak in (#4444)."""
+    """An empty or incomplete .git dir is skipped, so a home .gitignore does not leak in."""
     home, proj = _home_with_invalid_git(tmp_path, monkeypatch)
     for name in contents:
         if name == "HEAD":
@@ -4559,7 +4559,7 @@ def test_invalid_git_dir_is_not_a_vcs_root(tmp_path, monkeypatch, contents):
 
 
 def test_invalid_git_dir_walk_continues_to_valid_parent(tmp_path):
-    """Skipping an invalid inner .git keeps walking up to the real repo root (#4444)."""
+    """Skipping an invalid inner .git keeps walking up to the real repo root."""
     _make_git_dir(tmp_path)
     (tmp_path / ".pilothifyignore").write_text("vendor/\n")
     sub = tmp_path / "pkg"
@@ -4606,7 +4606,7 @@ def test_real_git_repo_and_worktree_are_vcs_roots(tmp_path):
 
 
 def _git_workspace_with_worktree(tmp_path):
-    """ws/ holding a repo and a linked worktree of it as siblings (#4683)."""
+    """ws/ holding a repo and a linked worktree of it as siblings."""
     ws = tmp_path / "ws"
     app = ws / "app"
     (app / "src").mkdir(parents=True)
@@ -4621,7 +4621,7 @@ def _git_workspace_with_worktree(tmp_path):
 @pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
 def test_detect_prunes_sibling_linked_worktree(tmp_path):
     """A linked worktree whose main checkout is also inside the scan root is a
-    second copy of the same repo — it is pruned, not indexed (#4683). The
+    second copy of the same repo — it is pruned, not indexed. The
     workspace root has no .git (info/exclude cannot cover this) and the
     worktree dir name is arbitrary (the name-based rules cannot either)."""
     ws, _app, _wt = _git_workspace_with_worktree(tmp_path)
@@ -4634,7 +4634,7 @@ def test_detect_prunes_sibling_linked_worktree(tmp_path):
 
 @pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
 def test_detect_indexes_worktree_as_scan_root(tmp_path):
-    """Scanning the linked worktree itself still indexes it (#4683)."""
+    """Scanning the linked worktree itself still indexes it."""
     _ws, _app, wt = _git_workspace_with_worktree(tmp_path)
     result = detect(wt)
     all_files = as_posix_list(f for files in result["files"].values() for f in files)
@@ -4644,7 +4644,7 @@ def test_detect_indexes_worktree_as_scan_root(tmp_path):
 @pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
 def test_detect_keeps_worktree_whose_main_is_outside_root(tmp_path):
     """A worktree whose main checkout is outside the scan root is the only
-    copy in the corpus — it stays indexed (#4683)."""
+    copy in the corpus — it stays indexed."""
     main = tmp_path / "main"
     (main / "src").mkdir(parents=True)
     _git(main, "init", "-q")
@@ -4662,7 +4662,7 @@ def test_detect_keeps_worktree_whose_main_is_outside_root(tmp_path):
 def test_detect_keeps_submodule_gitdir_without_commondir(tmp_path):
     """A submodule's .git file points at <super>/.git/modules/<name>, which
     carries no commondir — it is not a linked worktree and stays indexed
-    (#4683)."""
+   ."""
     ws = tmp_path / "ws"
     sub = ws / "vendor" / "sub"
     sub.mkdir(parents=True)

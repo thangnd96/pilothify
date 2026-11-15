@@ -1,4 +1,4 @@
-"""Nested Python class definitions must keep their lexical owner (#4220)."""
+"""Nested Python class definitions must keep their lexical owner."""
 
 from pilothify.extract import extract
 

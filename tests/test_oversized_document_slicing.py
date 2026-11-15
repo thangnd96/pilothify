@@ -8,8 +8,7 @@ whole file — but it only splits suffixes listed in `_SPLITTABLE_TEXT_SUFFIXES`
 That list and `detect.DOC_EXTENSIONS` drifted. `.qmd`, `.skill`, `.html`,
 `.yaml` and `.yml` were classified as documents, so they reached the model, and
 were not splittable, so a 38,411-character one arrived as its first 20,000
-characters — no warning, no `_partial_files` marker, nothing in the report
-(#2900).
+characters — no warning, no `_partial_files` marker, nothing in the report.
 
 The contract test below is the point of this file: it fails when a new suffix is
 added to `DOC_EXTENSIONS` without deciding how it gets sliced, so the two lists

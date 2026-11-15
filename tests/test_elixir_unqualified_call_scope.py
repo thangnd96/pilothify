@@ -1,4 +1,4 @@
-"""Unqualified Elixir calls resolve only into imported/used modules (#4001).
+"""Unqualified Elixir calls resolve only into imported/used modules.
 
 The shared cross-file call pass bound a bare call to any same-named def in the
 corpus. In Elixir an unqualified call can only reach the caller's own module,

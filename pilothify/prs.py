@@ -145,7 +145,7 @@ def _gh(*args: str) -> list | dict | None:
             stdin=subprocess.DEVNULL,
             # Decode gh's output as UTF-8, not the Windows cp1252 locale codec: gh
             # emits UTF-8 JSON with non-Latin1 titles/logins (emoji, فارسی), and the
-            # default text=True decode crashes on those (#1505 fixed the same in llm).
+            # default text=True decode crashes on those (fixed the same in llm).
             capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30
         )
         if result.returncode != 0:

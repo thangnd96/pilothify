@@ -217,7 +217,7 @@ def test_dispatch_command_provider_add_rejects_non_finite_or_negative_pricing(
     tmp_path, monkeypatch, capsys, bad
 ):
     """A price that parses as a float but is NaN/inf/negative is rejected: it
-    would otherwise flow into cost estimation as NaN/inf/negative (#5031)."""
+    would otherwise flow into cost estimation as NaN/inf/negative."""
     import sys
     from pilothify import cli, llm
 

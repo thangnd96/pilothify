@@ -68,7 +68,7 @@ def test_prefix_graph_rewrites_edges():
 
 def test_prefix_graph_rewrites_edge_directional_attributes():
     """prefix_graph_for_global must update directional edge attributes (_src/_tgt)
-    so they stay aligned with the prefixed node IDs (#2261)."""
+    so they stay aligned with the prefixed node IDs."""
     from pilothify.build import prefix_graph_for_global
     G = _make_graph(
         [{"id": "rota", "label": "rota.js"}, {"id": "collections", "label": "collections.js"}],

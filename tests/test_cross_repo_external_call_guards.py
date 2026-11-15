@@ -1,4 +1,4 @@
-"""Regression tests for cross-repo calls on externally resolved C# types (#3360)."""
+"""Regression tests for cross-repo calls on externally resolved C# types."""
 from __future__ import annotations
 
 from pathlib import Path

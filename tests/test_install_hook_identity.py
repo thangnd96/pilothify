@@ -1,4 +1,4 @@
-"""Hook install/uninstall must remove only pilothify's own hook entries (#4359).
+"""Hook install/uninstall must remove only pilothify's own hook entries.
 
 Install and uninstall used to identify pilothify's hooks with
 ``"pilothify" in str(group)`` over the whole group dict. That removed:

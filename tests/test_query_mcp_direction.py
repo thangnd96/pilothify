@@ -3,7 +3,7 @@
 The CLI `query` loads graph.json undirected and is covered by
 tests/test_query_cli.py::test_query_cli_preserves_calls_direction_when_seeded_on_callee.
 The MCP server loads the same file through `_load_graph`, which forces
-`directed: True` (#2309), and `_bfs`/`_dfs` expand through `G.neighbors()` —
+`directed: True`, and `_bfs`/`_dfs` expand through `G.neighbors()` —
 successors only on a DiGraph. Seeded on a node with no outgoing edges the
 traversal therefore stopped at the seed, and `query_graph` answered with one
 node where the CLI answered with the callers.

@@ -190,7 +190,7 @@ def extract_r(path: Path) -> dict:
         # normalizes to the same suffix as an ordinary identifier (`%foo%` and foo
         # would both be `{owner}_foo`, silently dropping the second). Route every
         # backtick-quoted name through a reserved namespace keyed on its exact
-        # bytes (#4253). Repeated underscores can't be produced by _make_id for
+        # bytes. Repeated underscores can't be produced by _make_id for
         # ordinary names, so the two namespaces never collide.
         if not suffix or name.startswith("`"):
             return f"{owner}__operator__{name.encode('utf-8').hex()}"

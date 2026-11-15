@@ -1,4 +1,4 @@
-"""C# calls through a member chain, element access, or a constructor (#4246).
+"""C# calls through a member chain, element access, or a constructor.
 
 `run.Sequence.Apply()`, `_configs[i].WriteIds()` and a call inside a
 constructor body produced no calls edge when the callee lived in another file.
@@ -146,7 +146,7 @@ def test_element_access_without_element_type_gives_no_edge(tmp_path):
 
 def test_constructor_calls_are_attributed_to_the_constructor(tmp_path):
     # A constructor is its own node, so its body's calls are its calls, not
-    # the type's (#4246 credited them to the type before constructors had nodes).
+    # the type's (credited them to the type before constructors had nodes).
     calls, r = _calls(tmp_path, {
         "Bound.cs": (
             "namespace Demo\n{\n"

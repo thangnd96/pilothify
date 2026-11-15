@@ -102,7 +102,7 @@ def test_community_article_shows_cohesion(tmp_path):
 
 
 def test_community_article_has_audit_trail(tmp_path):
-    """Each incident edge is counted exactly ONCE (#2633).
+    """Each incident edge is counted exactly ONCE.
 
     The Parsing Layer (n1, n2) touches two edges: n1-n2 (EXTRACTED, both
     endpoints inside) and n1-n3 (INFERRED, crossing out). Counting
@@ -121,7 +121,7 @@ def test_community_article_has_audit_trail(tmp_path):
 
 
 def test_audit_trail_counts_parallel_edges_individually(tmp_path):
-    """On a MultiGraph each parallel edge is its own row in the split (#2633).
+    """On a MultiGraph each parallel edge is its own row in the split.
 
     Collapsing them to the first (``edge_data``) hid an AMBIGUOUS edge behind an
     EXTRACTED one running between the same pair — the same understatement as the
@@ -200,7 +200,7 @@ def test_community_article_truncation_notice(tmp_path):
 
 # Regression tests for #925 - cross-community links always empty when node attrs lack community
 def test_cross_community_links_without_node_community_attrs(tmp_path):
-    """Cross-community links must work even when nodes have no 'community' attribute (#925)."""
+    """Cross-community links must work even when nodes have no 'community' attribute."""
     G = nx.Graph()
     G.add_node("n1", label="parse", file_type="code", source_file="parser.py")
     G.add_node("n2", label="render", file_type="code", source_file="renderer.py")
@@ -213,7 +213,7 @@ def test_cross_community_links_without_node_community_attrs(tmp_path):
 
 
 def test_god_node_article_community_without_node_attr(tmp_path):
-    """God node article must show community name even when node has no 'community' attr (#925)."""
+    """God node article must show community name even when node has no 'community' attr."""
     G = nx.Graph()
     G.add_node("n1", label="parse", file_type="code", source_file="parser.py")
     G.add_node("n2", label="validate", file_type="code", source_file="parser.py")
@@ -229,7 +229,7 @@ def test_god_node_article_community_without_node_attr(tmp_path):
 # Regression tests for #936 - stale community node IDs crash to_wiki after dedup/re-extract
 
 def test_to_wiki_drops_stale_community_nodes(tmp_path):
-    """Stale node IDs in communities dict are silently dropped without crash (#936)."""
+    """Stale node IDs in communities dict are silently dropped without crash."""
     G = _make_graph()
     # Add a stale ID that exists in communities but not in G
     communities = {0: ["n1", "n2", "stale_ghost"], 1: ["n3", "n4"]}
@@ -241,7 +241,7 @@ def test_to_wiki_drops_stale_community_nodes(tmp_path):
 
 
 def test_to_wiki_all_stale_raises(tmp_path):
-    """If every community node is stale, raise ValueError with a helpful message (#936)."""
+    """If every community node is stale, raise ValueError with a helpful message."""
     G = _make_graph()
     all_stale = {0: ["ghost1", "ghost2"], 1: ["ghost3"]}
     with pytest.raises(ValueError, match="stale"):
@@ -249,7 +249,7 @@ def test_to_wiki_all_stale_raises(tmp_path):
 
 
 def test_to_wiki_stale_nodes_prints_warning(tmp_path, capsys):
-    """Stale node IDs trigger a stderr warning showing the drop count (#936)."""
+    """Stale node IDs trigger a stderr warning showing the drop count."""
     G = _make_graph()
     communities = {0: ["n1", "stale1", "stale2"], 1: ["n3", "n4"]}
     to_wiki(G, communities, tmp_path, community_labels=LABELS)
@@ -259,7 +259,7 @@ def test_to_wiki_stale_nodes_prints_warning(tmp_path, capsys):
 
 
 def test_community_article_handles_null_source_file(tmp_path):
-    """source_file=None on a node must not crash sorted() with TypeError (#1016)."""
+    """source_file=None on a node must not crash sorted() with TypeError."""
     G = nx.Graph()
     G.add_node("n1", label="parse", file_type="code", source_file=None, community=0)
     G.add_node("n2", label="validate", file_type="code", source_file="parser.py", community=0)
@@ -339,7 +339,7 @@ def test_to_wiki_article_labelled_index_does_not_overwrite_index_md(tmp_path):
 # Unicode labels that share a case fold but not a lower() spelling. On 0.9.104,
 # lower()-based slug dedup allocated a distinct slug for each, while the
 # casefold()-based orphan sweep mapped both filenames to the same key and
-# unlinked whichever current article it did not keep (#5087).
+# unlinked whichever current article it did not keep.
 _UNICODE_FOLD_PAIRS = [
     ("Straße", "STRASSE"),
     ("Σ", "ς"),
@@ -366,7 +366,7 @@ def test_to_wiki_unicode_case_fold_collision_keeps_both_articles(tmp_path, kind,
     """Two simultaneously produced Unicode labels with the same case fold must
     both survive. Allocating slugs with lower() while the orphan sweep folds with
     casefold() let both slugs through and then deleted one as if it were a stale
-    spelling, leaving index.md linking to a file that no longer existed (#5087)."""
+    spelling, leaving index.md linking to a file that no longer existed."""
     first, second = labels
     G = nx.Graph()
     G.add_node("n1", label=first, file_type="code", source_file="a.py")
@@ -402,7 +402,7 @@ def test_to_wiki_unicode_case_fold_collision_keeps_both_articles(tmp_path, kind,
 
 def test_to_wiki_unicode_case_fold_repeat_export_is_stable(tmp_path):
     """Re-exporting the same graph must not delete an article the first export
-    wrote, and must leave the wiki byte-identical (#5087)."""
+    wrote, and must leave the wiki byte-identical."""
     first, second = _UNICODE_FOLD_PAIRS[0]
     G = nx.Graph()
     G.add_node("n1", label=first, file_type="code", source_file="a.py")
@@ -424,7 +424,7 @@ def test_to_wiki_unicode_case_fold_repeat_export_is_stable(tmp_path):
 def test_to_wiki_unicode_case_fold_relabel_removes_stale_twin(tmp_path):
     """The fold-aware sweep must still remove a genuinely stale spelling when a
     community is relabelled from one fold-equal form to the other. Keeping both
-    current articles must not turn the cleanup into a no-op (#4508, #5087)."""
+    current articles must not turn the cleanup into a no-op."""
     first, second = _UNICODE_FOLD_PAIRS[0]
     G = nx.Graph()
     G.add_node("n1", label="parse", file_type="code", source_file="a.py")
@@ -481,7 +481,7 @@ def test_wiki_link_display_keeps_label_but_target_is_filename(tmp_path):
 
 def test_wiki_special_characters_in_label_resolve(tmp_path):
     """Labels with spaces, &, #, and parentheses must produce a link whose target
-    IS the on-disk filename, with no encoding step in between (#2597).
+    IS the on-disk filename, with no encoding step in between.
 
     `#` and `(` `)` are the dangerous ones: left raw in a relative link, `#`
     would be misread as a fragment and `)` would terminate the destination
@@ -508,7 +508,7 @@ def test_wiki_link_with_bracketed_label_resolves(tmp_path):
     """A label containing `[` / `]` (e.g. a generic like `Array[T]`) produces a
     resolvable link: the brackets are escaped in the display text so they don't
     break the markdown, and kept verbatim in the target, which is legal in a
-    CommonMark link destination and matches the file on disk (#2597)."""
+    CommonMark link destination and matches the file on disk."""
     G = nx.Graph()
     G.add_node("n1", label="a", file_type="code", source_file="a.py", community=0)
     G.add_node("n2", label="b", file_type="code", source_file="b.py", community=1)
@@ -568,7 +568,7 @@ def test_index_links_same_labelled_communities_to_own_articles(tmp_path):
     """Two communities may carry the same label. Each is written to its own file
     (`Core.md`, `Core_2.md`), so the index rows must target one each. Resolving
     the target from the label instead points both rows at whichever community
-    was slugged first, orphaning the second article (#3032)."""
+    was slugged first, orphaning the second article."""
     G = nx.Graph()
     G.add_node("n1", label="a", file_type="code", source_file="a.py", community=0)
     G.add_node("n2", label="b", file_type="code", source_file="b.py", community=0)
@@ -589,7 +589,7 @@ def test_index_links_same_labelled_communities_to_own_articles(tmp_path):
 def test_index_links_same_labelled_god_nodes_to_own_articles(tmp_path):
     """Same for god nodes: two nodes sharing a label get one article each, and
     the index must link each row to its own. Resolving by label sends both rows
-    to the first article and leaves `GameState_2.md` unreachable (#3033)."""
+    to the first article and leaves `GameState_2.md` unreachable."""
     G = nx.Graph()
     G.add_node("n1", label="GameState", file_type="code", source_file="a.py", community=0)
     G.add_node("n2", label="GameState", file_type="code", source_file="b.py", community=0)

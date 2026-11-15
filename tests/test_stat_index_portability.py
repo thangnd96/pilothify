@@ -28,7 +28,7 @@ from pilothify import cache
 
 def _reset_stat_index():
     """The stat-index location/anchor are chosen once per process via module
-    globals (#1747/#2199). Reset them so each test sees a fresh-process
+    globals. Reset them so each test sees a fresh-process
     decision — same pattern as tests/test_extract_cache_location.py."""
     cache._stat_index_root = None
     cache._stat_index_anchor = None
@@ -238,7 +238,7 @@ def test_normalize_path_undoes_the_unc_long_path_prefix(monkeypatch):
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows extended-length paths")
 def test_long_path_spelling_does_not_switch_the_root(tmp_path):
-    r"""Files are opened through os_long_path() (#4925), which spells the root
+    r"""Files are opened through os_long_path(), which spells the root
     ``\\?\C:\...``. Binding the stat index to that spelling made the plain
     cache_root that extract() passes look like a second root: a #3989 warning
     and a mid-run flush on every Windows update."""

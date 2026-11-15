@@ -1,7 +1,7 @@
-"""Step 3 Part A passes root= to extract(), so the cache location never anchors ids (#3727).
+"""Step 3 Part A passes root= to extract(), so the cache location never anchors ids.
 
 ``extract(paths, cache_root=...)`` uses ``cache_root`` as the fallback anchor for
-``source_file`` and node ids when ``root`` is not given (#1941). Part A called it
+``source_file`` and node ids when ``root`` is not given. Part A called it
 with ``cache_root`` alone. That is harmless while the cache sits in the scan root,
 but the two parameters look alike, and anyone adapting the block to a cache that
 lives elsewhere re-anchored every code node: same node count, every id renamed,

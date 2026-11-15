@@ -1,4 +1,4 @@
-"""`import('…')` in plain .ts/.js must produce exactly one edge per fact (#2575).
+"""`import('…')` in plain .ts/.js must produce exactly one edge per fact.
 
 tree-sitter models ``await import('x')`` as a ``call_expression``, not an
 ``import_statement``, so the specifier only reaches the graph when the call
@@ -286,9 +286,9 @@ def test_declared_npm_dependency_keeps_its_import_edge(tmp_path, monkeypatch):
     apart, and the importing edge — which carries neither salt's source key —
     was left on the now-dead id and dropped at build. The perverse result was
     that an UNDECLARED package kept its edge (nothing to collide with) while a
-    properly declared dependency became invisible (#3084).
+    properly declared dependency became invisible.
 
-    The stub is a module anchor, like the Swift ones (#1327), so it collapses onto
+    The stub is a module anchor, like the Swift ones, so it collapses onto
     the declaration instead of being salted away from it.
     """
     _write(tmp_path / "package.json",

@@ -64,7 +64,7 @@ def test_word_count_augments_existing_hash_entry(tmp_path, monkeypatch):
     assert cache.file_hash(f, tmp_path) == h
     key = str(cache._normalize_path(f).resolve())
     entry = cache._stat_index[key]
-    # #1989: digests are now stored per salt under "hashes" (salt = path relative
+    # digests are now stored per salt under "hashes" (salt = path relative
     # to root == "m.py" here), co-located with the word_count.
     assert entry.get("hashes", {}).get("m.py") == h and entry.get("word_count") == 3
 
@@ -86,7 +86,7 @@ def test_file_hash_is_order_independent_across_roots(tmp_path, monkeypatch):
     exp_rel = hashlib.sha256(content + b"\x00" + b"doc.txt").hexdigest()
     # The abs-path salt is case-preserving: it enters the digest as written, not
     # lowercased, so README.md and readme.md no longer collide on a case-sensitive
-    # filesystem (#4925, #4937).
+    # filesystem.
     exp_abs = hashlib.sha256(
         content + b"\x00" + str(cache._normalize_path(f).resolve()).replace("\\", "/").encode()
     ).hexdigest()

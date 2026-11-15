@@ -27,7 +27,7 @@ def _capture_client_kwargs(monkeypatch):
         resp.usage.prompt_tokens = 1
         resp.usage.completion_tokens = 1
         client.chat.completions.create.return_value = resp
-        # The ollama backend goes through Ollama's native /api/chat (#4413).
+        # The ollama backend goes through Ollama's native /api/chat.
         client.post.return_value = {
             "message": {"content": '{"nodes": [], "edges": [], "hyperedges": []}'},
             "done_reason": "stop",

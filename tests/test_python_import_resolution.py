@@ -190,7 +190,7 @@ def test_relative_subpackage_import_from_targets_package_init(tmp_path: Path):
     # with __init__.py, not a graphs.py module). The imports_from edge must
     # target the package's __init__.py file node, matching the companion
     # `imports` edge — not an absolute-scan-path slug for a nonexistent
-    # graphs.py that dangles per-checkout (#2455).
+    # graphs.py that dangles per-checkout.
     init = _write(tmp_path / "src/mypkg/__init__.py", "")
     api_init = _write(tmp_path / "src/mypkg/api/__init__.py", "")
     routes_init = _write(tmp_path / "src/mypkg/api/routes/__init__.py", "")
@@ -222,7 +222,7 @@ def test_relative_subpackage_import_from_targets_package_init(tmp_path: Path):
 
 
 def test_absolute_package_import_targets_package_init(tmp_path: Path):
-    """Absolute package imports must not leave dotted-name dangling edges (#3723)."""
+    """Absolute package imports must not leave dotted-name dangling edges."""
     files = [
         _write(tmp_path / "pkg/__init__.py", ""),
         _write(tmp_path / "pkg/sub/__init__.py", ""),

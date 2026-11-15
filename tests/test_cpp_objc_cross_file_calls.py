@@ -1,4 +1,4 @@
-"""Cross-file member-call and include resolution for C++ (#1547) and ObjC (#1556).
+"""Cross-file member-call and include resolution for C++ and ObjC.
 
 Mirrors tests/test_swift_cross_file_calls.py. The principle under test is PRECISION
 over recall: resolution is by RECEIVER TYPE (never a bare method name), guarded by a
@@ -40,7 +40,7 @@ def _call_edges(result: dict, relations=("calls",)):
     return out
 
 
-# ── C++ #include survival (#1547) ─────────────────────────────────────────────
+# ── C++ #include survival ─────────────────────────────────────────────
 
 def test_cpp_cross_file_member_call_connects_with_relative_paths(tmp_path):
     """The headline #1547 fix: a paired class no longer islands — Main.cpp's use of
@@ -86,7 +86,7 @@ def test_cpp_cross_file_member_call_connects_with_relative_paths(tmp_path):
     assert all("foo" in e["target"] for e in main_bar), main_bar
 
 
-# ── C++ member calls (#1547) ──────────────────────────────────────────────────
+# ── C++ member calls ──────────────────────────────────────────────────
 
 def test_cpp_instance_member_call_resolves(tmp_path: Path):
     # `Foo f; f.bar();` in Main.cpp resolves to Foo::bar — INFERRED (receiver typed
@@ -248,7 +248,7 @@ def test_cpp_godnode_guard_ambiguous_and_unknown_receiver(tmp_path: Path):
 def test_cpp_resolved_call_survives_build(tmp_path: Path):
     # The receiver-typed call targets the header-declared method node; build_from_json
     # must keep it. The cross-language INFERRED-call guard treats C/C++ as one family,
-    # so a `.cpp` -> `.h`-declared-method edge is not pruned (#1547).
+    # so a `.cpp` -> `.h`-declared-method edge is not pruned.
     base = tmp_path / "src"
     _write(base / "Foo.h", "class Foo {\npublic:\n  void bar();\n};\n")
     _write(base / "Foo.cpp", '#include "Foo.h"\nvoid Foo::bar() {}\n')
@@ -275,7 +275,7 @@ def test_cpp_unknown_receiver_emits_no_edge(tmp_path: Path):
     assert not any(c[0] == "main()" and c[2] == "help" for c in calls)
 
 
-# ── ObjC member calls (#1556) ─────────────────────────────────────────────────
+# ── ObjC member calls ─────────────────────────────────────────────────
 
 def test_objc_instance_message_send_resolves(tmp_path: Path):
     # `Foo *f = [[Foo alloc] init]; [f doThing];` in Bar.m -> cross-file calls edge

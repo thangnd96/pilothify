@@ -1,4 +1,4 @@
-"""Decision record: A/B comparison of candidate C# extension binders (#4828).
+"""Decision record: A/B comparison of candidate C# extension binders.
 
 The production pass is chosen by measuring candidates against fixtures whose
 ground truth is decidable from the C# spec. This module keeps the comparison

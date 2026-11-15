@@ -1,4 +1,4 @@
-"""Tests for file truncation warning in _read_files when exceeding _FILE_CHAR_CAP (#3773)."""
+"""Tests for file truncation warning in _read_files when exceeding _FILE_CHAR_CAP."""
 from pathlib import Path
 
 import pytest

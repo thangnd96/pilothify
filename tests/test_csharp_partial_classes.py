@@ -1,4 +1,4 @@
-"""C# partial classes split across files (#2332).
+"""C# partial classes split across files.
 
 `partial class Foo` declared in two files minted TWO class nodes (the node id
 carries the per-file stem), so the type's members split across the halves and
@@ -6,8 +6,8 @@ every receiver-typed lookup on `Foo` bailed as ambiguous — cross-half calls
 never resolved. `_merge_csharp_partial_class_nodes` collapses the halves onto
 one canonical node, keyed by (assembly, namespace, type path); same-named types
 in other namespaces, non-partial declarations, and nested types under a
-different enclosing chain are left alone (#4363). The assembly key is the nearest ancestor dir holding a `*.csproj`/
-`*.fsproj`/`*.vbproj` (#2411: `partial` never fuses across assemblies), with
+different enclosing chain are left alone. The assembly key is the nearest ancestor dir holding a `*.csproj`/
+`*.fsproj`/`*.vbproj` (: `partial` never fuses across assemblies), with
 "" — halves under no project at all, which still merge — as the sentinel.
 """
 from __future__ import annotations
@@ -179,7 +179,7 @@ def test_nested_partial_cross_half_unqualified_call_resolves(tmp_path):
 
 
 def test_cross_half_unqualified_call_beats_a_same_named_method_elsewhere(tmp_path):
-    """The in-file own-class binding (#4252) cannot see the other half of a
+    """The in-file own-class binding cannot see the other half of a
     partial type; a same-named method on another type must not make the
     cross-half call ambiguous."""
     calls, r = _extract(tmp_path, {
@@ -269,7 +269,7 @@ def test_deeply_nested_partials_key_on_the_whole_enclosing_chain(tmp_path):
 
 
 def test_generic_and_non_generic_partials_not_merged(tmp_path):
-    """`Foo` and `Foo<T>` are distinct types with distinct ids (#4249); the
+    """`Foo` and `Foo<T>` are distinct types with distinct ids; the
     merge must not fold them back together, top-level or as an outer."""
     calls, r = _extract(tmp_path, {
         "A.cs": "namespace App { public partial class Foo { public void A() {} } }\n",
@@ -398,8 +398,8 @@ def test_assembly_probe_without_scanned_csproj(tmp_path):
 # The merge rewrites every edge in the corpus, not only C# ones. It must drop
 # only the self-loops it creates itself (two distinct halves collapsing into
 # one node) and leave every edge it does not remap exactly as it was — the
-# same rules as the Swift extension merge (#2538) and deduplicate_entities
-# (#3809). Before this, one partial class anywhere in a repo erased every
+# same rules as the Swift extension merge and deduplicate_entities
+#. Before this, one partial class anywhere in a repo erased every
 # recursive call, in every language.
 # ---------------------------------------------------------------------------
 

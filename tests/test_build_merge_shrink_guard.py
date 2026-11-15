@@ -1,5 +1,5 @@
-"""build_merge safety rails: the #479 shrink guard rework (#2497) and
-root-mismatch prune fallbacks (#2446).
+"""build_merge safety rails: the #479 shrink guard rework and
+root-mismatch prune fallbacks.
 
 - #2497: the original shrink guard compared the new node count against
   `existing_nodes` AFTER the replace-on-re-extract rebind had already removed
@@ -83,7 +83,7 @@ def test_legit_replacement_reduction_allowed(tmp_path):
 def test_unexplained_loss_blocked(tmp_path, monkeypatch):
     """A build that drops a node from an UNTOUCHED file (neither re-extracted
     nor pruned this run) must raise instead of silently destroying it — the
-    exact failure the dead #479 guard waved through (#2497)."""
+    exact failure the dead #479 guard waved through."""
     gp = tmp_path / "pilothify-out" / "graph.json"
     _write_graph(
         gp,
@@ -115,9 +115,9 @@ def test_grow_and_equal_unaffected(tmp_path):
 
 
 def test_replacement_is_reported_and_own_file_loss_excused(tmp_path, capsys):
-    """Visibility (#2497): the replace-on-re-extract rebind is announced on
+    """Visibility: the replace-on-re-extract rebind is announced on
     stderr, and a re-extract that under-produces for its OWN file is excused
-    (owned by the extraction layer's incomplete-build guard, #1951)."""
+    (owned by the extraction layer's incomplete-build guard)."""
     gp = _seed_12(tmp_path)
     chunk = {"nodes": [_node(0, "a.md")], "edges": []}
     G = build_merge([chunk], gp, dedup=False)  # must not raise
@@ -226,7 +226,7 @@ def test_partial_match_reports_only_matched_entry_count(tmp_path, capsys):
 
 def test_merge_raw_extraction_absolute_prune_custom_layout(tmp_path):
     """merge_raw_extraction (the raw --no-cluster incremental path) shares the
-    derived-root fallback (#2446 parity)."""
+    derived-root fallback (parity)."""
     root = tmp_path / "proj"
     root.mkdir()
     gp = root / "graph.json"

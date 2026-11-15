@@ -1,4 +1,4 @@
-"""File-node labels are disambiguated when basenames collide (#2032).
+"""File-node labels are disambiguated when basenames collide.
 
 In directory-per-entrypoint repos (Supabase Edge Functions, Next.js pages,
 Rust mod.rs, Python __init__.py) many files share a basename, so basename-only

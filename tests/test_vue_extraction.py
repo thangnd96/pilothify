@@ -246,7 +246,7 @@ function go(): void {
 
 def test_generic_component_open_tag_with_angle_brackets(tmp_path):
     """A Vue 3.3+ generic= attribute containing '>' (e.g. Record<string, unknown>)
-    must not prematurely end the <script> open tag and swallow the body (#1468)."""
+    must not prematurely end the <script> open tag and swallow the body."""
     _write(tmp_path / "utils/helper.ts", "export function helper(){}\n")
     comp = _write(
         tmp_path / "Generic.vue",

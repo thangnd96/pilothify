@@ -66,7 +66,7 @@ def test_build_from_json_relativizes_hyperedge_source_file(tmp_path):
     """build_from_json(root=...) must relativize hyperedge source_file like it
     already does for nodes and edges. to_json writes G.graph['hyperedges']
     verbatim and has no root parameter, so an absolute path emitted by a semantic
-    subagent would otherwise leak into graph.json (#1418)."""
+    subagent would otherwise leak into graph.json."""
     base = tmp_path.resolve()
     abs_doc = base / "docs" / "CLAUDE.md"
     extraction = {
@@ -153,7 +153,7 @@ def test_attach_hyperedges_tolerates_id_less_persisted():
 
 def test_attach_hyperedges_tolerates_many_id_less_persisted():
     """The real corpus had 183/234 persisted hyperedges id-less: all of them must
-    load without crashing and be retained (#2775)."""
+    load without crashing and be retained."""
     G = nx.DiGraph()
     G.graph["hyperedges"] = [
         {"nodes": ["a", "b"], "type": "project", "attributes": {}} for _ in range(5)
@@ -270,7 +270,7 @@ def test_report_skips_hyperedges_section_when_key_missing():
 
 
 # ---------------------------------------------------------------------------
-# 7. Hyperedge member-key alias normalization (#1561)
+# 7. Hyperedge member-key alias normalization
 # ---------------------------------------------------------------------------
 
 def _alias_extraction():

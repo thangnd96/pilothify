@@ -76,7 +76,7 @@ def test_each_root_gets_its_own_stat_index_file_not_the_first_roots(monkeypatch,
 
 def test_switching_cache_root_mid_process_warns(monkeypatch, tmp_path):
     """Crossing from one bound root to another in the same process must be
-    visible, not silent (#3989 minimum-fix requirement)."""
+    visible, not silent (minimum-fix requirement)."""
     src_a, out_a = _make_project(tmp_path, "a")
     src_b, out_b = _make_project(tmp_path, "b")
 

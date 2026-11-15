@@ -183,7 +183,7 @@ def extract_zig(path: Path) -> dict:
                     # whole type was dropped (its value node type was unrecognised),
                     # losing both the error type and its members. Emit a node plus a
                     # `case_of` edge per member — the Zig error-set parity of the
-                    # enum members handled above (and Java #1719 / Swift / Scala).
+                    # enum members handled above (and Java  / Swift / Scala).
                     for child in value_node.children:
                         if child.type != "identifier":
                             continue

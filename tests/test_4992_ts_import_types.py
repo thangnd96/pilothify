@@ -1,4 +1,4 @@
-"""TypeScript import types must not become runtime dependencies (#4992)."""
+"""TypeScript import types must not become runtime dependencies."""
 import pytest
 
 from pilothify.extract import extract_js

@@ -610,7 +610,7 @@ def test_solidity_underscore_member_gets_its_own_node_and_calls(tmp_path):
 
 @_needs_solidity
 def test_solidity_underscore_salt_changes_only_the_clashing_id(tmp_path):
-    # Only the `_` spelling is salted, as C# does (#4415): the public name and
+    # Only the `_` spelling is salted, as C# does: the public name and
     # every member that clashes with nothing keep the id they had.
     source = tmp_path / "Roles.sol"
     source.write_text(_ROLES, encoding="utf-8")

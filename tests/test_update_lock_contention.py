@@ -1,4 +1,4 @@
-"""The lock-queue contract for rebuild requests (#4769).
+"""The lock-queue contract for rebuild requests.
 
 A rebuild request that loses the per-repo lock has to leave something behind, or
 tell its caller it was not served. This file pins that contract for every request
@@ -198,7 +198,7 @@ def test_i4_pending_full_and_pending_changes_keep_their_semantics(built: Path) -
     assert _drain_pending_full(out) is False
 
     _queue_pending(out, [Path("/x/a.py"), Path("/x/a.py"), Path("/y/b.py")])
-    # Compare Path objects so Windows separators from os.fspath do not fail the check (#5039).
+    # Compare Path objects so Windows separators from os.fspath do not fail the check.
     assert _drain_pending(out) == [Path("/x/a.py"), Path("/y/b.py")]
     assert _drain_pending(out) == []
 

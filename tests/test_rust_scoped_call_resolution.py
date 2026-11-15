@@ -1,8 +1,8 @@
-"""Rust module-qualified calls resolve cross-file, verified by the qualifier (#908).
+"""Rust module-qualified calls resolve cross-file, verified by the qualifier.
 
 Scoped calls (`module::function()`) — the dominant intra-crate call form in
 idiomatic Rust — used to be dropped at extraction: bare last-segment lookup
-across crates produced spurious INFERRED edges (#908), so a real production
+across crates produced spurious INFERRED edges, so a real production
 caller showed 0 dependents while grep found the call site immediately.
 
 The resolver keeps the #908 guard but uses the discarded qualifier as the

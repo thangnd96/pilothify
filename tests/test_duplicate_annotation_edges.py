@@ -1,4 +1,4 @@
-"""Exact-duplicate edge emission from repeated annotations (#3251).
+"""Exact-duplicate edge emission from repeated annotations.
 
 A signature that annotates the same type twice (``def f(a: Path, b: Path)``)
 used to emit one identical ``references`` edge per occurrence — same source,

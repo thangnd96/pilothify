@@ -3,8 +3,7 @@
 tree-sitter-typescript (0.23.x) sets ``has_error`` on tiny, fully-recovered
 errors in code ``tsc`` accepts — a ``&`` inside a JSX string attribute, or a
 semicolon-less interface member named ``in_*``/``instanceof_*`` — while still
-extracting every symbol. Gating the warning on bare ``has_error`` (0.9.37,
-#2551) therefore flagged valid files as "syntax errors". The corrected gate
+extracting every symbol. Gating the warning on bare ``has_error`` (0.9.37) therefore flagged valid files as "syntax errors". The corrected gate
 warns only on PLAUSIBLE symbol loss: nothing beyond the file node extracted,
 or an ERROR region spanning multiple lines.
 """

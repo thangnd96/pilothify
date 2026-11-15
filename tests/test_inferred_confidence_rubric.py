@@ -11,7 +11,7 @@ The AST extractor honoured neither half. Some sites emitted no
 `confidence_score` at all, which fell through to `_CONFIDENCE_SCORE_DEFAULTS`
 and landed on exactly the 0.5 the rubric rules out; others hardcoded 0.8, which
 is not in the discrete set. On pilothify's own package that was 128 of 128
-INFERRED edges — 54 missing a score and 74 at 0.8 (#2813).
+INFERRED edges — 54 missing a score and 74 at 0.8.
 
 The tiers are deliberately NOT changed here. The reporter's other option was to
 promote AST `uses` edges to EXTRACTED/1.0, which is a semantic judgement about

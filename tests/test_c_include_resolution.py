@@ -1,4 +1,4 @@
-"""Focused regression tests for C/C++/ObjC quoted include resolution (#4354).
+"""Focused regression tests for C/C++/ObjC quoted include resolution.
 
 Covers:
 1. Core/Src/adc.c resolving "adc.h" to Core/Inc/adc.h.

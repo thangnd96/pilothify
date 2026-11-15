@@ -1,4 +1,4 @@
-"""Workspace globs: a YAML inline comment or a glob pathlib rejects must not break resolution (#4681)."""
+"""Workspace globs: a YAML inline comment or a glob pathlib rejects must not break resolution."""
 from __future__ import annotations
 
 import json

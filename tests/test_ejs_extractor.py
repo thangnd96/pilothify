@@ -1,10 +1,10 @@
-"""Extraction coverage for EJS (Embedded JavaScript) templates (#3811, #2511).
+"""Extraction coverage for EJS (Embedded JavaScript) templates.
 
 A `.ejs` file is HTML carrying `<% %>` scriptlets and inline `<script>` blocks,
 so the file as a whole is not JavaScript: fed to the JS grammar it becomes one
 top-level ERROR and every symbol inside a scriptlet is lost. `.ejs` sat in
 `CODE_EXTENSIONS` with no extractor, so an Express/Node app's views were counted
-as code and silently contributed nothing (the #1689 warning).
+as code and silently contributed nothing (the  warning).
 
 :func:`extract_ejs` masks the template down to its JS regions — the same
 strategy `.svelte`/`.vue`/`.astro` use — parses them with the TS grammar, and
@@ -70,7 +70,7 @@ def test_ejs_in_resolution_and_hook_sets():
 
 
 def test_extract_ejs_scriptlet_is_not_a_parse_error(tmp_path):
-    """Markup is not JS; the scriptlet body is parsed and keeps its line (#3928)."""
+    """Markup is not JS; the scriptlet body is parsed and keeps its line."""
     tpl = _write(
         tmp_path / "views" / "page.ejs",
         "<h1><%= title %></h1>\n"
@@ -119,7 +119,7 @@ def test_extract_ejs_require_and_import_resolve_to_real_files(tmp_path):
 def test_extract_ejs_include_resolves_to_the_real_partial(tmp_path):
     """`<%- include('partials/header') %>` links the view to the partial file.
 
-    This is the relationship an Express view graph is built on (#2511). The
+    This is the relationship an Express view graph is built on. The
     include is spelled relative to the view without a leading `./` (as in the
     issue's example), and must resolve to the actual `.ejs` file on disk.
     """

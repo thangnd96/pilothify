@@ -210,7 +210,7 @@ def test_find_node_matches_full_punctuated_unicode_label():
 
 
 def test_find_node_matches_punctuated_file_label_exactly():
-    # #1704: an exactly-typed punctuated file label must resolve through explain,
+    # an exactly-typed punctuated file label must resolve through explain,
     # just like it does through path/query.
     G = nx.Graph()
     G.add_node("f1", label="blockStream.ts", norm_label="blockstream.ts",
@@ -234,7 +234,7 @@ def test_find_node_resolves_when_label_and_norm_label_diverge():
 
 
 def test_find_node_matches_punctuated_node_id_exactly():
-    # #2467: the id is only ever compared against `term`, which tokenizes on \w+
+    # the id is only ever compared against `term`, which tokenizes on \w+
     # ("concept:domain:widget" -> "concept domain widget"), so no id carrying
     # punctuation could equal it. Only the symmetric `norm_query == nid_norm`
     # match resolves an exactly-typed node id.
@@ -249,7 +249,7 @@ def test_find_node_matches_punctuated_node_id_exactly():
 
 
 def test_find_node_matches_merge_graphs_namespaced_node_id():
-    # #2467: `prefix_graph_for_global` namespaces every id with "<repo>::", so on a
+    # `prefix_graph_for_global` namespaces every id with "<repo>::", so on a
     # merged graph no node at all resolved by id — including the id that `explain`
     # itself had just printed.
     G = nx.Graph()
@@ -314,11 +314,11 @@ def test_node_search_text_includes_all_matched_fields():
     assert parts[2] == "punct"                # nid
     assert parts[3] == "pkg/foobar.py"        # source_file
     assert parts[4] == "pkg foobar py"        # source_file tokens
-    assert len(parts) == 5                    # no folded-id field for an ASCII id (#2467)
+    assert len(parts) == 5                    # no folded-id field for an ASCII id
 
 
 def test_node_search_text_appends_folded_non_ascii_node_id():
-    # #2467: for a Hangul id the raw and folded forms differ — precomposed syllables
+    # for a Hangul id the raw and folded forms differ — precomposed syllables
     # against conjoining jamo. Queries are trigrammed from the folded form, so the
     # index has to carry it too, appended so the other field positions do not move.
     G = _make_non_ascii_id_graph()
@@ -375,7 +375,7 @@ def test_find_node_prefilter_is_identical_to_full_scan(monkeypatch):
 
 
 def test_find_node_matches_non_ascii_node_id_through_prefilter():
-    # #2467: `_node_search_text` indexed the id raw while every query folds through
+    # `_node_search_text` indexed the id raw while every query folds through
     # `_strip_diacritics`. NFKD decomposes a Hangul syllable into conjoining jamo,
     # which have combining class 0 and so survive the combining-character filter —
     # the needle's trigrams and the posting's trigrams were disjoint and the node
@@ -391,7 +391,7 @@ def test_find_node_matches_non_ascii_node_id_through_prefilter():
 
 
 def test_find_node_node_id_prefilter_is_identical_to_full_scan(monkeypatch):
-    # #2467: an id must resolve the same way whether the candidates came from the
+    # an id must resolve the same way whether the candidates came from the
     # trigram index or from the full scan.
     G = _make_non_ascii_id_graph()
     for label in ["concept:domain:한글", "문서_목록", "id7", "item node 7",
@@ -476,7 +476,7 @@ def test_query_terms_get_only_falls_back_to_unfiltered(question, expected):
 
 
 def test_pick_seeds_get_question_ignores_framework_hub():
-    # #4684: unlike the short, low-degree leaves guarded by #1602, a framework
+    # unlike the short, low-degree leaves guarded by #1602, a framework
     # decorator hub must not become a seed just because the question says get.
     G = nx.DiGraph()
     G.add_node("get", label="Get")
@@ -506,7 +506,7 @@ def test_query_terms_all_stopwords_falls_back_to_unfiltered():
 
 
 def test_query_terms_drops_german_question_stopwords():
-    # #1900: German full-sentence queries must reduce to the content noun.
+    # German full-sentence queries must reduce to the content noun.
     # In a mostly-English corpus "wie"/"funktioniert" are rare, get high IDF
     # weight, and out-seed the actual keyword unless dropped here.
     assert _query_terms("Wie funktioniert die Authentifizierung?") == ["authentifizierung"]
@@ -532,7 +532,7 @@ def test_pick_seeds_german_query_seeds_content_node_not_heading_noise():
 
     q = "Wie funktioniert die Authentifizierung?"
     terms = _query_terms(q)
-    # #1918: _score_query does combined scoring + per-term singleton winners in
+    # _score_query does combined scoring + per-term singleton winners in
     # one traversal; _pick_seeds consumes best_seed_by_term for the per-term
     # guarantee (replaces the old terms= per-term rescoring).
     qs = _score_query(G, terms, collect_per_term_seeds=True)
@@ -741,7 +741,7 @@ def test_load_graph_missing_file(tmp_path):
 def test_load_graph_corrupted_json_prints_recovery_message(tmp_path, capsys):
     """json.JSONDecodeError is a ValueError subclass, so its except clause
     must be checked before the bare (ValueError, FileNotFoundError) clause,
-    or the corrupted-graph recovery hint is unreachable (#2005)."""
+    or the corrupted-graph recovery hint is unreachable."""
     p = tmp_path / "graph.json"
     p.write_text("{not valid json")
     with pytest.raises(SystemExit):
@@ -802,7 +802,7 @@ def _write_graph(path, nodes: list[str]) -> None:
 
 
 def test_maybe_reload_detects_graph_change(tmp_path):
-    """serve() picks up a new graph.json written after startup (#874)."""
+    """serve() picks up a new graph.json written after startup."""
     import time
     from unittest.mock import patch
 
@@ -824,7 +824,7 @@ def test_maybe_reload_detects_graph_change(tmp_path):
 
 
 def test_load_graph_cache_key_changes_with_content(tmp_path):
-    """mtime_ns + size uniquely identifies a graph version (#874)."""
+    """mtime_ns + size uniquely identifies a graph version."""
     import time
 
     out = tmp_path / "pilothify-out"
@@ -844,7 +844,7 @@ def test_load_graph_cache_key_changes_with_content(tmp_path):
     assert key1 != key2, "stat key must change when file content changes"
 
 
-# --- IDF weighting tests (#897) ---
+# --- IDF weighting tests ---
 
 def _make_noisy_graph() -> nx.Graph:
     """20 error-handler nodes + 1 rare identifier: FooBarService."""
@@ -906,7 +906,7 @@ def test_idf_common_term_gets_low_weight():
     assert idf["handle"] < 1.0
 
 
-# --- _pick_seeds tests (#897) ---
+# --- _pick_seeds tests ---
 
 def test_pick_seeds_dominant_identifier_gives_one_seed():
     """FooBarService at 1000 vs error nodes at 1.0 → only 1 seed chosen."""
@@ -977,11 +977,11 @@ def test_pick_seeds_diversity_recovers_starved_term(monkeypatch):
     assert "target" in seeds_after
 
 
-# --- generic-symbol seed flooding (#1766) ---
+# --- generic-symbol seed flooding ---
 
 def test_pick_seeds_dedups_homonymous_generic_labels():
     """Many nodes sharing one generic label (e.g. framework `GET` handlers)
-    must contribute at most ONE seed, not consume every slot (#1766). A
+    must contribute at most ONE seed, not consume every slot. A
     distinct, relevant label still gets its own seed."""
     G = nx.DiGraph()
     for i in range(5):
@@ -1009,7 +1009,7 @@ def test_pick_seeds_dedup_key_is_case_and_diacritic_normalized():
 
 def test_pick_seeds_per_term_guarantee_does_not_reintroduce_generic_dupe(monkeypatch):
     """The per-term guarantee loop must honor the same per-label cap, so it can't
-    add a second `GET` after dedup already seeded one (#1766)."""
+    add a second `GET` after dedup already seeded one."""
     G = nx.DiGraph()
     for i in range(3):
         G.add_node(f"get{i}", label="GET", source_file=f"r{i}.py")
@@ -1025,7 +1025,7 @@ def test_pick_seeds_per_term_guarantee_does_not_reintroduce_generic_dupe(monkeyp
 def test_pick_seeds_keeps_same_label_node_that_is_only_match_for_a_term():
     """A node sharing a seeded label must still be seeded when it is the only
     match for a query term the label doesn't contain: `alpha` matches only
-    `alpha_pre`'s source path, so the seeded `PreToolUse` twin can't cover it (#5027)."""
+    `alpha_pre`'s source path, so the seeded `PreToolUse` twin can't cover it."""
     G = nx.Graph()
     G.add_node("hooks_pre", label="PreToolUse", source_file="plugins/core/lib/core_hooks/handler/pre_tool_use.rb")
     G.add_node("hooks_run", label=".run", source_file="plugins/core/lib/core_hooks/handler/pre_tool_use.rb")
@@ -1041,7 +1041,7 @@ def test_pick_seeds_per_term_still_caps_same_label_winner_of_a_label_term():
     """The #5027 exception is narrow: when the term is part of the shared label,
     the seeded twin already matches it, so a different same-label winner is still
     capped. `get2` wins `get` on the degree tie-break while the first loop seeds
-    `get0`, so this reaches the per-term cap (#1766)."""
+    `get0`, so this reaches the per-term cap."""
     G = nx.DiGraph()
     for i in range(3):
         G.add_node(f"get{i}", label="GET", source_file=f"r{i}.py")
@@ -1057,7 +1057,7 @@ def test_score_nodes_scores_identical_labels_equally():
     """Guard against a per-label multiplicity penalty leaking into _score_nodes
     (shared by shortest_path / explain endpoint resolution): two nodes with the
     SAME label must receive the SAME score for a query, i.e. the fix lives in
-    seed selection, not in the shared scorer (#1766 followup)."""
+    seed selection, not in the shared scorer."""
     G = nx.DiGraph()
     G.add_node("g1", label="GET", source_file="a.py")
     G.add_node("g2", label="GET", source_file="b.py")
@@ -1068,7 +1068,7 @@ def test_score_nodes_scores_identical_labels_equally():
     )
 
 
-# --- actionable truncation hint (#897) ---
+# --- actionable truncation hint ---
 
 def test_subgraph_to_text_truncation_hint_is_actionable():
     """Truncation message must tell Claude what to do, not just say truncated."""
@@ -1078,7 +1078,7 @@ def test_subgraph_to_text_truncation_hint_is_actionable():
     assert "get_node" in text or "context_filter" in text
 
 
-# --- integration: identifier + noise query seeds from identifier (#897) ---
+# --- integration: identifier + noise query seeds from identifier ---
 
 def test_query_seeds_from_identifier_not_noise():
     """'FooBarService error handling' should expand from FooBarService,
@@ -1089,7 +1089,7 @@ def test_query_seeds_from_identifier_not_noise():
     assert "ServiceClient" in text
 
 
-# --- relational-intent verbs must not seat decoy seeds (#2507) ---
+# --- relational-intent verbs must not seat decoy seeds ---
 
 def _make_callers_graph() -> nx.Graph:
     """A service, three callers wired via context='call' edges, and a decoy
@@ -1108,7 +1108,7 @@ def _make_callers_graph() -> nx.Graph:
 
 def test_relational_verb_does_not_seat_decoy_seed():
     """'Who calls X?' must seed on X, not on a decoy that merely prefix-matches
-    the intent verb 'calls' via its tokenized label (#2507). The gap window
+    the intent verb 'calls' via its tokenized label. The gap window
     already excludes the decoy; the per-term guarantee must not re-seat it."""
     G = _make_callers_graph()
     # Sanity-check the pollution premise: the decoy IS the singleton winner for
@@ -1127,7 +1127,7 @@ def test_relational_verb_does_not_seat_decoy_seed():
 def test_relational_verb_as_bare_query_still_seeds_symbol():
     """All-intent fallback: a query that is ONLY intent words keeps the seed
     guarantee, so a corpus-legit identifier literally named 'calls' stays
-    reachable via the bare query 'calls' (#2507, preserving #1597's intent)."""
+    reachable via the bare query 'calls' (preserving 's intent)."""
     G = nx.Graph()
     G.add_node("calls_fn", label="calls", source_file="src/calls.py")
     G.add_node("other", label="unrelated_helper", source_file="src/other.py")
@@ -1139,7 +1139,7 @@ def test_relational_verb_as_bare_query_still_seeds_symbol():
 def test_relational_verb_symbol_still_wins_seat_on_merit():
     """Demotion only strips the GUARANTEE: a node literally named 'calls' whose
     score sits within the gap window is still seeded alongside the other term's
-    node on a multi-term query (#2507)."""
+    node on a multi-term query."""
     G = nx.Graph()
     G.add_node("calls_fn", label="calls", source_file="src/calls.py")
     G.add_node("ext", label="extract", source_file="src/extract.py")
@@ -1151,7 +1151,7 @@ def test_relational_verb_symbol_still_wins_seat_on_merit():
 
 def test_uses_phrasing_does_not_seat_decoy_seed():
     """'what uses X' must not seat a decoy that prefix-matches the intent verb
-    'uses' (#2507). 'uses' is deliberately NOT a _CONTEXT_HINTS alias (its
+    'uses'. 'uses' is deliberately NOT a _CONTEXT_HINTS alias (its
     relation is ambiguous); the demotion set alone handles it."""
     G = nx.Graph()
     G.add_node("svc", label="ChargeCustomerService", source_file="billing/charge.py")
@@ -1165,7 +1165,7 @@ def test_uses_phrasing_does_not_seat_decoy_seed():
 
 
 def test_infer_context_filters_for_callers_question():
-    """'callers of X' phrasing infers the call context (#2507 companion)."""
+    """'callers of X' phrasing infers the call context (companion)."""
     assert _infer_context_filters("callers of ChargeCustomerService") == ["call"]
 
 
@@ -1288,7 +1288,7 @@ def test_query_text_chinese_finds_routing_nodes():
     assert "路由" in text
 
 
-# --- get_community header (#1448): show the community name, no placeholder doubling ---
+# --- get_community header: show the community name, no placeholder doubling ---
 
 def test_community_header_shows_real_name():
     assert _community_header(12, "Auth & Sessions") == "Community 12 — Auth & Sessions"
@@ -1415,7 +1415,7 @@ def test_pick_seeds_with_optimized_best_seed_matches_legacy_semantics(terms):
     assert opt_seeds == ref_seeds, f"terms={terms}: ref={ref_seeds} opt={opt_seeds}"
     # Per-term guarantee: every legacy winner with a non-empty seed slot is
     # accounted for — either it appears in the seed list or another node with
-    # the same normalized label already claimed the slot (#1766 label dedup).
+    # the same normalized label already claimed the slot (label dedup).
     ref_seed_set = set(ref_seeds)
     for term, nid in ref_best.items():
         if nid in ref_seed_set:
@@ -1620,7 +1620,7 @@ def test_subgraph_to_text_no_banner_when_only_edges_overflow():
 
 
 def test_subgraph_to_text_overshoot_notice_when_edges_exceed_budget():
-    """#2784: once every node fits, edges are never dropped (#2601) — but that
+    """#2784: once every node fits, edges are never dropped — but that
     used to mean the char_budget check silently stopped applying, so a query
     could cost 4-6x its requested budget with zero indication. The complete
     answer must still be returned whole, but the overshoot must be visible and
@@ -1725,11 +1725,11 @@ def test_subgraph_to_text_honors_valid_src_tgt_direction():
     assert "caller --calls" in edge_line and "--> callee" in edge_line
 
 
-# --- _shortest_path_text direction (#2487) ---
+# --- _shortest_path_text direction ---
 
 def _directed_chain() -> nx.DiGraph:
     """alpha --calls--> beta --calls--> gamma, as _load_graph would load it
-    (directed storage, arc order = true direction on post-#563 files)."""
+    (directed storage, arc order = true direction on post- files)."""
     G = nx.DiGraph()
     for n in ("alpha", "beta", "gamma"):
         G.add_node(n, label=n)
@@ -1746,7 +1746,7 @@ def test_shortest_path_tool_directed_respects_direction():
 
 
 def test_shortest_path_tool_directed_backwards_is_no_path():
-    # Directed is the default (#2487): walking the chain backwards must report
+    # Directed is the default: walking the chain backwards must report
     # no directed path, with the undirected opt-out hint, not a reversed path.
     out = _shortest_path_text(_directed_chain(), {"source": "gamma", "target": "alpha"})
     assert "No directed path found" in out
@@ -1858,7 +1858,7 @@ def test_resolve_single_node_shared_by_get_node_and_get_neighbors():
 
 
 def test_resolve_single_node_reports_a_substring_near_miss_as_such():
-    """`MailController` must not come back as `EmailController` (#3917)."""
+    """`MailController` must not come back as `EmailController`."""
     from pilothify.serve import _resolve_single_node
 
     G = nx.Graph()
@@ -1910,7 +1910,7 @@ def test_near_miss_lists_at_most_five_candidates():
 
 
 
-# --- rationale attribute scoring (#2293) ---
+# --- rationale attribute scoring ---
 
 _FAB_RATIONALE = (
     "Hidden when the mini card is dismissed and while the geolocation popover "
@@ -1969,7 +1969,7 @@ def test_node_search_text_includes_rationale_so_trigram_prefilter_stays_complete
         {"label": "Foo", "source_file": "a.py", "rationale": "Because the Popover opens upward"}, "foo"
     ).split("\x00")
     assert "because the popover opens upward" in parts
-    # No rationale: field layout unchanged (the #2467 positions still hold).
+    # No rationale: field layout unchanged (the  positions still hold).
     assert len(_node_search_text({"label": "Foo", "source_file": "a.py"}, "foo").split("\x00")) == 5
 
 
@@ -1998,7 +1998,7 @@ def test_node_arg_accepts_label_node_id_and_id_aliases():
 
 
 def test_dotted_python_symbol_resolves_by_module_path():
-    """`pkg.mod.func` / `pkg.mod:func` resolve via the module's file (#4366)."""
+    """`pkg.mod.func` / `pkg.mod:func` resolve via the module's file."""
     from pilothify.serve import _resolve_single_node
     G = nx.Graph()
     G.add_node("cli_main", label="main()", source_file="src/pkg/cli.py", source_location="L26")
@@ -2027,14 +2027,14 @@ def test_dotted_python_symbol_same_file_tie_is_refused():
 
 
 def test_dotted_python_symbol_same_file_tie_is_refused_by_path_endpoint():
-    """`path` refuses the same dotted tie `get_node`/`explain` do (#4366)."""
+    """`path` refuses the same dotted tie `get_node`/`explain` do."""
     from pilothify.serve import _resolve_path_endpoint
     G = nx.Graph()
     G.add_node("f", label="run()", source_file="pkg/mod.py", source_location="L1")
     G.add_node("m", label=".run()", source_file="pkg/mod.py", source_location="L9")
     nid, _, err = _resolve_path_endpoint(G, "pkg.mod.run")
     assert nid is None and err.startswith("Ambiguous")
-# --- parallel-edge preservation (#4500) ---
+# --- parallel-edge preservation ---
 
 def _parallel_edge_graph_json(tmp_path):
     """A graph.json like the #4500 reporter's: parallel links stored while the
@@ -2124,7 +2124,7 @@ def test_query_graph_text_surfaces_parallel_relationships(tmp_path):
 # --- a tie only by case goes to the exact spelling ---------------------------
 
 def _case_pair_graph() -> nx.Graph:
-    # Go keeps `CheckHealth` and `checkHealth` apart (#2779): an exported method
+    # Go keeps `CheckHealth` and `checkHealth` apart: an exported method
     # and its unexported helper on one type, in one file.
     G = nx.Graph()
     G.add_node("api_server_checkhealth", label=".CheckHealth()",
@@ -2200,7 +2200,7 @@ def test_an_exact_spelling_does_not_break_a_tie_between_two_files():
     assert err.startswith("Ambiguous:"), err
 
 
-# --- schema/namespace-qualified labels (#5080) ---
+# --- schema/namespace-qualified labels ---
 
 def _qualified_graph() -> nx.Graph:
     """A SQL function behind a schema prefix, plus nodes whose whole label is one query token."""
@@ -2218,7 +2218,7 @@ def _qualified_graph() -> nx.Graph:
 
 
 def test_qualified_label_beats_a_whole_label_token_collision():
-    """`query sweep_widget_state` must seed on `public.sweep_widget_state()` (#5080).
+    """`query sweep_widget_state` must seed on `public.sweep_widget_state()`.
 
     Every one of `SWEEP`, `WIDGET` and `State` exactly equals a query token while
     the function only prefix/substring-matches them, so without the qualified

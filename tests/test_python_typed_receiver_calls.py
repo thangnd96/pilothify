@@ -9,7 +9,7 @@ module aliases, so `affected Client.send` missed every caller that wrote
 
 The receiver's class is used only when the binding is unambiguous inside the function
 (one class, never rebound to something else) and the class is unique by name and visible
-from the caller's file (same file or imported), mirroring the TS receiver gate (#2553).
+from the caller's file (same file or imported), mirroring the TS receiver gate.
 Everything else emits no edge rather than a guess.
 """
 from __future__ import annotations

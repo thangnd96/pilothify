@@ -1,4 +1,4 @@
-"""Dedup survivor selection prefers content over ID shape (#3372).
+"""Dedup survivor selection prefers content over ID shape.
 
 `_pick_winner` scored purely on chunk-suffix + ID length, so a passing
 one-line mention on a shallow page (short id) beat the dedicated, enriched

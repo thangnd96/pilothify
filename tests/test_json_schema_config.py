@@ -9,7 +9,7 @@ re-opening the keyword-node explosion #1224 closed for data JSON.
 One 160 KB contract contributed 362 nodes whose labels were bare schema
 keywords (`description`, `type`, `$ref`, `required`, `properties`), plus ~12
 schema-only communities that polluted clustering, god-node analysis and
-`GRAPH_REPORT.md` -- 13% of a 2,725-node graph (#2255).
+`GRAPH_REPORT.md` -- 13% of a 2,725-node graph.
 
 These tests pin both directions, because the fix removes keys from the probe and
 the risk is over-correcting into skipping real configs:

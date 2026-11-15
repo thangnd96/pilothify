@@ -135,7 +135,7 @@ def test_uninstall_edits_a_symlinked_global_claude_md_in_place(requires_symlinks
 
 def test_an_unwritable_global_claude_md_does_not_abort_the_uninstall(project, monkeypatch, capsys):
     """A CLAUDE.md that nix/home-manager links into a read-only store is skipped
-    with a hint, as install already does (#3474); the rest of uninstall runs."""
+    with a hint, as install already does; the rest of uninstall runs."""
     install(platform="claude")
     install(platform="codebuddy")
 
@@ -206,7 +206,7 @@ def test_a_second_uninstall_is_a_no_op(project):
 
 
 def test_a_users_deeper_pilothify_heading_survives(project):
-    """Only the exact `# pilothify` H1 block install wrote goes (#2062)."""
+    """Only the exact `# pilothify` H1 block install wrote goes."""
     notes = "# My notes\n\n## pilothify\nmy own notes about pilothify\n"
     _claude_md().parent.mkdir(parents=True)
     _claude_md().write_text(notes, encoding="utf-8")
@@ -220,7 +220,7 @@ def test_a_users_deeper_pilothify_heading_survives(project):
 @pytest.mark.parametrize("relocated", [False, True], ids=["default", "CLAUDE_CONFIG_DIR"])
 def test_uninstall_resolves_the_file_install_wrote(project, tmp_path, monkeypatch, relocated):
     """Install and uninstall each work out the global CLAUDE.md; a relocated
-    profile must not be written by one and missed by the other (#2694)."""
+    profile must not be written by one and missed by the other."""
     if relocated:
         monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude-config"))
     install(platform="claude")

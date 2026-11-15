@@ -47,7 +47,7 @@ def test_cohesion_score_range():
         assert 0.0 <= score <= 1.0
 
 def test_cohesion_score_ignores_self_loops():
-    # #3558: a recursive calls self-loop must not inflate the ratio. Two nodes
+    # a recursive calls self-loop must not inflate the ratio. Two nodes
     # with one real edge plus a self-loop is still fully cohesive (1.0), not 2.0.
     G = nx.Graph()
     G.add_edge("a", "b")

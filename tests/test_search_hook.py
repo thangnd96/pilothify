@@ -48,13 +48,13 @@ def _run_grep_tool(tool_input, cwd, *, graph: bool):
 
 
 def test_matcher_targets_bash_and_grep():
-    # #1986: content search goes through Claude Code's dedicated Grep tool, so
+    # content search goes through Claude Code's dedicated Grep tool, so
     # the matcher must cover it alongside Bash.
     assert _search_matcher()["matcher"] == "Bash|Grep"
 
 
 def test_search_hook_has_a_timeout():
-    # #3314: an unset command hook defaults to Claude Code's 600s timeout, so a
+    # an unset command hook defaults to Claude Code's 600s timeout, so a
     # single wedged guard stalls a Bash/Grep call -- the highest-frequency
     # tools an agent uses -- for ten minutes. Guard measures ~170ms warm; a
     # generous but bounded timeout must be present.
@@ -76,7 +76,7 @@ def test_hook_command_has_no_backslashes(monkeypatch):
 
 
 def test_command_has_no_shell_syntax():
-    # #522: no POSIX bash that Windows cmd.exe/PowerShell can't parse.
+    # no POSIX bash that Windows cmd.exe/PowerShell can't parse.
     cmd = _search_matcher()["hooks"][0]["command"]
     for token in ("$(", "case ", "[ -f", "&&", "||", ";;", "echo '"):
         assert token not in cmd, f"shell syntax {token!r} leaked into the hook"
@@ -148,7 +148,7 @@ def test_honors_pilothify_out_override(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# #1986: the dedicated Grep tool (pattern/path/glob, no command) must nudge too
+# the dedicated Grep tool (pattern/path/glob, no command) must nudge too
 # ---------------------------------------------------------------------------
 
 

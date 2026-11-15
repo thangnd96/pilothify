@@ -87,7 +87,7 @@ class _SymbolExportFact:
     target_name: str | None = None
     # `export type { X } from ...`: erased at compile time, so the re-export
     # edge it produces is stamped type_only and excluded from Import Cycles
-    # (#3123). The fact itself still participates in symbol resolution - a
+    #. The fact itself still participates in symbol resolution - a
     # type import resolved through a type-only barrel is itself type-only.
     type_only: bool = False
 
@@ -124,8 +124,8 @@ class _SymbolResolutionFacts:
     star_exports: list[_StarExportFact] = field(default_factory=list)
     namespace_exports: list[_NamespaceExportFact] = field(default_factory=list)
     uses: list[_SymbolUseFact] = field(default_factory=list)
-    # File-to-file submodule imports from `from pkg import submod` (#1146).
+    # File-to-file submodule imports from `from pkg import submod`.
     # Each entry is (importing_file, submodule_file, line, local_name) -- local_name
     # is the binding introduced in the importing file: the alias when `from pkg
-    # import submod as alias` is used, otherwise the submodule's own name (#2082).
+    # import submod as alias` is used, otherwise the submodule's own name.
     module_imports: list[tuple[Path, Path, int, str]] = field(default_factory=list)

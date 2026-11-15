@@ -4,7 +4,7 @@
 notes while refusing to touch the user's. A vault created by an EARLIER pilothify
 has no manifest, so `_owned` starts empty and every note pilothify itself wrote
 last time reads as a user file: the re-export writes fresh notes beside the
-stale ones, and warns that pilothify "did not create" files it did (#2863).
+stale ones, and warns that pilothify "did not create" files it did.
 
 The fix adopts, once, the notes carrying pilothify's own signature:
 

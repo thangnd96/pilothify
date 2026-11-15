@@ -1,4 +1,4 @@
-"""`pilothify extract --no-dedup` (#2881).
+"""`pilothify extract --no-dedup`.
 
 The incremental merge path hardcoded `dedup=True`, so fuzzy dedup always ran
 over the COMBINED node set (existing graph + new chunk). On a large graph a

@@ -1,4 +1,4 @@
-"""TypeScript enum members get a node and a `case_of` edge, like Java's (#1719).
+"""TypeScript enum members get a node and a `case_of` edge, like Java's.
 
 `enum_declaration` is in `_TS_CONFIG.class_types` with the comment "parity with
 Java/C#", but only the container half was done: the enum type was a node while

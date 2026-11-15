@@ -252,7 +252,7 @@ def cluster(
         percentile are excluded from partitioning and reattached to their
         majority-vote neighbour community afterwards. Nodes whose only
         neighbours are excluded hubs follow them, by the same vote. Useful for
-        staging/utility super-hubs that inflate god-node rankings (#919).
+        staging/utility super-hubs that inflate god-node rankings.
     ambiguous_scale: multiplier applied to the ``weight`` attribute of
         ``AMBIGUOUS`` edges before partitioning. Default 0.5 — halves the
         modularity contribution of low-confidence edges so they do not
@@ -270,7 +270,7 @@ def cluster(
     if G.number_of_edges() == 0:
         return {i: [n] for i, n in enumerate(sorted(G.nodes))}
 
-    # #4199 — scale AMBIGUOUS edge weights so they do not warp partitioning.
+    # scale AMBIGUOUS edge weights so they do not warp partitioning.
     # Env override lets `PILOTHIFY_AMBIGUOUS_SCALE=1.0 pilothify ...` restore the
     # pre-fix behavior without a code change. Malformed values are ignored.
     env_scale = os.environ.get("PILOTHIFY_AMBIGUOUS_SCALE")
@@ -387,7 +387,7 @@ def cluster(
     # Without it, the hundreds of equal-sized small communities are ordered by the
     # partitioner's (not seed-stable) enumeration order, so their integer IDs
     # permute run-to-run - which reads as massive "community churn" in a per-node
-    # cid diff even though the actual grouping is reproducible (#1090 follow-up).
+    # cid diff even though the actual grouping is reproducible.
     final_communities.sort(key=lambda nodes: (-len(nodes), tuple(sorted(map(str, nodes)))))
     return {i: sorted(nodes) for i, nodes in enumerate(final_communities)}
 
@@ -490,7 +490,7 @@ def label_still_applies(
     saved_sig: str | None,
     current_sig: str | None,
 ) -> bool:
-    """Whether a saved label still names this community (#2298).
+    """Whether a saved label still names this community.
 
     An equal membership signature keeps the label. Otherwise the label stays
     only when the nodes shared with the previous assignment are a strict

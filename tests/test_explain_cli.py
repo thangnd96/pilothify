@@ -1,4 +1,4 @@
-"""Regression tests for `pilothify explain` arrow direction (#853)."""
+"""Regression tests for `pilothify explain` arrow direction."""
 from __future__ import annotations
 import json
 import pilothify.__main__ as mainmod

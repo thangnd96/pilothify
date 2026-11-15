@@ -1,4 +1,4 @@
-"""`this.X = function` members in every enclosing-function form (#3408).
+"""`this.X = function` members in every enclosing-function form.
 
 #1322's fix captured `this.X = fn` only when the enclosing function was a
 function *declaration*. Function-expression forms — assigned to a const, an
@@ -58,7 +58,7 @@ def test_angular_service_registration_members_survive(tmp_path, monkeypatch):
     assert any("loadThing" in l for l in labels), labels
     assert any("saveThing" in l for l in labels), labels
     # Anonymous enclosing function: members hang off the file node, with
-    # file-qualified ids (the #1077 phantom-god-node guard's requirement).
+    # file-qualified ids (the  phantom-god-node guard's requirement).
     contains = {
         (e["source"], e["target"]) for e in r["edges"] if e["relation"] == "contains"
     }

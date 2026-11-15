@@ -1,4 +1,4 @@
-"""C# names that differ only by `_` or case keep their own nodes (#4415).
+"""C# names that differ only by `_` or case keep their own nodes.
 
 ``ids.py:make_id`` strips leading/trailing underscores and casefolds, so in C#
 `Action()` / `_Action()`, `Size` / `_Size`, `Load()` / `load()` and the types
@@ -118,7 +118,7 @@ def test_case_only_method_pair_keeps_both_methods(tmp_path):
 
 def test_overloads_are_not_an_underscore_collision(tmp_path):
     # Overloads are one name, so this rule leaves them alone; they get a node
-    # each through the overload rule instead (#4584), the first keeping the
+    # each through the overload rule instead, the first keeping the
     # plain id.
     r = _extract(tmp_path, {"S.cs": (
         "public class Host {\n"

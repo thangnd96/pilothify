@@ -14,7 +14,7 @@ import re
 _OBJC_STEM_PART = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 # Declaration markers, matching what the generic engine puts on every other
-# language's definitions (#2438): `_callable` says "a real callable, not a
+# language's definitions: `_callable` says "a real callable, not a
 # same-named data symbol", and `_callable_class` narrows that to a type, which is
 # callable only through a constructor. Passes that index declarations gate on
 # these, so a node without them is invisible to them.
@@ -27,7 +27,7 @@ def _objc_category_base_stem(stem: str) -> str:
 
     A category (``@interface Foo (Cat)``) or class extension (``@interface Foo ()``)
     declares members of an EXISTING class, so its class node must key to the same id
-    as ``Foo.h``'s ``@interface Foo`` instead of minting a second class node (#1556).
+    as ``Foo.h``'s ``@interface Foo`` instead of minting a second class node.
     Only the final path segment is considered, and only a well-formed
     ``Name+Suffix`` pair is split.
 
@@ -53,8 +53,8 @@ def _objc_is_category(node) -> bool:
 
 def _objc_local_var_types(body_node, source: bytes, table: dict[str, str]) -> None:
     """Collect ``var -> ClassName`` from ObjC local declarations (``Foo *f = ...;``)
-    in a method body, for receiver typing in the cross-file message-send pass
-    (#1556). Only a capitalized ``type_identifier`` with a single named declarator
+    in a method body, for receiver typing in the cross-file message-send pass.
+    Only a capitalized ``type_identifier`` with a single named declarator
     is recorded; a built-in/lower-cased type or an un-nameable declarator is skipped
     (precision over recall). Reuses the C++ declarator unwrapper (identical grammar).
     """
@@ -97,7 +97,7 @@ def extract_objc(path: Path) -> dict:
         source = _read_source_bytes(path)
         # tree-sitter-objc cannot expand these argument-less annotation macros (no
         # trailing ';'), and their presence before @interface makes the parser fail to
-        # emit a class_interface node (#1475). Blank them to equal-length spaces so byte
+        # emit a class_interface node. Blank them to equal-length spaces so byte
         # offsets / line numbers are preserved and the interface parses.
         _OBJC_BLANK_MACROS = (b"NS_ASSUME_NONNULL_BEGIN", b"NS_ASSUME_NONNULL_END")
         for _m in _OBJC_BLANK_MACROS:
@@ -113,11 +113,11 @@ def extract_objc(path: Path) -> dict:
     edges: list[dict] = []
     seen_ids: set[str] = set()
     method_bodies: list[tuple[str, Any, str]] = []
-    # #1556: unresolved message sends saved for the cross-file ObjC resolver, plus a
+    # unresolved message sends saved for the cross-file ObjC resolver, plus a
     # per-file `var -> ClassName` table from `Foo *f = ...;` local declarations.
     raw_calls: list[dict] = []
     objc_type_table: dict[str, str] = {}
-    # #1556: per-CLASS `field -> ClassName` tables from `@property Bar *bar;` and
+    # per-CLASS `field -> ClassName` tables from `@property Bar *bar;` and
     # ivar `Bar *_bar;` declarations, keyed by the class nid the .h/.m pair share
     # (preserved by _merge_decl_def_classes), so the cross-file resolver can type a
     # `[self.bar doIt]` / `[_bar doIt]` receiver. A conflicting redeclaration of the
@@ -161,7 +161,7 @@ def extract_objc(path: Path) -> dict:
         through generic_specifier/type_name so NSArray<Product *> yields both
         NSArray and the element type Product (the generic case was invisible
         because the type was wrapped in a generic_specifier, not a bare
-        type_identifier child) (#1475)."""
+        type_identifier child)."""
         if node.type == "type_identifier":
             yield node
             return
@@ -180,7 +180,7 @@ def extract_objc(path: Path) -> dict:
             # corpus-level rewire can collapse it onto the real definition. A sourced
             # stub here makes _disambiguate_colliding_node_ids bake the referencing
             # file's path (with extension) into the id and blocks the rewire, which is
-            # the phantom-duplicate-node bug (#1402).
+            # the phantom-duplicate-node bug.
             seen_ids.add(nid)
             nodes.append({
                 "id": nid,
@@ -195,7 +195,7 @@ def extract_objc(path: Path) -> dict:
     def _field_decl_entry(sd) -> tuple[str, str] | None:
         """``(field, TypeName)`` from a property/ivar ``struct_declaration``, else None.
 
-        Precision gates (#1556): the type must be a BARE capitalized
+        Precision gates: the type must be a BARE capitalized
         ``type_identifier`` DIRECTLY under the struct_declaration — a
         ``generic_specifier`` (``NSArray<Bar *>``) or ``typedefed_specifier``
         (``id<P>``) wraps its type_identifier, so both are naturally excluded and
@@ -230,7 +230,7 @@ def extract_objc(path: Path) -> dict:
     def _collect_instance_variables(ivars_node, cls_nid: str) -> None:
         """Record field types from an ``instance_variables`` block (``{ Bar *_b; }``)
         under an @interface or @implementation. No nodes/edges are emitted here;
-        the table only feeds receiver typing in the cross-file resolver (#1556).
+        the table only feeds receiver typing in the cross-file resolver.
         """
         for iv in ivars_node.children:
             if iv.type != "instance_variable":
@@ -245,7 +245,7 @@ def extract_objc(path: Path) -> dict:
                    mapped_members: list[tuple[str, int]] | None = None) -> None:
         """Emit a C-style enum type node plus a node + `case_of` edge per
         enumerator, mirroring how every other language with enums models them
-        (Java #1719, C++ #3939, Swift). Objective-C is an object-oriented
+        (Java , C++ , Swift). Objective-C is an object-oriented
         extractor that already emits @interface/@protocol types, but plain
         `enum`/`typedef enum` definitions were dropped entirely.
         """
@@ -448,7 +448,7 @@ def extract_objc(path: Path) -> dict:
                             # matches the (possibly disambiguated) node id _make_id gives
                             # that file; the bare-stem id never survives
                             # _disambiguate_colliding_node_ids when a .h/.m pair exists,
-                            # so the edge dangled and was dropped (#1475).
+                            # so the edge dangled and was dropped.
                             resolved = _resolve_c_include_path(raw, str_path)
                             if resolved is not None:
                                 add_edge(file_nid, _make_id(str(resolved)), "imports", line, context="import")
@@ -491,7 +491,7 @@ def extract_objc(path: Path) -> dict:
             # `Foo+Cat.h` minted a SECOND node labelled `Foo`, which made every
             # `[Foo ...]` receiver ambiguous and tripped the resolver's
             # single-definition god-node guard — destroying edges the same corpus
-            # produced fine when the members lived in `Foo.h` (#1556).
+            # produced fine when the members lived in `Foo.h`.
             cls_stem = _objc_category_base_stem(stem) if _objc_is_category(node) else stem
             cls_nid = _make_id(cls_stem, name)
             add_node(cls_nid, name, line, _CALLABLE_CLASS)
@@ -534,7 +534,7 @@ def extract_objc(path: Path) -> dict:
                                     type_nid = ensure_named_node(tname, prop_line)
                                     edges.append(_semantic_reference_edge(
                                         cls_nid, type_nid, "field", str_path, prop_line))
-                            # #1556: a bare capitalized property type also types the
+                            # a bare capitalized property type also types the
                             # `[self.field msg]` receiver in the cross-file resolver.
                             entry = _field_decl_entry(sub)
                             if entry is not None:
@@ -668,7 +668,7 @@ def extract_objc(path: Path) -> dict:
     for m_nid, _, container_nid in method_bodies:
         class_method_nids.setdefault(container_nid, set()).add(m_nid)
     seen_calls: set[tuple[str, str]] = set()
-    # #1556: per-file `var -> ClassName` table from local declarations in every
+    # per-file `var -> ClassName` table from local declarations in every
     # method body, so the cross-file resolver can type a `[f doThing]` receiver.
     for _m_nid, body_node, _container in method_bodies:
         _objc_local_var_types(body_node, source, objc_type_table)
@@ -684,7 +684,7 @@ def extract_objc(path: Path) -> dict:
                 # allocating method links to the allocated type. ensure_named_node
                 # emits a sourceless stub for unknown names, which the corpus rewire
                 # collapses ONLY when exactly one real class of that name exists, so an
-                # unknown/ambiguous class produces no false resolved edge (#1475).
+                # unknown/ambiguous class produces no false resolved edge.
                 meth = n.child_by_field_name("method")
                 recv = n.child_by_field_name("receiver")
                 if (meth is not None and meth.type == "identifier" and _read(meth) == "alloc"
@@ -703,7 +703,7 @@ def extract_objc(path: Path) -> dict:
                 # receivers are never mistaken for a selector, and compound sends
                 # resolve too (the whole second pass was previously dead code for
                 # ObjC because the grammar emits these as `identifier`, not
-                # `selector`/`keyword_argument_list`) (#1475).
+                # `selector`/`keyword_argument_list`).
                 sel_parts = [
                     _read(child)
                     for i, child in enumerate(n.children)
@@ -719,7 +719,7 @@ def extract_objc(path: Path) -> dict:
                                 seen_calls.add(pair)
                                 add_edge(caller_nid, candidate, "calls", n.start_point[0] + 1,
                                          confidence="EXTRACTED", weight=1.0, context="call")
-                    # #1556: also emit a raw_call so the cross-file resolver can type
+                    # also emit a raw_call so the cross-file resolver can type
                     # the receiver and link to a method in ANOTHER file. A bare
                     # identifier receiver (`f`, `self`, `Foo`) is captured; a nested
                     # message send (`[[Foo alloc] init]`) has no simple receiver name
@@ -741,7 +741,7 @@ def extract_objc(path: Path) -> dict:
                         # `Foo.shared`) stays dropped: passing the dotted text
                         # through would let a capitalized `Foo.shared` enter the
                         # explicit-class arm, where _key strips the dot and collides
-                        # with a real class `FooShared` — a fabricated edge (#1556).
+                        # with a real class `FooShared` — a fabricated edge.
                         kids = recv.children
                         if (len(kids) == 3 and kids[0].type == "identifier"
                                 and _read(kids[0]) == "self" and kids[1].type == "."
@@ -762,7 +762,7 @@ def extract_objc(path: Path) -> dict:
                 # node id (a method id is _make_id(container, name)). A suffix
                 # substring match would mis-resolve self.name -> -surname and would
                 # let a substring-colliding sibling (-surname) suppress the real
-                # -name edge, so it must be an exact match (#1475).
+                # -name edge, so it must be an exact match.
                 for child in n.children:
                     if child.type == "field_identifier":
                         field_name = _read(child)
@@ -780,7 +780,7 @@ def extract_objc(path: Path) -> dict:
                 # _make_id(container, name)) against every class's methods, and emit
                 # only when exactly one method matches, to avoid ambiguous fan-out.
                 # Exact match (not a suffix) keeps -doThing distinct from
-                # -reallyDoThing (#1475).
+                # -reallyDoThing.
                 sel_parts = [_read(c) for c in n.children if c.type == "identifier"]
                 sel_name = "".join(sel_parts)
                 if sel_name:

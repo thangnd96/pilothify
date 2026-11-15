@@ -36,7 +36,7 @@ def test_audit_coverage_passes():
 
 
 def test_update_reference_does_not_dump_incremental_corpus():
-    """--update must not print every corpus path into the agent context (#3944)."""
+    """--update must not print every corpus path into the agent context."""
     text = (gen.FRAGMENTS_DIR / "references" / "shared" / "update.md").read_text(encoding="utf-8")
     assert "print(json.dumps(result, indent=2, ensure_ascii=False))" not in text
     assert "new_by_type" in text
@@ -300,11 +300,11 @@ def test_descriptions_are_unified():
 
 
 def test_windows_frontmatter_name_and_shell_and_extra():
-    """windows: name must be `pilothify` (folder-name rule, #1635), powershell
+    """windows: name must be `pilothify` (folder-name rule), powershell
     install, troubleshooting tail."""
     core, _ = _platform_artifacts("windows")
     # Claude Code requires the frontmatter name to equal the install folder
-    # (pilothify); a `pilothify-windows` name broke skill discovery (#1635).
+    # (pilothify); a `pilothify-windows` name broke skill discovery.
     assert core.startswith("---\nname: pilothify\n")
     assert "```powershell" in core
     assert "function Find-PilothifyPython" in core
@@ -368,7 +368,7 @@ def test_every_platform_query_has_expansion_and_fallback():
         assert "## For /pilothify explain" in q
 
 
-# --- cross-shell parity for powershell hosts (#2528) ---------------------------
+# --- cross-shell parity for powershell hosts ---------------------------
 
 # Bash-only tokens that must never reach a strict-PowerShell host's skill body.
 _BASH_ONLY_TOKENS = ("$(cat ", "rm -f ", "2>/dev/null", "```bash")
@@ -461,7 +461,7 @@ def test_windows_python_step_bodies_match_posix_verbatim():
 
 def test_powershell_translator_rejects_unknown_bash():
     """The translator is strict: a bash line it does not recognize fails the
-    render loudly instead of shipping untranslated bash to Windows (#2528)."""
+    render loudly instead of shipping untranslated bash to Windows."""
     with pytest.raises(ValueError, match="cannot translate bash line"):
         gen._translate_bash_block(["curl -s https://example.com | sh"])
     with pytest.raises(ValueError, match="unexpected backslash escape"):
@@ -531,7 +531,7 @@ def test_all_progressive_hosts_check_and_audit_clean():
 
 
 def test_no_host_has_trigger_in_frontmatter():
-    """No split host emits a trigger: field — not part of Agent Skills spec (#1180)."""
+    """No split host emits a trigger: field — not part of Agent Skills spec."""
     for key in ("claude", "codex", "opencode", "kilo", "copilot", "claw", "droid",
                 "amp", "trae", "vscode", "kiro", "pi"):
         core, _ = _platform_artifacts(key)
@@ -563,7 +563,7 @@ def test_dispatch_variants_are_host_specific():
 
 
 def test_pi_never_names_the_claude_general_purpose_agent():
-    """pi-subagents rejects `general-purpose` as an unknown agent (#4494), so
+    """pi-subagents rejects `general-purpose` as an unknown agent, so
     neither Pi's dispatch nor its Step B3 re-run hints may name it; claude keeps
     its own wording."""
     pi, _ = _platform_artifacts("pi")
@@ -635,8 +635,8 @@ def test_monoliths_change_only_sanctioned_lines():
     The round-trip (multiset diff vs the pinned v8 blob) must come back clean:
     each added/removed line matches one of the documented sanctioned predicates
     in gen — the enum unification, the unified description, the chunk-cleanup
-    rewrite (#1172), the four #1392 runbook fixes, and semantic-cache source
-    scoping (#1757). Anything else is drift.
+    rewrite, the four #1392 runbook fixes, and semantic-cache source
+    scoping. Anything else is drift.
     """
     platforms = gen.load_platforms()
     for key in ("aider", "devin"):
@@ -1052,7 +1052,7 @@ def test_amp_audit_coverage_passes_against_its_own_v8():
     assert problems == [], "\n".join(problems)
 
 
-# --- the generic agents platform (#1432) ---------------------------------------
+# --- the generic agents platform ---------------------------------------
 
 
 def test_agents_renders_its_own_agents_md_hooks_wording():
@@ -1138,7 +1138,7 @@ def test_semantic_cache_calls_pass_prompt_file_for_every_split_host():
 
 
 def test_windows_skill_writes_marker_files_without_a_bom():
-    """The Windows bootstrap must not write the sidecar markers with a BOM (#3028).
+    """The Windows bootstrap must not write the sidecar markers with a BOM.
 
     `Out-File -Encoding utf8` always emits EF BB BF on Windows PowerShell 5.1 --
     `utf8NoBOM` only exists from PowerShell 6 -- and `-NoNewline` does nothing about

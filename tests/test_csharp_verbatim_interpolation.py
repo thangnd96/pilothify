@@ -1,4 +1,4 @@
-"""C# verbatim interpolated strings the bundled grammar rejects (#3376).
+"""C# verbatim interpolated strings the bundled grammar rejects.
 
 A verbatim interpolated string whose text ends with an interpolation hole, an
 escaped quote and then the terminator is valid C# -- ``dotnet build`` accepts it
@@ -9,7 +9,7 @@ graph. 0.23.5 is the newest release, so there is no grammar bump to take.
 The fix neutralizes only the trailing escape, with two spaces. It must be
 byte-length preserving: line and column numbers are reported straight from the
 parsed buffer, so inserting or deleting a single byte would silently shift every
-``source_location`` after it (the #2876 contract).
+``source_location`` after it (the  contract).
 """
 from __future__ import annotations
 

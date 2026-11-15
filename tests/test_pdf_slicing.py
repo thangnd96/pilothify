@@ -10,7 +10,7 @@ altogether and simply lost everything past 20,000 characters.
 
 Papers are the longest documents anyone points pilothify at, and a compressed
 PDF gives no hint of its text length: the fixture here is 3,094 bytes on disk
-and 55,690 characters of text (#2906).
+and 55,690 characters of text.
 
 `unit_source_text` is the fix: one reader that returns the string the prompt
 will carry, used by both the boundary pass and the slice reader, so the offsets

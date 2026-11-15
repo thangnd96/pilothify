@@ -1,4 +1,4 @@
-"""Installer-level regression tests for upgrade-in-place behavior (issue #580).
+"""Installer-level regression tests for upgrade-in-place behavior.
 
 Pre-fix, the installers wrote a "## pilothify" section with report-first
 instructions and skipped writing if the marker was already present. So users
@@ -240,7 +240,7 @@ def test_kiro_install_upgrades_stale_steering(tmp_path, monkeypatch):
 
 def test_kiro_install_ships_references_sidecar_and_version_stamp(tmp_path, monkeypatch):
     """_kiro_install routes through _copy_skill_file so the references/ sidecar
-    and .pilothify_version stamp are written alongside SKILL.md (#1142).
+    and .pilothify_version stamp are written alongside SKILL.md.
     Previously it used a bare write_text that bypassed the shared helper."""
     monkeypatch.setattr(mainmod, "_check_skill_version", lambda _: None)
 

@@ -1,4 +1,4 @@
-"""Explicit backend selection + disable switch for ambient-key auto-detection (#4361).
+"""Explicit backend selection + disable switch for ambient-key auto-detection.
 
 `detect_backend()` picks a cloud provider purely from whichever API key is set
 in the environment, and community labeling additionally falls back to `claude -p`

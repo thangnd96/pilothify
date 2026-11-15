@@ -194,7 +194,7 @@ def test_other_backends_never_use_native_chat(monkeypatch):
 
 def test_call_llm_ollama_uses_native_chat(monkeypatch):
     # Community labeling goes through _call_llm; its batches are sized for a
-    # 16k context and were cut to Ollama's default the same way (#4413).
+    # 16k context and were cut to Ollama's default the same way.
     calls = _install(monkeypatch, reply=_reply("Console Rendering"))
     monkeypatch.setattr(llm, "_get_backend_api_key", lambda _backend: "ollama")
     usage: dict = {}

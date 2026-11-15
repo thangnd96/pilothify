@@ -23,7 +23,7 @@ def _class_defs(result: dict, label: str) -> list[dict]:
 
 
 def test_php_external_namespaced_base_does_not_collapse_onto_internal_class(tmp_path: Path):
-    # #1923: `App\Models\Page` (internal) and `Filament\Pages\Page` (external,
+    # `App\Models\Page` (internal) and `Filament\Pages\Page` (external,
     # via `use`) share the simple name `Page`. The bare-name rewire must NOT
     # collapse the external supertype reference onto the only internal `Page`.
     model = _write(

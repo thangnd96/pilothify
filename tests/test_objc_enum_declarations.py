@@ -4,7 +4,7 @@ Objective-C is an object-oriented extractor that already emits @interface,
 @implementation and @protocol type nodes, but plain `enum` and `typedef enum`
 definitions were dropped entirely — the type and all of its enumerators were
 invisible. Every other language with enums emits a type node plus a `case_of`
-edge per member (Java #1719, C++ #3939, Swift); ObjC now matches.
+edge per member (Java , C++ , Swift); ObjC now matches.
 
 NS_ENUM, NS_OPTIONS and NS_CLOSED_ENUM typedefs use the same graph representation.
 """

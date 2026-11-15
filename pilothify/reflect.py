@@ -676,7 +676,7 @@ def _resolve_source_path(src: str, graph_path: Path) -> Path | None:
     look "changed"). The same search runs at write and read time, so the writer
     and reader resolve to the same file.
 
-    Order: the committed ``.pilothify_root`` marker (#686/#1423 — authoritative for
+    Order: the committed ``.pilothify_root`` marker (authoritative for
     an absolute/elsewhere ``PILOTHIFY_OUT`` override); then the layout-appropriate
     root *first* — graph.json's parent's parent for the ``pilothify-out`` layout,
     or graph.json's own dir for a flat layout — which avoids matching a same-named

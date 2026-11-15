@@ -1112,7 +1112,7 @@ def extract_solidity(path: Path) -> dict:
 
         # Members whose names differ only by a leading `_` (or by case) share a
         # plain id; the one public name keeps it and the others are salted,
-        # as Python and C# do (#3302, #4415). A member that collides with
+        # as Python and C# do. A member that collides with
         # nothing keeps its id.
         member_groups = _collision_groups([
             (_make_id(type_id, kind, name, signature), name)
@@ -1221,7 +1221,7 @@ def extract_solidity(path: Path) -> dict:
                         add_node(value_id, value_name, value, kind="enum_value")
                         # An enum value is a discriminant case, not a declared
                         # field, so it gets `case_of` like every other language
-                        # with enums (Java #1719, C#, Swift, Rust, VB.NET). The
+                        # with enums (Java , C#, Swift, Rust, VB.NET). The
                         # relation also matters to resolution: `case_of` targets
                         # are excluded from constructor binding, so an enum value
                         # named like a type can no longer be mistaken for one.

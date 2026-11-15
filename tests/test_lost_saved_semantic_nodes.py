@@ -1,5 +1,4 @@
-"""_lost_saved_semantic_nodes: a semantic ghost deduplicated into its AST twin
-(#1145 extended) is preserved, not lost."""
+"""_lost_saved_semantic_nodes: a semantic ghost deduplicated into its AST twin (extended) is preserved, not lost."""
 from __future__ import annotations
 
 import json
@@ -106,7 +105,7 @@ def test_malformed_non_string_source_file_does_not_crash():
     assert [n["id"] for n in lost] == ["s1"]
 
 
-# --- end-to-end: the write paths that call the guard (#4389) ---
+# --- end-to-end: the write paths that call the guard ---
 
 
 def _saved_graph(tmp_path: Path, sem: dict) -> tuple[Path, dict]:
@@ -142,8 +141,8 @@ def test_check_shrink_allows_ghost_dedup(tmp_path):
     assert _check_shrink(force=False, existing_data=existing, new_data=_node_data(G)) is True
 
 
-# --- label-only file twin: build_from_json Pass 2b (#3344) folds a document's
-# mention of a file into that file's AST node (#4389 cluster-only follow-up) ---
+# --- label-only file twin: build_from_json Pass 2b folds a document's
+# mention of a file into that file's AST node (cluster-only follow-up) ---
 
 
 def _mention(node_id: str, label: str, doc: str) -> dict:

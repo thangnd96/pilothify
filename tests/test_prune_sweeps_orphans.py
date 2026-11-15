@@ -7,7 +7,7 @@ the corpus. Every edge they have points at symbols in the one file they were
 created for, so pruning that file left them at degree 0: named after a file the
 corpus no longer contains, counted in every total that reads the graph, exported
 as a note of their own, and unreachable by any future prune since there is no
-`source_file` to match on (#2807).
+`source_file` to match on.
 
 On pilothify's own package, pruning `pilothify/callflow_html.py` removed 137 of its
 139 nodes and stranded `pilothify_callflow_html_py_path` (label `Path`) and

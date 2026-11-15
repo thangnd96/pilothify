@@ -25,7 +25,7 @@ def test_lua_self_colon_call_resolves_to_sibling_method(tmp_path):
     enclosing method's table (`Animal`) is known, so the call must resolve to
     `Animal:describe`. Before the fix the colon call was dropped entirely: the
     `method_index_expression` callee lives in the `method` field, but the Lua
-    config read the (absent) `name` field, so no call edge was emitted (#3991)."""
+    config read the (absent) `name` field, so no call edge was emitted."""
     src = _write(
         tmp_path / "animal.lua",
         "local Animal = {}\n"
@@ -41,7 +41,7 @@ def test_lua_self_colon_call_resolves_to_sibling_method(tmp_path):
 
 def test_lua_self_colon_call_resolves_dot_defined_sibling(tmp_path):
     """A sibling declared with dot syntax (`function Animal.helper()`) is the
-    same method; `self:helper()` must still resolve to it (#3991)."""
+    same method; `self:helper()` must still resolve to it."""
     src = _write(
         tmp_path / "animal.lua",
         "local Animal = {}\n"
@@ -58,7 +58,7 @@ def test_lua_self_colon_call_resolves_dot_defined_sibling(tmp_path):
 def test_lua_self_colon_call_does_not_bind_to_unrelated_bare_function(tmp_path):
     """Fail-closed: when the table has no matching sibling, `self:process()` must
     NOT bind to an unrelated top-level function named `process`. Resolution stays
-    scoped to the enclosing table (#3991)."""
+    scoped to the enclosing table."""
     src = _write(
         tmp_path / "animal.lua",
         "function process()\n"
@@ -75,7 +75,7 @@ def test_lua_self_colon_call_does_not_bind_to_unrelated_bare_function(tmp_path):
 def test_lua_colon_call_on_unknown_receiver_is_fail_closed(tmp_path):
     """A colon call on an arbitrary receiver (`obj:process()`) has an unknown
     type, so it must NOT bind by bare name to an unrelated top-level
-    `process` — only the literal `self` receiver is resolved (#3991)."""
+    `process` — only the literal `self` receiver is resolved."""
     src = _write(
         tmp_path / "animal.lua",
         "function process()\n"
@@ -92,7 +92,7 @@ def test_lua_colon_call_on_unknown_receiver_is_fail_closed(tmp_path):
 
 def test_lua_dot_and_plain_calls_still_resolve(tmp_path):
     """Positive control: the dot-call (`M.helper()`) and plain-call (`helper()`)
-    paths that already worked must keep working (#3991)."""
+    paths that already worked must keep working."""
     src = _write(
         tmp_path / "mod.lua",
         "local M = {}\n"

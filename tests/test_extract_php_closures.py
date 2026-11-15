@@ -153,7 +153,7 @@ array_map(function() { return 3; }, []);
 
 def test_php_method_scope_closure_call_attributes_to_closure_not_method(tmp_path):
     """A closure inside a method: its inner call attributes to the closure node,
-    not the enclosing method (closures are function_boundary_types) (#3409)."""
+    not the enclosing method (closures are function_boundary_types)."""
     (tmp_path / "__probe.php").write_bytes(b"<?php\n")
     if not _php_grammar_available(tmp_path):
         pytest.skip("PHP grammar not installed")

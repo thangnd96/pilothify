@@ -349,7 +349,7 @@ def save_query_result(
     slug = re.sub(r"[^\w]", "_", question.lower())[:50].strip("_")
     # A second-granularity stamp plus a 50-char slug is not unique: two saves in
     # the same second whose questions share a prefix resolve to one path, and the
-    # later write_text silently replaces the earlier one (#3301). The short uuid
+    # later write_text silently replaces the earlier one. The short uuid
     # makes every save its own file; the query_ prefix and .md suffix are kept.
     filename = f"query_{now.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}_{slug}.md"
 

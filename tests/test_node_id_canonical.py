@@ -1,5 +1,5 @@
 """Node-id / edge-endpoint canonicalization: no absolute-path (machine/temp
-slug) leaks (#2231, #2243).
+slug) leaks.
 
 Every producer that mints ids from ``_make_id(str(absolute_path))`` must end
 up canonicalized by the time ``extract()`` returns: after extraction, no node

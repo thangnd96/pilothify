@@ -1,4 +1,4 @@
-"""Keyword-form Elixir definitions keep their calls edges (#4207).
+"""Keyword-form Elixir definitions keep their calls edges.
 
 A one-line definition (`def a(x), do: b(x)`) has no `do_block` node: the
 body is the value of the `do:` pair in the `arguments` keywords. The

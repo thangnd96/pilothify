@@ -32,8 +32,8 @@ def test_generic_class_and_method_type_params_mint_no_stub(tmp_path):
 
 def test_bounds_param_dropped_but_context_bound_and_real_types_kept(tmp_path):
     # `A` is a parameter (dropped); the `Ordering` context bound is a real
-    # dependency (kept, #2046), and a genuine user type in the signature still
-    # references. (An upper bound `<: User` is deliberately not emitted, #2046.)
+    # dependency (kept), and a genuine user type in the signature still
+    # references. (An upper bound `<: User` is deliberately not emitted.)
     (tmp_path / "S.scala").write_text(
         "class User(name: String)\n"
         "class Processor[A: Ordering] {\n"

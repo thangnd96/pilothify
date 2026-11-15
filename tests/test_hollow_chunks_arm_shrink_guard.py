@@ -1,4 +1,4 @@
-"""Hollow, unparseable and omitting chunks must count as incomplete (#3105).
+"""Hollow, unparseable and omitting chunks must count as incomplete.
 
 The #479 shrink guard is bypassed (force=True) on a run that is classified
 as complete. `_extraction_incomplete` tracked hard failures only — a crashed
@@ -133,7 +133,7 @@ def test_allow_partial_still_overrides(monkeypatch, tmp_path):
 
 def test_a_run_with_every_file_covered_keeps_force_write(monkeypatch, tmp_path, capsys):
     """A complete run that did not shrink the graph via dedup still force-writes.
-    A dedup shrink is refused unless --allow-dedup-shrink (#3774)."""
+    A dedup shrink is refused unless --allow-dedup-shrink."""
     rec = _record_force(monkeypatch)
     _arm(monkeypatch, tmp_path)
     _run()

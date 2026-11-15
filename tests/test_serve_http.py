@@ -1,4 +1,4 @@
-"""Tests for the Streamable HTTP transport on the MCP server (issue #1143).
+"""Tests for the Streamable HTTP transport on the MCP server.
 
 These exercise the ASGI wiring in-process (no uvicorn, no real socket) via
 Starlette's TestClient, so they stay fast and offline. The stdio path is
@@ -434,7 +434,7 @@ def test_get_node_and_get_neighbors_agree_on_ambiguous_label(tmp_path):
 
 
 def test_get_node_resolves_a_name_spelled_exactly_when_the_tie_is_only_case(tmp_path):
-    """Go keeps `CheckHealth` and `checkHealth` apart (#2779); the tools lowercased the
+    """Go keeps `CheckHealth` and `checkHealth` apart; the tools lowercased the
     query before resolving it, so neither could be reached by name."""
     graph = {
         "directed": True,
@@ -462,7 +462,7 @@ def test_get_node_resolves_a_name_spelled_exactly_when_the_tie_is_only_case(tmp_
         assert folded.startswith("Ambiguous:"), folded
 
 
-# --- graph_stats build commit (#3354) ----------------------------------------
+# --- graph_stats build commit ----------------------------------------
 
 _STATS_NO_COMMIT = (
     "Nodes: 2\n"

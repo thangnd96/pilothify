@@ -181,14 +181,14 @@ def test_report_work_memory_section_absent_without_overlay():
 
 
 def test_import_cycles_section_present_for_code_corpus():
-    # #1657: the fixture is a code corpus, so the Import Cycles section shows.
+    # the fixture is a code corpus, so the Import Cycles section shows.
     G, communities, cohesion, labels, gods, surprises, detection, tokens = make_inputs()
     report = generate(G, communities, cohesion, labels, gods, surprises, detection, tokens, "./project")
     assert "## Import Cycles" in report
 
 
 def test_import_cycles_section_absent_for_documents_only_corpus():
-    # #1657: a documents-only corpus has no imports; the section is pure noise
+    # a documents-only corpus has no imports; the section is pure noise
     # ("None detected") and must be suppressed.
     extraction = {
         "nodes": [
@@ -211,7 +211,7 @@ def test_import_cycles_section_absent_for_documents_only_corpus():
 
 
 def test_report_hubs_are_plain_text_by_default():
-    # #1712: without --obsidian the _COMMUNITY_*.md notes don't exist, so wikilinks
+    # without --obsidian the _COMMUNITY_*.md notes don't exist, so wikilinks
     # would dangle (and pollute an Obsidian vault's graph view). Default to plain text.
     G, communities, cohesion, labels, gods, surprises, detection, tokens = make_inputs()
     labels = {cid: f"Widget {cid}" for cid in communities}

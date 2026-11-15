@@ -3,7 +3,7 @@
 LLM extraction is not id-stable: re-extracting an edited doc gives its
 semantic nodes new ids. build_merge drops the old ones on purpose, so the
 #479 write guard must not count them as lost. Nodes of files this run did not
-touch, and files with an unverified shrink (#3203), stay guarded.
+touch, and files with an unverified shrink, stay guarded.
 """
 from __future__ import annotations
 

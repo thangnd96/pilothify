@@ -87,11 +87,18 @@ def link_routes(G: nx.Graph) -> int:
             verb, segs = match.group(1), _segments(match.group(2))
             if segs in by_path:
                 full, exact = segs, True
-            else:
-                fulls = by_tail.get(segs, set())
+            elif segs in by_tail:
+                fulls = by_tail[segs]
                 if len(fulls) != 1:
                     continue
                 full, exact = next(iter(fulls)), False
+            else:
+                # A route mounted under a prefix set in another file is shorter
+                # than the doc's full path: match its longest tail of 2+ segments.
+                full = next((segs[s:] for s in range(1, len(segs) - 1) if segs[s:] in by_path), None)
+                if full is None:
+                    continue
+                exact = False
             for route_verb, handler in by_path[full]:
                 if verb and route_verb and verb != route_verb:
                     continue

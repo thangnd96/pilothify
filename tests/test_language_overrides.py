@@ -1,4 +1,4 @@
-"""A project can declare what an ambiguous extension means to it (#2961).
+"""A project can declare what an ambiguous extension means to it.
 
 `.inc` is hard-mapped to the Pascal extractor, but it is "include file" in
 whatever language a project uses: PHP on pfSense, Pascal in Delphi, SQL or
@@ -401,7 +401,7 @@ def test_activating_a_root_without_rc_clears_a_previous_roots_overrides(tmp_path
 
 def test_overrides_do_not_leak_across_concurrent_threads():
     """Two extractions in one process, on different threads with different
-    roots, must not clobber each other's overrides (#2961 review).
+    roots, must not clobber each other's overrides (review).
 
     Thread A maps `.inc -> .php`, thread B maps `.inc -> .pas`. Each barrier-
     synchronizes so both activations are live at once, then each re-reads its

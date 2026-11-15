@@ -1,4 +1,4 @@
-"""C# method nodes display their owning type (#4883).
+"""C# method nodes display their owning type.
 
 Every method used to be labeled `.Build()`, so `IReport.Build()`,
 `PdfReport.Build()` and `CsvReport.Build()` printed identically and only the

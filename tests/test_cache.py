@@ -332,7 +332,7 @@ def test_cache_portable_across_roots(tmp_path):
     assert not str(repo_a) in loaded["nodes"][0]["source_file"]
 
 
-# --- AST cache id portability (#2257) ---------------------------------------
+# --- AST cache id portability ---------------------------------------
 # Sibling of the source_file portability above. Extractors mint node ids from
 # the path STRING they were handed, so a cached entry embeds the absolute scan
 # root in every id (`<root-slug>_pkg_mod_base`). extract()'s id-remap keys those
@@ -341,7 +341,7 @@ def test_cache_portable_across_roots(tmp_path):
 
 def _reset_stat_index():
     """The stat-index location/anchor are chosen once per process via module
-    globals (#1747/#2199). Reset them so each test sees a fresh-process
+    globals. Reset them so each test sees a fresh-process
     decision — same pattern as tests/test_stat_index_portability.py."""
     from pilothify import cache as _cache
 
@@ -857,7 +857,7 @@ def test_warm_cache_keeps_target_and_symlink_sources_distinct(
 def test_file_hash_distinguishes_walked_junction_paths(tmp_path):
     r"""#2832 with junctions, which need no symlink privilege. Under a junctioned
     scan root the walked-parent match compared a plain spelling with the
-    ``\\?\`` form of the root (#4925), never matched, and the in-root alias fell
+    ``\\?\`` form of the root, never matched, and the in-root alias fell
     back to its target's salt and shared its digest."""
     import subprocess
 
@@ -1415,7 +1415,7 @@ def test_save_semantic_cache_drops_edges_to_ghost_file_nodes(tmp_path):
 
 def test_save_semantic_cache_drops_hyperedges_touching_skipped_nodes(tmp_path):
     """#1916: a hyperedge whose member list intersects the skipped ids is
-    dropped whole (mirroring the #1895 semantics), while hyperedges over
+    dropped whole (mirroring the  semantics), while hyperedges over
     surviving nodes are kept."""
     from pilothify.cache import check_semantic_cache, save_semantic_cache
 
@@ -1514,7 +1514,7 @@ def test_save_semantic_cache_merge_existing_prunes_only_incoming(tmp_path):
     assert not any("stray" in p for p in pairs)
 
 
-# --- extraction-prompt fingerprinting (#1939) -------------------------------
+# --- extraction-prompt fingerprinting -------------------------------
 
 
 def test_prompt_fingerprint_stable_and_prompt_sensitive(tmp_path):
@@ -1542,7 +1542,7 @@ def test_prompt_fingerprint_ignores_line_endings(tmp_path):
 
 
 def test_semantic_cache_prompt_change_invalidates(tmp_path):
-    """The reported bug (#1939): after the extraction prompt changes, an
+    """The reported bug: after the extraction prompt changes, an
     unchanged file must MISS instead of replaying the older vintage."""
     from pilothify.cache import check_semantic_cache, save_semantic_cache
 
@@ -1589,7 +1589,7 @@ def test_semantic_cache_prompt_namespaced_layout(tmp_path):
 
 
 def test_semantic_cache_prompt_and_mode_compose(tmp_path):
-    """The prompt fingerprint nests inside the deep namespace (#1894), so the
+    """The prompt fingerprint nests inside the deep namespace, so the
     two dimensions are independent."""
     from pilothify.cache import check_semantic_cache, save_semantic_cache
 
@@ -1807,8 +1807,8 @@ def test_file_hash_fastpath_still_serves_a_settled_file(tmp_path, monkeypatch):
 
 
 def test_corrupt_semantic_entry_warns_and_is_a_miss(tmp_path):
-    """A corrupt (invalid-JSON) cache entry must not be silently swallowed
-    (#2405). Left unreported it fails to parse on every future run, re-billing
+    """A corrupt (invalid-JSON) cache entry must not be silently swallowed.
+    Left unreported it fails to parse on every future run, re-billing
     the semantic extraction forever with no diagnostic. check_semantic_cache
     treats it as a miss (uncached) AND emits one aggregate warning naming the
     count, mirroring the pre-fingerprint legacy-hit warning."""
@@ -1842,7 +1842,7 @@ def test_corrupt_semantic_entry_warns_and_is_a_miss(tmp_path):
 def test_edge_only_semantic_result_not_cached(tmp_path):
     """#2927: an edge-only semantic result (0 nodes, 0 hyperedges) represents an
     omission by the model and must NOT be written to cache, so subsequent runs
-    can re-dispatch and retry the file (#933/#1666)."""
+    can re-dispatch and retry the file."""
     from pilothify.cache import check_semantic_cache, load_cached, save_semantic_cache
 
     f = tmp_path / "doc.md"
@@ -2004,7 +2004,7 @@ def test_scope_semantic_result_drops_out_of_scope_groups(tmp_path):
 
 def test_scope_semantic_result_matches_absolute_and_relative_forms(tmp_path):
     """An absolute in-root source_file and its relative form are the same
-    identity — both must match the allowlist entry (#2197 normalization)."""
+    identity — both must match the allowlist entry (normalization)."""
     from pilothify.cache import scope_semantic_result
 
     result = {

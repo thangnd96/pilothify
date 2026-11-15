@@ -1,4 +1,4 @@
-"""`definition_file` is portable, like its sibling `source_file` (#3223).
+"""`definition_file` is portable, like its sibling `source_file`.
 
 The #2990 decl/def merge stamps `definition_file` from the implementation's
 then-absolute `source_file` — and nothing ever relativized it. graph.json

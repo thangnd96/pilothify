@@ -329,7 +329,7 @@ def extract_erlang(path: Path) -> dict:
                 # `spawn`, etc. It names exactly one function, so resolve it the
                 # same way a direct call is, but as an `indirect_call`: the
                 # function is handed off to be invoked, not called on the spot
-                # (#3993). Remote references (`fun mod:f/2`, node type
+                #. Remote references (`fun mod:f/2`, node type
                 # `external_fun`) are left unresolved — the module is named
                 # explicitly and belongs to the cross-file remote-call boundary.
                 name_node = node.child_by_field_name("fun")

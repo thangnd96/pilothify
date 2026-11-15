@@ -1,4 +1,4 @@
-"""Qualified Elixir remote calls resolve to the named module (#4206).
+"""Qualified Elixir remote calls resolve to the named module.
 
 `App.Accounts.get_user(id)` and `Accounts.get_user(id)` (after
 `alias App.Accounts`) got no `calls` edge, because the extractor kept only the

@@ -9,7 +9,7 @@ level inside any container resolved correctly. The gate was the only difference:
 both positions parse to an identical `val_definition` with a `type` field.
 
 The same generic mechanism in the walker's default recursion path had already
-caused and been fixed once for a Python-specific case (#1050), so this is the
+caused and been fixed once for a Python-specific case, so this is the
 Scala instance of a known defect rather than a new one.
 
 These tests pin the anchor fallback: a file-scope binding attributes its type
@@ -92,7 +92,7 @@ def test_top_level_binding_emits_no_self_edge(tmp_path):
 def test_top_level_type_reference_is_tagged_extracted(tmp_path):
     # A type annotation written in the source is an extracted fact, not an
     # inference: the confidence tag must say so, or a consumer cannot tell a
-    # real annotation from a guess (#2054).
+    # real annotation from a guess.
     r, nid = _build(tmp_path)
     file_nid = nid["TopLevel.scala"]
     edges = [e for e in r["edges"]

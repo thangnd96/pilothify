@@ -1,9 +1,9 @@
-"""Carried-forward hyperedges must follow the dedup survivor remap (#3102).
+"""Carried-forward hyperedges must follow the dedup survivor remap.
 
 build_merge() carries hyperedges from unchanged files across an incremental
-rebuild (#1574). They used to be attached to G AFTER build() and entity
+rebuild. They used to be attached to G AFTER build() and entity
 dedup had finished, so while every edge endpoint was rewired onto the dedup
-survivor (#2805), a carried hyperedge kept naming the merged-away node — a
+survivor, a carried hyperedge kept naming the merged-away node — a
 dangling member in graph.json with no backing node.
 """
 from __future__ import annotations

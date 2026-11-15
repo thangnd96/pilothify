@@ -1,9 +1,9 @@
-"""A sliced file is cached complete only once every slice has succeeded (#4943, #5106).
+"""A sliced file is cached complete only once every slice has succeeded.
 
 Each slice's checkpoint used to write the parent file's entry as complete, so a
 run interrupted after the first slice served the head of the file as the whole
 file, and a failed slice was hidden by the final save in the same way. Similarly,
-incomplete precomputed slice inputs must not be cached as complete (#5106).
+incomplete precomputed slice inputs must not be cached as complete.
 """
 
 from pathlib import Path
@@ -133,7 +133,7 @@ def test_held_slices_are_cached_in_chunk_order_under_parallel_completion(tmp_pat
     assert labels[0] == "early"
 
 
-# ── precomputed FileSlice coverage (#5106) ──────────────────────────────────
+# ── precomputed FileSlice coverage ──────────────────────────────────
 
 def test_precomputed_fileslice_reproduction_5106_no_attribute_error(tmp_path):
     """Calling extract_corpus_parallel with precomputed FileSlice does not crash with AttributeError."""

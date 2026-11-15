@@ -1,4 +1,4 @@
-"""The raw --no-cluster graph.json follows build_from_json's endpoint rules (#2873).
+"""The raw --no-cluster graph.json follows build_from_json's endpoint rules.
 
 build_from_json drops every edge it cannot attach to two declared nodes and
 mints a typed stub for an import of an external module. The raw --no-cluster
@@ -11,7 +11,7 @@ Resolving an endpoint also needs the alias index, not just normalization: a
 framework-style `#import <Kit/ToolEvent.h>` names the header by its bare
 basename, which is neither the declared id nor a normalization of it, so the
 raw path minted an external stub for a file that was in the corpus all along
-while the clustered path re-pointed the edge at the real header (#4670).
+while the clustered path re-pointed the edge at the real header.
 """
 from __future__ import annotations
 
@@ -96,7 +96,7 @@ def test_finalize_raw_graph_endpoints_resolves_an_old_stem_alias():
 
     ``toolevent`` is the OLD stem of ``Kit/Event/ToolEvent.h`` (now
     ``kit_event_toolevent``), so normalization alone cannot bridge the two ids
-    and the raw path used to leave the edge on a minted external stub (#4670).
+    and the raw path used to leave the edge on a minted external stub.
     """
     from pilothify.build import finalize_raw_graph_endpoints
 
@@ -235,7 +235,7 @@ def test_extract_no_cluster_resolves_a_framework_import_like_the_clustered_path(
     # The import lands on the real header's file node, and no stub is minted for it.
     assert ("kit_holder", "kit_event_toolevent") in imports(raw_links)
     assert "toolevent" not in raw_ids
-    # A genuinely external import still gets its typed stub (#2873).
+    # A genuinely external import still gets its typed stub.
     assert "foundation" in raw_ids
     assert ("kit_event_toolevent", "foundation") in imports(raw_links)
     assert clustered_ids == raw_ids

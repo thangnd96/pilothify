@@ -11,7 +11,7 @@ entity into disconnected ghost nodes:
 Historically the normalization recipe was copy-pasted into ``extract._make_id``
 and ``build._normalize_id`` and kept in sync only by mirrored docstrings, which
 is exactly how the recurring ID-drift bug class crept in (#811 Unicode collapse,
-#550 same-filename collisions, #1033 AST-vs-LLM file-node mismatch, #1104). This
+#550 same-filename collisions, #1033 AST-vs-LLM file-node mismatch). This
 module exists so the recipe lives in one place and the two callers can no longer
 diverge.
 
@@ -29,7 +29,7 @@ combining marks casefold introduces were never filtered: ``İslemYap`` produced
 ``i̇slemyap`` — an id containing U+0307, which is not a ``\\w`` character — and a
 second pass collapsed it to ``i_slemyap``, so the function was not idempotent
 and the builder's re-normalization disagreed with the extractor's ``make_id``
-for any Turkish identifier (#2614).
+for any Turkish identifier.
 
 Casefolding runs in a FIXPOINT LOOP, not once. A single ``NFKC(casefold(...))``
 left ``normalize_id(s) != normalize_id(s.casefold())`` for some combining-mark
@@ -71,7 +71,7 @@ def normalize_id(s: str) -> str:
     loop is bounded — Unicode caseless folding converges in one or two steps —
     with a hard cap as a termination guard. Only then apply the ``[^\w]+`` filter,
     so every combining mark casefold introduced has been fully normalized before
-    it is filtered (#2614 and its combining-mark follow-on).
+    it is filtered (and its combining-mark follow-on).
     """
     cur = s
     for _ in range(6):
@@ -85,7 +85,7 @@ def normalize_id(s: str) -> str:
 
 
 def decl_salt(name: str) -> str:
-    """Stable 12-hex digest appended when a declaration id collides (#4854)."""
+    """Stable 12-hex digest appended when a declaration id collides."""
     return hashlib.sha1(
         name.encode("utf-8", "replace"), usedforsecurity=False
     ).hexdigest()[:12]
@@ -127,9 +127,9 @@ class DeclIdRegistry:
         # An id already used by a real declaration is a duplicate reference to
         # that declaration (prototype owner, same name re-declared); reuse it
         # instead of minting a second node. Only a salted id, whose owner stole
-        # the spelling from this declaration, forces a counter-salt (#4854). A
+        # the spelling from this declaration, forces a counter-salt. A
         # different kind only counts as a duplicate when spelled the same (TS
-        # `class Foo` + `namespace Foo`): `class Foo` + `function foo` are two (#4904).
+        # `class Foo` + `namespace Foo`): `class Foo` + `function foo` are two.
         if (nid in taken and owner is not None and owner[0] != "file"
                 and nid not in self._salted
                 and (owner[0] == kind or self._spelled.get(nid) == name)):

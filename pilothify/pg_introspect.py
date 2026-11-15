@@ -64,7 +64,7 @@ def introspect_postgres(dsn: str | None = None) -> dict:
             # user has WRITE access to the referencing table (owner or a
             # privilege other than SELECT), so a read-only introspection role
             # sees zero FK rows while tables/views/routines all appear — the
-            # graph then silently loses every 'references' edge (#1746).
+            # graph then silently loses every 'references' edge.
             # pg_constraint is not privilege-filtered. It also keys constraints
             # by oid rather than by name (constraint names are only unique per
             # table, so the old name-based key_column_usage joins could
@@ -118,7 +118,7 @@ def introspect_postgres(dsn: str | None = None) -> dict:
     # (notably C-language extension functions, whose "body" is just the C symbol
     # name) put tree-sitter into error recovery that consumes the statements
     # after them — with FKs last, every 'references' edge is silently lost on
-    # any DB with a common extension installed (#1854). FK statements only
+    # any DB with a common extension installed. FK statements only
     # reference tables, which are emitted first, so this order is always safe.
     for constraint_name, t_schema, t_name, cols, r_schema, r_name, r_cols in fks:
         col_list = ", ".join(_quote_ident(c) for c in cols)

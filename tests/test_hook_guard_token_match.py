@@ -1,4 +1,4 @@
-"""The Bash search guard fires on executed commands, not on prose (#3121).
+"""The Bash search guard fires on executed commands, not on prose.
 
 `_run_hook_guard` decided "is this a search?" with a substring scan over the
 whole command string — quoted arguments and heredoc bodies included. So

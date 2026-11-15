@@ -1,4 +1,4 @@
-"""A generic type's methods must attach to the type's own node (#3368).
+"""A generic type's methods must attach to the type's own node.
 
 `(b *Box[T]) Get()` reads its receiver's `type` field as `Box[T]` verbatim,
 but the type declaration's own id is the bare `Box`: `type Box[T any] struct

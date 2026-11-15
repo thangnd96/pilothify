@@ -1,4 +1,4 @@
-"""Skill scans must preserve the CLI's persisted corpus boundaries (#4240)."""
+"""Skill scans must preserve the CLI's persisted corpus boundaries."""
 from __future__ import annotations
 import json
 import re

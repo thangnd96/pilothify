@@ -1,10 +1,10 @@
-"""A bare ``out`` directory is pruned only on build-output evidence (#3347).
+"""A bare ``out`` directory is pruned only on build-output evidence.
 
 ``out`` was in ``_SKIP_DIRS`` unconditionally, so a hexagonal codebase's
 ``adapter/out/`` and ``port/out/`` — the entire outbound layer, 30% of the
 corpus on the reporting repo — vanished from the scan with exit code 0 and no
 warning. It now gets the same evidence gating ``env``/``coverage``/
-``snapshots`` already have (#1666/#2058/#2339): keep on doubt, prune on proof.
+``snapshots`` already have: keep on doubt, prune on proof.
 """
 
 from pilothify.detect import detect

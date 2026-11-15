@@ -1,4 +1,4 @@
-"""`pilothify merge-graphs` tolerates inputs that disagree on graph type (#1606).
+"""`pilothify merge-graphs` tolerates inputs that disagree on graph type.
 
 Per-repo graph.json files written by different extract paths at different times
 don't always agree on the `directed` / `multigraph` flags. compose requires one
@@ -49,7 +49,7 @@ def test_merge_graphs_mixed_directed_and_multigraph(tmp_path):
 
 
 def test_merge_graphs_same_named_repo_dirs_do_not_collapse(tmp_path):
-    # #1729: two graphs under a same-named repo dir (src/pilothify-out and
+    # two graphs under a same-named repo dir (src/pilothify-out and
     # frontend/src/pilothify-out both → tag "src") share the `src::` prefix, so a
     # bare `app` node from each collapsed into one — silently merging unrelated
     # entities and inventing cross-runtime edges. Distinct tags must keep them apart.
@@ -95,7 +95,7 @@ def test_distinct_repo_tags_unit(tmp_path):
 
 
 def test_merge_graphs_preserves_import_edge_direction(tmp_path):
-    # #2261: merge-graphs loaded graph.json into an undirected nx.Graph without
+    # merge-graphs loaded graph.json into an undirected nx.Graph without
     # stashing _src/_tgt directional markers, causing node_link_data to re-serialize
     # edges based on arbitrary node ordering and reversing import edge direction whenever
     # target node index < source node index (turning imports into self-imports/reversed links).
@@ -172,7 +172,7 @@ def _write_with_hyperedges(p: Path, node_ids: list[str], hyperedges: list[dict],
                            *, top_level_only: bool = False):
     # Mirrors to_json's dual-slot shape: hyperedges live top-level AND under
     # the node_link graph attrs. top_level_only drops the nested slot to model
-    # older writers (#2485).
+    # older writers.
     p.parent.mkdir(parents=True, exist_ok=True)
     data = {
         "directed": False, "multigraph": False,
@@ -184,7 +184,7 @@ def _write_with_hyperedges(p: Path, node_ids: list[str], hyperedges: list[dict],
 
 
 def test_merge_graphs_carries_hyperedges_from_all_inputs(tmp_path):
-    # #2484: prefix_graph_for_global never rewrote G.graph["hyperedges"], and
+    # prefix_graph_for_global never rewrote G.graph["hyperedges"], and
     # nx.compose's dict.update graph-attr merge clobbered each prior input's
     # list, so at best the LAST graph's hyperedges survived — with stale,
     # unprefixed member ids. Both inputs' hyperedges must reach the output,
@@ -259,7 +259,7 @@ def _write_with_communities(p: Path, nodes):
 
 
 def test_merge_graphs_offsets_communities_so_repos_do_not_fuse(tmp_path):
-    # #3014: every input numbers its communities from 0, so merge-graphs
+    # every input numbers its communities from 0, so merge-graphs
     # carrying ids across unchanged made community 0 of repo alpha and
     # community 0 of repo beta the SAME community — the aggregated community
     # view then fused unrelated communities into one meta-node. Each input's
@@ -425,7 +425,7 @@ def _write_nodes(p: Path, nodes: list[dict]):
 
 def test_merge_graphs_reports_unified_external_nodes(tmp_path):
     """The merged total is lower than the sum of inputs only because external stubs
-    share global bare ids (#2873). The CLI must say so instead of dropping the count silently."""
+    share global bare ids. The CLI must say so instead of dropping the count silently."""
     a = tmp_path / "r1" / "pilothify-out" / "graph.json"
     b = tmp_path / "r2" / "pilothify-out" / "graph.json"
     _write_nodes(a, [{"id": "A"}, {"id": "arraylist", "external": True}])

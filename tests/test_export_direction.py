@@ -1,12 +1,12 @@
-"""Reloading graph.json must keep each edge's stored direction (#4066).
+"""Reloading graph.json must keep each edge's stored direction.
 
 graph.json is written ``directed: false`` and carries true direction in each
-link's arc order (#563), or in ``_src``/``_tgt`` markers on legacy
-canonicalized files (#2309). A plain undirected ``node_link_graph`` load
+link's arc order, or in ``_src``/``_tgt`` markers on legacy
+canonicalized files. A plain undirected ``node_link_graph`` load
 re-orders each edge's endpoints by node-list position, so a link whose target
 node precedes its source node comes back reversed.
 
-query/path/explain (#2309, #2487), affected (#1174), merge-graphs (#2261) and
+query/path/explain, affected, merge-graphs and
 the MCP server already restore direction. These tests cover the remaining
 reloaders: the export subcommands, the watch/update HTML re-render, the git
 merge driver, which writes the committed graph.json, and `global add`, which

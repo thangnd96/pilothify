@@ -1,4 +1,4 @@
-"""Rigorous edge-case coverage for the `pilothify hook-guard` subcommand (#522).
+"""Rigorous edge-case coverage for the `pilothify hook-guard` subcommand.
 
 Covers the shell-agnostic PreToolUse/BeforeTool guard that replaced the inline
 bash hooks: the search/read detection matrix, the gemini BeforeTool contract,
@@ -73,7 +73,7 @@ def test_search_nudges(command, tmp_path, monkeypatch):
 @pytest.mark.parametrize("command", [
     "",                          # empty
     # pgrep searches PROCESSES, not file content - the old substring scan
-    # nudged on it only because the string contains 'grep' (#3121); the graph
+    # nudged on it only because the string contains 'grep'; the graph
     # has nothing to offer a process lookup.
     "pgrep -f server",
     "ls -la",
@@ -127,10 +127,10 @@ def test_search_non_dict_tool_input_is_silent(tmp_path, monkeypatch):
     {"file_path": "SRC/APP.PY"},                 # uppercase extension
     {"file_path": "src/a.test.tsx"},             # multi-dot -> .tsx
     {"file_path": "lib/foo.min.js"},             # multi-dot -> .js
-    {"file_path": "scripts/deploy.ps1"},          # #4271: PowerShell sources nudge too
+    {"file_path": "scripts/deploy.ps1"},          # PowerShell sources nudge too
     {"file_path": "scripts/Module.psm1"},         # #4271
     {"file_path": "scripts/Module.psd1"},         # #4271
-    {"file_path": "scripts/DEPLOY.PS1"},          # #4271: uppercase extension
+    {"file_path": "scripts/DEPLOY.PS1"},          # uppercase extension
     {"file_path": r"src\components\app.py"},     # windows backslashes
     {"pattern": "**/*.py", "path": "src"},       # glob pattern
     {"pattern": "**/*.astro"},
@@ -193,7 +193,7 @@ def test_read_nudges_source_outside_custom_output_dir(tmp_path, monkeypatch):
     r"tools\pilothify\helper.py",
 ])
 def test_read_nudges_when_nested_out_name_matches_directory(file_path, tmp_path, monkeypatch):
-    # #3959: when PILOTHIFY_OUT is a nested path whose last segment is a common name
+    # when PILOTHIFY_OUT is a nested path whose last segment is a common name
     # (e.g. artifacts/pilothify), paths containing pilothify/ outside the output directory
     # must still be nudged and not falsely suppressed.
     out = _invoke("read", {"tool_input": {"file_path": file_path}},
@@ -209,7 +209,7 @@ def test_read_nudges_when_nested_out_name_matches_directory(file_path, tmp_path,
     {"pattern": "pilothify/*.py", "path": "artifacts"},
 ])
 def test_read_nested_output_dir_silences_own_output(tool_input, tmp_path, monkeypatch):
-    # #3959: files and globs inside the nested output dir must remain silent.
+    # files and globs inside the nested output dir must remain silent.
     out = _invoke("read", {"tool_input": tool_input},
                   tmp_path, monkeypatch, graph=True, out_name="artifacts/pilothify")
     assert out.strip() == "", f"{tool_input!r} should be silent"
@@ -237,7 +237,7 @@ def test_search_out_path_error_is_swallowed(tmp_path, monkeypatch):
 
 
 # --------------------------------------------------------------------------- #
-# soft nudge bounds (#3435): fresh query stamp suppresses, per-session cap
+# soft nudge bounds: fresh query stamp suppresses, per-session cap
 # --------------------------------------------------------------------------- #
 def _read_payload(sid="s1", agent=None):
     p = {"session_id": sid, "tool_name": "Read", "tool_input": {"file_path": "src/app.py"}}
@@ -408,7 +408,7 @@ def test_read_nudge_em_dash_survives_utf8(tmp_path):
 
 
 # --------------------------------------------------------------------------- #
-# #4040: reminders name the effective graph.json when PILOTHIFY_OUT is customized
+# reminders name the effective graph.json when PILOTHIFY_OUT is customized
 # --------------------------------------------------------------------------- #
 def _ctx(out):
     return json.loads(out)["hookSpecificOutput"]["additionalContext"]

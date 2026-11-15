@@ -160,7 +160,7 @@ def test_extract_no_cluster_incremental_changed_file_preserves_unchanged_files(t
     ), after_edges
     # No dangling endpoints on cross-file edges: the changed file's re-extracted
     # imports/re-exports must resolve to the unchanged target's canonical ids,
-    # not absolute-path-derived ghosts (the extract.py half of #2169).
+    # not absolute-path-derived ghosts (the extract.py half of).
     for e in after_edges:
         if e.get("relation") in ("imports_from", "re_exports", "contains", "imports"):
             assert e.get("source") in after_ids, f"dangling source: {e}"
@@ -268,7 +268,7 @@ def test_extract_no_cluster_incremental_code_only_preserves_doc_nodes(tmp_path):
 
 
 def test_incremental_python_relative_import_target_canonicalizes(tmp_path):
-    """#2213 (defect 1, shared root with #2211): a Python relative import's
+    """#2213 (defect 1, shared root with): a Python relative import's
     imports_from edge must stamp target_file so the #2169 remap canonicalizes
     its target on an incremental extraction where the target file is NOT in
     the batch — instead of leaving an absolute-path-derived dangling id."""

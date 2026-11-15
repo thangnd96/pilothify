@@ -1,4 +1,4 @@
-"""Declarations of different kinds whose names differ only in case keep their own nodes (#4904)."""
+"""Declarations of different kinds whose names differ only in case keep their own nodes."""
 import pytest
 
 from pilothify.extract import extract

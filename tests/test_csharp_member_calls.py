@@ -1,4 +1,4 @@
-"""C# receiver-typed member-call resolution (#1609).
+"""C# receiver-typed member-call resolution.
 
 `recv.Method()` where `recv` is a typed field / property / parameter / local must
 resolve to the receiver TYPE's method — not a bare same-named match. Before this,
@@ -143,7 +143,7 @@ def test_unqualified_call_still_resolves(tmp_path):
     assert any("_r_a" in s and "helper" in t for s, t in calls), "no regression on unqualified calls"
 
 
-# ── Namespace-aware receiver typing + shadow poisoning (#1620) ────────────────
+# ── Namespace-aware receiver typing + shadow poisoning ────────────────
 
 _NS_AB = {
     "A.cs": "namespace A { public class Svc { public bool Do() => true; } }\n",
@@ -321,7 +321,7 @@ def test_null_conditional_this_field_receiver_resolves(tmp_path):
 
 
 def test_null_conditional_bare_this_receiver_resolves(tmp_path):
-    """`this?.Save()` resolves like `this.Save()` (#4077)."""
+    """`this?.Save()` resolves like `this.Save()`."""
     calls, r = _calls(tmp_path, {
         "S.cs": (
             "public class Other { public bool Save() => false; }\n"
@@ -379,14 +379,14 @@ def _store_call(tmp_path, editor_body: str):
 
 
 def test_cast_receiver_resolves_to_cast_type(tmp_path):
-    """`((IStore)_obj).Save()`: the cast names the receiver type (#3797)."""
+    """`((IStore)_obj).Save()`: the cast names the receiver type."""
     calls, run, istore_save, store_save = _store_call(tmp_path, "((IStore)_obj).Save();")
     assert (run, istore_save) in calls
     assert (run, store_save) not in calls
 
 
 def test_as_cast_receiver_resolves_to_cast_type(tmp_path):
-    """`(_obj as IStore).Save()` types the receiver the same way (#3797)."""
+    """`(_obj as IStore).Save()` types the receiver the same way."""
     calls, run, istore_save, store_save = _store_call(tmp_path, "(_obj as IStore).Save();")
     assert (run, istore_save) in calls
     assert (run, store_save) not in calls
@@ -394,7 +394,7 @@ def test_as_cast_receiver_resolves_to_cast_type(tmp_path):
 
 def test_property_receiver_shadows_same_named_type(tmp_path):
     """`IStore Store => ...; Store.Save()`: inside Editor `Store` is the
-    property, so the call is IStore.Save, not the class Store's (#3797)."""
+    property, so the call is IStore.Save, not the class Store's."""
     calls, run, istore_save, store_save = _store_call(tmp_path, "Store.Save();")
     assert (run, istore_save) in calls
     assert (run, store_save) not in calls
@@ -448,7 +448,7 @@ def test_unresolved_base_poisons_inherited_member_lookup(tmp_path):
         "unresolved base chain must bail, not mis-bind to Server.Save"
 
 
-# ── Method-scoped receiver typing (#2299) ────────────────────────────────────
+# ── Method-scoped receiver typing ────────────────────────────────────
 # C# scoping is per-method: a name rebound (even untypably) in ONE method must
 # not poison a same-named, explicitly typed receiver in a DIFFERENT method. The
 # old file-wide table did exactly that, silently deleting true calls edges.
@@ -575,7 +575,7 @@ def test_method_chained_off_new_expression_resolves(tmp_path):
     ), f"chained call off new Merger(...) not captured: {[(s, label.get(t)) for s, t in calls]}"
 
 
-# ── Inline-declared receivers (#2346) ─────────────────────────────────────────
+# ── Inline-declared receivers ─────────────────────────────────────────
 # `out T x`, `is T x`, `is not T x`, `case T x:` and switch-arm `T x =>` all
 # introduce a binding the receiver table never saw — `x.Method()` on any of
 # them silently dropped the edge. `out var x` stays untypable (poison, never a
@@ -691,7 +691,7 @@ def test_switch_arm_pattern_receiver_resolves(tmp_path):
     assert (r_a, twig_go) not in calls
 
 
-# ── Lexically-scoped receiver typing (#2472) ──────────────────────────────────
+# ── Lexically-scoped receiver typing ──────────────────────────────────
 # The #2346 harvest of `out var x` (untypable) rode the #2299 method-wide
 # poison rule: ANY None-typed binding of a name wiped a correctly typed
 # same-name binding in a DIFFERENT lexical scope of the same method, dropping
@@ -906,7 +906,7 @@ def test_struct_primary_constructor_parameter_emits_references_edge(tmp_path):
 # now blanks directive lines, plus any later branch whose braces/parens do not
 # balance or that redeclares a member the kept branch already declares, keeping
 # each remaining byte on its line and column. Other `#elif`/`#else` branches are
-# kept so members that exist only there stay in the graph (#2631).
+# kept so members that exist only there stay in the graph.
 
 _PP_BUFFER = (
     "namespace Repro3;\n"

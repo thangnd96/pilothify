@@ -1,4 +1,4 @@
-"""A same-relation edge collision must not erase the losing edge's provenance (#4881).
+"""A same-relation edge collision must not erase the losing edge's provenance.
 
 `build_from_json` keeps one edge per pair and relation, and since #3711 the
 higher-confidence edge wins. The loser used to vanish: an AMBIGUOUS semantic

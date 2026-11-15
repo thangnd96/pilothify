@@ -1,6 +1,6 @@
 """The per-term guaranteed seeds follow the strength of each term's best match, strongest first.
 
-`_pick_seeds` guarantees one seed per query term (#1445). Those seeds used to be appended in alphabetical term
+`_pick_seeds` guarantees one seed per query term. Those seeds used to be appended in alphabetical term
 order, and the renderer prints seeds first, so on a long query a weak match on an early-alphabet term was printed
 ahead of a specific term's exact match. `_score_query` now returns `term_order` (strongest per-term winner first,
 the term breaking ties) and `_query_graph_text` passes it on. Which seeds are picked does not change, only their

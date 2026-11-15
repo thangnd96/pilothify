@@ -442,7 +442,7 @@ class TestDetectDefaultBranch:
             assert _detect_default_branch() == "main"
 
     def test_repo_positional_arg_in_gh_repo_view(self):
-        """gh repo view takes repo positionally; --repo is not a valid flag (#3318)."""
+        """gh repo view takes repo positionally; --repo is not a valid flag."""
         with patch(
             "pilothify.prs._gh",
             return_value={"defaultBranchRef": {"name": "main"}},
@@ -455,7 +455,7 @@ class TestDetectDefaultBranch:
 
     def test_explicit_repo_gh_fails_returns_main_without_local_git(self):
         """When an explicit repo is supplied and gh fails, return 'main' without
-        inspecting the local repository (#3318)."""
+        inspecting the local repository."""
         with patch("pilothify.prs._gh", return_value=None), \
              patch("pilothify.prs.subprocess.run") as mock_git:
             branch = _detect_default_branch(repo="owner/repo")
@@ -492,7 +492,7 @@ class TestBuildCommunityLabels:
         assert build_community_labels({"nodes": []}) == {}
 
 
-# ── Windows cp1252 subprocess-decode hardening (decode-side sibling of #1505) ──
+# ── Windows cp1252 subprocess-decode hardening (decode-side sibling of) ──
 
 class TestSubprocessOutputEncoding:
     """prs.py reads gh/git/claude output via subprocess.run(text=True). Without an
@@ -550,11 +550,11 @@ class TestSubprocessOutputEncoding:
         assert kwargs.get("encoding") == "utf-8"
 
 
-# ── Subprocess stdin isolation (#3318) ─────────────────────────────────────────
+# ── Subprocess stdin isolation ─────────────────────────────────────────
 
 class TestSubprocessStdinIsolation:
     """Subprocesses in prs.py must isolate stdin with subprocess.DEVNULL so they
-    never inherit an open stdin pipe from the MCP stdio server (#3318)."""
+    never inherit an open stdin pipe from the MCP stdio server."""
 
     def test_gh_passes_devnull_stdin(self):
         completed = MagicMock(returncode=0, stdout="[]", stderr="")
@@ -586,7 +586,7 @@ class TestSubprocessStdinIsolation:
         assert kwargs.get("stdin") == subprocess.DEVNULL
 
 
-# ── _parse_pr_dict & fetch_pr (#3824) ──────────────────────────────────────────
+# ── _parse_pr_dict & fetch_pr ──────────────────────────────────────────
 
 class TestParsePrDict:
     def test_parse_pr_dict_complete(self):
@@ -679,7 +679,7 @@ class TestFetchPr:
         assert pr is None
 
 
-# ── attach_graph_impact & include_wrong_base (#3824) ──────────────────────────
+# ── attach_graph_impact & include_wrong_base ──────────────────────────
 
 class TestAttachGraphImpact:
     def _sample_graph_data(self):
@@ -724,7 +724,7 @@ class TestAttachGraphImpact:
         assert pr_wrong.blast_radius == "2 nodes / 1 community"
 
 
-# ── cmd_prs single-PR detail mode (#3824) ─────────────────────────────────────
+# ── cmd_prs single-PR detail mode ─────────────────────────────────────
 
 class TestCmdPrsDetail:
     def test_detail_only_fetches_diff_for_requested_pr(self, tmp_path, capsys):

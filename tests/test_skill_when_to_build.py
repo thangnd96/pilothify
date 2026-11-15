@@ -1,4 +1,4 @@
-"""Every skill says when a graph is worth building (#4829)."""
+"""Every skill says when a graph is worth building."""
 from __future__ import annotations
 
 from pathlib import Path

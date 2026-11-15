@@ -1,4 +1,4 @@
-"""`module.func()` resolves to the child named exactly `func` (#1883 module arm).
+"""`module.func()` resolves to the child named exactly `func` (module arm).
 
 The module arm looked the callee up among the module's children by a key that
 drops every non-alphanumeric character and folds case, so `dataclass_schema()`

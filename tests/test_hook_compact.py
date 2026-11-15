@@ -1,7 +1,7 @@
 """The nudge budget comes back after a Claude Code context compaction.
 
 _nudge_allowed counts nudges per session (and per subagent) and stops at
-PILOTHIFY_HOOK_NUDGE_CAP (#3435). Compaction keeps the session id but drops the
+PILOTHIFY_HOOK_NUDGE_CAP. Compaction keeps the session id but drops the
 earlier nudges from the model's context, so with the budget spent the rest of a
 long session never heard about the graph again. Claude Code fires SessionStart
 with source "compact" after compaction; pilothify installs a SessionStart hook

@@ -1,4 +1,4 @@
-"""Tests for PDF text extraction warning when pypdf is missing (#3702)."""
+"""Tests for PDF text extraction warning when pypdf is missing."""
 import sys
 from pathlib import Path
 
@@ -66,7 +66,7 @@ def test_extract_pdf_text_unreadable_pdf_warns(tmp_path: Path, capsys, _reset_fa
 
 def test_extract_pdf_text_encrypted_pdf_warns(tmp_path: Path, capsys, _reset_failed_warned):
     """An encrypted PDF opened without its password is a failed read, not an
-    empty document (#4527)."""
+    empty document."""
     pypdf = pytest.importorskip("pypdf")
     writer = pypdf.PdfWriter()
     writer.add_blank_page(width=72, height=72)

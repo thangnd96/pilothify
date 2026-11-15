@@ -1,4 +1,4 @@
-"""`path` reports the path's overall confidence: its weakest hop (#4885).
+"""`path` reports the path's overall confidence: its weakest hop.
 
 Each hop was labelled on its own, so a path with one INFERRED or AMBIGUOUS hop
 among EXTRACTED ones read as a list of independent tags. The CLI and the MCP

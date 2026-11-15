@@ -22,8 +22,8 @@ from pilothify.cache import load_cached, file_hash
 
 
 def _reset_stat_index():
-    """The stat-index location is chosen once per process via a module global
-    (#1747). Reset it so a test sees a fresh-process decision — otherwise an
+    """The stat-index location is chosen once per process via a module global.
+    Reset it so a test sees a fresh-process decision — otherwise an
     earlier test pins the location and masks where THIS extract would write it."""
     cache._stat_index_root = None
     cache._stat_index = {}
@@ -50,7 +50,7 @@ def test_default_cache_lands_in_cwd_not_source_tree(tmp_path, monkeypatch):
     assert result["nodes"], "extraction should still produce nodes"
     # Nothing at all in the source tree — not the AST cache, and not the
     # stat-index.json the hash fastpath writes (which file_hash used to anchor on
-    # the key-root, leaving a stray pilothify-out/ in a writable corpus, #1774).
+    # the key-root, leaving a stray pilothify-out/ in a writable corpus).
     assert not (corpus / "pilothify-out").exists(), (
         "cache/stat-index written into the analyzed source tree (#1774)"
     )
@@ -60,7 +60,7 @@ def test_default_cache_lands_in_cwd_not_source_tree(tmp_path, monkeypatch):
 def test_default_cache_does_not_leave_stat_index_in_source_tree(tmp_path, monkeypatch):
     """Fresh-process regression for the stat-index leak specifically: even for a
     WRITABLE out-of-CWD corpus (where the write would succeed), file_hash's
-    stat-index must follow the cache location, not the key anchor (#1774)."""
+    stat-index must follow the cache location, not the key anchor."""
     _reset_stat_index()
     corpus = _make_corpus(tmp_path)
     work = tmp_path / "elsewhere"
@@ -113,7 +113,7 @@ def test_cache_keys_stay_relative_for_out_of_cwd_corpus(tmp_path, monkeypatch):
     """The location/anchor split must keep content-hash keys anchored on the
     corpus (relative, portable) even when the corpus is outside CWD — not
     re-anchored to CWD, which would bake a machine-specific absolute path into
-    the key and break shared/CI cache reuse (#1774 regression guard)."""
+    the key and break shared/CI cache reuse (regression guard)."""
     import hashlib
 
     corpus = _make_corpus(tmp_path)

@@ -16,7 +16,7 @@ import time
 from pathlib import Path
 from typing import Callable
 
-# Single source of truth in pilothify.paths (#1423); re-exported as _PILOTHIFY_OUT.
+# Single source of truth in pilothify.paths; re-exported as _PILOTHIFY_OUT.
 from pilothify.paths import (
     PILOTHIFY_OUT as _PILOTHIFY_OUT,
     is_absolute_any_platform,
@@ -35,7 +35,7 @@ def _queue_pending(out_dir: Path, changed_paths: list[Path]) -> None:
     """Append ``changed_paths`` to ``out_dir/.pending_changes`` (one per line).
 
     Used by a post-commit hook process that cannot acquire ``_rebuild_lock``
-    so its change set is not silently dropped (#1059). The lock-holding
+    so its change set is not silently dropped. The lock-holding
     process drains this file before and after its rebuild and merges the
     contents with its own change set.
 
@@ -90,7 +90,7 @@ def _queue_pending_full(out_dir: Path) -> None:
 
     Full requests (watcher, post-checkout hook) have no path list to append to
     ``.pending_changes``, so they leave a marker file instead. The lock-holder
-    consumes it and runs one more full pass before releasing (#4274).
+    consumes it and runs one more full pass before releasing.
 
     A derived incremental request has no path list either, but it needs a pass of
     its own kind rather than a full one; that is
@@ -113,7 +113,7 @@ def _queue_pending_incremental(out_dir: Path) -> None:
     """Record that an incremental rebuild was requested but could not run.
 
     An incremental request names no paths: it derives its change set from the
-    manifest *inside* the lock (#4740). So it cannot append to
+    manifest *inside* the lock. So it cannot append to
     ``.pending_changes``, and ``.pending_full`` would be a lie — the drain runs
     after the lock the caller then wins, so a full marker would upgrade that
     caller's own pass to a full rebuild. This third marker says the one thing the
@@ -135,7 +135,7 @@ def _drain_pending_incremental(out_dir: Path) -> bool:
 # Build options that must survive into later rebuilds. The initial `extract`
 # scan honours `--exclude`, but `update`/`watch`/hook rebuilds re-run detect()
 # and would silently re-include excluded paths unless the patterns are persisted
-# (#1886). We store them beside the graph so any rebuild driver can re-apply them.
+#. We store them beside the graph so any rebuild driver can re-apply them.
 _BUILD_CONFIG_FILENAME = ".pilothify_build.json"
 
 
@@ -150,7 +150,7 @@ def _write_build_config(
 
     Best effort and non clobbering: omitted options retain their existing values.
     ``code_only`` records that the graph was built with ``extract --code-only``
-    so a later hook/update/watch rebuild keeps that scope (#4923).
+    so a later hook/update/watch rebuild keeps that scope.
     """
     if not excludes and gitignore is None and code_only is None:
         return
@@ -205,7 +205,7 @@ def _read_build_code_only(out_dir: Path) -> bool:
     """Return whether the graph was built with ``--code-only`` (default False).
 
     A rebuild has no CLI flag of its own, so this record is the only way it can
-    tell a deliberately code-only graph from a full one (#4923).
+    tell a deliberately code-only graph from a full one.
     """
     try:
         path = out_dir / _BUILD_CONFIG_FILENAME
@@ -223,7 +223,7 @@ def _merge_changed_paths(*sources: "list[Path] | None") -> list[Path]:
 
     Used to combine a hook process's own ``changed_paths`` with the drained
     contents of ``.pending_changes`` so the lock-holding rebuild covers
-    every queued commit's worth of files (#1059).
+    every queued commit's worth of files.
     """
     seen: set[str] = set()
     out: list[Path] = []
@@ -272,7 +272,7 @@ def _rebuild_lock(out_dir: Path, *, blocking: bool = False):
     Falls back to a no-op yield(True) on platforms without fcntl or msvcrt.
     On Windows, a filesystem where msvcrt.locking is unsupported (e.g. the WSL
     share \\wsl.localhost) also gets yield(True), with a warning on stderr,
-    instead of waiting forever for a lock that can never be taken (#4924). That
+    instead of waiting forever for a lock that can never be taken. That
     path leaves an existing ``.rebuild.lock`` untouched: it may belong to a
     flock holder on the other side of the share.
     """
@@ -308,7 +308,7 @@ def _rebuild_lock(out_dir: Path, *, blocking: bool = False):
             except BlockingIOError:
                 yield False
                 return
-            # flock locks the open file's INODE, not the path (#4273). The
+            # flock locks the open file's INODE, not the path. The
             # release below unlinks the path (so a poller watching for the
             # file's absence unblocks promptly), but a blocking waiter that
             # was already parked in flock() when that unlink happened ends up
@@ -359,14 +359,14 @@ def _rebuild_lock(out_dir: Path, *, blocking: bool = False):
                     break
                 if lock_error.errno not in _WIN_LOCK_CONTENDED_ERRNOS:
                     # The filesystem cannot byte-range lock at all (EINVAL on
-                    # the WSL share \\wsl.localhost seen from Windows, #4924).
+                    # the WSL share \\wsl.localhost seen from Windows).
                     # Retrying can never succeed, and treating it as "held"
                     # made blocking callers spin forever and non-blocking ones
                     # never rebuild. Proceed unlocked, like the no-locking-API
                     # fallback above, without taking over the lock file: a
                     # WSL-side flock holder may own it, and writing our PID
                     # into it or unlinking it on release would let a second
-                    # WSL-side caller in on a fresh inode (#4273). Only undo
+                    # WSL-side caller in on a fresh inode. Only undo
                     # our own creation of an empty file, before the rebuild.
                     print(
                         f"[pilothify watch] cannot lock {lock_path} "
@@ -400,7 +400,7 @@ def _rebuild_lock(out_dir: Path, *, blocking: bool = False):
     finally:
         if acquired:
             if fcntl is not None:
-                # Unlink BEFORE unlocking (#4273): flock() only ever wakes a
+                # Unlink BEFORE unlocking: flock() only ever wakes a
                 # blocked waiter at the LOCK_UN call below, so doing the
                 # unlink first guarantees it has already happened by the
                 # time any waiter's flock() can return — closing the window
@@ -462,7 +462,7 @@ def _apply_resource_limits() -> None:
 def _git_head(cwd: Path | str | None = None) -> str | None:
     """Return current git HEAD commit hash, or None outside a repo.
 
-    ``cwd`` selects the repository to ask (#2316). Without it the command
+    ``cwd`` selects the repository to ask. Without it the command
     inherits the caller's working directory, so `pilothify update <target>`
     stamped the *invoking* repo's commit into the target's graph.json — the
     same CWD-anchoring mistake as the manifest path, but writing wrong
@@ -511,17 +511,17 @@ def _pilothify_root_marker_value(watch_path: Path) -> str:
 
     Ordinarily preserves the caller-supplied path verbatim (relative or
     absolute) so a committed ``pilothify-out/.pilothify_root`` stays portable
-    across clones and CI runners (#777): a relative marker like ``.`` is
+    across clones and CI runners: a relative marker like ``.`` is
     meaningless outside the CWD it was written from, but every normal reader
     of it (the generated git hooks, an unqualified ``pilothify watch``) only
     runs with that same CWD anyway.
 
     That assumption breaks when ``PILOTHIFY_OUT`` itself is an absolute,
-    shared location (the multi-worktree / shared-output setup from #686):
+    shared location (the multi-worktree / shared-output setup from):
     the same marker file is then reachable from any worktree's CWD, not just
     the one that wrote it, so a relative value silently resolves against
     whichever worktree happens to be reading it instead of the one that was
-    actually scanned (#3375). Resolve to an absolute path in that case, since
+    actually scanned. Resolve to an absolute path in that case, since
     portability across clones is not the goal there to begin with, the
     output directory is already outside any one clone.
     """
@@ -635,7 +635,7 @@ class _StoredSourcePaths:
             try:
                 saved_root = Path(root_marker.read_text(encoding="utf-8-sig").strip())
                 if saved_root.is_absolute():
-                    # #2603: the marker holds the SCAN root, but stored
+                    # the marker holds the SCAN root, but stored
                     # source_file values are relative to the BUILD's cwd
                     # (the skill builds from the repo root scoped to a
                     # subfolder). Trusting the marker blindly re-anchors
@@ -779,7 +779,7 @@ class _StoredSourcePaths:
 # evicted by the disk-absence sweep. Matched with a regex, NOT a literal "://",
 # because path normalization on the write side (Path.as_posix) collapses the double
 # slash to one — a stored "gdoc://x" reads back as "gdoc:/x" on the next update, and
-# a literal "://" check would then miss it and wrongly evict the node (#2051 follow-up).
+# a literal "://" check would then miss it and wrongly evict the node.
 # The scheme is required to be 2+ chars so a Windows drive letter (C:/...) is not
 # misread as a remote source.
 _REMOTE_SOURCE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.\-]+://?")
@@ -801,8 +801,8 @@ def _reconcile_markdown_links(
 ) -> list[dict]:
     """Reconcile Markdown links without losing semantic-backed targets.
 
-    Semantic-backed documents are deliberately skipped by the AST quick scan
-    (#1915/#1954), so their canonical file node can be absent. Re-point an
+    Semantic-backed documents are deliberately skipped by the AST quick scan,
+    so their canonical file node can be absent. Re-point an
     authored link only when both files have unique representatives. If either
     side is ambiguous, retain the existing AST edge instead of guessing or
     deleting it. A link removed from its owning Markdown source is pruned.
@@ -938,7 +938,7 @@ def _reconcile_markdown_links(
         )
 
     def _is_code_file_citation(edge: dict) -> bool:
-        """A page -> source-file link citation minted by markdown resolution (#4804)."""
+        """A page -> source-file link citation minted by markdown resolution."""
         if edge.get("relation") != "references" or edge.get("target_file"):
             return False
         target = nodes_by_id.get(edge.get("target"))
@@ -1051,7 +1051,7 @@ def _referenced_unscanned_identities(
     the unchanged referrer's preserved edges to it dangled and were dropped,
     while a full rebuild of the same tree keeps both.
 
-    Deletion evidence (#1795) is the previous scan: a path listed in
+    Deletion evidence is the previous scan: a path listed in
     manifest.json was a real file and is evicted as before. A path that was
     never scanned cannot have been deleted; its nodes stay while a referrer
     that is not re-extracted this run still points at them. A re-extracted
@@ -1122,20 +1122,20 @@ def _reconcile_existing_graph(
 ) -> tuple[dict, dict]:
     """Merge fresh extraction with preserved graph entries and evict stale sources.
 
-    ``is_ignored_always``/``is_ignored_full`` (#2495) report whether a LIVE
+    ``is_ignored_always``/``is_ignored_full`` report whether a LIVE
     ignore rule matches a path, mirroring the detect() call that produced
     ``code_files`` (detect.ignored_predicate). ``is_ignored_always`` covers
     .pilothifyignore + persisted ``--exclude`` patterns — unambiguous
     graph-level intent, honored on every rebuild. ``is_ignored_full`` adds
     .gitignore-driven rules, honored only on a full rebuild (an explicit
     ``pilothify update``) so the incremental/hook path keeps preserving a
-    deliberately-graphed .gitignore'd tree (#1795).
+    deliberately-graphed .gitignore'd tree.
     """
     existing_graph_data: dict = {}
     if not existing_graph.exists():
         return result, existing_graph_data
 
-    # Fail-closed load (#2251): reuse build._load_existing_graph, which raises
+    # Fail-closed load: reuse build._load_existing_graph, which raises
     # ValueError when the file exceeds the size cap and RuntimeError when it
     # exists but cannot be parsed. Those failures must PROPAGATE to the caller
     # — swallowing them here left existing_graph_data == {}, which _check_shrink
@@ -1153,7 +1153,7 @@ def _reconcile_existing_graph(
     existing = json.loads(existing_graph.read_text(encoding="utf-8"))
     existing_graph_data = existing
 
-    # Backfill tier provenance on legacy items (#2334), mirroring
+    # Backfill tier provenance on legacy items, mirroring
     # build._load_existing_graph (this reconcile path loads the raw dict
     # separately, so the backfill there does not reach it). Stamping preserved
     # items means the graph self-heals on this write.
@@ -1183,11 +1183,11 @@ def _reconcile_existing_graph(
         node_evicted_source_identities = set(deleted_source_identities)
         hyperedge_evicted_source_identities = set(deleted_source_identities)
         # Deletion evicts edges regardless of tier; re-extraction only owns a
-        # source's AST-tier edges (checked per-edge below, #1865).
+        # source's AST-tier edges (checked per-edge below).
         edge_evicted_source_identities = set(deleted_source_identities)
         # Re-extraction only owns AST-tier nodes. Adding rebuilt sources to
         # provenance-blind node eviction would delete semantic nodes from the
-        # exact YAML file being incrementally rebuilt (#4896 follow-up).
+        # exact YAML file being incrementally rebuilt.
         # Node eviction below is reserved for actual deletion/ignore evidence.
 
         # Reconcile every rebuild against the current watched corpus. Hook change
@@ -1200,9 +1200,9 @@ def _reconcile_existing_graph(
         # still exists but stopped being collected was *excluded*, and treating
         # that as deletion silently mass-evicts good nodes. Evicting an alive
         # source therefore needs POSITIVE evidence — a live ignore rule matching
-        # the path (#2495) — not mere corpus absence: a filter regression, an
+        # the path — not mere corpus absence: a filter regression, an
         # extractor loss, or the sensitive-file heuristic still preserves, with
-        # a loud message (#1795).
+        # a loud message.
         excluded_alive_files: set[str] = set()
         excluded_alive_nodes = 0
         newly_ignored_files: set[str] = set()
@@ -1244,7 +1244,7 @@ def _reconcile_existing_graph(
                 _ignored_cache[identity] = ignored
             return ignored
 
-        # #4978: is this source AST-owned? A per-file question, so answer it once
+        # is this source AST-owned? A per-file question, so answer it once
         # per file. It is keyed by identity, not source_file, because one file can
         # appear as both "big.h" and an absolute path in the same graph.
         _ast_owned_cache: dict[str, bool] = {}
@@ -1269,8 +1269,8 @@ def _reconcile_existing_graph(
                 # code_files), so corpus absence is meaningless. Deletion
                 # evidence here is disk absence — otherwise its semantic nodes
                 # are preserved forever and returned as authoritative even after
-                # the file is deleted (#2051) — or a live ignore rule matching
-                # the alive file (#2495), the same positive evidence the AST
+                # the file is deleted — or a live ignore rule matching
+                # the alive file, the same positive evidence the AST
                 # branch below requires. A present-but-unexcluded-but-
                 # unextractable file stays preserved (alive -> skip).
                 if identity:
@@ -1302,7 +1302,7 @@ def _reconcile_existing_graph(
                         if _ignored_now(identity):
                             # Intentionally excluded by a live ignore rule:
                             # deliberate graph-level intent, so treat it exactly
-                            # like a deletion (#2495) — fall through to evict.
+                            # like a deletion — fall through to evict.
                             newly_ignored_files.add(identity)
                             newly_ignored_nodes += 1
                         else:
@@ -1319,7 +1319,7 @@ def _reconcile_existing_graph(
                     edge_evicted_source_identities.add(identity)
                     hyperedge_evicted_source_identities.add(identity)
         # Edges and hyperedges may own a source with no corresponding node.
-        # Positive exclusion evidence applies to these records too (#4912).
+        # Positive exclusion evidence applies to these records too.
         seen_record_sources: set[str] = set()
         for item in existing.get("links", existing.get("edges", [])) + existing.get("hyperedges", []):
             source_file = item.get("source_file")
@@ -1416,12 +1416,12 @@ def _reconcile_existing_graph(
         # A full re-extraction owns the AST nodes of every source it actually
         # re-extracted (extract_targets, via rebuilt_source_identities) — NOT
         # every AST node under watch_root: a semantic-backed doc is excluded
-        # from extract_targets (#1915), so its existing AST layer is not
+        # from extract_targets, so its existing AST layer is not
         # regenerated this run and dropping it would be data loss (#2333,
         # COEXIST — the AST and semantic layers of a file coexist).
         # Incremental extraction owns only nodes from rebuilt or deleted
         # sources. Semantic-tier nodes (per _is_ast_tier) remain preserved.
-        # Nodes explicitly classified as fail-closed preserved (#3695) must
+        # Nodes explicitly classified as fail-closed preserved must
         # not subsequently be removed by this AST ownership pass.
         preserved_nodes = [
             node
@@ -1452,7 +1452,7 @@ def _reconcile_existing_graph(
         # pass replaces a re-extracted source's AST edges, while that source's
         # semantic/LLM edges — which the AST pass cannot regenerate — survive
         # until a semantic re-extraction supersedes them. Same provenance rule
-        # the node reconciliation above applies via _origin (#1865). Deletion
+        # the node reconciliation above applies via _origin. Deletion
         # eviction stays provenance-blind.
         def _edge_evicted(edge: dict) -> bool:
             return not source_paths.is_evicted(edge, excluded_alive_files) and (
@@ -1472,7 +1472,7 @@ def _reconcile_existing_graph(
             and not _edge_evicted(edge)
         ]
         # `reverse_import` stands for the target file's import back, which the
-        # undirected build dropped in favour of this edge (#4839). That import
+        # undirected build dropped in favour of this edge. That import
         # is the target file's, so it goes when an edge from that file would:
         # clear the stamp then (re-extracting the file stamps it again), and
         # move it onto the fresh edge when only this edge's own file was
@@ -1530,7 +1530,7 @@ def _reconcile_existing_graph(
             preserved_hyperedges.append(edge)
 
         # An external import stub exists only so an import edge has a declared
-        # endpoint (#2873); every write mints the ones still needed. Keeping one
+        # endpoint; every write mints the ones still needed. Keeping one
         # whose last edge is gone left a permanent zero-degree node that a fresh
         # build of the same tree does not have.
         referenced_ids = {
@@ -1576,7 +1576,7 @@ def _reconcile_existing_graph(
     except Exception as exc:
         # Post-load reconciliation failure: fall back to the fresh extraction
         # while keeping the loaded baseline, so _check_shrink still guards the
-        # write against a collapse. Say so — this used to be silent (#2251).
+        # write against a collapse. Say so — this used to be silent.
         print(
             "[pilothify watch] reconcile of existing graph failed "
             f"({exc.__class__.__name__}: {exc}); proceeding with fresh "
@@ -1629,7 +1629,7 @@ def _canonical_topology_for_compare(graph_data: dict) -> dict:
     canonical.pop("built_at_commit", None)
 
     # The on-disk graph.json carries format/version provenance under "graph"
-    # (schema_version, pilothify_version — #4167) that the candidate topology,
+    # (schema_version, pilothify_version —) that the candidate topology,
     # built fresh from node_link_data(G), never has. These are metadata, not
     # topology, so drop them before comparing or every incremental update would
     # be judged a topology change and needlessly re-cluster/re-render.
@@ -1731,11 +1731,11 @@ def _check_shrink(
     carries no source_file. Only an unexplained loss (a node from a file we did
     NOT touch — e.g. a dropped semantic/doc node) refuses the write. This lets a
     plain ``pilothify update`` after deleting a function refresh the graph without
-    ``--force`` (#1116 left stale nodes write-blocked even though build dropped them).
+    ``--force`` (left stale nodes write-blocked even though build dropped them).
     Files in ``failed_sources`` never account for lost nodes: extraction did not
     complete, so their disappearance is the silent shrink this guard protects.
 
-    A larger total is not enough when a saved semantic id is gone (#2229).
+    A larger total is not enough when a saved semantic id is gone.
     ``deleted_sources`` is the files the user removed. A semantic node on one of
     those files may go. A semantic node on a file that is still present may not.
     The rebuilt set is not that list: an update re-extracts code and must not
@@ -1751,7 +1751,7 @@ def _check_shrink(
         # while an unexplained loss (a present-but-unextractable file wrongly
         # routed to _add_deleted_source, or a dropped semantic node) is still
         # caught rather than being waved through by the mere presence of any
-        # deletion in the change set (#2056).
+        # deletion in the change set.
         return True
     existing_nodes = existing_data.get("nodes", [])
     new_nodes = new_data.get("nodes", [])
@@ -1844,7 +1844,7 @@ def _report_for_compare(report_text: str) -> str:
 
 
 def _is_single_line(path: Path) -> bool:
-    """True when ``path`` holds one line (the compact graph.json layout, #3413)."""
+    """True when ``path`` holds one line (the compact graph.json layout)."""
     with path.open("rb") as f:
         f.readline()
         return not f.readline()
@@ -1893,7 +1893,7 @@ def _inputs_unchanged(detected: dict, manifest_path: Path, root: Path) -> bool:
     bucket, the manifest rows the scan no longer covers, and the JS/TS resolution
     inputs. A tsconfig/jsconfig/package.json edit can move a .ts result without
     touching a source file, and the lock files are resolution inputs the scan
-    skips by name, so detect() reports them separately (#4740).
+    skips by name, so detect() reports them separately.
 
     Fails closed. A missing or unreadable manifest, a row that cannot be verified,
     or anything this cannot prove unchanged returns False so the caller takes the
@@ -1928,7 +1928,7 @@ def _inputs_unchanged(detected: dict, manifest_path: Path, root: Path) -> bool:
     keyed = {_abs(k): v for k, v in manifest.items()}
 
     # unstamped_is_changed=True: a scanned file with no manifest row or a blanked
-    # ast_hash (e.g. one that previously FAILED extraction, #2543) counts as
+    # ast_hash (e.g. one that previously FAILED extraction) counts as
     # changed, so fixing it later takes the full rebuild instead of being skipped
     # forever. The only cost is that a corpus with a permanently-failing file never
     # fast-paths — the safe direction (a false "changed" only costs time).
@@ -1953,7 +1953,7 @@ def _extractor_epoch() -> str:
     The same triple the AST cache is namespaced by, so anything that invalidates
     cached fragments also invalidates a graph built from the old ones. Without it
     the gate would skip a graph the current extractor would not reproduce, which
-    is how the legacy-stub and legacy-marker heals work (#4740).
+    is how the legacy-stub and legacy-marker heals work.
     """
     from pilothify.cache import (
         _AST_CACHE_SCHEMA,
@@ -1965,10 +1965,10 @@ def _extractor_epoch() -> str:
 
 
 def _scan_digest(detected: dict) -> str:
-    """Fingerprint of WHICH files the scan covers, not what they contain (#4740).
+    """Fingerprint of WHICH files the scan covers, not what they contain.
 
     The manifest cannot answer this on its own: a source whose extraction fails
-    is deliberately left unstamped (#2543), so it has no row and a row-based
+    is deliberately left unstamped, so it has no row and a row-based
     comparison cannot tell "same file, still failing" from "file is new". Only
     the in-scope path set separates those, and it is also what catches an edit to
     an ignore rule, a rename and an outright deletion.
@@ -1998,7 +1998,7 @@ def _current_build_state(
     scan_digest: str,
     code_only: bool = False,
 ) -> dict:
-    """Everything besides file content that a rebuild's output depends on (#4740).
+    """Everything besides file content that a rebuild's output depends on.
 
     A different scan root, file set, ignore set, output shape or extractor
     necessarily writes a different graph, so the previous run's stamp cannot
@@ -2035,7 +2035,7 @@ def _current_build_state(
 
 
 def _graph_json_is_complete(path: Path) -> bool:
-    """Cheap structural check that ``path`` holds a whole JSON object (#4748).
+    """Cheap structural check that ``path`` holds a whole JSON object.
 
     Deliberately not a full ``json.load``. graph.json is capped at 512 MiB by
     default (``PILOTHIFY_MAX_GRAPH_BYTES``), and the rebuild that just wrote it is
@@ -2065,12 +2065,12 @@ def _graph_json_is_complete(path: Path) -> bool:
 
 
 def _write_build_state(out: Path, state: dict, *, full_clean: bool) -> None:
-    """Stamp what the next run has to match to skip (#4740).
+    """Stamp what the next run has to match to skip.
 
     Refuses to stamp unless the outputs it is about to describe are on disk and
     whole. A stamp is a promise that the next run may skip, so writing one over a
     graph.json that a failed or partial publish left behind turns that promise
-    into a stale graph nothing ever repairs (#4748). Any doubt means no stamp,
+    into a stale graph nothing ever repairs. Any doubt means no stamp,
     which costs the next run a full rebuild and nothing else.
     """
     graph = out / "graph.json"
@@ -2239,7 +2239,7 @@ def _rebuild_code(
     re-extracted (used by the watcher and post-checkout hook).
 
     ``incremental`` asks for the change set to be derived from the manifest
-    instead of from ``changed_paths`` (#4740). It applies only when
+    instead of from ``changed_paths``. It applies only when
     ``changed_paths`` is None and ``force`` is False, so an explicit list always
     wins and ``--force`` always means a full rebuild. A manifest that is
     missing, unreadable or empty leaves the full path in place: "no rows" means
@@ -2261,7 +2261,7 @@ def _rebuild_code(
 
     out = watch_path / _PILOTHIFY_OUT
     if acquire_lock:
-        # #1059: a hook must not drop its request when another rebuild is
+        # a hook must not drop its request when another rebuild is
         # already running. Queue before attempting the lock so a non-blocking
         # failure still records the work; the lock-holder drains the queue.
         #
@@ -2271,11 +2271,11 @@ def _rebuild_code(
         #   derived        -> .pending_incremental, a marker meaning "run an
         #                     incremental pass"; it has no paths of its own, and
         #                     a full marker would upgrade the holder that then
-        #                     drains it (#4274, #4769)
+        #                     drains it
         queued = False
         if not block_on_lock:
             if incremental and changed_paths is None:
-                # #4740: this request derives its change set from the manifest
+                # this request derives its change set from the manifest
                 # inside the lock, so it names no paths. Without a record of its
                 # own, losing the lock below drops it. The marker says "run an
                 # incremental pass", which a later full pass also satisfies.
@@ -2298,7 +2298,7 @@ def _rebuild_code(
             # queued full request upgrades this run to a full rebuild, which
             # supersedes any incremental work queued before it starts.
             #
-            # #4740: an incremental request is NOT a full one even though it
+            # an incremental request is NOT a full one even though it
             # also arrives with changed_paths unset. It derives its own change
             # set in the call below, and a drained path hint adds nothing to
             # that: the derivation compares the whole scan against the manifest,
@@ -2337,7 +2337,7 @@ def _rebuild_code(
             )
             # Late-arrival drain: another hook may have queued work while we
             # were rebuilding — even a full rebuild only saw files as they were
-            # when it walked the corpus (#4274). Loop up to
+            # when it walked the corpus. Loop up to
             # _PENDING_DRAIN_MAX_PASSES times so a storm of commits eventually
             # quiesces without livelocking.
             for _ in range(_PENDING_DRAIN_MAX_PASSES):
@@ -2382,10 +2382,10 @@ def _rebuild_code(
 
         # Re-apply the excludes the initial extract recorded, so an update/watch/
         # hook rebuild does not silently re-include deliberately excluded paths
-        # (#1886).
+        #.
         _persisted_excludes = _read_build_excludes(out)
         _gitignore_enabled = _read_build_gitignore(out)
-        # #4923: honour the scope the graph was built with. Without this a
+        # honour the scope the graph was built with. Without this a
         # `--code-only` graph silently grows doc nodes on the next hook rebuild.
         _code_only = _read_build_code_only(out)
         detected = detect(
@@ -2395,7 +2395,7 @@ def _rebuild_code(
         )
         code_files = [Path(f) for f in detected['files']['code']]
 
-        # #3511: `pilothify extract` has surfaced files it saw but could not
+        # `pilothify extract` has surfaced files it saw but could not
         # classify since #1692; this update/watch rebuild path never did,
         # so a corpus in a language with no extractor (no supported
         # extension or shebang) rebuilt "successfully" with those files
@@ -2408,14 +2408,14 @@ def _rebuild_code(
                 f"[pilothify watch] {len(_unclassified)} file(s) not classified "
                 f"(no supported extension or shebang), skipped: {_names}{_more}"
             )
-        # #2942: when that count is a large SHARE of the corpus, the count
+        # when that count is a large SHARE of the corpus, the count
         # alone reads as routine noise; say plainly that the graph is missing
         # a structurally significant part of the codebase.
         _unclassified_warning = detected.get("unclassified_warning") if isinstance(detected, dict) else None
         if _unclassified_warning:
             print(f"[pilothify watch] warning: {_unclassified_warning}")
 
-        # #4740: stop before extraction when nothing that reaches the code graph
+        # stop before extraction when nothing that reaches the code graph
         # has changed. The only no-change exit today sits at the very end of the
         # pipeline (the topology compare), so a zero-change run still pays for
         # detect -> extract -> build -> cluster and its gigabytes.
@@ -2447,7 +2447,7 @@ def _rebuild_code(
                 )
                 return True
 
-        # #4740: the caller asked for an incremental update. The manifest already
+        # the caller asked for an incremental update. The manifest already
         # records the ast_hash of every file the last build extracted, so the
         # change set can be read off it instead of re-extracting the whole
         # corpus. `detected` was computed above for the full path anyway, so this
@@ -2457,7 +2457,7 @@ def _rebuild_code(
         # A manifest that is missing, unreadable or empty leaves changed_paths
         # None — the full path. "No rows" means the baseline is unknown, and the
         # only safe reading of unknown is "do the work"; `detect_incremental`
-        # makes the same call for `pilothify extract` (#1925).
+        # makes the same call for `pilothify extract`.
         if incremental and changed_paths is None and not force and (out / "graph.json").is_file():
             manifest = load_manifest(str(out / "manifest.json"), root=watch_root)
             if manifest:
@@ -2474,7 +2474,7 @@ def _rebuild_code(
                 # write (_accounted only excuses a source in rebuilt_sources).
                 # A row that is still alive but out of scan is an ignore-rule
                 # change, which the corpus sweep handles on positive evidence
-                # alone (#2495), so it stays out of the change set.
+                # alone, so it stays out of the change set.
                 deleted_rows, excluded_rows = classify_manifest_deletions(
                     manifest,
                     [
@@ -2503,14 +2503,14 @@ def _rebuild_code(
                             "files differ from the last build."
                         )
 
-        # #2495: hand reconcile the same ignore decisions the detect() call
+        # hand reconcile the same ignore decisions the detect() call
         # above made, so a newly-ignored file that still exists on disk is
         # purged from the graph instead of preserved forever by the fail-closed
         # keep. Two tiers: .pilothifyignore + persisted --exclude patterns are
         # unambiguous graph-level intent (evict on every rebuild), while
         # .gitignore-driven exclusion is honored only on a full rebuild — the
         # incremental/hook path keeps preserving a deliberately-graphed
-        # .gitignore'd tree (#1795).
+        # .gitignore'd tree.
         from pilothify.detect import ignored_predicate
         _ignored_always = ignored_predicate(
             watch_root, extra_excludes=_persisted_excludes or None, gitignore=False,
@@ -2523,10 +2523,10 @@ def _rebuild_code(
         # A document that detect() reclassified as a paper (_looks_like_paper,
         # e.g. Markdown notes quoting an arXiv abstract) gets the same quick-scan
         # when it has an AST extractor; otherwise an AST-only rebuild gives it
-        # zero nodes with no warning (#4750). Only formats with an extractor
+        # zero nodes with no warning. Only formats with an extractor
         # qualify (.md/.mdx/.qmd today): PDFs and plain .txt still have none, so
         # the _get_extractor filter keeps them out exactly as before.
-        # A `--code-only` graph (#4923) opted out of documents entirely, so the
+        # A `--code-only` graph opted out of documents entirely, so the
         # quick-scan is skipped; doc nodes already in the graph are preserved
         # untouched (they are not in code_files, so reconcile keeps them).
         ast_doc_files: list[Path] = []
@@ -2542,17 +2542,17 @@ def _rebuild_code(
             print("[pilothify watch] No code files found - nothing to rebuild.")
             return False
 
-        # #1915: a document that already carries SEMANTIC (LLM) nodes in the
+        # a document that already carries SEMANTIC (LLM) nodes in the
         # existing graph must not ALSO be AST-quick-scanned — otherwise every
         # rebuild mints heading nodes on top of the preserved semantic nodes
         # and the doc is represented twice (~4x graph bloat vs the CLI update
         # path, which AST-extracts only code). A semantic-backed doc is never
         # re-quick-scanned, and any AST layer it already carries coexists and
-        # is preserved rather than regenerated (#2333, COEXIST); the
+        # is preserved rather than regenerated (COEXIST); the
         # quick-scan stays as a fallback for docs with no semantic layer (the
         # no-LLM doc-structure feature, #09b33b7) and for brand-new docs the
         # graph has never seen. These docs stay in ``code_files`` so
-        # corpus membership (#1795 fail-closed deletion evidence) and the
+        # corpus membership (fail-closed deletion evidence) and the
         # shrink accounting below still cover them — a previously-bloated
         # graph must be allowed to self-heal on a full rebuild without the
         # shrink-guard refusing the smaller write.
@@ -2575,7 +2575,7 @@ def _rebuild_code(
                 # concepts may be represented with ONLY concept/rationale
                 # nodes and no separate "document" node — that's still
                 # evidence of a semantic layer, not a marker-less AST node
-                # (#1954). "code" is included too (#2014): the semantic pass
+                #. "code" is included too: the semantic pass
                 # legitimately mints code-typed nodes for symbols surfaced from
                 # WITHIN a doc (llm.py `_bind_node_evidence`), and it cannot be
                 # confused with a pre-#1865 marker-less AST code node — those are
@@ -2584,7 +2584,7 @@ def _rebuild_code(
                 # "document" nodes (extractors/markdown.py). "image" stays out.
                 semantic_doc_identities: set[str] = set()
                 for node in prior.get("nodes", []):
-                    # _is_ast_tier, not a raw _origin check (#2334): a legacy
+                    # _is_ast_tier, not a raw _origin check: a legacy
                     # unstamped AST heading node (source_location "L<n>") must
                     # not fake a semantic layer, or the doc would be excluded
                     # from the AST quick-scan forever.
@@ -2618,7 +2618,7 @@ def _rebuild_code(
 
         if changed_paths is not None:
             code_set = {Path(os.path.abspath(p)) for p in code_files}
-            # #1915: semantic-backed docs are never AST-quick-scanned; their
+            # semantic-backed docs are never AST-quick-scanned; their
             # semantic nodes are the sole representation. Mirroring #1865's
             # tier-scoped edge rule at the node level, they also must NOT
             # enter extract_targets (hence rebuilt/node-evicted identities) on
@@ -2648,7 +2648,7 @@ def _rebuild_code(
                 if existing_in_root is not None:
                     # The path exists under the watched root but detect filtered
                     # it out of code_set (no AST extractor, excluded, or
-                    # sensitive). Existence is NOT deletion evidence (#2056): the
+                    # sensitive). Existence is NOT deletion evidence: the
                     # file may carry semantic (LLM) nodes an AST rebuild cannot
                     # regenerate, and mis-routing it to _add_deleted_source both
                     # evicts those nodes AND sets had_explicit_deletions, which
@@ -2656,7 +2656,7 @@ def _rebuild_code(
                     # loss. Preserve it — a genuine deletion still evicts via the
                     # branch below, the corpus sweep evicts a truly-gone non-AST
                     # source, and a deliberate exclusion is purged by the
-                    # corpus sweep's ignore-rule check (#2495).
+                    # corpus sweep's ignore-rule check.
                     continue
 
                 deleted_in_root = next(
@@ -2675,14 +2675,14 @@ def _rebuild_code(
             extract_targets = wanted
         else:
             # Full rebuild: skip the AST quick-scan for semantic-backed docs
-            # (#1915). They remain in code_files for corpus membership and
+            #. They remain in code_files for corpus membership and
             # shrink accounting, but because they are not extract targets the
             # full-rebuild AST ownership rule (scoped to
             # rebuilt_source_identities, #2333 COEXIST) leaves their existing
             # AST heading layer intact alongside the semantic layer.
             extract_targets = [p for p in code_files if p not in semantic_doc_files]
 
-        # #2406: an incremental rebuild parses only the changed files, so the
+        # an incremental rebuild parses only the changed files, so the
         # cross-file resolvers could not see a callee living in an unchanged
         # file and every changed->unchanged `calls` edge disappeared (reconcile
         # evicts the old one as AST-tier output of a re-extracted source, and
@@ -2736,7 +2736,7 @@ def _rebuild_code(
                     # in pilothify-out/.pilothify_root, and a copied checkout left
                     # that pointing at its original location — every stored node
                     # then read as corpus-absent, the context came back empty,
-                    # and the changed batch lost its cross-file edges (#2406).
+                    # and the changed batch lost its cross-file edges.
                     ctx_identity = ctx_paths.absolute_identity(source_file, project_root)
                     if not source_file or ctx_identity not in ctx_live:
                         continue
@@ -2748,7 +2748,7 @@ def _rebuild_code(
                         "type": node.get("type"),
                     }
                     # Persisted resolver markers are never re-derived from a
-                    # label: callability protects indirect calls (#2438), and
+                    # label: callability protects indirect calls, and
                     # Rust impl identity connects alpha-renamed generic blocks.
                     for marker in (
                         "_callable", "_callable_class", "_elixir_module", "_cpp_qualified",
@@ -2775,7 +2775,7 @@ def _rebuild_code(
                                 "cpp_conditions",
                                 "ruby_reopened",
                                 "ruby_external_method_owners",
-                                # Erlang remote-call resolution keys (#3714): an
+                                # Erlang remote-call resolution keys: an
                                 # unchanged callee module must keep its
                                 # module/name/arity so `foo:bar()` still resolves
                                 # on an incremental rebuild, not just a full build.
@@ -2784,7 +2784,7 @@ def _rebuild_code(
                                 "module",
                                 "name",
                                 "arity",
-                                # C# overloads (#4584): which one a call's
+                                # C# overloads: which one a call's
                                 # argument count fits.
                                 "min_arity",
                                 "variadic",
@@ -2795,7 +2795,7 @@ def _rebuild_code(
                         if fwd_metadata:
                             ctx_node["metadata"] = fwd_metadata
                     resolution_context_nodes.append(ctx_node)
-                # #2437: the member-call resolvers map receiver type -> owning
+                # the member-call resolvers map receiver type -> owning
                 # class -> method through contains/method edges; hand over the
                 # unchanged corpus's, scoped exactly like the nodes above so a
                 # deleted/re-extracted file's edges can never resurrect. Import
@@ -2812,7 +2812,7 @@ def _rebuild_code(
                     source_file = edge.get("source_file")
                     # Same anchoring as the nodes above, or an unchanged file's
                     # import edge drops out of the resolve context and a changed
-                    # file's call into it cannot be resolved (#2437).
+                    # file's call into it cannot be resolved.
                     ctx_identity = ctx_paths.absolute_identity(source_file, project_root)
                     if not source_file or ctx_identity not in ctx_live:
                         continue
@@ -2853,7 +2853,7 @@ def _rebuild_code(
                     resolution_context_edges.append(context_edge)
             except Exception:
                 # Unreadable/oversized graph: resolve with the changed batch only
-                # (pre-#2406 behavior). Reconcile below still fails closed on it.
+                # (pre- behavior). Reconcile below still fails closed on it.
                 resolution_context_nodes = []
                 resolution_context_edges = []
 
@@ -2869,7 +2869,7 @@ def _rebuild_code(
         }
         _rebase_relative_source_files(result, watch_root, project_root)
 
-        # #2543: AST sources that failed this run (error result, or extractor
+        # AST sources that failed this run (error result, or extractor
         # present but zero nodes) must not be stamped kind="ast" below, and any
         # prior stamp must be blanked (clear_ast) — otherwise the incremental
         # gate reports them unchanged forever and only deleting pilothify-out/
@@ -2877,14 +2877,14 @@ def _rebuild_code(
         _failed_ast_sources = set(result.get("failed_sources") or [])
 
         def _ast_manifest_files() -> dict[str, list[str]]:
-            """detected["files"] minus this run's failed AST sources (#2543).
+            """detected["files"] minus this run's failed AST sources.
 
             Only the STAMPED set shrinks; scan_corpus at the save sites stays
             the raw detect output so #1908 pruning is unaffected.
 
             The JS/TS resolution inputs detect() skips by name are stamped under
             their own bucket so the no-change gate can compare their content on
-            the next run (#4740). They are not extract targets and stay out of
+            the next run. They are not extract targets and stay out of
             scan_corpus, so nothing else sees them.
             """
             if not _failed_ast_sources:
@@ -2915,7 +2915,7 @@ def _rebuild_code(
             return stamped
 
         def _stamp_build_state() -> None:
-            """Record what the NEXT run has to match to skip (#4740).
+            """Record what the NEXT run has to match to skip.
 
             Only ever called once a rebuild has finished writing its outputs, so
             the stamp describes a graph that is on disk and current. A rebuild
@@ -2952,15 +2952,15 @@ def _rebuild_code(
             # Existing graph present but unreadable — over the size cap
             # (ValueError) or unparseable JSON (RuntimeError, both via
             # build._load_existing_graph). Refuse to overwrite a graph we
-            # merely failed to READ (#2251), mirroring the CLI's fail-closed
-            # contract (#2169). --force deliberately does NOT bypass this:
+            # merely failed to READ, mirroring the CLI's fail-closed
+            # contract. --force deliberately does NOT bypass this:
             # force means "accept a shrink", not "clobber an unreadable
             # graph".
             print(f"error: {exc}", file=sys.stderr)
             return False
 
         # The equality skips below compare parsed data, not layout; an existing
-        # multi-line graph.json must still be rewritten compact (#3413).
+        # multi-line graph.json must still be rewritten compact.
         legacy_layout = existing_graph.exists() and not _is_single_line(existing_graph)
 
         _relativize_source_files(result, project_root, scope=watch_root)
@@ -2986,7 +2986,7 @@ def _rebuild_code(
             # Normalise to "links" key so schema is consistent with the full clustered path.
             # Dedupe parallel edges (the clustered path's DiGraph collapses them implicitly);
             # without it, --no-cluster + repeated `update` accumulate duplicates and edge
-            # counts diverge across build modes (#1317).
+            # counts diverge across build modes.
             from pilothify.build import (
                 dedupe_edges as _dedupe_edges,
                 dedupe_nodes as _dedupe_nodes,
@@ -3012,7 +3012,7 @@ def _rebuild_code(
                 # while a reconciled rebuild always does; write it either way so
                 # the two builds of one tree give the same file.
                 "hyperedges": list(result.get("hyperedges", [])),
-                # Inherit the existing graph's directed flag (#2342) so
+                # Inherit the existing graph's directed flag so
                 # `pilothify update --no-cluster` can't silently drop it -
                 # `result` (the raw merged extraction) never carries one.
                 "directed": _directed,
@@ -3022,7 +3022,7 @@ def _rebuild_code(
             # graph, so mint the same external stubs the builder does — otherwise
             # an import to stdlib / a third-party module leaves an undeclared
             # endpoint in graph.json that every loader materialises as an
-            # attribute-less phantom (#2873). Any other edge without two declared
+            # attribute-less phantom. Any other edge without two declared
             # endpoints is dropped, as build_from_json drops it.
             _finalize_raw_graph_endpoints(candidate_graph_data)
             candidate_graph_text = _json_text(candidate_graph_data)
@@ -3032,7 +3032,7 @@ def _rebuild_code(
                     check_graph_file_size_cap(existing_graph)
                     existing_payload = json.loads(existing_graph.read_text(encoding="utf-8"))
                 except Exception as exc:
-                    # A load failure is NOT "graph changed" (#2251): refuse to
+                    # A load failure is NOT "graph changed": refuse to
                     # overwrite a graph we merely failed to read. Normally
                     # unreachable — the reconcile load above already failed
                     # closed — but a race rewriting the file can land here.
@@ -3064,7 +3064,7 @@ def _rebuild_code(
                 _backup(out)
                 # Atomic replace via tmp file, matching the clustered path: a
                 # crash mid-write must not leave a truncated graph.json.
-                # os_replace_with_fallback, not a plain Path.replace (#2689):
+                # os_replace_with_fallback, not a plain Path.replace:
                 # this function just read existing_graph a few lines up, and
                 # on a VMware HGFS shared folder a replace over a destination
                 # read earlier in the same process raises PermissionError
@@ -3076,7 +3076,7 @@ def _rebuild_code(
             # Write the scan root only after the candidate graph is accepted,
             # so a refused shrink cannot mismatch graph and marker. See
             # _pilothify_root_marker_value for why this isn't always the raw
-            # caller-supplied value (#3375).
+            # caller-supplied value.
             (out / ".pilothify_root").write_text(
                 _pilothify_root_marker_value(watch_path), encoding="utf-8"
             )
@@ -3086,9 +3086,9 @@ def _rebuild_code(
                 # detected["files"] is a FULL detect of the watched root, so
                 # pass it as the scan corpus too: rows for files that left the
                 # scan but still exist on disk (newly excluded) are pruned
-                # instead of surviving as phantom "deleted" entries (#1908).
+                # instead of surviving as phantom "deleted" entries.
                 # Failed AST sources are dropped from the stamped set and
-                # their prior hashes blanked (#2543).
+                # their prior hashes blanked.
                 save_manifest(
                     _ast_manifest_files(), manifest_path=str(out / "manifest.json"),
                     kind="ast", root=watch_root,
@@ -3118,7 +3118,7 @@ def _rebuild_code(
             "unclassified_warning": detected.get("unclassified_warning"),
         }
 
-        # Inherit the existing graph's directed flag (#2342) so `pilothify
+        # Inherit the existing graph's directed flag so `pilothify
         # update` can't silently downgrade a directed graph to undirected -
         # build_from_json defaults to directed=False otherwise.
         G = build_from_json(result, directed=bool((existing_graph_data or {}).get("directed", False)))
@@ -3134,8 +3134,8 @@ def _rebuild_code(
             if same_topology:
                 try:
                     from pilothify.detect import save_manifest
-                    # Full-scan save: prune excluded-but-alive rows (#1908);
-                    # leave failed AST sources unstamped (#2543).
+                    # Full-scan save: prune excluded-but-alive rows;
+                    # leave failed AST sources unstamped.
                     save_manifest(
                         _ast_manifest_files(), manifest_path=str(out / "manifest.json"),
                         kind="ast", root=watch_root,
@@ -3171,7 +3171,7 @@ def _rebuild_code(
         surprises = surprising_connections(G, communities)
         labels_file = out / ".pilothify_labels.json"
         sig_file = out / (".pilothify_labels.json" + ".sig")
-        # #3334: a community without a curated name gets a deterministic hub
+        # a community without a curated name gets a deterministic hub
         # fallback below so reports and graph.json always show something
         # readable -- but that fallback used to be written straight into the
         # same tracked file as genuinely-curated (manual or LLM) names, so a
@@ -3187,7 +3187,7 @@ def _rebuild_code(
         try:
             raw = json.loads(labels_file.read_text(encoding="utf-8")) if labels_file.exists() else {}
             # Skip persisted "Community N" placeholders so the hub-fill below
-            # replaces them instead of perpetuating them on every rebuild (#2073).
+            # replaces them instead of perpetuating them on every rebuild.
             labels = {
                 int(k): v for k, v in raw.items()
                 if int(k) in communities and v != f"Community {int(k)}"
@@ -3231,7 +3231,7 @@ def _rebuild_code(
                 saved_sigs = {}
         if saved_sigs:
             # Equal signature, or a strict majority of both the saved members
-            # and the current members (#2298).
+            # and the current members.
             stale = {
                 cid for cid in labels
                 if not label_still_applies(
@@ -3285,7 +3285,7 @@ def _rebuild_code(
                           built_at_commit=commit, learning=_llfr(out / "graph.json"))
         report_path = out / "GRAPH_REPORT.md"
         # Split back into the tracked (curated) file and the pending
-        # (hub-fallback) sidecar (#3334) -- report/graph.json generation above
+        # (hub-fallback) sidecar -- report/graph.json generation above
         # already used the full, merged `labels` so a fallback-named community
         # still reads correctly there; only the on-disk split changes.
         curated_labels = {cid: v for cid, v in labels.items() if cid not in pending_cids}
@@ -3304,7 +3304,7 @@ def _rebuild_code(
                 check_graph_file_size_cap(existing_graph)
                 existing_payload = json.loads(existing_graph.read_text(encoding="utf-8"))
             except Exception as exc:
-                # A load failure is NOT "graph changed" (#2251): refuse to
+                # A load failure is NOT "graph changed": refuse to
                 # overwrite a graph we merely failed to read. Normally
                 # unreachable — the reconcile load above already failed
                 # closed — but a race rewriting the file can land here.
@@ -3347,7 +3347,7 @@ def _rebuild_code(
             (out / _HTML_STALE_MARKER).touch()
             from pilothify.export import backup_if_protected as _backup
             _backup(out)
-            # os_replace_with_fallback, not a plain Path.replace (#2689): this
+            # os_replace_with_fallback, not a plain Path.replace: this
             # function read existing_graph a few lines up for the same_graph
             # comparison, and on a VMware HGFS shared folder a replace over a
             # destination read earlier in the same process raises
@@ -3386,15 +3386,15 @@ def _rebuild_code(
                 sig_file, json.dumps({str(k): v for k, v in cur_sigs.items()}))
 
         # See _pilothify_root_marker_value for why this isn't always the raw
-        # caller-supplied value (#3375).
+        # caller-supplied value.
         (out / ".pilothify_root").write_text(
             _pilothify_root_marker_value(watch_path), encoding="utf-8"
         )
 
         try:
             from pilothify.detect import save_manifest
-            # Full-scan save: prune excluded-but-alive rows (#1908);
-            # leave failed AST sources unstamped (#2543).
+            # Full-scan save: prune excluded-but-alive rows;
+            # leave failed AST sources unstamped.
             save_manifest(
                 _ast_manifest_files(), manifest_path=str(out / "manifest.json"),
                 kind="ast", root=watch_root,
@@ -3483,7 +3483,7 @@ def _batch_triggers_rebuild(batch: list[Path]) -> bool:
     ANY watched file also rebuild: eviction needs no LLM either — the full
     corpus reconcile drops nodes whose source is gone from disk. Without
     this, a doc-only deletion batch would sit behind the needs_update flag
-    until the next code event or a manual `pilothify update` (#2580).
+    until the next code event or a manual `pilothify update`.
     """
     has_code = any(effective_suffix(p).lower() in _CODE_EXTENSIONS for p in batch)
     has_deletion = any(not p.exists() for p in batch)
@@ -3496,7 +3496,7 @@ def _watch_event_filter():
     Passing this as ``event_filter`` keeps ``IN_OPEN`` and
     ``IN_CLOSE_NOWRITE`` out of the inotify mask. The recursive watch-setup
     walk then produces no events of its own, so it cannot overflow the kernel
-    queue and trigger watchdog's rebuild loop (#5033).
+    queue and trigger watchdog's rebuild loop.
     """
     from watchdog import events as we
 
@@ -3558,9 +3558,9 @@ def _batch_needs_llm_flag(batch: list[Path]) -> bool:
 def _rebuild_timeout():
     """Bound one watch-loop rebuild by PILOTHIFY_REBUILD_TIMEOUT seconds (0 disables).
 
-    Mirrors the hook rebuild (#791, #2148): SIGALRM raises TimeoutError where it
+    Mirrors the hook rebuild: SIGALRM raises TimeoutError where it
     exists; elsewhere (Windows) a timer thread kills the pool workers and exits
-    the process, since nothing can interrupt the main thread (#2173).
+    the process, since nothing can interrupt the main thread.
     """
     timeout = int(os.environ.get("PILOTHIFY_REBUILD_TIMEOUT", "600"))
     if timeout <= 0:
@@ -3571,7 +3571,7 @@ def _rebuild_timeout():
     # dispatch loop is not always the main thread (it is run in a worker thread
     # both under test and when embedded), and that ValueError would escape the
     # `except TimeoutError` guard and tear the watch loop down before the
-    # rebuild runs (#4724 regressed gh-928). Off the main thread, fall back to
+    # rebuild runs. Off the main thread, fall back to
     # the signal-free Timer path, which bounds the rebuild just the same.
     if hasattr(signal, "SIGALRM") and threading.current_thread() is threading.main_thread():
         def _sigalrm_bail(*_a):
@@ -3747,7 +3747,7 @@ def watch(watch_path: Path, debounce: float = 3.0) -> None:
             warned_no_filter = True
             logger.warning(
                 "watchdog does not declare event_filter; read-only inotify "
-                "events may overflow the queue and lose changes (#5033)"
+                "events may overflow the queue and lose changes"
             )
         try:
             watched[path] = observer.schedule(handler, str(path), **kwargs)
@@ -3804,7 +3804,7 @@ def watch(watch_path: Path, debounce: float = 3.0) -> None:
     else:
         logger.warning(
             "watchdog does not declare event_filter; read-only inotify events "
-            "may overflow the queue and lose changes (#5033)"
+            "may overflow the queue and lose changes"
         )
         observer.schedule(handler, str(watch_root_for_ignore), recursive=True)
     observer.start()

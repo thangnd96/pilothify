@@ -1,4 +1,4 @@
-"""`pilothify query` must render every edge between visited nodes (#2323).
+"""`pilothify query` must render every edge between visited nodes.
 
 `_bfs`/`_dfs` recorded an edge only when it discovered an *unvisited* neighbour,
 so the result was a traversal tree rather than the induced subgraph over the

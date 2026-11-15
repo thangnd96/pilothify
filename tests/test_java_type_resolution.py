@@ -17,7 +17,7 @@ def _node_by_id(result: dict, nid: str) -> dict | None:
 
 
 def test_java_cross_file_implements_resolves_to_real_def(tmp_path: Path):
-    # #1318: a cross-file `implements` must land on the real interface def, not a
+    # a cross-file `implements` must land on the real interface def, not a
     # bare no-source shadow stub.
     iface = _write(
         tmp_path / "src/com/x/handler/AIResponseHandler.java",
@@ -78,7 +78,7 @@ def test_java_ambiguous_implements_disambiguated_by_import(tmp_path: Path):
 
 
 def test_java_ambiguous_reference_disambiguated_by_import(tmp_path: Path):
-    # #1744: two classes with the SAME simple name in different modules/packages.
+    # two classes with the SAME simple name in different modules/packages.
     # Both survive as distinct path-scoped nodes, but a cross-module field/type
     # `references` edge used to dangle on a sourceless phantom stub (the
     # implements/inherits case was handled, references was not). The importing
@@ -130,7 +130,7 @@ def test_java_ambiguous_reference_disambiguated_by_import(tmp_path: Path):
 
 
 def test_java_implements_edge_survives_build(tmp_path: Path):
-    # #1318: the re-pointed edge must connect real nodes after graph assembly,
+    # the re-pointed edge must connect real nodes after graph assembly,
     # so the interface is not classified as an isolated community.
     iface = _write(
         tmp_path / "src/com/x/handler/Handler.java",
@@ -162,7 +162,7 @@ def _label_edges(result: dict, relations):
 
 
 def test_java_record_becomes_type_node(tmp_path: Path):
-    # #1373: a Java `record` must produce a first-class type node (with a
+    # a Java `record` must produce a first-class type node (with a
     # `contains` edge from its file), not be left as an isolated file node.
     rec = _write(
         tmp_path / "Foo.java",
@@ -254,7 +254,7 @@ def test_java_user_types_still_emit_references(tmp_path: Path):
 
 
 def test_java_external_annotation_does_not_conflate_with_local_class(tmp_path: Path):
-    # #2504: Spring's @Component is EXTERNAL. A local `class Component` with the
+    # Spring's @Component is EXTERNAL. A local `class Component` with the
     # same simple name must not absorb the services' annotation/import edges —
     # the bare-name stub used to collapse onto it and manufacture a false hub.
     local = _write(
@@ -422,7 +422,7 @@ def test_java_qualified_inline_external_annotation_does_not_bind_local_class(tmp
 
 
 def test_java_cross_file_constructor_call_resolves(tmp_path: Path):
-    # #1373: `new Foo(...)` in a method body must produce a cross-file edge to the
+    # `new Foo(...)` in a method body must produce a cross-file edge to the
     # Foo definition. Foo is NOT used as a return type here, so the edge can only
     # come from the constructor call (object_creation_expression), not return-type
     # handling.

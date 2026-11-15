@@ -3,14 +3,13 @@
 Deterministic, PyYAML-based extraction for ``.yaml``/``.yml`` files so that
 config-heavy repositories (Helm charts, Kubernetes manifests, CI pipelines)
 contribute nodes to code-only / AST-only runs (``pilothify update``) instead of
-being skipped entirely (#2214).
+being skipped entirely.
 
 Mirrors ``extract_json`` in shape: a file node plus ``contains`` edges to
 top-level (and nested) keys, with a pair/depth cap to keep data-heavy YAML from
 exploding into orphan nodes. Like ``extract_json``'s ``_is_config_json`` gate,
 data-shaped YAML (a top-level data array, an OpenAPI/Swagger spec, a flat
-key:value data bundle) is skipped so it does not mint up to 500 orphan nodes
-(the #1224/#2255 class of problem).
+key:value data bundle) is skipped so it does not mint up to 500 orphan nodes (the  class of problem).
 """
 
 from __future__ import annotations
@@ -30,7 +29,7 @@ _permissive_loader_cls: Any = None
 
 
 def _construct_permissive(loader: Any, tag_suffix: str, node: Any) -> Any:
-    """Build a plain value for an unrecognized ``!`` tag (#5071).
+    """Build a plain value for an unrecognized ``!`` tag.
 
     CloudFormation/SAM intrinsic functions (``!Ref``, ``!Sub``, ``!GetAtt``,
     ``!Equals``, ...) are short, local tags SafeLoader has no constructor
@@ -123,7 +122,7 @@ def _is_config_yaml(path: Path, data: Any, key_texts: set[str] | None = None) ->
         return False
     keys = key_texts if key_texts is not None else {str(k).casefold() for k in data.keys()}
     if ("openapi" in keys or "swagger" in keys) and "paths" in keys:
-        return False  # an API spec is data-heavy, not a config to walk (#2255-style)
+        return False  # an API spec is data-heavy, not a config to walk (-style)
     if "$schema" in keys and ({"$defs", "definitions", "$id"} & keys):
         return False  # a JSON schema in YAML clothing
     if keys & _CONFIG_YAML_KEYS:
@@ -186,7 +185,7 @@ def extract_yaml(path: Path) -> dict:
 
     Uses a ``SafeLoader`` (never ``load``; a ``!!python/...`` tag raises
     rather than executing), widened to accept any unrecognized ``!`` tag as a
-    plain scalar/sequence/mapping (#5071 — CloudFormation/SAM's ``!Ref``,
+    plain scalar/sequence/mapping (CloudFormation/SAM's ``!Ref``,
     ``!Equals``, etc. otherwise raise ``ConstructorError`` and the whole file
     produces zero nodes), and walks every document in a multi-document
     stream. Returns an error payload when PyYAML is missing so callers

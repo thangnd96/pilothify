@@ -322,7 +322,7 @@ def test_incremental_sibling_addition_keeps_cross_package_edge(tmp_path: Path) -
 
 def test_case_only_sibling_methods_are_both_extracted(tmp_path: Path) -> None:
     """Methods ``Get`` and ``get`` on the same type in one file are two symbols,
-    not one — the receiver-based id path must salt the collision too (#2779)."""
+    not one — the receiver-based id path must salt the collision too."""
     (tmp_path / "go.mod").write_text("module example.com/repro\n\ngo 1.22\n")
     pkg = tmp_path / "pkga"
     pkg.mkdir()
@@ -342,7 +342,7 @@ def test_case_only_sibling_methods_are_both_extracted(tmp_path: Path) -> None:
 
 def test_case_only_sibling_all_exported_are_both_extracted(tmp_path: Path) -> None:
     """When no member is the unique exported one (``Run`` and ``RUN`` both start
-    uppercase), each is salted so neither is dropped (#2779, all-salted branch)."""
+    uppercase), each is salted so neither is dropped (all-salted branch)."""
     (tmp_path / "go.mod").write_text("module example.com/repro\n\ngo 1.22\n")
     pkg = tmp_path / "pkga"
     pkg.mkdir()
@@ -395,7 +395,7 @@ def _owners(result: dict, method: str) -> set[str]:
 
 def test_case_only_sibling_types_are_both_extracted(tmp_path: Path) -> None:
     """``type ResponseWriter`` and ``type responseWriter`` in one file are two
-    types (#2779 covered functions and methods, not ``type`` declarations)."""
+    types (covered functions and methods, not ``type`` declarations)."""
     result = _gin_corpus(tmp_path, _GIN_IFACE, _GIN_STRUCT, _GIN_CONTEXT)
     iface, struct = _by_label(result, "ResponseWriter"), _by_label(result, "responseWriter")
     assert [n["source_location"] for n in iface] == ["L3"], iface

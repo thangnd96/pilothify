@@ -119,7 +119,7 @@ def test_uninstall_removes_post_checkout_hook(tmp_path):
 
 
 def test_install_creates_post_merge_hook(tmp_path):
-    # #2418: a merge hook is needed to heal a symbol the union merge driver
+    # a merge hook is needed to heal a symbol the union merge driver
     # resurrects on one side of a merge, since nothing else ever
     # re-extracts that file's nodes unless it is touched again.
     repo = _make_git_repo(tmp_path)
@@ -168,7 +168,7 @@ def test_status_shows_post_merge_hook(tmp_path):
 
 
 def test_install_creates_post_rewrite_hook(tmp_path):
-    # #4490: git runs post-rewrite once when a rebase (or pull --rebase) finishes;
+    # git runs post-rewrite once when a rebase (or pull --rebase) finishes;
     # post-commit skips every replayed commit, so nothing else rebuilds after one.
     repo = _make_git_repo(tmp_path)
     install(repo)
@@ -263,7 +263,7 @@ def test_hook_skips_head_on_exe():
 
 def test_install_embeds_pinned_interpreter(tmp_path):
     """Hook scripts must embed sys.executable so the hook works without the
-    pilothify launcher on PATH (uv tool / pipx isolation, #1127).
+    pilothify launcher on PATH (uv tool / pipx isolation).
 
     When pilothify is installed via `uv tool install pilothify` or `pipx install
     pilothify`, the interpreter lives in an isolated venv and the launcher is in
@@ -345,7 +345,7 @@ _HOOK_SCRIPTS = [
 def test_hooks_do_not_use_nohup(name, script):
     """Git for Windows' bundled shell ships no `nohup`/`setsid`, so the old
     `nohup ... &` launch died with 'nohup: command not found' and the rebuild
-    silently never ran (#1161). The generated hooks must not reference either."""
+    silently never ran. The generated hooks must not reference either."""
     assert "nohup" not in script, f"{name} still references nohup (#1161)"
     assert "setsid" not in script, f"{name} still references setsid (#1161)"
     assert "disown" not in script, f"{name} still uses disown (#1161)"
@@ -354,7 +354,7 @@ def test_hooks_do_not_use_nohup(name, script):
 @pytest.mark.parametrize("name,script", _HOOK_SCRIPTS)
 def test_hooks_use_cross_platform_detach(name, script):
     """The replacement detaches via Python: start_new_session on POSIX and
-    CREATE_NO_WINDOW|CREATE_NEW_PROCESS_GROUP on Windows (#1161 / #2253)."""
+    CREATE_NO_WINDOW|CREATE_NEW_PROCESS_GROUP on Windows."""
     assert "subprocess.Popen" in script
     assert "start_new_session=True" in script, f"{name} missing POSIX detach"
     assert "0x08000000" in script, f"{name} missing Windows CREATE_NO_WINDOW flag"
@@ -417,23 +417,23 @@ def test_rebuild_bodies_are_shell_quote_safe():
 )
 def test_rebuild_bodies_read_pilothify_root(name, body):
     """The rebuild must honour the persisted scan root rather than hardcoding the
-    repo top (#1173). Both bodies read <output-dir>/.pilothify_root and pass the
+    repo top. Both bodies read <output-dir>/.pilothify_root and pass the
     recovered root to _rebuild_code instead of the bare Path('.')."""
     assert ".pilothify_root" in body, f"{name} ignores .pilothify_root (#1173)"
     # The output dir is resolved from PILOTHIFY_OUT at hook-run time, not hardcoded
-    # to pilothify-out/, so a renamed output dir is still found (#1423).
+    # to pilothify-out/, so a renamed output dir is still found.
     assert "PILOTHIFY_OUT" in body, f"{name} ignores the PILOTHIFY_OUT override (#1423)"
     # The recovered root is what gets rebuilt, not a hardcoded cwd.
     assert "_rebuild_code(_root" in body, f"{name} does not pass the recovered root"
     # Quote-safe inside the shell-double-quoted launcher: single quotes only.
     # `utf-8-sig` rather than `utf-8` so a Windows PowerShell 5.1 BOM cannot ride
-    # into the path (#3028); the codec is a no-op on a BOM-less marker.
+    # into the path; the codec is a no-op on a BOM-less marker.
     assert "read_text(encoding='utf-8-sig')" in body, f"{name} root read is not single-quoted"
 
 
 def test_rebuild_bodies_with_pilothify_root_are_valid_python():
     """The .pilothify_root snippet must parse so a quoting slip can't ship a hook
-    that crashes the moment git fires it (#1173)."""
+    that crashes the moment git fires it."""
     for body in (_REBUILD_BODY_COMMIT, _REBUILD_BODY_CHECKOUT):
         ast.parse(body)
 
@@ -477,7 +477,7 @@ def test_rebuild_bodies_reject_an_out_of_repo_pilothify_root(name, body, tmp_pat
 )
 def test_rebuild_bodies_honour_an_in_repo_pilothify_root(name, body, tmp_path, monkeypatch):
     """The legitimate case the #3265 guard must not break: a subdirectory-scoped
-    root (#1173) is still recovered."""
+    root is still recovered."""
     repo = tmp_path / "repo"
     (repo / "pilothify-out").mkdir(parents=True)
     (repo / "backend").mkdir()
@@ -545,7 +545,7 @@ def test_rebuild_bodies_survive_a_pilothify_root_symlink_loop(name, body, tmp_pa
 )
 def test_rebuild_bodies_arm_a_timeout_without_sigalrm(name, body):
     """Windows has no signal.SIGALRM, so the #791 rebuild timeout never armed
-    there at all (#2148). The fallback has to sit in the else-branch of the
+    there at all. The fallback has to sit in the else-branch of the
     SIGALRM check rather than merely appear somewhere in the body, so that a
     watchdog firing unconditionally or on every platform still fails here."""
     fallbacks = [
@@ -678,7 +678,7 @@ def test_detached_launch_targets_pilothify_python():
 
 
 def test_installed_hooks_contain_no_nohup(tmp_path):
-    """End-to-end: the files written to .git/hooks must be nohup-free (#1161)."""
+    """End-to-end: the files written to .git/hooks must be nohup-free."""
     repo = _make_git_repo(tmp_path)
     install(repo)
     for name in ("post-commit", "post-checkout"):
@@ -702,7 +702,7 @@ def _set_hookspath(repo: Path, value: str) -> None:
 ])
 def test_windows_hookspath_rejected_no_junk_dir_on_posix(tmp_path, monkeypatch, winpath):
     """A Windows-style core.hooksPath must raise (loud failure), not silently
-    create a backslash-named junk directory and report success on POSIX/WSL (#1385)."""
+    create a backslash-named junk directory and report success on POSIX/WSL."""
     monkeypatch.setattr("pilothify.hooks.os.name", "posix")
     repo = _make_git_repo(tmp_path)
     _set_hookspath(repo, winpath)
@@ -863,7 +863,7 @@ def _detect_run(tmp_path, home, stub_bin, env_extra=None):
     on PATH, and a python3 that cannot import pilothify (#2852's uv-tool
     Windows machine reproduced on POSIX) — and report what PILOTHIFY_PYTHON
     resolved to. Behavior of the emitted script, not the source string
-    (per the #2126/#2641 convention)."""
+    (per the  convention)."""
     from pilothify.hooks import _PYTHON_DETECT
     script = tmp_path / "detect_run.sh"
     script.write_text(
@@ -903,7 +903,7 @@ def _broken_uv_machine(tmp_path):
     launcher.write_bytes(b"MZ\x90\x00\x03" + bytes(range(60)))
     launcher.chmod(0o755)
     # Ambient pythons answer the probe with "no module named pilothify" —
-    # under uv tool install no system python can see the isolated venv (#2852).
+    # under uv tool install no system python can see the isolated venv.
     for name in ("python3", "python"):
         py = stub_bin / name
         py.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8", newline="\n")
@@ -950,7 +950,7 @@ def test_uv_tool_env_rescues_hook_when_pin_and_launcher_fail(tmp_path):
 def test_uv_tool_env_honors_uv_tool_dir_and_windows_layout(tmp_path):
     """UV_TOOL_DIR overrides the default location, and the Windows layout
     (`<tool>\\Scripts\\python.exe`) is scanned too — the reporter's exact
-    machine (#2852)."""
+    machine."""
     home, stub_bin = _broken_uv_machine(tmp_path)
     tools = tmp_path / "custom-tools"
     py = tools / "pilothify" / "Scripts" / "python.exe"
@@ -966,7 +966,7 @@ def test_uv_tool_env_honors_uv_tool_dir_and_windows_layout(tmp_path):
 def test_uv_tool_env_without_pilothify_still_fails_loudly(tmp_path):
     """The scan must not adopt a tool env whose python lacks pilothify; the
     chain still ends in the loud 'could not locate' warning on stderr — never
-    a bare silent exit (#2852's diagnosis ask)."""
+    a bare silent exit ('s diagnosis ask)."""
     home, stub_bin = _broken_uv_machine(tmp_path)
     _tool_venv(home, "aaa-tool", "bin/python", ok=False)
     res = _detect_run(tmp_path, home, stub_bin)
@@ -980,7 +980,7 @@ def test_shebang_parse_requires_leading_hash_bang(tmp_path):
     """The launcher read must gate on a leading '#!': a non-script launcher
     whose first line merely NAMES a working python must not be adopted as the
     interpreter. Pre-gate code parsed any first line, so trampoline bytes
-    (and here, a decoy path) reached the shebang parse (#2852)."""
+    (and here, a decoy path) reached the shebang parse."""
     home, stub_bin = _broken_uv_machine(tmp_path)
     mine = _tool_venv(home, "pilothify", "bin/python", ok=True)
     decoy = stub_bin / "fakepy"
@@ -1035,7 +1035,7 @@ def _shell_verdict(pattern: str, candidate: str, tmp_path) -> str:
     before the case statement ever runs. Every value here is either a shell
     metacharacter payload or a backslash path, i.e. exactly what that layer
     destroys, so the old `bash -c ... , "_", candidate` form compared bash's
-    verdict on a string that was no longer the one under test (#2641).
+    verdict on a string that was no longer the one under test.
 
     Baking them in also matches production: the hook is a script file, and the
     value being tested is already sitting in a shell variable by the time the
@@ -1132,7 +1132,7 @@ def test_python_detect_allowlists_still_reject_shell_metacharacters(dangerous, t
     "foo`id`",                                 # command substitution actually RUNS
 ])
 def test_shell_verdict_delivers_the_payload_bash_unmodified(payload, tmp_path):
-    """The harness must hand bash the exact bytes under test (#2641).
+    """The harness must hand bash the exact bytes under test.
 
     This is the root cause rather than the symptom: when the payload is mangled
     in transit, the allowlist tests grade bash's answer to a different question.
@@ -1170,7 +1170,7 @@ def test_hooks_reuse_git_dir_from_env(name, script):
 def test_hooks_honor_skip_env(name, script):
     """PILOTHIFY_SKIP_HOOK=1 must suppress BOTH hooks. post-checkout previously
     lacked the check, so the var stopped commit rebuilds but not branch-switch
-    ones (#1809)."""
+    ones."""
     assert '[ "${PILOTHIFY_SKIP_HOOK:-0}" = "1" ] && exit 0' in script, (
         f"{name} does not honor PILOTHIFY_SKIP_HOOK"
     )
@@ -1178,7 +1178,7 @@ def test_hooks_honor_skip_env(name, script):
 
 def test_checkout_hook_skips_same_head_noop_at_runtime():
     """`git checkout -b` with no start point reports a branch switch (flag=1) but
-    passes identical PREV/NEW heads, so the rebuild must short-circuit (#2421).
+    passes identical PREV/NEW heads, so the rebuild must short-circuit.
     Prove BEHAVIOR by running the real emitted script under sh up to the guard
     with a sentinel, not by matching the source string (per the #2126/#2641
     convention that static assertions provided zero coverage)."""
@@ -1187,7 +1187,7 @@ def test_checkout_hook_skips_same_head_noop_at_runtime():
     assert guard in _CHECKOUT_SCRIPT, "guard missing from the checkout script"
     # Real script through the same-head guard, then a sentinel — stops before the
     # pilothify-out check / detached launch so nothing is actually rebuilt.
-    # The block runs inside a subshell (#2986); close it after the sentinel.
+    # The block runs inside a subshell; close it after the sentinel.
     prefix = _CHECKOUT_SCRIPT.split(guard)[0] + guard + "\necho RAN\n)\n"
 
     def run(prev, new, flag):
@@ -1207,7 +1207,7 @@ def test_checkout_hook_skips_same_head_noop_at_runtime():
 def test_hooks_skip_linked_worktrees(name, script):
     """Both hooks must short-circuit in a linked worktree (git-dir != common-dir),
     and must compare ABSOLUTE paths so the primary checkout (where --git-common-dir
-    is the relative ".git") is not false-positived and wrongly skipped (#1809, #1806)."""
+    is the relative ".git") is not false-positived and wrongly skipped."""
     assert script.count("_GFY_GITDIR=") == 1, f"{name} guard not present exactly once"
     assert "git rev-parse --git-common-dir" in script
     # absolute-normalized compare, not a raw string compare of git output
@@ -1222,7 +1222,7 @@ def _worktree_guard_snippet() -> str:
 
 def test_worktree_guard_runs_on_primary_skips_linked(tmp_path):
     """End-to-end against a real `git worktree`: the guard falls through on the
-    primary checkout and exits early inside a linked worktree (#1809, #1806)."""
+    primary checkout and exits early inside a linked worktree."""
     if shutil.which("git") is None:  # pragma: no cover
         pytest.skip("git not available")
     primary = tmp_path / "primary"
@@ -1253,7 +1253,7 @@ def test_worktree_guard_runs_on_primary_skips_linked(tmp_path):
 @pytest.mark.parametrize("name,script", _HOOK_SCRIPTS)
 def test_hooks_anchor_to_the_top_level_after_the_worktree_guard(name, script):
     """Every hook cds to the checkout's top level before anything reads
-    pilothify-out/ or launches the rebuild (#3258), and does so after the
+    pilothify-out/ or launches the rebuild, and does so after the
     worktree guard, whose _GFY_GITDIR/_GFY_COMMONDIR it reuses."""
     from pilothify.hooks import _TOPLEVEL_ANCHOR, _WORKTREE_GUARD
     assert script.count(_TOPLEVEL_ANCHOR) == 1, f"{name} anchor not present exactly once"
@@ -1268,7 +1268,7 @@ def test_hooks_anchor_to_the_top_level_after_the_worktree_guard(name, script):
 
 
 def test_toplevel_anchor_runs_from_the_top_when_git_starts_the_hook_in_a_subdir(tmp_path):
-    """End-to-end against a real repo (#3258): with GIT_DIR exported and no
+    """End-to-end against a real repo: with GIT_DIR exported and no
     GIT_WORK_TREE, git runs hooks in the caller's cwd and `--show-toplevel`
     echoes that subdirectory. The anchored snippet must still run at the
     repository top, keep later git calls working, and leave a linked worktree
@@ -1338,7 +1338,7 @@ def test_hooks_dir_no_warning_on_duplicate_config_keys(tmp_path, capsys):
     """git legally allows duplicate keys and repeated sections in .git/config;
     a strict configparser raised DuplicateOptionError/DuplicateSectionError and
     printed a spurious 'could not read core.hooksPath' warning on every hook
-    command (#1907). _hooks_dir must resolve cleanly with no stderr noise."""
+    command. _hooks_dir must resolve cleanly with no stderr noise."""
     repo = _make_git_repo(tmp_path)
     _append_duplicate_config_entries(repo)
     d = _hooks_dir(repo)
@@ -1349,7 +1349,7 @@ def test_hooks_dir_no_warning_on_duplicate_config_keys(tmp_path, capsys):
 
 def test_hooks_dir_duplicate_config_keys_honor_custom_hookspath(tmp_path, capsys):
     """With duplicate keys present, a custom core.hooksPath must still be
-    honored (no fall-through to .git/hooks) and no warning printed (#1907)."""
+    honored (no fall-through to .git/hooks) and no warning printed."""
     repo = _make_git_repo(tmp_path)
     _set_hookspath(repo, ".husky")
     _append_duplicate_config_entries(repo)
@@ -1363,7 +1363,7 @@ def test_hooks_dir_duplicate_config_keys_honor_custom_hookspath(tmp_path, capsys
 
 def test_install_registers_merge_driver(tmp_path):
     """install() must set merge.pilothify.* via git config and add the
-    .gitattributes line that README/CHANGELOG 0.7.0 document (#1902)."""
+    .gitattributes line that README/CHANGELOG 0.7.0 document."""
     repo = _make_git_repo(tmp_path)
     result = install(repo)
     res = subprocess.run(
@@ -1450,7 +1450,7 @@ def test_pinned_python_accepts_paths_containing_spaces(exe, monkeypatch):
     '/tmp/py"quote',
 ])
 def test_pinned_python_still_rejects_shell_metacharacters(exe, monkeypatch):
-    """Widening the allowlist for spaces (#2166) must not admit anything that can
+    """Widening the allowlist for spaces must not admit anything that can
     start a substitution, end the single-quoted assignment, or chain a command."""
     import sys as _sys
 
@@ -1640,7 +1640,7 @@ def test_both_hooks_configured(tmp_path):
     [("post-commit", _REBUILD_BODY_COMMIT), ("post-checkout", _REBUILD_BODY_CHECKOUT)],
 )
 def test_rebuild_bodies_tolerate_a_bom_in_pilothify_root(name, body):
-    """The rebuild must survive a marker written by Windows PowerShell 5.1 (#3028).
+    """The rebuild must survive a marker written by Windows PowerShell 5.1.
 
     `Out-File -Encoding utf8` on 5.1 always writes a UTF-8 BOM, so the path the
     hook reads back begins with U+FEFF. `strip()` does not remove it, and it rode
@@ -1721,7 +1721,7 @@ def test_hook_probes_snap_confined_uv_tool_dirs():
 # BEFORE them still hardcoded pilothify-out/: post-checkout exited unless a
 # literal pilothify-out/ directory existed, and post-commit's "only graph
 # artifacts changed" filter only recognised pilothify-out/ paths. With the
-# documented override (#686) the branch-switch rebuild therefore never launched
+# documented override the branch-switch rebuild therefore never launched
 # and a commit touching only the renamed output dir triggered a full rebuild.
 # Behaviour of the emitted script under a real sh, per the #2126/#2641
 # convention, with the launcher stubbed so the test observes whether the hook
@@ -1890,7 +1890,7 @@ def _changed_dump(tmp_path: Path, monkeypatch) -> Path:
 
 @_SH_ONLY
 def test_commit_hook_does_not_skip_on_cherry_pick_head(tmp_path):
-    """git leaves CHERRY_PICK_HEAD on disk while post-commit runs, so it is not a skip signal (#4490)."""
+    """git leaves CHERRY_PICK_HEAD on disk while post-commit runs, so it is not a skip signal."""
     repo = _repo_with_code_commits(tmp_path, ("a.py", "b.py"))
     (repo / ".git" / "CHERRY_PICK_HEAD").write_text("0" * 40 + "\n", encoding="utf-8")
     result = _emitted_hook_run(repo, _HOOK_SCRIPT, [], {})
@@ -1970,7 +1970,7 @@ def test_commit_hook_skips_graph_only_commit_when_pilothify_out_is_renamed(tmp_p
 def test_post_merge_hook_runs_after_a_real_merge(tmp_path):
     # git writes MERGE_HEAD before running post-merge and deletes it only
     # after, so a MERGE_HEAD guard here exited on every non-fast-forward
-    # merge and the rebuild never launched (#4463).
+    # merge and the rebuild never launched.
     repo = tmp_path / "repo"
     repo.mkdir()
     env = {
@@ -2039,7 +2039,7 @@ def _status_line(result: str, name: str) -> str:
 
 def test_status_flags_a_hook_block_from_an_older_pilothify(tmp_path):
     """Upgrading the package never rewrites hooks already on disk, so a block
-    written by an older release keeps its old launcher (#3771). `status` must
+    written by an older release keeps its old launcher. `status` must
     say so and name the command that refreshes it, not report "installed"."""
     repo = _make_git_repo(tmp_path)
     install(repo)
@@ -2156,7 +2156,7 @@ def _watch_fn(name):
 
 def test_watch_rebuild_timeout_arms_a_timer_without_sigalrm():
     """`pilothify watch` had no rebuild timeout at all, and the SIGALRM one the
-    hooks use is a no-op on Windows (#2173). Same shape as the hook test: the
+    hooks use is a no-op on Windows. Same shape as the hook test: the
     Timer fallback sits in the else-branch of the SIGALRM check and kills
     workers before os._exit, and the watch loop actually runs rebuilds in it."""
     fn = _watch_fn("_rebuild_timeout")
@@ -2183,8 +2183,8 @@ def test_watch_rebuild_timeout_runs_off_the_main_thread():
     ValueError anywhere else. watch()'s dispatch loop runs in a worker thread
     both under test and when embedded, so _rebuild_timeout must not reach for
     SIGALRM there — otherwise the ValueError escapes the loop's
-    `except TimeoutError` guard and tears watch() down before the rebuild runs
-    (#4724 regressed gh-928). The context manager must yield (run its body)
+    `except TimeoutError` guard and tears watch() down before the rebuild runs.
+    The context manager must yield (run its body)
     cleanly off the main thread."""
     import threading
     import pilothify.watch as watch_mod
@@ -2209,7 +2209,7 @@ def test_watch_rebuild_timeout_runs_off_the_main_thread():
 
 @pytest.mark.skipif(shutil.which("bash") is None, reason="requires a POSIX shell")
 def test_worktree_guard_survives_exported_cdpath(tmp_path):
-    """An exported CDPATH must not corrupt the absolute git-dir capture (#4977).
+    """An exported CDPATH must not corrupt the absolute git-dir capture.
 
     ``cd`` prints the resolved directory to stdout when it resolves through
     CDPATH, so the unguarded capture became two lines and the toplevel anchor

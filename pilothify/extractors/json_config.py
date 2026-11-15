@@ -37,12 +37,12 @@ def _is_config_json(path: Path, obj_node, source: bytes) -> bool:
     Matches by filename first (cheap), then falls back to a top-level key probe
     so arbitrarily-named config files (e.g. ``api.tsconfig.json``,
     ``foo.eslintrc.json``) are still picked up. Returns False for data JSON so it
-    is skipped by the structural pass (#1224).
+    is skipped by the structural pass.
 
     A JSON Schema is *not* a config manifest. `$schema` sits in the probe's key
     set because configs legitimately carry it, but it is also the defining marker
     of a schema -- so a schema document satisfied the probe and was walked in
-    full, re-opening the keyword-node explosion #1224 closed (#2255). One 160 KB
+    full, re-opening the keyword-node explosion #1224 closed. One 160 KB
     contract contributed 362 keyword nodes and ~12 schema-only communities. The
     filename branches above run first, so `biome.json`/`renovate.json`/
     `package.json` never depended on the probe; the probe only decides the fate
@@ -52,7 +52,7 @@ def _is_config_json(path: Path, obj_node, source: bytes) -> bool:
     `$defs`/`definitions`/`$id` is still walked. Catching it would need a
     keyword-density heuristic, which would risk skipping a real config whose keys
     happen to overlap schema vocabulary -- the worse error, since it drops
-    structure silently (#1224). Pinned by
+    structure silently. Pinned by
     ``tests/test_json_schema_config.py::test_minimal_schema_without_defs_or_id_is_still_walked``.
     """
     name = path.name.casefold()
@@ -78,7 +78,7 @@ def _is_config_json(path: Path, obj_node, source: bytes) -> bool:
     if "$schema" in root_keys and (root_keys & _SCHEMA_DEFINITION_KEYS):
         return False
     # Top-level key probe. `$ref` is deliberately absent: a root-level `$ref` is
-    # a schema construct and never a config signal (#2255).
+    # a schema construct and never a config signal.
     if root_keys & _CONFIG_JSON_KEYS:
         return True
     return False
@@ -88,8 +88,8 @@ def extract_json(path: Path) -> dict:
 
     Data-shaped JSON (eval fixtures, datasets, GeoJSON, API response dumps) is
     deliberately skipped — AST-walking it produced hundreds of orphan key-nodes
-    and duplicate communities that swamped real structure (#1224). JSON Schema
-    documents are skipped for the same reason (#2255). Recognition is by filename
+    and duplicate communities that swamped real structure. JSON Schema
+    documents are skipped for the same reason. Recognition is by filename
     (package.json, tsconfig.json, …) or a top-level key probe (dependencies /
     extends / $schema / compilerOptions)."""
     _JSON_MAX_BYTES = 1_048_576  # 1 MiB — skip large fixture dumps / GeoJSON blobs
@@ -179,7 +179,7 @@ def extract_json(path: Path) -> dict:
                 continue
             # A key that normalizes to nothing (a JSONC `"//"` comment key, say)
             # would collapse `_make_id(stem, key)` down to the bare file-stem id,
-            # which is absolute-path-derived and leaks the scan path (#1899). Such
+            # which is absolute-path-derived and leaks the scan path. Such
             # keys carry no graph signal, so drop them.
             if not normalize_id(key):
                 continue
@@ -258,7 +258,7 @@ def extract_json(path: Path) -> dict:
                     #    dependency's key node (its manifest entry, reached through
                     #    `dependencies --contains-->`) and its ref node, so the entry and
                     #    the code that imports the package landed in different communities
-                    #    (#4569). `key_nid --declares--> dep_nid` reconnects them, and the
+                    #   . `key_nid --declares--> dep_nid` reconnects them, and the
                     #    entry is relabelled `name@range` so the two nodes no longer share a
                     #    label: a same-label edge is the `react -> react` view #1764
                     #    removed, and two `react` nodes made `explain`/`affected`
@@ -289,7 +289,7 @@ def extract_json(path: Path) -> dict:
     if doc.type == "object":
         # Only AST-extract recognized config/manifest JSON. Data JSON (fixtures,
         # datasets, GeoJSON, API dumps) is skipped so it doesn't explode into
-        # orphan key-nodes (#1224); it's left to the LLM semantic pass.
+        # orphan key-nodes; it's left to the LLM semantic pass.
         if not _is_config_json(path, doc, source):
             return {"nodes": [], "edges": [], "skipped": "data json (not a config/manifest)"}
         walk_object(doc, file_nid, None, 0, [0])

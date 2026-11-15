@@ -16,7 +16,7 @@ Two exporters then died on the whole graph:
 
 `to_cypher` already stripped them and `to_html` already routes labels through
 `security.sanitize_label`, so the codebase knew the hazard — those two paths
-just did not. (#2897)
+just did not.
 """
 import json
 import xml.etree.ElementTree as ET

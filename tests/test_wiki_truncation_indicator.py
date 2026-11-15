@@ -1,4 +1,4 @@
-"""A god-node article says when a relation group was cut (#3127).
+"""A god-node article says when a relation group was cut.
 
 `_god_node_article` caps each relation-type group at 20 entries. The header
 still reported the full degree, but the body silently dropped everything past

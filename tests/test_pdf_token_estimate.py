@@ -9,7 +9,7 @@ too small.
 `_pack_chunks_by_tokens` sizes chunks from that estimate, so an undercount
 overfills the chunk, the request blows the model's context window, and
 `_extract_with_adaptive_retry` bisects — paying for the same content two, four
-or eight times before it fits (#2903).
+or eight times before it fits.
 
 Measured on one 400-line fixture, same text, stored both ways:
 

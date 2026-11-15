@@ -184,7 +184,7 @@ def test_make_full_slice(tmp_path):
     assert make_full_slice(f_none) is None
 
 
-# ── precomputed FileSlice inputs (#5106) ────────────────────────────────────
+# ── precomputed FileSlice inputs ────────────────────────────────────
 
 def test_is_splittable_text_accepts_fileslice(tmp_path):
     f_md = _write(tmp_path / "doc.md", "hello")

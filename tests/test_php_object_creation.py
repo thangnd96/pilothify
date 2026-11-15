@@ -1,4 +1,4 @@
-"""PHP `new Foo(...)` links the constructing method to Foo (#3115).
+"""PHP `new Foo(...)` links the constructing method to Foo.
 
 `object_creation_expression` was absent from `_PHP_CONFIG.call_types`, so a
 class a method merely constructs got no edge at all. Java has taken
@@ -69,7 +69,7 @@ def test_dynamic_and_self_construction_produce_no_junk(tmp_path):
 
 def test_static_call_resolves_to_the_actual_method_not_the_class(tmp_path):
     """`Baz::create()` must bind to Baz's `create` method, not to the `Baz`
-    class node itself (#3872). Before the fix, `scoped_call_expression` was
+    class node itself. Before the fix, `scoped_call_expression` was
     treated as a bare function call named after the *scope* (`Helper::format()`
     set the callee to `"Helper"`), so the cross-file bare-name pass matched it
     to whatever node shared that label - almost always the class definition -

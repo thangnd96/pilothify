@@ -1,4 +1,4 @@
-"""Dispatch tables whose values are written `module.func` (#1566).
+"""Dispatch tables whose values are written `module.func`.
 
 A dict/list/set/tuple of bare function names already yields `indirect_call`
 edges. The same table written with the module prefix, the common shape of a

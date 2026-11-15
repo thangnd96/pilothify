@@ -377,7 +377,7 @@ def _add_edge(
 
 
 def _make_id(*parts: str) -> str:
-    """Build a stable node ID via the single shared recipe (#1378)."""
+    """Build a stable node ID via the single shared recipe."""
     return _shared_make_id(*parts)
 
 

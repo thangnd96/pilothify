@@ -322,7 +322,7 @@ def test_checkpoint_scopes_cache_writes_to_chunk_files(tmp_path):
         f"B.py cache was clobbered by an out-of-chunk node: {after}"
     )
     # A.py (the actual chunk file) was legitimately cached. The checkpoint stamps
-    # entries with the prompt that produced them (#1939), so read that namespace.
+    # entries with the prompt that produced them, so read that namespace.
     from pilothify.llm import _extraction_system
 
     a_cache = load_cached(a, tmp_path, kind="semantic", prompt=_extraction_system())
@@ -380,7 +380,7 @@ def test_checkpoint_writes_deep_namespace_in_deep_mode(tmp_path):
         )
 
     # The checkpoint also stamps entries with the prompt that produced them
-    # (#1939) — a deep run's prompt carries the deep suffix.
+    # — a deep run's prompt carries the deep suffix.
     deep = load_cached(doc, tmp_path, kind="semantic-deep",
                        prompt=_extraction_system(deep=True))
     assert deep and [n["id"] for n in deep["nodes"]] == ["d1"], (
@@ -688,7 +688,7 @@ def test_checkpoint_caches_sliced_document_chunks(tmp_path, capsys):
     assert "incremental cache checkpoint failed" not in capsys.readouterr().err, (
         "checkpoint raised on a FileSlice chunk (#1870)"
     )
-    # The checkpoint stamps entries with the prompt that produced them (#1939).
+    # The checkpoint stamps entries with the prompt that produced them.
     cached = load_cached(doc, tmp_path, kind="semantic", prompt=_extraction_system())
     assert cached and any(n["id"] == "big_title" for n in cached["nodes"]), (
         "sliced document was never checkpointed (#1870)"
@@ -985,7 +985,7 @@ def test_estimate_file_tokens_handles_tiktoken_special_token(tmp_path):
     """A doc containing a literal tiktoken special token (e.g. <|endoftext|>)
     must not crash token estimation. tiktoken's default encode() raises on such
     strings appearing as ordinary text; we pass disallowed_special=() since this
-    is only an estimate (#1685)."""
+    is only an estimate."""
     import pilothify.llm as llm
     if llm._TOKENIZER is None:
         import pytest
@@ -998,7 +998,7 @@ def test_estimate_file_tokens_handles_tiktoken_special_token(tmp_path):
 
 def test_pack_chunks_with_special_token_doc_does_not_crash(tmp_path):
     """End to end: packing a corpus that includes a special-token doc must not
-    raise (the crash in #1685 happened during token-budget packing)."""
+    raise (the crash in  happened during token-budget packing)."""
     from pilothify.llm import _pack_chunks_by_tokens
     doc = tmp_path / "doc.md"; doc.write_text("see <|endoftext|> and <|im_start|> tokens\n")
     code = tmp_path / "code.py"; code.write_text("def f():\n    return 1\n")

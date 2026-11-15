@@ -1,4 +1,4 @@
-"""Calls inside a callback passed to a module-level call must not be dropped (#2552).
+"""Calls inside a callback passed to a module-level call must not be dropped.
 
 `export const handler = wrapper(async (req) => { helperA(); })` has a
 `call_expression` initializer, so `_js_extra_walk` took the const-literal branch
@@ -9,10 +9,10 @@ machinery (import-evidence gate included).
 
 The composition test guards the #2552/#2553 coupling: the newly-walked callback
 body feeds member calls into `_resolve_typescript_member_calls`, whose origin
-gate (#2553) must keep a third-party-typed receiver from fabricating an edge to
+gate must keep a third-party-typed receiver from fabricating an edge to
 an unrelated local class.
 
-#2568 (regression of the #2552 fix): the const-literal branch unioned ALL
+#2568: the const-literal branch unioned ALL
 sibling closures' params/locals under the one const nid, so a name that is a
 LOCAL in sibling closure A wrongly suppressed a real `indirect_call` to that
 same name in sibling closure B. The fix scopes each closure's bindings to its
@@ -97,7 +97,7 @@ def _indirect(r, lbl):
 
 
 def test_sibling_closure_param_does_not_suppress_indirect_call(tmp_path):
-    # #2568: closure 1's param `alpha` must not shadow closure 2's reference
+    # closure 1's param `alpha` must not shadow closure 2's reference
     # to the module-level function `alpha` — each sibling closure tracked
     # under the const nid gets only its OWN bindings as scope.
     _, lbl, r = _extract(tmp_path, {

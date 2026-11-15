@@ -8,7 +8,7 @@ from pilothify.extractors.base import _file_stem, _make_id, _read_source_bytes
 
 # Recovers CREATE FUNCTION/PROCEDURE statements the grammar could not parse
 # structurally. Used by BOTH recovery sites — the walk-time ERROR-node scan and
-# the whole-file has_error fallback (#2180). They MUST share one pattern: when
+# the whole-file has_error fallback. They MUST share one pattern: when
 # they disagreed, the same statement produced two nodes with different names
 # (the ERROR scan captured `dbo.[usp_Mixed]`, the fallback stopped at `dbo`,
 # and _add_node's id-dedupe never fired because the ids differed).
@@ -17,7 +17,7 @@ from pilothify.extractors.base import _file_stem, _make_id, _read_source_bytes
 # T-SQL bracket-delimited one, so CREATE OR REPLACE FUNCTION "public"."fn"(...)
 # and CREATE PROCEDURE [dbo].[usp_Load] ... are both recovered. A bare [\w$.]+
 # stops dead at the leading delimiter, which silently dropped every quoted
-# PL/pgSQL routine (#2180) and every bracket-named T-SQL procedure. T-SQL's
+# PL/pgSQL routine and every bracket-named T-SQL procedure. T-SQL's
 # AS BEGIN...END body idiom always lands in recovery — the grammar has no
 # create_procedure parse for it — and T-SQL spells re-creation CREATE OR ALTER
 # (it has no OR REPLACE), so accept that form too, mirroring fb_proc_or_trigger.
@@ -65,7 +65,7 @@ _TRIGGER_RECOVERY_RX = re.compile(
 # parentheses tree-sitter-sql rejects (upstream DerekStride/tree-sitter-sql)
 # — puts the whole statement in an ERROR node, so walk() never dispatches on
 # it and the table vanished, leaving only the sourceless stub that other
-# tables' REFERENCES minted for it (#4613). The name atom is _TRIGGER_IDENT
+# tables' REFERENCES minted for it. The name atom is _TRIGGER_IDENT
 # (the same delimited-identifier shape); the label is the bare name, with no
 # `()` suffix — a table is not callable either.
 _TABLE_RECOVERY_RX = re.compile(
@@ -458,7 +458,7 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
     except ImportError as e:
         import importlib.util
         # An installed-but-broken grammar (e.g. a C extension built for a
-        # different Python ABI, #2602) raises ImportError here too. Reporting
+        # different Python ABI) raises ImportError here too. Reporting
         # that as "not installed" sends the user to a no-op `pip install`, so
         # distinguish a genuinely-absent module from one that failed to load
         # and surface the real exception in the latter case.
@@ -526,9 +526,9 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
         prisma migration m2 referencing a table created in m1) can only resolve
         at the corpus level. Minting `_make_id(stem, name)` under THIS file's
         stem fabricated a node-less compound id — an absolute-path slug when the
-        input path was absolute — that could never match the real definition
-        (#2324). Instead emit a SOURCELESS stub, mirroring the Go extractor's
-        cross-file pattern (#1402): `_rewire_unique_stub_nodes` collapses it
+        input path was absolute — that could never match the real definition.
+        Instead emit a SOURCELESS stub, mirroring the Go extractor's
+        cross-file pattern: `_rewire_unique_stub_nodes` collapses it
         onto the unique real table definition, and an unresolvable name survives
         as a portable name-only node instead of dangling. No contains edge: a
         sourced/contained stub would get the referencing file's path baked into
@@ -632,7 +632,7 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
                 src_nid = table_nids.get(_norm_ident(name))
                 if not src_nid:
                     # Subject table not defined in this file: sourceless stub,
-                    # not a sourced wrong-stem node (#2324).
+                    # not a sourced wrong-stem node.
                     src_nid = _ref_stub(name)
                     table_nids[_norm_ident(name)] = src_nid
                 for child in node.children:
@@ -699,9 +699,9 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
 
         elif t == "create_index":
             # CREATE [UNIQUE] INDEX [CONCURRENTLY] [IF NOT EXISTS] <name>
-            # ON <table> (...). Unlike CREATE POLICY (#3401) the grammar
+            # ON <table> (...). Unlike CREATE POLICY the grammar
             # parses this statement fine; the walk simply never dispatched on
-            # it, so every index was silently dropped (#3467). The name is the
+            # it, so every index was silently dropped. The name is the
             # identifier (or a quoted literal) before ON; the table is the
             # object_reference after it. An unnamed index (`CREATE INDEX ON
             # t (c)`) has nothing to name a node after and is skipped.
@@ -757,7 +757,7 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
                     "select", "where", "set", "dual", "null", "true", "false",
                     "first", "skip", "rows", "next", "only", "lateral",
                 }
-                # Same CTE-blindness as the AST path (#2577): a `WITH <name> AS (`
+                # Same CTE-blindness as the AST path: a `WITH <name> AS (`
                 # binding is statement-local, not a table, so its name must not
                 # become a reads_from stub. The regex has no scope tree, so the
                 # skip is body-wide — the right trade for a recovery path.
@@ -791,7 +791,7 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
         `reads_from` target minted a bare `_ref_stub`, and because that stub is
         intentionally sourceless (see `_ref_stub`) it carried no schema, file, or
         language namespace, so a CTE named `levels` or `slug` collided with any
-        same-named node from another language during the build (#2577).
+        same-named node from another language during the build.
 
         Scoping matters: a CTE is visible only inside the query that declares it,
         and a `WITH` inside a subquery is scoped to that subquery alone. So the
@@ -844,7 +844,7 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
 
     _collect_defined_names(root)
 
-    # A CREATE TABLE the grammar failed on (#4613) never reaches the pre-pass
+    # A CREATE TABLE the grammar failed on never reaches the pre-pass
     # — its statement sits inside an ERROR node — so references to it would
     # mint sourceless stubs and the REFERENCES fallback below would skip it.
     # When the parse failed, pre-register the recovered table names from the
@@ -880,12 +880,12 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
                 walk(child)
         elif stmt.type == "transaction":
             # BEGIN; ... COMMIT; wraps DDL in a transaction node whose children
-            # are statement nodes, not direct create_table nodes (#2953).
+            # are statement nodes, not direct create_table nodes.
             walk(stmt)
         elif stmt.type == "block":
             # A bare `BEGIN;` followed by a `DO $$ ... END $$;` parses as a
             # block that closes on the DO body's END, so the DDL before it sits
-            # under a block node instead of a transaction (#3886).
+            # under a block node instead of a transaction.
             walk(stmt)
         elif stmt.type in ("fb_proc_or_trigger", "set_term", "declare_external_function", "ERROR"):
             walk(stmt)
@@ -910,7 +910,7 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
                 _add_edge(tbl_nid, ref_nid, "references", tbl_line)
                 emitted.add((tbl_nid, ref_nid))
 
-    # Global regex fallback for routines (#2180). PL/pgSQL bodies break the parse
+    # Global regex fallback for routines. PL/pgSQL bodies break the parse
     # in more than one shape, and only the first was recovered before:
     #   1. the whole CREATE lands in one ERROR node          -> handled in walk()
     #   2. the statement is shredded into loose top-level tokens
@@ -929,7 +929,7 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
     # capture `IF`) or other shapes the mask does not model (double-quoted
     # strings in MySQL's default mode, PostgreSQL dollar-quoted bodies). Every
     # observed drop shape leaves an ERROR node in the tree, so has_error loses
-    # nothing while protecting clean corpora (#2180 follow-up).
+    # nothing while protecting clean corpora.
     if root.has_error:
         # The mask blanks comments (nesting-aware) and single-quoted strings
         # (offset-preserving), so commented-out DDL and single-quoted dynamic
@@ -978,7 +978,7 @@ def extract_sql(path: Path, content: str | bytes | None = None) -> dict:
             tbl_nid = table_nids.get(_norm_ident(tbl_name)) or _ref_stub(tbl_name)
             _add_edge(trig_nid, tbl_nid, "triggers", trig_line)
 
-        # Tables the grammar dropped into an ERROR node (#4613), pre-registered
+        # Tables the grammar dropped into an ERROR node, pre-registered
         # above so references already resolved to this id. _add_node dedupes,
         # so a table that parsed cleanly keeps its walk-emitted node.
         for m in _TABLE_RECOVERY_RX.finditer(masked_src):

@@ -1,4 +1,4 @@
-"""Hyperedges must survive the dual-slot persistence round-trip (#2485).
+"""Hyperedges must survive the dual-slot persistence round-trip.
 
 to_json writes hyperedges to BOTH a top-level ``hyperedges`` key and the
 nested ``graph.hyperedges`` (node_link_data graph attrs), but build_from_json

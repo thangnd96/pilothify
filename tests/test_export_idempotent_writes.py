@@ -1,4 +1,4 @@
-"""Exporters must not rewrite a page whose content did not change (#3060).
+"""Exporters must not rewrite a page whose content did not change.
 
 An export re-runs on every graph.json change, and the wiki/Obsidian writers used
 to regenerate and rewrite the entire page set unconditionally — tens of thousands

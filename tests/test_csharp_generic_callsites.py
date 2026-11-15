@@ -1,4 +1,4 @@
-"""Unqualified generic C# calls keep their calls edge (#3406).
+"""Unqualified generic C# calls keep their calls edge.
 
 `Get<int>("port")` parses with a `generic_name` function node; the invocation
 handler had arms for `member_access_expression` and `identifier` only, so the

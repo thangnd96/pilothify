@@ -1,4 +1,4 @@
-"""Direction-aware skill-version mismatch warning (#1568).
+"""Direction-aware skill-version mismatch warning.
 
 `_check_skill_version` used to advise `pilothify install` on ANY version
 mismatch. But `install` writes the package's OWN bundled skill and re-stamps

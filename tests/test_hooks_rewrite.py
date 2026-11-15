@@ -1,4 +1,4 @@
-"""Hooks must rebuild once after every git operation that changes the tree (#4490).
+"""Hooks must rebuild once after every git operation that changes the tree.
 
 Each test counts the background-rebuild launch line in git's output (hooks
 write to stderr). git leaves CHERRY_PICK_HEAD, sequencer/ and rebase-merge/ on

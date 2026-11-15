@@ -1,14 +1,13 @@
 """Single source of truth for the pilothify output-directory name.
 
 The output directory is ``pilothify-out`` by default and overridable with the
-``PILOTHIFY_OUT`` env var (worktrees or shared-output setups, #686). It accepts a
+``PILOTHIFY_OUT`` env var (worktrees or shared-output setups). It accepts a
 relative name (``"pilothify-out-feature"``) or an absolute path
 (``"/shared/pilothify-out"``).
 
 This used to be duplicated as an identical ``_PILOTHIFY_OUT`` constant in
 ``__main__``, ``cache``, and ``watch``, while ``security`` and ``callflow_html``
-hardcoded the literal ``"pilothify-out"`` and silently ignored the override
-(#1423). Centralising it here keeps the name in one place. The value is read
+hardcoded the literal ``"pilothify-out"`` and silently ignored the override. Centralising it here keeps the name in one place. The value is read
 once at import time, matching the previous per-module constants — set
 ``PILOTHIFY_OUT`` before the process starts (the normal worktree/shared-output
 flow) and every reader honours it.
@@ -61,7 +60,7 @@ def os_long_path(path: "str | Path") -> str:
     (which also requires a fully-qualified path). Without it, _md5_file /
     save_manifest / count_words silently fail to hash deeply-nested files, so
     their manifest entry never stabilizes and detect_incremental re-flags them
-    as changed on every run (#1655), and cache entries under a deep root cannot
+    as changed on every run, and cache entries under a deep root cannot
     be written at all. cache._normalize_path strips this prefix for stable
     KEYS; this adds it for I/O. Non-win32 and already-prefixed paths pass
     through unchanged.
@@ -83,7 +82,7 @@ def os_long_path(path: "str | Path") -> str:
 
 def os_replace_with_fallback(src: "str | Path", dst: "str | Path") -> None:
     """``os.replace(src, dst)``, falling back to a copy for a known set of
-    Windows quirks (#3508) that raise even when ``src``/``dst`` are the same
+    Windows quirks that raise even when ``src``/``dst`` are the same
     directory on the same drive: ``PermissionError`` (WinError 5/32 --
     destination briefly locked by another handle, antivirus, an open reader)
     and WinError 17 ("cannot move to a different disk drive", observed on some
@@ -94,7 +93,7 @@ def os_replace_with_fallback(src: "str | Path", dst: "str | Path") -> None:
 
     ``os.replace`` atomically swaps whatever sits at ``dst`` -- including a
     symlink, which it REPLACES in place rather than following (some callers,
-    e.g. install.py's managed skill symlinks, #3286, rely on exactly this).
+    e.g. install.py's managed skill symlinks, rely on exactly this).
     A naive ``shutil.copy2(src, dst)`` does the opposite when ``dst`` is a
     symlink: opening it for writing follows the link and overwrites its
     TARGET's content instead. So the fallback copies to a fresh temp file in
@@ -225,7 +224,7 @@ def write_text_atomic_if_changed(path: "str | Path", text: str) -> bool:
     Exporters regenerate their whole page set on every ``graph.json`` change and
     used to rewrite every file unconditionally — tens of thousands of identical
     pages per run, which also fires inotify / re-index / sync on unchanged
-    content (#3060). Skipping the atomic replace when nothing changed avoids the
+    content. Skipping the atomic replace when nothing changed avoids the
     rename entirely, so mtime and inode are preserved.
 
     The comparison is on DECODED text, never bytes: :func:`write_text_atomic`
@@ -248,7 +247,7 @@ def write_json_atomic(
     temp file rather than materializing the whole string first (matters for very
     large graphs). ``ensure_ascii`` mirrors ``json.dump`` so callers that emit raw
     UTF-8 (non-ASCII labels/paths) keep byte-for-byte output. ``compact`` writes one
-    line with no padding after ``,``/``:`` (graph.json, #3413). See :func:`_atomic_replace`."""
+    line with no padding after ``,``/``:`` (graph.json). See :func:`_atomic_replace`."""
     separators = (",", ":") if compact else None
     _atomic_replace(
         path, lambda f: json.dump(obj, f, indent=indent, ensure_ascii=ensure_ascii, separators=separators)
@@ -399,7 +398,7 @@ def disambiguate_ambiguous_candidates(
 ) -> str | None:
     """Resolve an ambiguous bare-name call to one candidate, or ``None``.
 
-    Shared god-node tie-breaker (#1553) used by both the inline cross-file call
+    Shared god-node tie-breaker used by both the inline cross-file call
     pass in ``extract.py`` and ``symbol_resolution.resolve_cross_file_raw_calls``
     so the heuristics stay aligned across languages. ``candidates`` is the list
     of node ids sharing the callee's name; ``candidate_files`` maps each id ->
@@ -470,7 +469,7 @@ def default_graph_json() -> str:
 
     The package-wide fallback used by serve/build/benchmark/prs and the CLI read
     commands so a ``PILOTHIFY_OUT`` override is honoured everywhere, not just where
-    the path is passed explicitly (#1423).
+    the path is passed explicitly.
     """
     return str(out_path("graph.json"))
 
@@ -486,9 +485,9 @@ def is_absolute_any_platform(p: "str | Path | None") -> bool:
 
     - On Windows, ``WindowsPath("/home/ci/repo/docs/a.md").is_absolute()`` is
       False — no drive letter — so a Linux-built graph's absolute paths read as
-      relative and get baked into node IDs or joined under the scan root (#2618).
+      relative and get baked into node IDs or joined under the scan root.
     - On POSIX, ``PosixPath("C:/Users/u/a.md").is_absolute()`` is False for the
-      mirror-image reason (#2197, #1789).
+      mirror-image reason.
 
     ``os.path.isabs`` is additionally not stable across supported interpreters:
     Python 3.13 changed ``ntpath.isabs`` so a path starting with a single slash
@@ -565,7 +564,7 @@ def nfc(s: str) -> str:
     macOS (HFS+/APFS) reports filenames in NFD while manifests, graph
     ``source_file`` entries and user input are typically NFC. Comparing raw
     strings makes the same file look like two different paths, so any path
-    membership test must normalize BOTH sides (#2210, #2221/#2224).
+    membership test must normalize BOTH sides.
     """
     import unicodedata
     return unicodedata.normalize("NFC", s)
@@ -604,10 +603,10 @@ def restore_arc_direction(data: dict) -> dict:
     """Stamp each link's stored direction as ``_src``/``_tgt`` before loading.
 
     graph.json is written ``directed: false`` but carries true direction in arc
-    order (#563), or in ``_src``/``_tgt`` markers on legacy canonicalized files.
+    order, or in ``_src``/``_tgt`` markers on legacy canonicalized files.
     An undirected ``node_link_graph`` load re-orders endpoints by node-list
     position, so readers recover direction from these markers. Existing markers
-    win (#2309). Same idiom as the query and merge-graphs loaders (#2261).
+    win. Same idiom as the query and merge-graphs loaders.
     """
     links = data.get("links")
     if not isinstance(links, list):
@@ -625,7 +624,7 @@ def load_node_link_graph(path_or_data):
     The clustered writer stores edges under ``links`` (networkx's node-link
     default); the raw ``--no-cluster`` writer stores them under ``edges``.
     Consumers that call ``node_link_graph(data, edges="links")`` directly
-    raise ``KeyError: 'links'`` on a raw graph (#2212) — the ``except
+    raise ``KeyError: 'links'`` on a raw graph — the ``except
     TypeError`` fallback only covers old networkx without the ``edges``
     kwarg, not the missing key. Normalize before parsing, same idiom as
     affected.py/serve.py.

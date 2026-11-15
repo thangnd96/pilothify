@@ -60,12 +60,12 @@ def _read_graph(graph_path: str) -> nx.Graph:
         data = dict(data, links=data["edges"])
     # Stash the on-disk logical flag before the load-time override below:
     # `directed: True` exists only so renderers can recover stored arc
-    # order (#2309); tools that care about logical direction (#2487) must
+    # order; tools that care about logical direction must
     # not mistake the override for graph truth.
     _logical_directed = bool(data.get("directed", False))
     data = {**data, "directed": True}
     # Repair files whose links hold parallel edges while the serialized flag says
-    # otherwise (#4500): older writers restored original_links verbatim while
+    # otherwise: older writers restored original_links verbatim while
     # node_link_data derived "multigraph": false from the simple graph. Forced the
     # same way "directed" is forced above, so the load keeps every relationship
     # instead of collapsing parallel edges.
@@ -76,7 +76,7 @@ def _read_graph(graph_path: str) -> nx.Graph:
         from pilothify.build import legacy_id_source_prefix as _legacy_prefix
         if _legacy(data.get("nodes", []), source_prefix=_legacy_prefix(safe)):
             print(
-                "[pilothify] note: this graph uses the pre-#1504 node-ID scheme; "
+                "[pilothify] note: this graph uses the older node-ID scheme; "
                 "rebuild with `pilothify extract --force` for path-qualified IDs.",
                 file=sys.stderr,
             )
@@ -87,7 +87,7 @@ def _read_graph(graph_path: str) -> nx.Graph:
     )
     G.graph["_logical_directed"] = _logical_directed
     # node_link_graph drops top-level keys other than data["graph"], so the
-    # build commit export.to_json writes there is stashed by hand (#3354).
+    # build commit export.to_json writes there is stashed by hand.
     _commit = data.get("built_at_commit")
     if isinstance(_commit, str) and _commit.strip():
         G.graph["_built_at_commit"] = _commit.strip()
@@ -267,10 +267,10 @@ def _is_searchable(term: str) -> bool:
 # because "how does X work" / "how X works" is the most common question phrasing.
 # `get` is likewise a filler verb in questions ("how does X get authorized")
 # that, unfiltered, exact-matches framework hubs such as a NestJS `Get` decorator
-# import with the exact-match bonus (#4684); #1602 guards short low-degree leaves,
+# import with the exact-match bonus; #1602 guards short low-degree leaves,
 # not hubs.
 #
-# Non-English question words are just as damaging (#1900): in a mostly-English
+# Non-English question words are just as damaging: in a mostly-English
 # code corpus, German "wie"/"funktioniert" are rare, so they get HIGH IDF weight
 # and out-seed the actual content noun by orders of magnitude. So this also
 # carries a curated German set plus a trimmed French/Spanish/Portuguese/Italian
@@ -419,7 +419,7 @@ _SUBSTRING_MATCH_BONUS = 1.0
 _SOURCE_MATCH_BONUS = 0.5
 # The extraction spec stores the WHY of a concept as a `rationale` attribute
 # on the node, not as a node of its own, so for a "why does X …" question that
-# prose is often the only place the question's words occur (#2293). Score it
+# prose is often the only place the question's words occur. Score it
 # as its own tier: below a label substring hit (the label still names the
 # thing), above a source-path hit, and — like the source tier — never counted
 # toward term coverage, so a long rationale adds recall without winning back
@@ -432,7 +432,7 @@ _ATTRIBUTE_MATCH_BONUS = 0.75
 # `fmt.Println`. The full-query tier below only fires on equal/prefix, so the
 # qualifier alone defeats it and the per-token tiers take over — where an
 # unrelated node whose *whole* label is one of the query's tokens outranks the
-# intended one (#5080). Keep the bonus below the exact tier (the query is not
+# intended one. Keep the bonus below the exact tier (the query is not
 # the label) but well above the per-token exact tier it has to beat, and scale
 # it by how small the qualifier is so `public.f()` (one token) is trusted more
 # than `a.b.c.d.f()`.
@@ -588,7 +588,7 @@ def _node_search_text(data: dict, nid: str) -> str:
     one trigram index over this text is a complete candidate generator for both.
 
     - `rationale` (normalized via `_node_rationale_text`) feeds _score_nodes'
-      rationale tier (#2293); appended last, and only when present, so every
+      rationale tier; appended last, and only when present, so every
       other field position is unchanged.
 
     - `norm_label` and `source_file` feed _score_nodes' per-term substring tiers.
@@ -602,7 +602,7 @@ def _node_search_text(data: dict, nid: str) -> str:
     - a trailing diacritic-folded `nid` feeds _find_node's `norm_query == nid_norm`
       tier. Every query path folds through `_strip_diacritics` (NFKD), so a raw-only
       id field leaves the needle and the posting under different normal forms and
-      the node is dropped before any predicate runs (#2467). Hangul is the common
+      the node is dropped before any predicate runs. Hangul is the common
       case: NFKD decomposes a syllable into conjoining jamo, which have combining
       class 0 and therefore survive the combining-character filter. The field is
       appended only when the fold actually differs, so the text an all-ASCII graph
@@ -808,7 +808,7 @@ def _score_query(
     scored: list[tuple[float, str]] = []
     # Dedupe tokens, order-preserving (as _pick_seeds already does): a repeated
     # query word must not double-count every tier, and with coverage scaling
-    # below it would also inflate the matched-term ratio (#1602).
+    # below it would also inflate the matched-term ratio.
     norm_terms = list(dict.fromkeys(tok for t in terms for tok in _search_tokens(t)))
     n_terms = len(norm_terms)
     idf = _compute_idf(G, norm_terms)
@@ -878,13 +878,13 @@ def _score_query(
                 # CamelCase variant) and the query names the rest. Ranking
                 # below the exact tier — the label is not what was typed — but
                 # above what the per-token tiers can add up to for a node whose
-                # whole label is one query token (#5080).
+                # whole label is one query token.
                 qualified = _qualified_tail(norm_label)
                 if qualified is not None and qualified[0] <= _QUALIFIED_MAX_TOKENS:
                     qualifier_tokens, tail_key = qualified
                     if tail_key and tail_key == joined:
                         score += _QUALIFIED_MATCH_BONUS * joined_w / qualifier_tokens
-        # Term coverage (#1602): scale the per-term exact/prefix tiers by the
+        # Term coverage: scale the per-term exact/prefix tiers by the
         # squared fraction of query terms the node's LABEL matches, so a lone
         # generic word that happens to equal a short label (query term "home"
         # vs. a home() leaf) cannot bury nodes that match several of the
@@ -922,13 +922,13 @@ def _score_query(
             if t in source:
                 source_value = _SOURCE_MATCH_BONUS * w
                 score += source_value
-            # Rationale tier (#2293): recall for "why" questions whose words
+            # Rationale tier: recall for "why" questions whose words
             # live only in the attribute. Adds to the score, not to `matched`.
             rationale_value = 0.0
             if rationale and t in rationale:
                 rationale_value = _RATIONALE_MATCH_BONUS * w
                 score += rationale_value
-            # Attribute tier (#3625): recall for questions naming attributes or literal values.
+            # Attribute tier: recall for questions naming attributes or literal values.
             attr_value = 0.0
             if attr_norm and (t in attr_norm or t in attr_tokens):
                 attr_value = _ATTRIBUTE_MATCH_BONUS * w
@@ -1071,9 +1071,9 @@ def _pick_seeds(
     traversal that produced `scored`) so this function no longer rescores the
     graph per term — see #1445 and the `_score_query` docstring. The #1766
     label cap yields to this guarantee only when the term is absent from the
-    shared label, since a seeded same-label node then can't cover it (#5027).
+    shared label, since a seeded same-label node then can't cover it.
 
-    Coverage scaling in _score_nodes (#1602) now dampens a lone collision's
+    Coverage scaling in _score_nodes now dampens a lone collision's
     exact tier on multi-term queries, which brings label-matching relevant
     nodes back inside the gap window; this per-term guarantee remains
     load-bearing for relevant nodes matched only via substrings, whose flat
@@ -1086,7 +1086,7 @@ def _pick_seeds(
     # e.g. dozens of route handlers all labelled `GET`/`POST`, or a `handler`
     # repeated across a framework — contributes at most one seed instead of
     # consuming every slot and flooding the BFS with near-identical neighborhoods
-    # (#1766). The key mirrors _score_nodes' normalization so `GET`/`Get`/`get`
+    #. The key mirrors _score_nodes' normalization so `GET`/`Get`/`get`
     # collapse together. When G is absent we can't read labels, so fall back to
     # the (unique) node id, which is a no-op — preserving the old behavior.
     def _seed_label_key(nid: str) -> str:
@@ -1113,7 +1113,7 @@ def _pick_seeds(
     if G is not None and best_seed_by_term:
         # Guarantee one seed per distinct query term that has any match at all,
         # so an incidental exact match on one term cannot starve matches on
-        # other terms (#1445). Iterate tokens in a deterministic sorted order
+        # other terms. Iterate tokens in a deterministic sorted order
         # so seeds added by this loop have a stable order independent of dict
         # iteration — preserving the legacy `_pick_seeds(terms=...)` behavior
         # which iterated `sorted({tok ...})`. Per-token winners arrive
@@ -1121,7 +1121,7 @@ def _pick_seeds(
         # traversal, so `_pick_seeds` no longer rescoring the graph per term.
         # The per-label dedup cap also gates these additions, so the guarantee
         # cannot reintroduce a second copy of an already-seeded generic label
-        # (#1766), unless the term is not in that label (#5027, see below).
+        # unless the term is not in that label (see below).
         # With `term_order` (from `_score_query`), the guaranteed seeds follow the strength of each term's best
         # match, strongest first, so the seeds the renderer prints first are the strongest; without it, the
         # legacy sorted-term order.
@@ -1135,7 +1135,7 @@ def _pick_seeds(
             # seeded twin matches `term` through that same label. Otherwise
             # this node won `term` via its path/rationale/attributes, the
             # twin may not match it at all, and dropping it would leave the
-            # term with no seed (#5027).
+            # term with no seed.
             key = _seed_label_key(best_nid)
             if best_nid not in seeds and (key not in seen_labels or term not in key):
                 seen_labels.add(key)
@@ -1148,7 +1148,7 @@ def _pick_seeds(
 # on purpose (a corpus can legitimately define an identifier named `calls`, see
 # #1597), but they must not be handed a guaranteed seed slot in `_pick_seeds`:
 # an incidental prefix match (e.g. "calls" prefixing `.callStoreWithAmount()`)
-# would otherwise seat an unrelated decoy as a BFS root (#2507). Demotion
+# would otherwise seat an unrelated decoy as a BFS root. Demotion
 # happens at the `_query_graph_text` call site, so `_score_query`'s ranking —
 # where such a verb can still win a seat on merit via the gap window — is
 # untouched. Deliberately verbs only; relation NOUNS (module, field, return)
@@ -1270,7 +1270,7 @@ def _filter_graph_by_context(G: nx.Graph, context_filters: list[str] | None) -> 
 
 
 def _complete_induced_edges(G: nx.Graph, visited: set[str], edges_seen: list[tuple]) -> None:
-    """Append edges between visited nodes that the traversal never recorded (#2323).
+    """Append edges between visited nodes that the traversal never recorded.
 
     Both traversals only record an edge that *discovers* an unvisited neighbour,
     so what they return is a traversal tree, not the induced subgraph over the
@@ -1297,8 +1297,7 @@ def _complete_induced_edges(G: nx.Graph, visited: set[str], edges_seen: list[tup
     otherwise: on a DiGraph `u->v` and `v->u` are genuinely distinct edges
     (mutual recursion, circular imports), and collapsing them would drop a real
     one. On a multigraph the traversal still records one entry per pair; the
-    renderer expands it into one line per parallel edge (`_subgraph_to_text`,
-    #4500).
+    renderer expands it into one line per parallel edge (`_subgraph_to_text`).
 
     Traversal edges keep their discovery order; completions are appended after.
     """
@@ -1309,7 +1308,7 @@ def _complete_induced_edges(G: nx.Graph, visited: set[str], edges_seen: list[tup
 
     seen = {_key(u, v) for u, v in edges_seen}
     # sorted() so the appended order can't shift run-to-run with CPython's
-    # per-process string-hash seed, the same reason the renderer sorts (#1753).
+    # per-process string-hash seed, the same reason the renderer sorts.
     for u, v in G.edges(sorted(visited)):
         if u == v or v not in visited:
             continue
@@ -1503,7 +1502,7 @@ def _subgraph_to_text(G: nx.Graph, nodes: set[str], edges: list[tuple], token_bu
         if u in nodes and v in nodes:
             # One EDGE line per relationship: on a multigraph a pair can
             # carry several edges (e.g. contains + calls), each with its
-            # own metadata (#4500). The traversal records one entry per
+            # own metadata. The traversal records one entry per
             # pair; expanding here keeps every relationship visible.
             for d in edge_datas(G, u, v):
                 # (u, v) is BFS/DFS visit order, not necessarily the true edge
@@ -1517,7 +1516,7 @@ def _subgraph_to_text(G: nx.Graph, nodes: set[str], edges: list[tuple], token_bu
                 # Guard against a stray/dangling _src/_tgt (hand-edited or adversarial
                 # graph.json): only trust them when they name exactly this edge's
                 # endpoints, else fall back to (u, v). Without this, G.nodes[src]
-                # would KeyError on an unknown id (#2080 review).
+                # would KeyError on an unknown id (review).
                 if {src, tgt} != {u, v}:
                     src, tgt = u, v
                 context = d.get("context")
@@ -1556,11 +1555,11 @@ def _subgraph_to_text(G: nx.Graph, nodes: set[str], edges: list[tuple], token_bu
         # lost. Announcing "showing N of N nodes … among the 0 cut nodes" then
         # reads as a false truncation warning that teaches an agent to distrust a
         # complete answer and burn follow-up narrowing calls for nodes that were
-        # never cut (#2601). When every node is shown the answer is complete, so
+        # never cut. When every node is shown the answer is complete, so
         # edges are never dropped either (returning output[:cut_at] here would
         # silently truncate them) — but that completeness guarantee is exactly
         # why a query can quietly cost 4-6x its requested budget once the last
-        # node crosses the fit line (#2784): the check above only ever compared
+        # node crosses the fit line: the check above only ever compared
         # the FULL output (nodes+edges) against char_budget, so this branch was
         # already known to be over budget, yet said nothing about it. Report the
         # real size instead of silence — still the complete, non-truncated
@@ -1635,7 +1634,7 @@ def _display_graph_path(graph_path: str) -> str:
     Relative to the CWD when it sits underneath it — `pilothify-out/graph.json`,
     which is the ordinary case and stays short. Absolute otherwise, because a
     graph outside the directory you are standing in is precisely the situation
-    the header exists to make visible (#2789). Always POSIX separators so the
+    the header exists to make visible. Always POSIX separators so the
     line reads the same on either platform. Falls back to the path as given if
     it cannot be resolved; this is a display helper and must never be the reason
     a query fails.
@@ -1654,7 +1653,7 @@ def _traversal_view(G: nx.Graph) -> nx.Graph:
     """Undirected copy of `G` for BFS/DFS, with true direction kept per edge.
 
     `_load_graph` forces `directed: True` so renderers can recover stored arc
-    order (#2309), and on a DiGraph `G.neighbors()` yields successors only. The
+    order, and on a DiGraph `G.neighbors()` yields successors only. The
     query traversals rely on `neighbors()`, so a seed with no outgoing edges — a
     leaf function that is only ever called, imported and contained — expanded
     to nothing: `query_graph` over MCP answered with the seed alone while the
@@ -1666,7 +1665,7 @@ def _traversal_view(G: nx.Graph) -> nx.Graph:
     Mirrors the CLI loader: traverse undirected, stash `_src`/`_tgt` on each
     edge so `_subgraph_to_text` still renders caller->callee regardless of the
     side the traversal reached the edge from. Markers already present on an
-    edge win, for the same reason as in the CLI (#2309). An undirected input is
+    edge win, for the same reason as in the CLI. An undirected input is
     returned as-is, so the CLI path is unchanged.
 
     Mutual arcs `u->v` and `v->u` (mutual recursion, a circular import) fold
@@ -1743,6 +1742,30 @@ def _apply_learning_boost(G: nx.Graph, ranked: list[tuple[float, str]],
         boosted.append((score, nid))
     boosted.sort(key=lambda s: (-s[0], len(G.nodes[s[1]].get("label") or s[1]), s[1]))
     return boosted
+
+
+def _rationale_owner(G: nx.Graph, nid: str) -> str | None:
+    """The function, class or file a docstring node documents."""
+    for nb in (G.successors(nid) if G.is_directed() else G.neighbors(nid)):
+        if G.edges[nid, nb].get("relation") == "rationale_for":
+            return nb
+    return None
+
+
+def _rank_owners_for_docstrings(G: nx.Graph, ranked: list[tuple[float, str]]) -> list[tuple[float, str]]:
+    """A docstring matches a question's prose better than the name it documents,
+    but the answer is the code. Score the owner with its docstring's score (the
+    better of the two when both matched), so the function seeds the traversal
+    and its docstring stays one hop away."""
+    best: dict[str, float] = {}
+    for score, nid in ranked:
+        if G.nodes[nid].get("file_type") == "rationale":
+            nid = _rationale_owner(G, nid) or nid
+        if score > best.get(nid, 0.0):
+            best[nid] = score
+    out = [(score, nid) for nid, score in best.items()]
+    out.sort(key=lambda s: (-s[0], len(G.nodes[s[1]].get("label") or s[1]), s[1]))
+    return out
 
 
 def _recall_saved_answer(G: nx.Graph, question: str,
@@ -1836,7 +1859,7 @@ def _query_graph_text(
             elif nid not in start_nodes:
                 start_nodes.append(nid)
         if not start_nodes:
-            # An ambiguous --seed is a refusal, not a miss (#4511). Exit code
+            # An ambiguous --seed is a refusal, not a miss. Exit code
             # is decided by the CLI from the message prefix.
             if ambiguous_refusals:
                 return "\n".join(ambiguous_refusals)
@@ -1844,9 +1867,9 @@ def _query_graph_text(
         return _render_query(G, question, start_nodes, mode=mode, depth=depth, token_budget=token_budget,
                              context_filters=context_filters, graph_path=graph_path, given=True, unresolved=unresolved)
     # A question that is itself the exact name of several nodes is refused,
-    # matching `explain` and `path` (#4511). A sentence, or a bare keyword that
+    # matching `explain` and `path`. A sentence, or a bare keyword that
     # only prefix/substring-matches labels, is not an ambiguous node name and
-    # falls through to keyword scoring (#4517).
+    # falls through to keyword scoring.
     _refusal = _query_name_refusal(G, question)
     if _refusal:
         return _refusal
@@ -1871,7 +1894,7 @@ def _query_graph_text(
     # Relational-intent verbs ("calls", "uses", ...) describe the relation the
     # question asks about, not a symbol to seed from; drop them from the
     # per-term seed GUARANTEE so an incidental verb match cannot seat a decoy
-    # BFS root (#2507). They keep their place in `qs.ranked`, so a genuine
+    # BFS root. They keep their place in `qs.ranked`, so a genuine
     # identifier named after a verb can still win a seat on merit via the gap
     # window — and when the query consists ONLY of intent words (bare "calls"),
     # the guarantee is left intact so such an identifier stays reachable.
@@ -1881,7 +1904,11 @@ def _query_graph_text(
         best_seed_by_term = {
             t: nid for t, nid in best_seed_by_term.items() if t not in intent
         }
-    ranked = _apply_learning_boost(G, qs.ranked, _learning_overlay_for(G, graph_path))
+    ranked = _rank_owners_for_docstrings(G, qs.ranked)
+    best_seed_by_term = {t: (_rationale_owner(G, nid) or nid)
+                         if G.nodes[nid].get("file_type") == "rationale" else nid
+                         for t, nid in best_seed_by_term.items()}
+    ranked = _apply_learning_boost(G, ranked, _learning_overlay_for(G, graph_path))
     start_nodes = _pick_seeds(ranked, G=G, best_seed_by_term=best_seed_by_term, term_order=qs.term_order)
     # A recalled answer's nodes lead: they answered this question before.
     recalled, recalled_from = _recall_saved_answer(G, question, graph_path)
@@ -1924,7 +1951,7 @@ def _render_query(
     # CWD, so running a query from a parent project while thinking about a
     # vendored subproject silently answers from the wrong corpus — the output is
     # well-formed and confidently wrong, and nothing in it said which graph was
-    # opened (#2789). Shown relative when the graph is under the CWD (the normal
+    # opened. Shown relative when the graph is under the CWD (the normal
     # case, and short), absolute when it is not — which is exactly the case worth
     # noticing. The node count travels with it because "355 nodes" vs "3178
     # nodes" is often the first thing that looks wrong.
@@ -1944,7 +1971,7 @@ def _render_query(
 def _resolve_path_scoped_symbol(G: nx.Graph, path_part: str, symbol_part: str) -> list[str]:
     """Nodes whose source_file matches path_part and label/id matches symbol_part.
 
-    Backs the `path::Symbol` query form (#3485): a bare path resolves to the
+    Backs the `path::Symbol` query form: a bare path resolves to the
     FILE node (`_find_node_tiers`'s own `source_exact` tier, which prefers
     the file over its members once #2032-disambiguated), and a bare symbol
     name can be ambiguous across files -- the same-named local declaration
@@ -2019,12 +2046,12 @@ def _label_has_literal_exact_match(G: nx.Graph, term: str, norm_query: str) -> b
     return False
 
 
-# `pkg.mod.func`, `pkg.mod.func()` or `pkg.mod:func` (#4366).
+# `pkg.mod.func`, `pkg.mod.func()` or `pkg.mod:func`.
 _PY_QUALIFIED_RE = re.compile(r"^([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)[.:]([A-Za-z_]\w*)(?:\(\))?$")
 
 
 def _resolve_python_qualified(G: nx.Graph, label: str) -> list[str]:
-    """Nodes named by a dotted Python symbol such as `pkg.mod.func` (#4366)."""
+    """Nodes named by a dotted Python symbol such as `pkg.mod.func`."""
     qualified = _PY_QUALIFIED_RE.match(label.strip())
     if not qualified:
         return []
@@ -2040,7 +2067,7 @@ def _resolve_python_qualified(G: nx.Graph, label: str) -> list[str]:
 # `defines` for fields and C++ in-class declarations, `contains` for nested types.
 _TYPE_MEMBER_RELATIONS = frozenset({"method", "defines", "contains"})
 
-# `Type.Member`, `Outer.Inner.Member` or `Type.Member()` (#4884).
+# `Type.Member`, `Outer.Inner.Member` or `Type.Member()`.
 _QUALIFIED_MEMBER_RE = re.compile(r"^([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\.([A-Za-z_]\w*)(?:\(\))?$")
 
 
@@ -2144,7 +2171,7 @@ def _names_source_file(G: nx.Graph, label: str) -> bool:
 
 
 def _resolve_qualified_member(G: nx.Graph, label: str) -> list[str]:
-    """Member nodes named by `Type.Member` through their declaring type (#4884).
+    """Member nodes named by `Type.Member` through their declaring type.
 
     A file name such as `config.json` has the same shape, and names the file
     even when a `Config` type declares a `Json` member, so it resolves nothing.
@@ -2160,7 +2187,7 @@ def _resolve_qualified_member(G: nx.Graph, label: str) -> list[str]:
 
 
 def _no_member_match_message(G: nx.Graph, label: str) -> str | None:
-    """Refusal for a `Type.Member` endpoint whose type declares no such member (#4884).
+    """Refusal for a `Type.Member` endpoint whose type declares no such member.
 
     Scoring the query instead lands on the type itself, so a path to the type
     reads as a path to the member. Returns None when the query is a node's own
@@ -2210,13 +2237,13 @@ def _find_node_tiers(
     # stored `norm_label` keeps punctuation ("blockstream.ts"). Matching only via
     # `term`/`label_tokens` works when the node label tokenizes the same way, but is
     # fragile if `label` and `norm_label` diverge. `norm_query` matches `norm_label`
-    # symmetrically so an exactly-typed punctuated label always resolves (#1704).
+    # symmetrically so an exactly-typed punctuated label always resolves.
     # `nid_norm` below extends that symmetry to node ids, which keep their
-    # punctuation too and are compared raw against the tokenized `term` (#2467).
+    # punctuation too and are compared raw against the tokenized `term`.
     norm_query = _strip_diacritics(str(label)).lower().strip()
 
     # `path::Symbol` restricts the label match to nodes defined in that
-    # file (#3485) -- checked before the ordinary tiers below so a
+    # file -- checked before the ordinary tiers below so a
     # deliberately path-scoped query never falls back to guessing among
     # same-named symbols in other files. Returned as source_exact (the
     # tier `find_node_ambiguity` already treats as maximally specific) so
@@ -2239,7 +2266,7 @@ def _find_node_tiers(
     # form) names a module path plus a symbol. Tokenized as-is it matches no
     # label, so map it onto the `path::symbol` lookup above: `pkg/mod.py` (or
     # `pkg/mod/__init__.py`), suffix-matched so a `src/` layout still resolves
-    # (#4366). Nothing found falls through to the ordinary tiers.
+    #. Nothing found falls through to the ordinary tiers.
     if _PY_QUALIFIED_RE.match(label.strip()) and not _label_has_literal_exact_match(G, term, norm_query):
         scoped = _resolve_python_qualified(G, label)
         if scoped:
@@ -2286,7 +2313,7 @@ def _find_node_tiers(
         elif term in norm_label or term in label_tokens or norm_query in norm_label:
             substring.append(nid)
 
-    # `Type.Member` names a member through its declaring type (#4884). The
+    # `Type.Member` names a member through its declaring type. The
     # member's own label is `.Build()`, so no tier above matched it and scoring
     # picked the type. Tried only once no node's own id, label or source path
     # matched exactly, so those keep precedence. Returned as the exact tier, so
@@ -2298,7 +2325,7 @@ def _find_node_tiers(
             return [], members, [], []
 
     # The tiers fold case, so in a case-sensitive language `Run` and `run` (two
-    # symbols the extractor keeps apart, #2779) tie in `exact` and every lookup is
+    # symbols the extractor keeps apart) tie in `exact` and every lookup is
     # refused, even one spelled exactly like one of them. When the tie is only
     # case and exactly one label is written as queried, it wins; the others stay
     # reachable one tier down. Mutually exclusive with the `Type.Member` block
@@ -2365,7 +2392,7 @@ def find_node_ambiguity(G: nx.Graph, label: str) -> list[str]:
     when the winning tier is split that way, else `[]`. Several matches *within one file* (a file
     node plus its members) are ordinary precedence, not ambiguity, and return `[]`.
 
-    `_disambiguate_file_node_labels` (#2032) already relabels colliding *file*
+    `_disambiguate_file_node_labels` already relabels colliding *file*
     nodes; this covers the symbol case it does not reach.
     """
     for tier in _find_node_tiers(G, label):
@@ -2378,7 +2405,7 @@ def _rivals_across_files(G: nx.Graph, tier: list[str]) -> list[str]:
     """One node id per distinct file in *tier*, or `[]` for a single file.
 
     A file is its repo plus its source_file. A merged graph keeps source_file relative
-    to each repo, so two repos that both have `dup.py` hold two files, not one (#4512).
+    to each repo, so two repos that both have `dup.py` hold two files, not one.
     A single-repo graph has no `repo` attribute and groups by source_file alone.
     """
     by_file: dict[tuple[str, str], str] = {}
@@ -2390,7 +2417,7 @@ def _rivals_across_files(G: nx.Graph, tier: list[str]) -> list[str]:
 
 
 def _near_miss_message(G: nx.Graph, label: str, hits: list[str], *, limit: int = 5) -> str:
-    """`No exact match`, then the substring matches that are the closest names (#3917).
+    """`No exact match`, then the substring matches that are the closest names.
 
     A substring tier means the query sits *inside* a label (`mailcontroller` ->
     `EmailController`), so a hit is a search result, not the symbol the caller
@@ -2435,7 +2462,7 @@ def _resolve_single_node(G: nx.Graph, label: str) -> tuple[str | None, str | Non
     (`Email` -> `EmailController`). A substring match does not: the query sits
     in the middle of an unrelated label (`MailController` -> `EmailController`),
     which is a search hit, so it comes back as a near miss with suggestions
-    instead of a different node presented as the answer (#3917).
+    instead of a different node presented as the answer.
     """
     source_exact, exact, prefix, substring = _find_node_tiers(G, label)
     if not (source_exact or exact or prefix):
@@ -2510,7 +2537,7 @@ def _tier_refusal(G: nx.Graph, label: str, tier: list[str], *, file_query: bool)
     if rivals:
         return _ambiguity_message(G, label, rivals)
     # A dotted Python symbol's tier is symbols, not a file followed by its
-    # members, so a function and a same-named method in one module tie (#4366).
+    # members, so a function and a same-named method in one module tie.
     if file_query and len(tier) > 1 and tier == _resolve_python_qualified(G, label):
         file_query = False
     if len(tier) > 1 and not file_query:
@@ -2528,7 +2555,7 @@ def _is_ambiguity_refusal(message: str | None) -> bool:
 
 def _ambiguity_message(G: nx.Graph, label: str, rivals: list[str]) -> str:
     # Name the repo only when the candidates span several: that is when the bare path is
-    # not enough to tell them apart (#4512). One repo, or a graph with no `repo`, keeps
+    # not enough to tell them apart. One repo, or a graph with no `repo`, keeps
     # the plain path.
     several_repos = len({str(G.nodes[r].get("repo") or "") for r in rivals}) > 1
 
@@ -2572,7 +2599,7 @@ def _same_file_ambiguity_message(G: nx.Graph, label: str, hits: list[str]) -> st
 
 
 def _no_scoped_match_message(G: nx.Graph, path_part: str, symbol_part: str) -> str:
-    """Refusal for a `file::symbol` endpoint whose file defines no such symbol (#4264).
+    """Refusal for a `file::symbol` endpoint whose file defines no such symbol.
 
     Fail closed like `explain` instead of scoring the bare name across other
     files, and name the files that DO define the symbol so the user can retarget.
@@ -2604,7 +2631,7 @@ def _no_scoped_match_message(G: nx.Graph, path_part: str, symbol_part: str) -> s
 def _resolve_path_endpoint(
     G: nx.Graph, query: str
 ) -> tuple[str | None, list[tuple[float, str]], str | None]:
-    """Resolve one endpoint of the `path` CLI / `shortest_path` tool (#3913).
+    """Resolve one endpoint of the `path` CLI / `shortest_path` tool.
 
     A hit in `_find_node`'s exact tiers — the `path::symbol` form, a full node
     id, an exact label or source path — names the node outright, so it is used
@@ -2621,7 +2648,7 @@ def _resolve_path_endpoint(
     and `path::symbol` cannot separate them — only the node id can.
 
     A name made of words the graph doesn't know is a miss, not the top of a
-    weak ranking (#5079): `explain` already answers "No node matching" for it,
+    weak ranking: `explain` already answers "No node matching" for it,
     and routing from the closest-sounding label instead prints a path through
     a symbol nobody asked about.
 
@@ -2642,7 +2669,7 @@ def _resolve_path_endpoint(
         return hits[0], [], None
     # A deliberately file-scoped endpoint (`file::symbol`) that matched no symbol
     # in that file must NOT fall back to scoring the bare name across other files
-    # (#4264) — that reintroduces the cross-file guess the qualifier forbids. Fail
+    # — that reintroduces the cross-file guess the qualifier forbids. Fail
     # closed like `explain`. A native `::` label (Rust/C++) that matched resolves
     # via the exact tier above (hits non-empty) and never reaches here.
     path_part, sep, symbol_part = query.partition("::")
@@ -2650,7 +2677,7 @@ def _resolve_path_endpoint(
         return None, [], _no_scoped_match_message(G, path_part.strip(), symbol_part.strip())
     # Likewise a `Type.Member` endpoint whose type exists but declares no such
     # member: scoring it resolves to the type, and the route printed to the type
-    # reads as a route to the member (#4884).
+    # reads as a route to the member.
     no_member = _no_member_match_message(G, query)
     if no_member:
         return None, [], no_member
@@ -2669,7 +2696,7 @@ def _query_uses_known_words(G: nx.Graph, terms: list[str]) -> bool:
     Scoring ranks by token overlap, so a made-up name still finds candidates:
     `zzqqxx_no_such_symbol_9137` matches `no_such_symbol_helper()` on `no`,
     `symbol` and `helper`, and the route through that symbol prints as if it
-    were the one asked for (#5079). The scored fallback is only honest when
+    were the one asked for. The scored fallback is only honest when
     the query is at least partly in the graph's vocabulary, so each token has
     to occur somewhere — then the query shares a word with what it routes
     through (`Rejection judge` -> `Rejection Summary`, its tokens once said
@@ -2702,7 +2729,7 @@ def _query_uses_known_words(G: nx.Graph, terms: list[str]) -> bool:
 def _path_search_graph(G: nx.Graph, undirected: bool) -> nx.Graph:
     """The sorted, materialized graph `_shortest_path_text` searches.
 
-    Deterministic path (#2074): the hash-seeded undirected view picked an
+    Deterministic path: the hash-seeded undirected view picked an
     arbitrary route among equal-length paths, so the search runs on a graph
     built from sorted node and edge lists, which makes the chosen path
     canonical. Serve's shared G is left untouched (its degree feeds query-seed
@@ -2722,9 +2749,9 @@ def _path_search_graph(G: nx.Graph, undirected: bool) -> nx.Graph:
         H.add_nodes_from(sorted(G.nodes))
         H.add_edges_from(sorted((min(u, v), max(u, v)) for u, v in G.edges()))
     else:
-        # Directed by default (#2487). True direction is NOT raw arc
+        # Directed by default. True direction is NOT raw arc
         # order: legacy canonicalized files persist a flipped arc with
-        # _src/_tgt markers (#2309), so build the digraph from _src/_tgt
+        # _src/_tgt markers, so build the digraph from _src/_tgt
         # (falling back to the loaded arc) rather than to_directed().
         H = nx.DiGraph()
         H.add_nodes_from(sorted(G.nodes))
@@ -2736,7 +2763,7 @@ def _path_search_graph(G: nx.Graph, undirected: bool) -> nx.Graph:
         # symbol (via an `imports`/`calls`/`references` hop) can never
         # continue on to the file that defines it, and a file-to-file
         # dependency routed through a shared symbol finds no path at all
-        # even though both halves exist (#3878). Add the implied reverse hop
+        # even though both halves exist. Add the implied reverse hop
         # for traversal only — the printed segment still recovers the real
         # stored `contains` edge and its true direction from G below.
         H.add_edges_from(sorted(
@@ -2778,7 +2805,7 @@ def _path_weakest(hop_datas: list[list[dict]]):
 
 
 def _path_confidence_line(hop_datas: list[list[dict]]) -> str:
-    """Overall confidence of a path: its weakest hop (#4885).
+    """Overall confidence of a path: its weakest hop.
 
     A path is only as sure as its least certain hop (see `_path_weakest`). A hop
     with no recognised confidence tag ranks below AMBIGUOUS and makes the whole
@@ -2795,13 +2822,13 @@ def _path_confidence_line(hop_datas: list[list[dict]]) -> str:
 
 
 # Enough equal-length routes to find the weakest among them without letting a
-# pathological graph enumerate an exponential number of shortest paths (#4881).
+# pathological graph enumerate an exponential number of shortest paths.
 _MAX_SHORTEST_PATHS = 256
 
 
 def _path_hop_datas(G: nx.Graph, path_nodes: list[str]) -> list[list[dict]]:
     """Per-hop edge-data lists for a node path, honouring `_src` direction
-    markers (#2309) the same way the path renderer does."""
+    markers the same way the path renderer does."""
     hop_datas: list[list[dict]] = []
     for i in range(len(path_nodes) - 1):
         u, v = path_nodes[i], path_nodes[i + 1]
@@ -2826,7 +2853,7 @@ def _weakest_shortest_path(search_graph: nx.Graph, G: nx.Graph, src_nid: str, tg
 
     A path is only as sure as its weakest hop, so when several routes tie on
     length the reported confidence should reflect the weakest of them, not an
-    arbitrary route networkx happens to return first (#4881). Enumeration is
+    arbitrary route networkx happens to return first. Enumeration is
     bounded by `_MAX_SHORTEST_PATHS`. Raises `nx.NetworkXNoPath` /
     `nx.NodeNotFound` exactly like `nx.shortest_path`, so callers keep their
     existing error handling. Returns `(path_nodes, n_routes, capped)`.
@@ -2846,7 +2873,7 @@ def _weakest_shortest_path(search_graph: nx.Graph, G: nx.Graph, src_nid: str, tg
 def _confidence_tag(d: dict) -> str:
     """An edge's confidence label, with its stored score when it carries one.
 
-    Renders ``INFERRED 0.75`` for a scored non-EXTRACTED edge (#4882).
+    Renders ``INFERRED 0.75`` for a scored non-EXTRACTED edge.
     EXTRACTED is 1.0 by definition, so it stays bare; a missing, boolean or
     non-finite score keeps the bare label rather than printing a guess.
     """
@@ -2865,7 +2892,7 @@ def _shortest_path_text(G: nx.Graph, arguments: dict) -> str:
     """Body of the `shortest_path` MCP tool (module-level so tests can call it
     without an mcp install).
 
-    Directed by default (#2487): the returned path must follow stored
+    Directed by default: the returned path must follow stored
     caller→callee direction; pass ``undirected=True`` to ignore it.
     """
     src_nid, src_scored, src_err = _resolve_path_endpoint(G, arguments["source"])
@@ -2880,7 +2907,7 @@ def _shortest_path_text(G: nx.Graph, arguments: dict) -> str:
         return f"No node matching target '{arguments['target']}' found."
     # Ambiguity guard: when both queries resolve to the same node, the
     # shortest path is trivially zero hops, which is almost never what the
-    # caller wanted (see bug #828).
+    # caller wanted (see bug).
     if src_nid == tgt_nid:
         return (
             f"'{arguments['source']}' and '{arguments['target']}' both resolved to "
@@ -2923,8 +2950,8 @@ def _shortest_path_text(G: nx.Graph, arguments: dict) -> str:
     for i in range(len(path_nodes) - 1):
         u, v = path_nodes[i], path_nodes[i + 1]
         # Report the actual stored relation(s), never a fabricated `calls`;
-        # fall back to an honest "related" when the edge has no relation (#2074).
-        # Direction truth lives in the per-link _src/_tgt markers (#2309): a
+        # fall back to an honest "related" when the edge has no relation.
+        # Direction truth lives in the per-link _src/_tgt markers: a
         # legacy canonicalized file can persist a flipped arc, so classify each
         # hop by _src (falling back to the arc tail) instead of raw arc order.
         fwd, bwd = [], []
@@ -2949,7 +2976,7 @@ def _shortest_path_text(G: nx.Graph, arguments: dict) -> str:
     summary = _path_confidence_line(hop_datas)
     if n_routes > 1 and summary:
         # Several routes tie on length; the confidence shown is the weakest of
-        # them (#4881), so it never overstates how sure the connection is.
+        # them, so it never overstates how sure the connection is.
         summary += f" (weakest of {'256+' if routes_capped else n_routes} equal-length routes)"
     return (
         prefix + f"Shortest path ({hops} hops):\n  " + " ".join(segments)
@@ -3003,7 +3030,7 @@ def _neighbor_lines(G: nx.Graph, nid: str, rel_filter: str = "") -> list[str]:
     """One output line per relationship incident to ``nid``.
 
     Parallel edges between the same pair each render as their own line with
-    their own metadata (#4500); ``edge_data()`` would return only the first.
+    their own metadata; ``edge_data()`` would return only the first.
     """
     def _edge_at(d: dict) -> str:
         # Edge location = the relation SITE (call/import line) in the source
@@ -3399,7 +3426,7 @@ def _build_server(graph_path: str):
         """Which commit the graph was built from, and whether HEAD has moved on.
 
         An MCP client cannot stat graph.json, so this is its only staleness
-        signal (#3354). HEAD is read at query time from the repo holding the
+        signal. HEAD is read at query time from the repo holding the
         graph (the same anchor export.to_json stamps from); no git or no repo
         just drops the HEAD comparison. Empty when the graph has no commit.
         """

@@ -316,7 +316,7 @@ def test_ts_normalizer_scales_linearly_on_large_files():
     def timed(n: int) -> float:
         source = build(n)
         # A GC pause lands in process_time and, on a small measurement, inflates
-        # the ratio enough to flake (#3154 CI hit 3.2x on a noisy runner). Disable
+        # the ratio enough to flake (CI hit 3.2x on a noisy runner). Disable
         # it for the measured section so we time only the normalizer's own work.
         gc_was_enabled = gc.isenabled()
         gc.disable()

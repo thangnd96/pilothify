@@ -11,7 +11,7 @@ callable. One-letter catch bindings make this land constantly against minified
 bundles, which define a private function for nearly every letter.
 
 The binding is scoped to the clause, so the fix folds it into `extra_locals` for
-that subtree only (the channel #2241 added for untracked closures) rather than
+that subtree only (the channel  added for untracked closures) rather than
 into the function-wide set — a same-named module callable referenced *outside* the
 catch block still resolves. These tests pin both halves of that, plus the ES2019
 optional binding (`catch { }`), which is a real `catch_clause` with no `parameter`.

@@ -1,4 +1,4 @@
-"""num_ctx sizing for Ollama. Once num_ctx actually reached Ollama (#4413) the
+"""num_ctx sizing for Ollama. Once num_ctx actually reached Ollama the
 estimate behind it mattered: chars/4 undercounts non-Latin scripts (2.8x for
 Chinese, 3.7x for Hindi on qwen2.5) and the flat 400 tokens left for the
 system prompt was short of the ~760 the extraction prompt takes.

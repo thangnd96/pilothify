@@ -2,6 +2,8 @@
 import hashlib
 import json
 import threading
+import time
+import types
 from pathlib import Path
 
 import pytest
@@ -161,7 +163,11 @@ def drive_watch(root, monkeypatch, actions, *, observed_roots=None):
     monkeypatch.setattr(observers, "Observer", Observer)
     monkeypatch.setattr(polling, "PollingObserver", Observer)
     monkeypatch.setattr(watch_mod, "_rebuild_code", rebuild)
-    monkeypatch.setattr(watch_mod.time, "sleep", pump)
+    # Swap the watch module's clock, not the shared `time` module: a rebuild
+    # waits on `git rev-parse` through subprocess, whose wait polls with
+    # time.sleep. Under load that poll reached pump, which stopped the watch
+    # in the middle of the rebuild.
+    monkeypatch.setattr(watch_mod, "time", types.SimpleNamespace(sleep=pump, monotonic=time.monotonic))
     watch_mod.watch(root, debounce=0)
 
 

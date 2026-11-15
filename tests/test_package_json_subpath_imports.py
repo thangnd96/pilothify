@@ -26,7 +26,7 @@ def _write(path: Path, text: str) -> Path:
 
 
 def _cid(root: Path, abs_path: Path) -> str:
-    """Canonical root-relative file-node id of a cross-file import target (#2169)."""
+    """Canonical root-relative file-node id of a cross-file import target."""
     return _make_id(str(Path(abs_path).relative_to(root).with_suffix("")))
 
 
@@ -102,14 +102,14 @@ def test_longest_literal_prefix_wins(tmp_path):
 def test_external_target_is_left_to_external_handling(tmp_path):
     # `"#dep": "dep-node-native"` maps to a third-party package, not a local
     # file. It must resolve to nothing here so the caller keeps its ref-namespaced
-    # external id (#1638) instead of fabricating a local edge.
+    # external id instead of fabricating a local edge.
     _write(tmp_path / "package.json",
            '{ "imports": { "#dep": "dep-node-native" } }\n')
     assert _resolve_js_module_path("#dep", tmp_path) is None
 
 
 def test_tsconfig_paths_keep_precedence(tmp_path):
-    # An explicit tsconfig alias for the same specifier wins (#1269): the two
+    # An explicit tsconfig alias for the same specifier wins: the two
     # mechanisms disagree here on purpose, and the resolver must pick tsconfig.
     _write(tmp_path / "tsconfig.json",
            '{ "compilerOptions": { "paths": { "#services/*": ["./ts_only/*"] } } }\n')
