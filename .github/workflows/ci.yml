@@ -1,0 +1,116 @@
+name: ci
+
+# The same checks a maintainer runs before a commit: the full test suite on the
+# supported Python floor and current stable tiers, once more on macOS, the generated skill files
+# staying in sync with their fragments, and an end-to-end install. The suite
+# also runs on the versions a user's install resolves today, not just the lock.
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+  # Weekly, so a dependency release that breaks a fresh install shows up even
+  # in a week with no commits.
+  schedule:
+    - cron: "0 3 * * 1"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  skillgen:
+    name: generated skill files in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          python-version: "3.12"
+
+      # --frozen installs straight from the committed uv.lock without
+      # re-resolving or rewriting it, so CI never churns the lock.
+      - name: Skill files match their fragments
+        run: uv run --frozen python -m tools.skillgen --check
+
+      - name: Plugin skill bundle matches the generated skill
+        run: uv run --frozen python -m tools.build_plugin --check
+
+  test:
+    name: pytest (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Floor (requires-python >=3.10) + current stable tiers.
+        python: ["3.10", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          python-version: ${{ matrix.python }}
+
+      # Locked versions matter: a newer tree-sitter grammar than the lock
+      # parses differently and breaks extractor tests.
+      - name: Install dependencies
+        run: uv sync --all-extras --frozen
+
+      # Serial on purpose: under pytest-xdist the watch tests failed in a
+      # different subset on each Linux runner.
+      - name: Run tests
+        run: uv run --frozen pytest tests/ -q --tb=short
+
+      - name: Verify install works end-to-end
+        run: |
+          uv run --frozen pilothify --help
+          uv run --frozen pilothify install
+
+  # macOS differs where tests have broken before: /bin/bash is 3.2, and the
+  # temp dir sits behind the /var -> /private/var symlink.
+  macos:
+    name: pytest (macOS, py3.13)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: uv sync --all-extras --frozen
+
+      - name: Run tests
+        run: uv run --frozen pytest tests/ -q --tb=short
+
+  unlocked:
+    name: pytest, unlocked install (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          python-version: ${{ matrix.python }}
+
+      # `uv tool install` and pip ignore uv.lock and take the newest versions
+      # pyproject allows. Resolve the same way, so a grammar release that parses
+      # differently fails here instead of quietly giving a user a wrong graph.
+      - name: Install dependencies without the lock
+        run: |
+          uv venv
+          uv pip install -e ".[all]" --group dev
+
+      - name: Run tests
+        run: .venv/bin/python -m pytest tests/ -q --tb=short

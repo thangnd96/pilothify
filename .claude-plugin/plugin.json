@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "pilothify",
+  "version": "0.1.2",
+  "description": "Turn a codebase, its docs and schemas into a knowledge graph the agent queries before it greps.",
+  "author": {
+    "name": "TBeo"
+  },
+  "homepage": "https://github.com/thangnd96/pilothify",
+  "repository": "https://github.com/thangnd96/pilothify",
+  "license": "Apache-2.0",
+  "keywords": [
+    "pilothify",
+    "knowledge-graph",
+    "code-graph",
+    "tree-sitter",
+    "claude",
+    "codex",
+    "cursor"
+  ],
+  "skills": "./plugin/skills/"
+}

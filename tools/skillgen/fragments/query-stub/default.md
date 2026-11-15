@@ -1,0 +1,7 @@
+When `pilothify-out/graph.json` already exists and the user asks a question about the corpus, answer from the graph rather than rebuilding it:
+
+```bash
+pilothify query "<question>"
+```
+
+Before traversal, expand the question against the graph's own vocabulary so a wording mismatch does not collapse the answer to noise. If the `pilothify query` CLI is unavailable, fall back to an inline NetworkX traversal of `pilothify-out/graph.json`. Answer using only what the graph output contains, and quote `source_location` when citing a specific fact. For that vocab-expansion step, the BFS/DFS traversal modes, the `--budget` cap, the NetworkX fallback, `save-result` feedback, and the `/pilothify path` and `/pilothify explain` flows, see `references/query.md`.
