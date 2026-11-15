@@ -18,15 +18,22 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-_GRAPH_CMD = re.compile(r"\bpilothify\s+(?:query|explain|path)\b")
+_GRAPH_SUBCOMMANDS = {"query", "explain", "path"}
 _GRAPH_MCP = re.compile(r"^mcp__.*pilothify.*__(?:query_graph|get_node|shortest_path|get_neighbors)$")
-_SCOUT_CMD = re.compile(r"(?:^|[|;&(]\s*|\s&&\s*)(?:grep|rg|ag|ack|find|cat|head|tail|sed\s+-n|less|bat)\b")
+_SCOUT_PROGRAMS = {"grep", "rg", "ag", "ack", "find", "cat", "head", "tail", "less", "bat"}
 _SCOUT_TOOLS = {"Grep", "Glob", "Read"}
+# A shell command splits into simple commands at newlines, ;, &&, || and |.
+_SPLIT = re.compile(r"\n|;|&&|\|\||\|")
+# The skill runs pilothify as `$(cat pilothify-out/.pilothify_python) -m pilothify ...`.
+_INTERPRETER = re.compile(r"^(?:\$\([^)]*\)|\S*python[\d.]*)\s+-m\s+")
 
 
 def transcript_dir(repo: Path) -> Path:
-    """Where Claude Code keeps a project's transcripts: its path, non-alphanumerics as '-'."""
-    return Path.home() / ".claude" / "projects" / re.sub(r"[^A-Za-z0-9]", "-", str(repo.resolve()))
+    """Where Claude Code keeps a project's transcripts: its path, non-alphanumerics
+    as '-'. The path as written is tried before its symlink-resolved form."""
+    base = Path.home() / ".claude" / "projects"
+    candidates = [base / re.sub(r"[^A-Za-z0-9]", "-", str(p)) for p in (repo.absolute(), repo.resolve())]
+    return next((c for c in candidates if c.is_dir()), candidates[0])
 
 
 def classify(name: str, tool_input: dict) -> str | None:
@@ -34,13 +41,27 @@ def classify(name: str, tool_input: dict) -> str | None:
     if _GRAPH_MCP.match(name):
         return "graph"
     if name == "Bash":
-        command = str(tool_input.get("command") or "")
-        if _GRAPH_CMD.search(command):
-            return "graph"
-        if _SCOUT_CMD.search(command):
-            return "scout"
-        return None
+        return _bash_kind(str(tool_input.get("command") or ""))
     return "scout" if name in _SCOUT_TOOLS else None
+
+
+def _bash_kind(command: str) -> str | None:
+    """Judge each simple command by the program it runs, not by words in its
+    arguments: `grep -rn "pilothify query" docs/` is a search."""
+    kinds = set()
+    for part in _SPLIT.split(command):
+        part = _INTERPRETER.sub("", part.strip())
+        words = part.split()
+        while words and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", words[0]):  # VAR=value prefix
+            words = words[1:]
+        if not words:
+            continue
+        program = words[0].rsplit("/", 1)[-1]
+        if program == "pilothify" and len(words) > 1 and words[1] in _GRAPH_SUBCOMMANDS:
+            kinds.add("graph")
+        elif program in _SCOUT_PROGRAMS or (program == "sed" and "-n" in words[1:3]):
+            kinds.add("scout")
+    return "graph" if "graph" in kinds else "scout" if kinds else None
 
 
 def _result_text(content) -> str:
@@ -68,6 +89,8 @@ def session_stats(path: Path, since: datetime | None = None) -> dict | None:
                 stamp = datetime.fromisoformat(str(rec.get("timestamp", "")).replace("Z", "+00:00"))
             except ValueError:
                 stamp = None
+            if stamp is not None and stamp.tzinfo is None:
+                stamp = stamp.replace(tzinfo=timezone.utc)
             if stamp is None or stamp < since:
                 continue
         for block in content:

@@ -31,6 +31,10 @@ def test_classify():
     assert classify("Read", {"file_path": "a.py"}) == "scout"
     assert classify("Bash", {"command": "pilothify update ."}) is None
     assert classify("Edit", {}) is None
+    # the skill's own interpreter form is not a `cat`
+    assert classify("Bash", {"command": "$(cat pilothify-out/.pilothify_python) -m pilothify update ."}) is None
+    assert classify("Bash", {"command": "cd api\ngrep -rn Spin ."}) == "scout"
+    assert classify("Bash", {"command": 'grep -rn "pilothify query" docs/'}) == "scout"
 
 
 def test_report_counts_sessions_first_lookups_and_tokens(tmp_path):

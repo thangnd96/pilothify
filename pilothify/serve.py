@@ -1737,8 +1737,9 @@ def _apply_learning_boost(G: nx.Graph, ranked: list[tuple[float, str]],
     boosted = []
     for score, nid in ranked:
         entry = overlay.get(str(nid))
-        if entry and not entry.get("stale"):
-            score *= _LEARNING_BOOST.get(entry.get("status"), 1.0)
+        status = entry.get("status") if isinstance(entry, dict) else None
+        if isinstance(status, str) and not entry.get("stale"):
+            score *= _LEARNING_BOOST.get(status, 1.0)
         boosted.append((score, nid))
     boosted.sort(key=lambda s: (-s[0], len(G.nodes[s[1]].get("label") or s[1]), s[1]))
     return boosted
@@ -1747,8 +1748,11 @@ def _apply_learning_boost(G: nx.Graph, ranked: list[tuple[float, str]],
 def _rationale_owner(G: nx.Graph, nid: str) -> str | None:
     """The function, class or file a docstring node documents."""
     for nb in (G.successors(nid) if G.is_directed() else G.neighbors(nid)):
-        if G.edges[nid, nb].get("relation") == "rationale_for":
-            return nb
+        data = G.get_edge_data(nid, nb) or {}
+        # A multigraph keys parallel edges: {key: attrs, ...}.
+        for attrs in (data.values() if G.is_multigraph() else (data,)):
+            if attrs.get("relation") == "rationale_for":
+                return nb
     return None
 
 
@@ -1787,15 +1791,17 @@ def _recall_saved_answer(G: nx.Graph, question: str,
         docs = load_memory_docs(memory_dir)
     except Exception:
         return [], ""
-    latest: dict[str, dict] = {}
-    for doc in docs:  # oldest first, so the last save of a question wins
-        latest[doc.get("question", "")] = doc
+    # Oldest first, so the last save of a question wins. Keyed by its words, so
+    # "how do docs link to X" saved as dead_end retires "How do docs link to X?".
+    latest: dict[frozenset[str], dict] = {}
+    for doc in docs:
+        latest[frozenset(_query_terms(doc.get("question", "")))] = doc
     best: tuple[float, str] | None = None
     best_doc: dict | None = None
-    for saved_q, doc in latest.items():
+    for saved_terms, doc in latest.items():
         if doc.get("outcome") != "useful" or not doc.get("source_nodes"):
             continue
-        saved = set(_query_terms(saved_q))
+        saved = set(saved_terms)
         shared = len(asked & saved)
         if shared < _RECALL_MIN_SHARED or not saved:
             continue

@@ -32,3 +32,10 @@ def test_a_docstring_without_an_owner_still_seeds():
     G.remove_edge("r", "f")
     out = _query_graph_text(G, "how do earlier answers lift matched nodes")
     assert "Lift matched nodes" in _start(out)
+
+
+def test_a_multigraph_with_parallel_edges_still_seeds_the_owner():
+    G = nx.MultiDiGraph(_graph(True))
+    G.add_edge("r", "f", relation="rationale_for")  # a parallel edge
+    out = _query_graph_text(G, "how do earlier answers lift matched nodes")
+    assert _start(out).startswith("['_apply_boost()'"), out

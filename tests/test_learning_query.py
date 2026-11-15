@@ -95,3 +95,16 @@ def test_without_memory_or_lessons_the_answer_is_unchanged(tmp_path):
     question = "how are docs naming an endpoint linked to a Spring handler"
     plain = _query_graph_text(_graph(), question)
     assert _query_graph_text(_graph(), question, graph_path=str(gp)).split("\n", 1)[1] == plain.split("\n", 1)[1]
+
+
+def test_a_dead_end_saved_with_different_wording_retires_the_answer(tmp_path):
+    gp = _graph_path(tmp_path)
+    _save(gp)
+    _save(gp, question="how do docs that name an endpoint link to the spring handler", outcome="dead_end")
+    assert _recall_saved_answer(_graph(), QUESTION, str(gp)) == ([], "")
+
+
+def test_a_malformed_lesson_status_is_ignored():
+    G = _graph()
+    ranked = [(1.0, "alpha"), (0.9, "beta")]
+    assert _apply_learning_boost(G, ranked, {"beta": {"status": ["preferred"]}}) == ranked

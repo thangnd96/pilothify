@@ -74,11 +74,12 @@ Câu hỏi tiếng Việt: từ có dấu chỉ khớp với label tiếng Việ
   - Spring: `@RequestMapping`, `@GetMapping`… ghép với prefix ở mức class.
   - NestJS: `@Get(':id')`… ghép với `@Controller('users')`.
   - FastAPI và Flask: `@router.get("/x")`, `@bp.route("/x", methods=[…])`, ghép với `prefix=` của `APIRouter` hoặc `url_prefix=` của `Blueprint` khai báo trong cùng file.
-  - Express, Koa router, Fastify, Hono: `router.get('/x', handler)` và `router.route('/x').get(…)` thành một node route, nối tới handler nếu handler là hàm khai báo trong cùng file. Chỉ áp dụng cho file có import một trong các thư viện đó, nên lời gọi client như `axios.get('/x')` không bị nhận nhầm.
+  - Express, Koa router, Fastify, Hono: `router.get('/x', handler)`, chuỗi `router.get(…).post(…)` và `router.route('/x').get(…)` thành một node route, nối tới handler nếu handler là hàm khai báo trong cùng file (kể cả khi bọc trong `asyncHandler(fn)`). Chỉ xét file có import thật một trong các thư viện đó (`import type` không tính), và chỉ xét lời gọi trên biến tạo từ `express()`, `Router()`, `fastify()`, `new Hono()`… hoặc tên `app`, `router`, `server`, `fastify`. Nhờ vậy lời gọi client như `axios.post('/x', data)` hay `this.http.get(…)` không bị nhận nhầm.
   - Prefix gắn ở file khác (`include_router`, `app.use('/api', r)`, `setGlobalPrefix`) không biết được, nên route chỉ mang phần của chính nó.
 - **Docs nhắc tới endpoint** (`PUT /me/social/shares/{postId}`) nối về handler bằng cạnh `references_route`:
   - Khớp đủ path là EXTRACTED.
-  - Khớp phần đuôi theo một trong hai chiều, và chỉ khớp một route, là INFERRED 0,95. Chiều thứ hai là khi route ngắn hơn path trong doc, vì thiếu prefix gắn ở file khác.
+  - Khớp phần đuôi theo một trong hai chiều, và chỉ khớp một route, là INFERRED 0,95. Chiều thứ hai là khi route ngắn hơn path trong doc, vì thiếu prefix gắn ở file khác; path nằm trong URL của host khác (`https://api.khac.com/...`) không xét chiều này.
+  - Method ghi trong doc phải khớp; route `ALL` (`router.all`, `@All`) khớp mọi method.
   - Mẫu glob như `/ctrl/**` không nối.
 
 ## Học từ câu trả lời

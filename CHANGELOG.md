@@ -13,6 +13,35 @@
   luôn chỗ đó. Nay process con dùng đúng không gian tên cache của process cha.
   Đây là gốc của 6 test terraform chỉ hỏng khi chạy song song ở máy, và chỉ ở
   lần chạy đầu sau khi nâng phiên bản.
+- **Lời gọi client bị nhận nhầm thành route.** `import type { Request } from
+  'express'` (hay gặp trong service NestJS) từng đủ để mở phần nhận diện
+  Express, và `axios.post('/x', payload)` thành một node route. Nay chỉ tính
+  import thật, và chỉ tính lời gọi trên biến tạo từ `express()`, `Router()`,
+  `fastify()`, `new Hono()`… hoặc tên `app`, `router`, `server`, `fastify`.
+- **Route bị thiếu:**
+  - Chuỗi đăng ký kiểu Koa và Hono `router.get('/', h).post('/users', h)` chỉ
+    giữ route đầu tiên; nay giữ đủ.
+  - Handler bọc trong `asyncHandler(fn)` bị bỏ; nay được nhận và nối tới `fn`.
+  - Comment xen giữa `@Get(...)` và method NestJS làm mất route.
+  - Flask `methods=["GET", "POST"]` chỉ giữ method đầu; nay giữ đủ.
+- **Route Flask không nối được với doc.** Tham số `<int:user_id>` nay được ghi
+  thành `{user_id}`, giống cách doc và các framework khác viết.
+- **Nối nhầm route theo method.** `route_links` không biết `HEAD`, `OPTIONS`,
+  `ALL`, nên doc ghi `DELETE /api/items` từng nối vào handler `HEAD`. Nay các
+  method này được nhận, và `ALL` khớp mọi method. Khi khớp chiều route ngắn hơn
+  doc, path trong URL của host khác không còn được xét, và phần đuôi dài nhất
+  có method khớp mới được chọn.
+- **`query` sập trên graph có cạnh song song** (MultiDiGraph) khi một docstring
+  khớp câu hỏi.
+- **Lưu `dead_end` với cách viết khác không hủy được câu `useful` cũ.** Câu trả
+  lời đã lưu giờ được so theo bộ từ khóa, không theo nguyên văn câu hỏi.
+- **`tools/adherence.py` đếm sai:** lệnh `$(cat …) -m pilothify update` từng bị
+  tính là grep, grep ở dòng thứ hai của lệnh nhiều dòng bị bỏ sót, và
+  `grep -rn "pilothify query"` bị tính là hỏi graph. Nay mỗi lệnh con được xét
+  theo chương trình nó chạy.
+- **Test build wheel không còn ghi vào mã nguồn.** Hai test này build từ một bản
+  sao các file đã track, nên `pilothify.egg-info` và `build/` trong repo không
+  bị ghi lại giữa lần chạy test.
 
 ## v0.1.4 — 2026-11-15
 

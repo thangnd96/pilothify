@@ -159,3 +159,76 @@ def test_a_one_segment_tail_does_not_link():
     G = _graph_with("GET /items")
     G.add_node("doc", label="GET /api/v1/items", file_type="document", source_file="docs/api.md")
     assert link_routes(G) == 0
+
+
+KOA_CHAIN = """\
+import Router from '@koa/router';
+const router = new Router();
+function listUsers(ctx) { ctx.body = []; }
+router.get('/', listUsers).post('/users', listUsers).put('/users/:id', (ctx) => {});
+router.get('/wrapped', asyncHandler(listUsers));
+axios.post('/billing/charges', payload);
+"""
+
+NEST_SERVICE = """\
+import type { Request } from 'express';
+export class BillingService {
+  charge(payload) { return axios.post('/billing/charges', payload); }
+  me(config) { return this.http.get('/users/me', config); }
+}
+"""
+
+NEST_COMMENTED = """\
+import { Controller, Get } from '@nestjs/common';
+@Controller('cats')
+export class CatsController {
+  @Get(':id')
+  // fetch one cat
+  findOne() { return 1; }
+}
+"""
+
+FLASK_MULTI = """\
+from flask import Blueprint
+bp = Blueprint("admin", __name__, url_prefix="/admin")
+
+@bp.route("/user/<int:user_id>/posts", methods=["GET", "POST"])
+def user_posts(user_id):
+    return 1
+"""
+
+
+def test_chained_registrations_wrappers_and_client_calls(tmp_path):
+    result = _extract(tmp_path, {"routes.js": KOA_CHAIN})
+    routes = _routes(result)
+    assert set(routes) == {"GET /", "POST /users", "PUT /users/:id", "GET /wrapped"}
+    by_id = {n["id"]: n["label"] for n in result["nodes"]}
+    calls = {(by_id[e["source"]], by_id[e["target"]]) for e in result["edges"] if e.get("context") == "route"}
+    assert ("GET /wrapped", "listUsers()") in calls
+
+
+def test_a_type_only_express_import_does_not_turn_client_calls_into_routes(tmp_path):
+    assert _routes(_extract(tmp_path, {"billing.service.ts": NEST_SERVICE})) == {}
+
+
+def test_a_comment_between_decorator_and_method_keeps_the_route(tmp_path):
+    assert _routes(_extract(tmp_path, {"cats.controller.ts": NEST_COMMENTED})) == {".findOne()": "GET /cats/:id"}
+
+
+def test_flask_keeps_every_method_and_folds_converters(tmp_path):
+    routes = _routes(_extract(tmp_path, {"admin.py": FLASK_MULTI}))
+    assert routes == {"user_posts()": "GET /admin/user/{user_id}/posts, POST /admin/user/{user_id}/posts"}
+
+
+def test_head_all_verbs_and_foreign_urls():
+    G = nx.Graph()
+    G.add_node("head", label="head()", file_type="code", attributes={"route": "HEAD /api/items"})
+    G.add_node("all", label="all()", file_type="code", attributes={"route": "ALL /orders/list"})
+    G.add_node("auth", label="login()", file_type="code", attributes={"route": "POST /auth/login"})
+    G.add_node("d1", label="DELETE /api/items removes them", file_type="document")
+    G.add_node("d2", label="GET /v1/orders/list pages results", file_type="document")
+    G.add_node("d3", label="see https://api.other.com/v1/auth/login", file_type="document")
+    link_routes(G)
+    assert not G.has_edge("d1", "head")
+    assert G.has_edge("d2", "all")
+    assert not G.has_edge("d3", "auth")

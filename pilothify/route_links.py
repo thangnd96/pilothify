@@ -16,9 +16,10 @@ import networkx as nx
 
 ROUTE_RELATION = "references_route"
 
-_VERBS = ("GET", "POST", "PUT", "PATCH", "DELETE")
+# ALL (Express `router.all`, NestJS `@All`) serves every verb.
+_VERBS = ("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "ALL")
 _MENTION = re.compile(
-    r"(?:\b(GET|POST|PUT|PATCH|DELETE)\s+)?(/[A-Za-z0-9_.~{}:\-]+(?:/[A-Za-z0-9_.~{}:\-]+)+)(/?\*)?"
+    r"(?:\b(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s+)?(/[A-Za-z0-9_.~{}:\-]+(?:/[A-Za-z0-9_.~{}:\-]+)+)(/?\*)?"
 )
 # A doc node naming more endpoints than this is a listing, not a reference.
 _MAX_LINKS_PER_NODE = 6
@@ -49,12 +50,21 @@ def _parse_route(route: str) -> list[tuple[str | None, tuple[str, ...]]]:
     return parsed
 
 
+def _verb_agrees(stated: str | None, served: str | None) -> bool:
+    return not stated or not served or served == "ALL" or stated == served
+
+
+def _verb_matches(stated: str | None, handlers: list[tuple[str | None, str]]) -> bool:
+    return any(_verb_agrees(stated, served) for served, _ in handlers)
+
+
 def link_routes(G: nx.Graph) -> int:
     """Add a references_route edge from each doc node to the handler it names.
 
-    A mention matches a route when its segments equal the route's (EXTRACTED)
-    or end it, two segments or more, under exactly one full path (INFERRED
-    0.95). A stated verb must agree. Globs (``/ctrl/**``) never match.
+    A mention matches a route when its segments equal the route's (EXTRACTED),
+    end it, two segments or more, under exactly one full path, or are longer
+    and end with a route of two segments or more (both INFERRED 0.95). A stated
+    verb must agree; ALL serves every verb. Globs (``/ctrl/**``) never match.
     Returns the number of edges added.
     """
     by_path: dict[tuple[str, ...], list[tuple[str | None, str]]] = defaultdict(list)
@@ -94,13 +104,18 @@ def link_routes(G: nx.Graph) -> int:
                 full, exact = next(iter(fulls)), False
             else:
                 # A route mounted under a prefix set in another file is shorter
-                # than the doc's full path: match its longest tail of 2+ segments.
-                full = next((segs[s:] for s in range(1, len(segs) - 1) if segs[s:] in by_path), None)
+                # than the doc's full path: match its longest tail of 2+ segments
+                # whose verb agrees. A path under another host (`https://h/...`)
+                # is someone else's API, so it never takes this branch.
+                if text[max(0, match.start(2) - 1):match.start(2)] == "/" or "." in segs[0]:
+                    continue
+                full = next((segs[s:] for s in range(1, len(segs) - 1)
+                             if segs[s:] in by_path and _verb_matches(verb, by_path[segs[s:]])), None)
                 if full is None:
                     continue
                 exact = False
             for route_verb, handler in by_path[full]:
-                if verb and route_verb and verb != route_verb:
+                if not _verb_agrees(verb, route_verb):
                     continue
                 targets[handler] = targets.get(handler, False) or exact
         if not targets or len(targets) > _MAX_LINKS_PER_NODE:

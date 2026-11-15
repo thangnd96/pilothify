@@ -28,8 +28,10 @@ def stale() -> list[str]:
     """Bundle paths that differ from their source, are missing, or have no source."""
     out = [rel for rel, src in SOURCES.items()
            if not (BUNDLE / rel).is_file() or (BUNDLE / rel).read_bytes() != src.read_bytes()]
+    # Dotfiles (a Finder .DS_Store) are not part of the bundle.
     extra = [p.relative_to(BUNDLE).as_posix() for p in BUNDLE.rglob("*")
-             if p.is_file() and p.relative_to(BUNDLE).as_posix() not in SOURCES] if BUNDLE.exists() else []
+             if p.is_file() and not p.name.startswith(".")
+             and p.relative_to(BUNDLE).as_posix() not in SOURCES] if BUNDLE.exists() else []
     return out + extra
 
 

@@ -37,9 +37,19 @@ _TS_SUFFIXES = {".ts", ".tsx", ".mts", ".cts"}
 # Cheap byte checks so a file with no route syntax is never parsed twice.
 _PY_HINT = re.compile(rb"@[\w.]+\.(?:get|post|put|patch|delete|options|head|route|api_route)\s*\(")
 _NEST_HINT = re.compile(rb"@Controller\s*\(")
+# A value import or require of a server library; `import type { Request }
+# from 'express'` (common in NestJS services) brings no server and must not count.
 _JS_SERVER_IMPORT = re.compile(
-    rb"""(?:require\s*\(\s*|\bfrom\s+)['"](?:express|@koa/router|koa-router|fastify|hono)['"]"""
+    rb"""require\s*\(\s*['"](?:express|@koa/router|koa-router|fastify|hono)['"]"""
+    rb"""|^[ \t]*import\s+(?!type\b)[^;]*?\bfrom\s+['"](?:express|@koa/router|koa-router|fastify|hono)['"]""",
+    re.M,
 )
+# Receivers that register routes: names bound in the file from one of these
+# factories, plus the names servers conventionally get. Anything else, such as
+# `axios`, `this.http` or an `api` client, is a client call, not a route.
+_SERVER_FACTORIES = {"express", "Router", "fastify", "Fastify", "Hono", "KoaRouter", "Koa"}
+_SERVER_NAMES = {"app", "router", "server", "fastify"}
+_FLASK_PARAM = re.compile(r"<(?:[^<>:]+:)?([^<>:]+)>")
 
 
 @lru_cache(maxsize=None)
@@ -136,11 +146,11 @@ def _python_decorator_route(decorator, source: bytes, prefixes: dict[str, str]) 
     keywords = {_text(a.child_by_field_name("name"), source): a.child_by_field_name("value")
                 for a in named if a.type == "keyword_argument"}
     if attr in _PY_VERBS:
-        verb = attr.upper()
+        verbs = [attr.upper()]
     elif attr in ("route", "api_route"):
         methods = keywords.get("methods")
-        first = methods.named_children[0] if methods is not None and methods.named_children else None
-        verb = (_string_value(first, source) or "GET").upper() if first is not None else "GET"
+        listed = [_string_value(m, source) for m in (methods.named_children if methods is not None else [])]
+        verbs = list(dict.fromkeys(v.upper() for v in listed if v)) or ["GET"]
     else:
         return None
     path = _string_value(positional[0], source) if positional else _string_value(keywords.get("path"), source)
@@ -148,7 +158,10 @@ def _python_decorator_route(decorator, source: bytes, prefixes: dict[str, str]) 
     prefix = prefixes.get(_text(receiver, source), "") if receiver is not None and receiver.type == "identifier" else ""
     if path is None or not (path.startswith("/") or (path == "" and prefix)):
         return None
-    return f"{verb} {_join(prefix, path)}"
+    # Flask writes parameters as <name> or <converter:name>; store them the way
+    # FastAPI, Spring and docs do, so route_links can fold them.
+    joined = _FLASK_PARAM.sub(r"{\1}", _join(prefix, path))
+    return ", ".join(f"{verb} {joined}" for verb in verbs)
 
 
 def _python_routes(tree, source: bytes, result: dict) -> None:
@@ -231,6 +244,8 @@ def _nest_routes(tree, source: bytes, result: dict) -> None:
             if child.type == "decorator":
                 pending.append(child)
                 continue
+            if child.type == "comment":  # a comment between decorator and method
+                continue
             if child.type == "method_definition":
                 decorators = pending + [c for c in child.children if c.type == "decorator"]
                 route = next((r for d in decorators if (r := _nest_method_route(d, source, prefix))), None)
@@ -259,12 +274,38 @@ def _chained_route_path(call, source: bytes) -> str | None:
     return None
 
 
+def _server_bindings(root, source: bytes) -> set[str]:
+    """Names bound in the file to a server or router: ``const app = express()``,
+    ``const r = express.Router()``, ``const router = new Router()``."""
+    names: set[str] = set()
+    for node in _walk(root):
+        if node.type != "variable_declarator":
+            continue
+        name, value = node.child_by_field_name("name"), node.child_by_field_name("value")
+        if name is None or name.type != "identifier" or value is None:
+            continue
+        callee = value.child_by_field_name("function" if value.type == "call_expression" else "constructor") \
+            if value.type in ("call_expression", "new_expression") else None
+        text = _text(callee, source)
+        if callee is not None and (text.rsplit(".", 1)[-1] in _SERVER_FACTORIES or text.startswith("require(")):
+            names.add(_text(name, source))
+    return names
+
+
+def _chain_base(node, source: bytes) -> str:
+    """The identifier at the base of ``router.route('/p').get(h).post(h)``."""
+    while node is not None and node.type in ("call_expression", "member_expression"):
+        node = node.child_by_field_name("function" if node.type == "call_expression" else "object")
+    return _text(node, source) if node is not None and node.type == "identifier" else ""
+
+
 def _js_server_routes(tree, source: bytes, result: dict, path: Path) -> None:
     file_node = next((n for n in result.get("nodes", []) if n.get("label") == path.name), None)
     if file_node is None:
         return
     functions = {str(n["label"])[:-2]: n["id"] for n in result.get("nodes", [])
                  if str(n.get("label", "")).endswith("()") and not str(n["label"]).startswith(".")}
+    servers = _server_bindings(tree.root_node, source) | _SERVER_NAMES
     seen = {n["id"] for n in result.get("nodes", [])}
     stem = _file_stem(path)
     for call in _walk(tree.root_node):
@@ -276,21 +317,32 @@ def _js_server_routes(tree, source: bytes, result: dict, path: Path) -> None:
         verb = _text(fn.child_by_field_name("property"), source)
         if verb not in _JS_VERBS:
             continue
+        receiver = fn.child_by_field_name("object")
+        if _chain_base(receiver, source) not in servers:
+            continue
         args = call.child_by_field_name("arguments")
         argv = [a for a in (args.named_children if args else []) if a.type != "comment"]
-        receiver = fn.child_by_field_name("object")
-        if receiver is not None and receiver.type == "call_expression":
-            route_path, handlers = _chained_route_path(receiver, source), argv
-        else:
+        first = _string_value(argv[0], source) if argv else None
+        if first is not None:
+            # `router.get('/', h)`, also further down a chain:
+            # `router.get('/', h).post('/users', h)`
             if len(argv) < 2:
                 continue
-            route_path, handlers = _string_value(argv[0], source), argv[1:]
+            route_path, handlers = first, argv[1:]
+        elif receiver is not None and receiver.type == "call_expression":
+            route_path, handlers = _chained_route_path(receiver, source), argv
+        else:
+            continue
         if route_path is None or not route_path.startswith("/") or not handlers:
             continue
         handler = handlers[-1]
         if handler.type not in ("identifier", "member_expression", "arrow_function",
-                                "function_expression", "function"):
+                                "function_expression", "function", "call_expression"):
             continue
+        if handler.type == "call_expression":  # asyncHandler(listUsers)
+            wrapped = handler.child_by_field_name("arguments")
+            handler = next((a for a in (wrapped.named_children if wrapped else [])
+                            if a.type == "identifier"), handler)
         route = f"{verb.upper()} {_join(route_path)}"
         line = f"L{call.start_point[0] + 1}"
         rid = _make_id(stem, "route", verb.upper(), route_path)
