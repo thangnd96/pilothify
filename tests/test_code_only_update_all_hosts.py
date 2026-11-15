@@ -27,6 +27,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from tests.git_bash import BASH  # noqa: E402
 from tools.skillgen import gen  # noqa: E402
 
 STALE = "stale_semantic_label"
@@ -174,7 +175,7 @@ def _run(block: str, proj: Path, *, python_on_stdin: bool = False) -> subprocess
         body = here_string.group(1)
         return subprocess.run([sys.executable, "-"], input=body, cwd=proj, env=_env(),
                               capture_output=True, text=True, timeout=300)
-    return subprocess.run(["bash", "-c", block], cwd=proj, env=_env(),
+    return subprocess.run([BASH, "-c", block], cwd=proj, env=_env(),
                           capture_output=True, text=True, timeout=300)
 
 

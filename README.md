@@ -83,6 +83,8 @@ Câu hỏi tiếng Việt: từ có dấu chỉ khớp với label tiếng Việ
   - Câu hỏi sau đó bị lưu lại là `dead_end` thì không còn được nhớ lại.
 - Không tốn token, không cần chạy lại pass semantic. Bài học không bao giờ kéo vào kết quả một node không liên quan tới câu hỏi.
 
+Muốn biết agent có thật sự hỏi graph không, chạy `python -m tools.adherence <repo> --since <ngày cài>` từ thư mục pilothify. Lệnh đọc transcript Claude Code của repo đó và đếm số lần hỏi graph so với số lần grep/đọc file, kèm số token mỗi bên. Chạy thêm không có `--since` để có số liệu nền từ trước khi cài.
+
 ## Chi phí
 
 - Phân tích code không tốn token LLM. Chỉ pass semantic trên docs/ảnh mới gọi LLM, và kết quả được cache theo nội dung file.

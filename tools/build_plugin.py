@@ -28,8 +28,8 @@ def stale() -> list[str]:
     """Bundle paths that differ from their source, are missing, or have no source."""
     out = [rel for rel, src in SOURCES.items()
            if not (BUNDLE / rel).is_file() or (BUNDLE / rel).read_bytes() != src.read_bytes()]
-    extra = [str(p.relative_to(BUNDLE)) for p in BUNDLE.rglob("*")
-             if p.is_file() and str(p.relative_to(BUNDLE)) not in SOURCES] if BUNDLE.exists() else []
+    extra = [p.relative_to(BUNDLE).as_posix() for p in BUNDLE.rglob("*")
+             if p.is_file() and p.relative_to(BUNDLE).as_posix() not in SOURCES] if BUNDLE.exists() else []
     return out + extra
 
 

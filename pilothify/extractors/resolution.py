@@ -3728,9 +3728,17 @@ def _cpp_source_key(source_file: str | Path, root: Path) -> str:
     if not source_file:
         return ""
     try:
-        return os.path.relpath((root / source_file).resolve(), root.resolve()).replace("\\", "/")
+        resolved = (root / source_file).resolve()
+        root_resolved = root.resolve()
     except (OSError, RuntimeError, ValueError):
         return ""
+    try:
+        return os.path.relpath(resolved, root_resolved).replace("\\", "/")
+    except ValueError:
+        # On another Windows drive than the root there is no relative path, and
+        # dropping the key skipped every decl/def merge; the absolute path is
+        # still a unique identity.
+        return resolved.as_posix()
 
 
 def _cpp_reconciliation_paths(

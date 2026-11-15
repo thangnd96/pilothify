@@ -7,6 +7,7 @@ import textwrap
 from types import SimpleNamespace
 from pathlib import Path
 import pytest
+from tests.git_bash import BASH
 from pilothify.hooks import (
     install, uninstall, status, _hooks_dir, _HOOK_MARKER, _CHECKOUT_MARKER, _MERGE_HOOK_MARKER,
     _REWRITE_HOOK_MARKER, _WORKTREE_GUARD, _TOPLEVEL_ANCHOR,
@@ -1053,7 +1054,7 @@ def _shell_verdict(pattern: str, candidate: str, tmp_path) -> str:
     # Invoke by bare filename from cwd: a Windows absolute path in argv would
     # hit the same backslash mangling the script contents just avoided.
     result = subprocess.run(
-        ["bash", script.name],
+        [BASH, script.name],
         capture_output=True, text=True, cwd=str(tmp_path),
     )
     # Fail loudly on a malformed case snippet instead of returning "" and
@@ -1145,7 +1146,7 @@ def test_shell_verdict_delivers_the_payload_bash_unmodified(payload, tmp_path):
         encoding="utf-8", newline="\n",
     )
     result = subprocess.run(
-        ["bash", script.name], capture_output=True, text=True, cwd=str(tmp_path),
+        [BASH, script.name], capture_output=True, text=True, cwd=str(tmp_path),
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout == payload, (
@@ -2221,7 +2222,7 @@ def test_worktree_guard_survives_exported_cdpath(tmp_path):
         {_TOPLEVEL_ANCHOR}
         printf 'TOP=%s\\n' "$_GFY_TOP"
     """)
-    result = subprocess.run(["bash", "-c", script], cwd=repo, capture_output=True, text=True)
+    result = subprocess.run([BASH, "-c", script], cwd=repo, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert "TOP=" in result.stdout, f"anchor exited before printing: {result.stdout!r} {result.stderr!r}"
     top = result.stdout.strip().split("TOP=", 1)[1]

@@ -14,6 +14,10 @@
 - Luật always-on (CLAUDE.md, AGENTS.md, GEMINI.md) nhắc agent chạy
   `pilothify save-result … --outcome useful|dead_end` khi kết quả giúp được hoặc
   dẫn sai. Số token của luật vẫn đúng bằng mức cũ.
+- `python -m tools.adherence <repo>` đọc transcript Claude Code và đếm số lần
+  agent hỏi graph so với grep/đọc file, kèm số token. Trên monorepo thử nghiệm,
+  57 phiên trước khi cài pilothify đã dùng 4.134 lần grep/glob/đọc file, trả về
+  khoảng 2,8 triệu token.
 
 ### Tài liệu
 
