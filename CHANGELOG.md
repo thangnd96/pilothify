@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Sửa lỗi
+
+- **Process con của pool ghi cache vào thư mục khác với process cha.** Tên thư
+  mục cache AST gồm phiên bản pilothify, mà mỗi process con theo kiểu spawn
+  lại tự đọc phiên bản đó từ metadata. Khi một `*.egg-info` trong mã nguồn bị
+  build lại giữa chừng (nó đứng trước site-packages trong `sys.path`), process
+  con đọc phiên bản mới, còn process cha giữ phiên bản cũ. Process con ghi cache
+  vào chỗ process cha không đọc, rồi bước dọn thư mục cũ của process cha xóa
+  luôn chỗ đó. Nay process con dùng đúng không gian tên cache của process cha.
+  Đây là gốc của 6 test terraform chỉ hỏng khi chạy song song ở máy, và chỉ ở
+  lần chạy đầu sau khi nâng phiên bản.
+
 ## v0.1.4 — 2026-11-15
 
 ### Route ngoài Spring

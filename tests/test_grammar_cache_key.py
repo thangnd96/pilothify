@@ -78,3 +78,18 @@ def test_grammar_fingerprint_stable_for_same_set(monkeypatch):
     fp1 = c._grammar_fingerprint()
     monkeypatch.setattr(c, "_GRAMMAR_FINGERPRINT_CACHE", None)  # force recompute
     assert c._grammar_fingerprint() == fp1
+
+
+def test_a_pool_worker_adopts_the_parents_cache_namespace(tmp_path, monkeypatch):
+    """A spawn worker must write where its parent reads, even when it would read
+    a different version from package metadata (a rebuilt in-tree egg-info)."""
+    import pilothify.cache as c
+    from pilothify.extract import _worker_init
+
+    for name in ("_EXTRACTOR_VERSION", "_AST_CACHE_SCHEMA", "_GRAMMAR_FINGERPRINT_CACHE"):
+        monkeypatch.setattr(c, name, getattr(c, name))
+    parent = ("0.1.3", c._AST_CACHE_SCHEMA, "abc123def456")
+    monkeypatch.setattr(c, "_EXTRACTOR_VERSION", "0.1.4")  # what the worker read itself
+    _worker_init({}, parent)
+    assert c.cache_namespace() == parent
+    assert c.cache_dir(tmp_path).name == f"v0.1.3-s{parent[1]}-gabc123def456"

@@ -79,6 +79,24 @@ def _grammar_fingerprint() -> str:
     _GRAMMAR_FINGERPRINT_CACHE = digest[:12]
     return _GRAMMAR_FINGERPRINT_CACHE
 
+
+def cache_namespace() -> tuple[str, int, str]:
+    """What names this process's AST cache directory: version, schema, grammars."""
+    return _EXTRACTOR_VERSION, _AST_CACHE_SCHEMA, _grammar_fingerprint()
+
+
+def adopt_cache_namespace(namespace: tuple[str, int, str]) -> None:
+    """Make a pool worker read and write the parent's AST cache directory.
+
+    A spawn worker reads the version again from package metadata, and that can
+    differ from what the parent read at import: an in-tree ``*.egg-info`` that a
+    build rewrote in the meantime sits ahead of site-packages on ``sys.path``.
+    The worker then saved every entry under a directory the parent never reads,
+    and the parent's stale-directory sweep deleted them.
+    """
+    global _EXTRACTOR_VERSION, _AST_CACHE_SCHEMA, _GRAMMAR_FINGERPRINT_CACHE
+    _EXTRACTOR_VERSION, _AST_CACHE_SCHEMA, _GRAMMAR_FINGERPRINT_CACHE = namespace
+
 # Version dirs already swept this process — cleanup runs once per (base, version).
 _cleaned_ast_dirs: set[str] = set()
 

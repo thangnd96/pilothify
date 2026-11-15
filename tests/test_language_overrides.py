@@ -369,7 +369,9 @@ def test_the_pool_hands_its_workers_the_overrides(php_pair, monkeypatch):
     files = sorted(php_pair.glob("f*.inc"))
     result = _quiet_extract(files, cache_root=php_pair, root=php_pair, parallel=True)
     assert seen["initializer"] is _worker_init
-    assert seen["initargs"] == ({".inc": ".php"},)
+    assert seen["initargs"][0] == {".inc": ".php"}
+    from pilothify.cache import cache_namespace
+    assert seen["initargs"][1] == cache_namespace()
     # and every file came back as PHP, not Pascal
     per_file = {}
     for n in result["nodes"]:
