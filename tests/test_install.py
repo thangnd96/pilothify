@@ -529,7 +529,7 @@ def test_codex_agents_install_mentions_dirty_graph_output(tmp_path):
     _agents_install(tmp_path, "codex")
     content = (tmp_path / "AGENTS.md").read_text()
     assert "Dirty pilothify-out/ files are expected" in content
-    assert "not a reason to skip pilothify" in content
+    assert "no reason to skip pilothify" in content
 
 
 def test_opencode_skill_contains_mention():

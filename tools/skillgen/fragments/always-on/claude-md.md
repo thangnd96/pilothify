@@ -3,8 +3,9 @@
 This project has a knowledge graph at pilothify-out/.
 
 Rules:
-- When pilothify-out/graph.json exists, run `pilothify query "<question>"` before your first grep, search or source-file read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for lines the graph or an earlier read already located. Use `pilothify path "<A>" "<B>"` for relationships and `pilothify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- If pilothify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Read pilothify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `pilothify update .` to keep the graph current (AST-only, no API cost).
-- A committed pilothify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
+- When pilothify-out/graph.json exists, run `pilothify query "<question>"` before your first grep, search or source-file read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for lines the graph or an earlier read already located. Use `pilothify path "<A>" "<B>"` for relationships and `pilothify explain "<concept>"` for focused concepts.
+- After a query helps or misleads, run `pilothify save-result --question "<q>" --answer "<gist>" --nodes <labels> --outcome useful|dead_end`; later queries start there.
+- If pilothify-out/wiki/index.md exists, browse it instead of raw source.
+- Read pilothify-out/GRAPH_REPORT.md only for architecture review or when query/path/explain fall short.
+- After modifying code, run `pilothify update .` to keep the graph current (AST-only, free).
+- A committed pilothify-out/graph.json is rewritten whole on every build; a large diff to it is expected, not churn to flag.

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Học từ câu trả lời
+
+- `query` giờ dùng bộ nhớ làm việc chứ không chỉ hiển thị nó:
+  - Node mà `reflect` đã xác nhận là nguồn tốt (preferred, tentative) được xếp
+    trước trong số node khớp câu hỏi. Bài học có file đã đổi thì không được tính.
+  - Câu hỏi có phần lớn từ giống một câu đã lưu là `useful` sẽ xuất phát từ các
+    node câu đó đã chỉ ra, và kết quả ghi rõ đã nhớ lại từ câu nào.
+  - Câu hỏi sau đó bị lưu lại là `dead_end` thì không còn được nhớ lại.
+- Lệnh `query` qua CLI giờ cũng ghi `learning=…` trên các dòng NODE, như qua MCP.
+- Luật always-on (CLAUDE.md, AGENTS.md, GEMINI.md) nhắc agent chạy
+  `pilothify save-result … --outcome useful|dead_end` khi kết quả giúp được hoặc
+  dẫn sai. Số token của luật vẫn đúng bằng mức cũ.
+
+### Tài liệu
+
+- README ghi đúng biến bật query log (`PILOTHIFY_QUERY_LOG_ENABLE=1`). Log mặc
+  định tắt.
+
 ## v0.1.2 — 2026-11-15
 
 History của repo bắt đầu lại từ bản này. Tag `v0.1.0` và `v0.1.1` không còn,

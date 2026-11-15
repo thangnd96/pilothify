@@ -125,7 +125,7 @@ def test_report_is_still_referenced_as_fallback():
 
 def test_agents_section_does_not_skip_dirty_graph_output():
     assert "Dirty pilothify-out/ files are expected" in _AGENTS_MD_SECTION
-    assert "not a reason to skip pilothify" in _AGENTS_MD_SECTION
+    assert "no reason to skip pilothify" in _AGENTS_MD_SECTION
 
 
 def test_agents_section_uses_generic_pilothify_instruction():

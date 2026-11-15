@@ -65,13 +65,23 @@ Câu hỏi tiếng Việt: từ có dấu chỉ khớp với label tiếng Việ
 
 - `.pilothifyignore`: thêm mẫu loại trừ, ngoài `.gitignore`.
 - `.pilothifyrc`: `key=value` cho từng dự án, ví dụ `query_budget=4000`, `query_depth=3`, `language.inc=php`.
-- Biến môi trường `PILOTHIFY_*`, ví dụ `PILOTHIFY_BACKEND=none` (tắt mọi LLM backend), `PILOTHIFY_OUT` (thư mục output), `PILOTHIFY_HOOK_STRICT=1` (hook chặn hẳn thay vì chỉ nhắc), `PILOTHIFY_QUERY_LOG_DISABLE=1`, `PILOTHIFY_ASSET_MEDIA=1` (đưa cả ảnh, âm thanh, video asset vào pass semantic).
+- Biến môi trường `PILOTHIFY_*`, ví dụ `PILOTHIFY_BACKEND=none` (tắt mọi LLM backend), `PILOTHIFY_OUT` (thư mục output), `PILOTHIFY_HOOK_STRICT=1` (hook chặn hẳn thay vì chỉ nhắc), `PILOTHIFY_QUERY_LOG_ENABLE=1` (ghi các câu hỏi vào `~/.cache/pilothify-queries.log`; mặc định tắt), `PILOTHIFY_ASSET_MEDIA=1` (đưa cả ảnh, âm thanh, video asset vào pass semantic).
 
 ## Docs nối với code
 
 - **Cùng một mã ở nhiều file** (`BUG-ADM-15-01`, `D-20`, `GR-06`, `ADR-0008`): mỗi file vẫn giữ node của mình, nhưng được nối với nhau bằng cạnh `same_key_as`. `pilothify explain "BUG-ADM-15-01"` trả về node chính thay vì báo nhập nhằng. Mã phải có dấu `-` và có số (`Q5`, `G2` bị bỏ qua vì hay trùng giữa các tài liệu).
 - **Route của handler Spring** (`@RequestMapping`, `@GetMapping`, …) được ghép với prefix ở mức class và lưu ở `attributes.route`, ví dụ `PUT /api/v1/game/cinema/screen`. `query` tìm được theo route, còn `explain` in nó ra. Path dùng hằng số của class khác thì bỏ qua, để không đoán sai.
 - **Docs nhắc tới endpoint** (`PUT /me/social/shares/{postId}`) nối về handler bằng cạnh `references_route`: khớp đủ path là EXTRACTED, khớp phần đuôi và chỉ khớp một path là INFERRED 0,95. Mẫu glob như `/ctrl/**` không nối.
+
+## Học từ câu trả lời
+
+- Khi kết quả `query` giúp được (hoặc dẫn sai), agent lưu lại: `pilothify save-result --question "…" --answer "…" --nodes <label> --outcome useful|dead_end`. Luật trong CLAUDE.md nhắc agent làm việc này. File lưu ở `pilothify-out/memory/`.
+- `pilothify reflect` gom các file đó thành `pilothify-out/reflections/LESSONS.md` và `.pilothify_learning.json`. Git hook của pilothify chạy lệnh này sau mỗi commit.
+- `query` dùng lại hai thứ đó:
+  - Trong các node khớp câu hỏi, node đã được xác nhận hữu ích được xếp lên trước. Bài học có file đã đổi từ lúc lưu thì không được tính.
+  - Câu hỏi có phần lớn từ giống một câu đã lưu là `useful` sẽ bắt đầu từ các node câu đó đã chỉ ra, và dòng đầu kết quả ghi `Recalled from a saved answer to: …`.
+  - Câu hỏi sau đó bị lưu lại là `dead_end` thì không còn được nhớ lại.
+- Không tốn token, không cần chạy lại pass semantic. Bài học không bao giờ kéo vào kết quả một node không liên quan tới câu hỏi.
 
 ## Chi phí
 

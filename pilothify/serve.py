@@ -1702,6 +1702,102 @@ def _traversal_view(G: nx.Graph) -> nx.Graph:
 
 _QUERY_NO_MATCH = "No matching nodes found."
 
+# Work memory feeds the ranking. `save-result` writes answers to
+# pilothify-out/memory/, and `reflect` projects the nodes that proved useful into
+# the .pilothify_learning.json sidecar. A lesson only reorders nodes the question
+# already matched, and a saved answer is recalled only for a question that shares
+# most of its words, so neither can pull an unrelated node into an answer.
+_LEARNING_BOOST = {"preferred": 1.5, "tentative": 1.2}
+_RECALL_MIN_SHARED = 2
+_RECALL_MIN_OVERLAP = 0.6
+_RECALL_MAX_NODES = 4
+
+
+def _learning_overlay_for(G: nx.Graph, graph_path: str | None) -> dict:
+    """The learning sidecar, loaded once per graph. `_load_graph` attaches it; a
+    graph the CLI loaded directly gets it here."""
+    overlay = G.graph.get("_learning_overlay")
+    if overlay is None:
+        overlay = {}
+        if graph_path:
+            try:
+                from pilothify.reflect import load_learning_overlay as _llo
+                overlay = _llo(Path(graph_path))
+            except Exception:
+                overlay = {}
+        G.graph["_learning_overlay"] = overlay
+    return overlay
+
+
+def _apply_learning_boost(G: nx.Graph, ranked: list[tuple[float, str]],
+                          overlay: dict) -> list[tuple[float, str]]:
+    """Lift matched nodes that earlier answers proved useful. A stale lesson (its
+    file changed since) gets no lift. Ties break as `_score_query` breaks them."""
+    if not overlay:
+        return ranked
+    boosted = []
+    for score, nid in ranked:
+        entry = overlay.get(str(nid))
+        if entry and not entry.get("stale"):
+            score *= _LEARNING_BOOST.get(entry.get("status"), 1.0)
+        boosted.append((score, nid))
+    boosted.sort(key=lambda s: (-s[0], len(G.nodes[s[1]].get("label") or s[1]), s[1]))
+    return boosted
+
+
+def _recall_saved_answer(G: nx.Graph, question: str,
+                         graph_path: str | None) -> tuple[list[str], str]:
+    """Nodes a saved useful answer cited, for a question that shares most of its
+    words with this one, plus that saved question. The latest save of a question
+    wins, so an answer later marked dead_end or corrected is no longer recalled.
+    Cited names that do not resolve to exactly one node are skipped."""
+    if not graph_path:
+        return [], ""
+    memory_dir = Path(graph_path).parent / "memory"
+    if not memory_dir.is_dir():
+        return [], ""
+    asked = set(_query_terms(question))
+    if len(asked) < _RECALL_MIN_SHARED:
+        return [], ""
+    try:
+        from pilothify.reflect import load_memory_docs
+        docs = load_memory_docs(memory_dir)
+    except Exception:
+        return [], ""
+    latest: dict[str, dict] = {}
+    for doc in docs:  # oldest first, so the last save of a question wins
+        latest[doc.get("question", "")] = doc
+    best: tuple[float, str] | None = None
+    best_doc: dict | None = None
+    for saved_q, doc in latest.items():
+        if doc.get("outcome") != "useful" or not doc.get("source_nodes"):
+            continue
+        saved = set(_query_terms(saved_q))
+        shared = len(asked & saved)
+        if shared < _RECALL_MIN_SHARED or not saved:
+            continue
+        overlap = min(shared / len(asked), shared / len(saved))
+        if overlap < _RECALL_MIN_OVERLAP:
+            continue
+        key = (overlap, doc.get("date", ""))
+        if best is None or key > best:
+            best, best_doc = key, doc
+    if best_doc is None:
+        return [], ""
+    by_label: dict[str, list[str]] = {}
+    for nid, data in G.nodes(data=True):
+        by_label.setdefault(str(data.get("label") or ""), []).append(nid)
+    nodes: list[str] = []
+    for cited in best_doc["source_nodes"]:
+        nid = cited if cited in G else None
+        if nid is None and len(by_label.get(cited, [])) == 1:
+            nid = by_label[cited][0]
+        if nid is not None and nid not in nodes:
+            nodes.append(nid)
+        if len(nodes) >= _RECALL_MAX_NODES:
+            break
+    return nodes, (best_doc.get("question", "") if nodes else "")
+
 
 def _query_graph_text(
     G: nx.Graph,
@@ -1785,12 +1881,16 @@ def _query_graph_text(
         best_seed_by_term = {
             t: nid for t, nid in best_seed_by_term.items() if t not in intent
         }
-    start_nodes = _pick_seeds(qs.ranked, G=G, best_seed_by_term=best_seed_by_term, term_order=qs.term_order)
+    ranked = _apply_learning_boost(G, qs.ranked, _learning_overlay_for(G, graph_path))
+    start_nodes = _pick_seeds(ranked, G=G, best_seed_by_term=best_seed_by_term, term_order=qs.term_order)
+    # A recalled answer's nodes lead: they answered this question before.
+    recalled, recalled_from = _recall_saved_answer(G, question, graph_path)
+    start_nodes = recalled + [n for n in start_nodes if n not in recalled]
     if not start_nodes:
         return _vietnamese_no_match(vi_ignored) if vi_ignored else _QUERY_NO_MATCH
     return _render_query(G, question, start_nodes, mode=mode, depth=depth, token_budget=token_budget,
                          context_filters=context_filters, graph_path=graph_path,
-                         scores={nid: sc for sc, nid in qs.ranked})
+                         scores={nid: sc for sc, nid in ranked}, recalled_from=recalled_from)
 
 
 def _render_query(
@@ -1806,6 +1906,7 @@ def _render_query(
     given: bool = False,
     unresolved: list[str] | None = None,
     scores: dict[str, float] | None = None,
+    recalled_from: str = "",
 ) -> str:
     resolved_filters, filter_source = _resolve_context_filters(question, context_filters)
     traversal_graph = _filter_graph_by_context(_traversal_view(G), resolved_filters)
@@ -1816,6 +1917,9 @@ def _render_query(
     ]
     if unresolved:
         header_parts.append(f"Unresolved seeds (skipped): {unresolved}")
+    if recalled_from:
+        # Memory files can be committed, so the saved question is corpus text.
+        header_parts.append(f'Recalled from a saved answer to: "{sanitize_label(recalled_from)}"')
     # Name the graph this answer came from. `pilothify-out/` resolves against the
     # CWD, so running a query from a parent project while thinking about a
     # vendored subproject silently answers from the wrong corpus — the output is
