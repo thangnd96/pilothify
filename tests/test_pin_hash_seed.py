@@ -28,6 +28,7 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 _PROBE = """
 import json, os, sys
@@ -52,11 +53,19 @@ def _run_probe(argv: list[str], extra_env: dict | None = None) -> dict:
     return json.loads(result.stdout)
 
 
+def _expected_argv(args: list[str]) -> list[str]:
+    import pilothify
+    from pilothify.__main__ import _REEXEC_BOOTSTRAP
+    safe = ["-P"] if sys.version_info >= (3, 11) else []
+    root = str(Path(pilothify.__file__).resolve().parent.parent)
+    return [sys.executable, *safe, "-c", _REEXEC_BOOTSTRAP, root, *args]
+
+
 def test_reexecs_for_hash_sensitive_commands_when_unset():
     for cmd in ("update", "extract", "cluster-only", "label"):
         outcome = _run_probe(["pilothify", cmd, "."])
         assert outcome["called"], f"{cmd} must re-exec with PYTHONHASHSEED pinned"
-        assert outcome["argv"] == [sys.executable, "-m", "pilothify", cmd, "."]
+        assert outcome["argv"] == _expected_argv([cmd, "."])
         assert outcome["env_hashseed"] == "0"
 
 
@@ -68,7 +77,7 @@ def test_reexec_does_not_depend_on_argv0_being_a_runnable_script():
     all, so a launcher stub that isn't even a real file must not matter."""
     outcome = _run_probe(["/some/launcher/stub/with/no/py/content", "update", "."])
     assert outcome["called"]
-    assert outcome["argv"] == [sys.executable, "-m", "pilothify", "update", "."], (
+    assert outcome["argv"] == _expected_argv(["update", "."]), (
         "the launcher stub path must never appear in the re-exec argv"
     )
 
@@ -172,3 +181,36 @@ def test_reexec_waits_and_propagates_exit_code_on_windows(monkeypatch):
     else:
         raise AssertionError("must exit with the child's return code")
     assert seen == {"argv": ["py", "-m", "pilothify", "extract", "."], "env": {"PYTHONHASHSEED": "0"}}
+
+
+def test_reexec_ignores_a_pilothify_folder_in_the_cwd(tmp_path):
+    """`pilothify update` runs inside the repo it analyses. A `pilothify/`
+    folder there must not be imported by the re-exec'd CLI (or the spawn
+    workers that inherit its sys.path) in place of the installed package:
+    that would run the repo's own code. The parent is started the way a
+    console script is, with its own folder, not the cwd, first on sys.path."""
+    import pilothify
+
+    repo = tmp_path / "repo"
+    (repo / "pilothify").mkdir(parents=True)
+    (repo / "pilothify" / "__init__.py").write_text(
+        "import pathlib\n"
+        "(pathlib.Path.cwd() / 'SHADOW_IMPORTED').write_text('x')\n"
+        "raise SystemExit('shadow package imported')\n"
+    )
+    (repo / "a.py").write_text("def f():\n    return g()\n\ndef g():\n    return 1\n")
+    bindir = tmp_path / "bin"
+    bindir.mkdir()
+    launcher = bindir / "pilothify_launcher.py"
+    launcher.write_text(
+        "import sys\nfrom pilothify.__main__ import main\nsys.argv[0] = 'pilothify'\nmain()\n"
+    )
+    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONHASHSEED", "PYTEST_CURRENT_TEST")}
+    env["PYTHONPATH"] = str(Path(pilothify.__file__).resolve().parent.parent)
+    result = subprocess.run(
+        [sys.executable, str(launcher), "update", "."],
+        cwd=repo, capture_output=True, text=True, env=env,
+    )
+    assert not (repo / "SHADOW_IMPORTED").exists(), result.stderr
+    assert result.returncode == 0, result.stderr
+    assert (repo / "pilothify-out" / "graph.json").exists()

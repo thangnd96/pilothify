@@ -373,10 +373,9 @@ def test_hooks_limit_windows_workers_by_default(name, script):
 def _launcher_payload(script: str) -> str:
     """Extract the `python -c "<payload>"` the hook hands to PILOTHIFY_PYTHON.
 
-    The launcher is the only `-c` invocation whose body begins with
-    `import os, subprocess, sys` (the interpreter-detection probes in
-    _PYTHON_DETECT use `-c "$_GFY_PROBE"`)."""
-    m = re.search(r'-c "(import os, subprocess, sys.*?)"\n', script, re.DOTALL)
+    The launcher is the only `-c "..."` invocation written out inline (the
+    interpreter-detection probes in _PYTHON_DETECT use `-c "$_GFY_PROBE"`)."""
+    m = re.search(r'-c "(import sys\n.*?)"\n', script, re.DOTALL)
     assert m, "launcher payload not found"
     return m.group(1)
 
@@ -1478,7 +1477,8 @@ def test_merge_driver_quotes_interpreter_with_spaces(tmp_path, monkeypatch):
         capture_output=True, text=True, check=True,
     ).stdout.strip()
     assert driver.startswith(f'"{exe}"'), f"interpreter not quoted in merge driver: {driver!r}"
-    assert driver.endswith("-m pilothify merge-driver %O %A %B")
+    assert driver.endswith('" merge-driver %O %A %B')
+    assert " -m pilothify" not in driver
 
 
 def test_install_pins_interpreter_path_with_spaces(tmp_path, monkeypatch):
@@ -2227,3 +2227,75 @@ def test_worktree_guard_survives_exported_cdpath(tmp_path):
     assert "TOP=" in result.stdout, f"anchor exited before printing: {result.stdout!r} {result.stderr!r}"
     top = result.stdout.strip().split("TOP=", 1)[1]
     assert os.path.basename(top.rstrip("/\\")) == repo.name
+
+
+# A `pilothify/` folder at the top of the repo being worked on must never be
+# imported in place of the installed package: hooks and the merge driver run
+# there, and `python -c` / `-m` put that directory first on sys.path.
+
+_SHADOW_INIT = "raise SystemExit('shadow package imported')\n"
+
+
+def _strips_cwd_first(src: str) -> bool:
+    """True when `src` imports nothing but sys before dropping the '' entry."""
+    body = ast.parse(src).body
+    return (
+        len(body) >= 2
+        and ast.unparse(body[0]) == "import sys"
+        and ast.unparse(body[1]) == "sys.path[:] = [p for p in sys.path if p]"
+    )
+
+
+@pytest.mark.parametrize("name,script", _HOOK_SCRIPTS)
+def test_launcher_and_rebuild_body_drop_the_cwd_before_importing(name, script):
+    payload = _launcher_payload(script)
+    inner = re.search(r"_src = '''(.*?)'''", payload, re.DOTALL).group(1)
+    assert _strips_cwd_first(payload), f"{name} launcher imports before dropping the cwd"
+    assert _strips_cwd_first(inner), f"{name} rebuild body imports before dropping the cwd"
+
+
+def test_python_probe_ignores_a_package_folder_in_the_cwd(tmp_path):
+    """The probe must not accept an interpreter just because the repo it runs
+    in has a folder with the package's name."""
+    from pilothify.hooks import _PYTHON_DETECT
+
+    m = re.search(r'_GFY_PROBE="([^"]*)"', _PYTHON_DETECT)
+    probe = m.group(1).replace("'pilothify'", "'zz_probe_shadow_pkg'")
+    shadow = tmp_path / "zz_probe_shadow_pkg"
+    shadow.mkdir()
+    (shadow / "__init__.py").write_text("", encoding="utf-8")
+    r = subprocess.run([sys.executable, "-c", probe], cwd=tmp_path)
+    assert r.returncode == 1
+
+
+@pytest.mark.skipif(os.name == "nt", reason="runs the driver line through sh")
+def test_merge_driver_ignores_a_pilothify_folder_in_the_repo(tmp_path):
+    import json
+    import pilothify
+    from pilothify.hooks import _register_merge_driver
+
+    repo = _make_git_repo(tmp_path)
+    _register_merge_driver(repo)
+    driver = subprocess.run(
+        ["git", "-C", str(repo), "config", "--get", "merge.pilothify.driver"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    (repo / "pilothify").mkdir()
+    (repo / "pilothify" / "__init__.py").write_text(_SHADOW_INIT, encoding="utf-8")
+    files = {}
+    for key, ids in (("O", ["a"]), ("A", ["a", "b"]), ("B", ["a", "c"])):
+        path = tmp_path / f"{key}.json"
+        path.write_text(json.dumps({
+            "directed": False, "multigraph": False, "graph": {},
+            "nodes": [{"id": i, "label": i} for i in ids], "links": [],
+        }), encoding="utf-8")
+        files[key] = str(path)
+    line = driver
+    for key, path in files.items():
+        line = line.replace(f"%{key}", path)
+    env = {**os.environ, "PYTHONPATH": str(Path(pilothify.__file__).resolve().parent.parent)}
+    r = subprocess.run(line, shell=True, cwd=repo, capture_output=True, text=True, env=env)
+    assert "shadow package imported" not in r.stderr
+    assert r.returncode == 0, r.stderr
+    merged = json.loads(Path(files["A"]).read_text(encoding="utf-8"))
+    assert {n["id"] for n in merged["nodes"]} == {"a", "b", "c"}

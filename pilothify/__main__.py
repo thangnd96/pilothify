@@ -772,18 +772,34 @@ def _pin_hash_seed_if_needed() -> None:
     if "PYTHONHASHSEED" in os.environ or "PYTEST_CURRENT_TEST" in os.environ:
         return
     try:
-        # Re-exec as a module (-m pilothify) rather than replaying sys.argv[0]
-        # as a script path: that works for a POSIX console-script wrapper or
-        # a `python -m pilothify` invocation, but a uv/pip/pipx console-script
-        # launcher on Windows is a native .exe with no .py content, so
-        # `python.exe <that .exe path>` fails outright with "can't open
-        # file" -- every command this function touches.
-        _reexec(
-            [sys.executable, "-m", "pilothify", *sys.argv[1:]],
-            {**os.environ, "PYTHONHASHSEED": "0"},
-        )
+        # Never replay sys.argv[0] as a script path: a uv/pip/pipx
+        # console-script launcher on Windows is a native .exe with no .py
+        # content, so `python.exe <that .exe path>` fails outright with
+        # "can't open file" -- every command this function touches.
+        _reexec(_reexec_argv(sys.argv[1:]), {**os.environ, "PYTHONHASHSEED": "0"})
     except OSError:
         pass
+
+
+# Start the re-exec'd CLI with -c and this bootstrap, not `-m pilothify`.
+# Both -m and -c put the current directory first on sys.path, and these
+# commands run inside the repo being analysed: a `pilothify/` folder there
+# would be imported instead of the installed package, by the new process
+# and by every spawn worker it starts (they inherit its sys.path) -- running
+# that repo's code. The bootstrap drops the cwd entry and puts back the
+# folder this copy of pilothify was loaded from. On 3.11+ -P also keeps the
+# cwd out of the spawn workers' own interpreter startup.
+_REEXEC_BOOTSTRAP = (
+    "import sys; root = sys.argv.pop(1); sys.path[:] = [p for p in sys.path if p]; "
+    "root in sys.path or sys.path.insert(0, root); sys.argv[0] = 'pilothify'; "
+    "from pilothify.__main__ import main; main()"
+)
+
+
+def _reexec_argv(args: list[str]) -> list[str]:
+    safe = ["-P"] if sys.version_info >= (3, 11) else []
+    root = str(Path(__file__).resolve().parent.parent)
+    return [sys.executable, *safe, "-c", _REEXEC_BOOTSTRAP, root, *args]
 
 
 def _reexec(argv: list[str], env: dict[str, str], windows: bool | None = None) -> None:

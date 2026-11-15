@@ -32,7 +32,10 @@ _PYTHON_DETECT = """\
 # detached launch even started. find_spec locates the package without executing
 # it, so each probe costs interpreter startup only. The detached rebuild still
 # fails loudly in the log if the package is broken under that interpreter.
-_GFY_PROBE="import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('pilothify') else 1)"
+# Each probe first drops the '' (current directory) entry -c puts on sys.path:
+# hooks run at the repo top, and a pilothify/ folder there must not pass for
+# an installed package.
+_GFY_PROBE="import sys; sys.path[:] = [p for p in sys.path if p]; import importlib.util; sys.exit(0 if importlib.util.find_spec('pilothify') else 1)"
 PILOTHIFY_PYTHON=""
 _PINNED='__PINNED_PYTHON__'
 if [ -n "$_PINNED" ] && [ -x "$_PINNED" ] && "$_PINNED" -c "$_GFY_PROBE" 2>/dev/null; then
@@ -46,6 +49,12 @@ if [ -z "$PILOTHIFY_PYTHON" ]; then
         _FROM_FILE=$(cat "$_GFY_PYTHON_FILE" 2>/dev/null | tr -d '[:space:]')
         case "$_FROM_FILE" in
             *[!a-zA-Z0-9/_.@:\\\\-]*) _FROM_FILE="" ;;  # allowlist (covers Windows paths)
+        esac
+        # Absolute paths only: pilothify writes sys.executable here, and a
+        # relative one would name a file inside the (possibly committed) repo.
+        case "$_FROM_FILE" in
+            /*|[A-Za-z]:*) ;;
+            *) _FROM_FILE="" ;;
         esac
         if [ -n "$_FROM_FILE" ] && [ -x "$_FROM_FILE" ] && "$_FROM_FILE" -c "$_GFY_PROBE" 2>/dev/null; then
             PILOTHIFY_PYTHON="$_FROM_FILE"
@@ -180,9 +189,15 @@ def _unquote_git_path(name: str) -> str:
 # The Python that the rebuild runs, shared by both hooks. Embedded verbatim into
 # the launcher below and re-executed in the detached child. Must not contain the
 # double-quote, $, backtick or backslash characters: it is carried inside a
-# shell double-quoted `-c "..."` argument (see _detached_launch).
+# shell double-quoted `-c "..."` argument (see _detached_launch). Each body
+# starts by dropping the '' entry -c puts first on sys.path: the child runs at
+# the repo top, where a pilothify/ (or threading.py, ...) folder would
+# otherwise be imported in place of the real one, in it and in every spawn
+# worker it starts.
 _REBUILD_BODY_COMMIT = """\
-import os, signal, sys, threading, multiprocessing
+import sys
+sys.path[:] = [p for p in sys.path if p]
+import os, signal, threading, multiprocessing
 from pathlib import Path
 
 from pilothify.hooks import _unquote_git_path
@@ -265,9 +280,11 @@ except Exception as exc:
 """
 
 _REBUILD_BODY_CHECKOUT = """\
+import sys
+sys.path[:] = [p for p in sys.path if p]
 from pilothify.watch import _rebuild_code, _apply_resource_limits
 from pathlib import Path
-import os, signal, sys, threading, multiprocessing
+import os, signal, threading, multiprocessing
 try:
     _apply_resource_limits()
     _timeout = int(os.environ.get('PILOTHIFY_REBUILD_TIMEOUT', '600'))
@@ -358,7 +375,9 @@ except Exception as exc:
 # This payload is carried inside a shell double-quoted -c argument,
 # so it deliberately uses only single-quoted Python strings (no ", $, ` or \\).
 _LAUNCHER_TEMPLATE = """\
-import os, subprocess, sys
+import sys
+sys.path[:] = [p for p in sys.path if p]
+import os, subprocess
 _src = '''
 __REBUILD_BODY__
 '''
@@ -369,7 +388,7 @@ try:
 except OSError:
     _out = subprocess.DEVNULL
 _kw = dict(stdout=_out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, cwd=os.getcwd(), close_fds=True)
-_cmd = [sys.executable, '-c', _src]
+_cmd = [sys.executable] + (['-P'] if sys.version_info >= (3, 11) else []) + ['-c', _src]
 if os.name == 'nt':
     _flags = 0x08000000 | 0x00000200  # CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP
     try:
@@ -1000,6 +1019,14 @@ def _has_merge_attr(content: str) -> bool:
     return False
 
 
+# Runs the CLI without the '' (current directory) sys.path entry -c adds.
+# Single quotes only: it sits inside a double-quoted shell word.
+_SAFE_CLI = (
+    "import sys; sys.path[:] = [p for p in sys.path if p]; sys.argv[0] = 'pilothify'; "
+    "from pilothify.__main__ import main; main()"
+)
+
+
 def _register_merge_driver(root: Path) -> str:
     """Register the graph.json union merge driver in git config + .gitattributes.
 
@@ -1018,7 +1045,9 @@ def _register_merge_driver(root: Path) -> str:
         # unquoted "C:\\Users\\First Last\\...\\python.exe" would split into two
         # words and the driver would never run. The same allowlist keeps
         # '$' and backticks out, so double quotes cannot introduce expansion.
-        driver = f'"{pinned}" -m pilothify merge-driver %O %A %B'
+        # -c with _SAFE_CLI, not -m: git runs the driver at the repo top, and
+        # -m would import a pilothify/ folder there instead of the package.
+        driver = f'"{pinned}" -c "{_SAFE_CLI}" merge-driver %O %A %B'
     else:
         driver = "pilothify merge-driver %O %A %B"
     try:

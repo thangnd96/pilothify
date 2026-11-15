@@ -27,6 +27,17 @@
 
 ### Sửa lỗi
 
+- **Thư mục `pilothify/` trong repo đang phân tích có thể bị chạy thay cho gói
+  đã cài.** `update`, `extract`, `cluster-only` và `label` tự chạy lại chính nó
+  bằng `python -m pilothify` để cố định `PYTHONHASHSEED`. Cả `-m` lẫn `-c` đều
+  đặt thư mục hiện tại lên đầu `sys.path`, nên nếu repo có thư mục `pilothify/`,
+  tiến trình mới và mọi process con của pool sẽ import thư mục đó, tức là chạy
+  code của repo. Hook git (probe chọn interpreter, phần dựng lại graph) và
+  merge driver cũng chạy ở gốc repo và gặp đúng lỗi này. Nay các chỗ đó bỏ thư
+  mục hiện tại khỏi `sys.path` trước khi import gì khác, và trên Python 3.11+
+  dùng thêm `-P`. Hook cũng chỉ nhận đường dẫn tuyệt đối từ
+  `pilothify-out/.pilothify_python`, để repo không thể trỏ nó tới một file của
+  chính repo.
 - **Process con của pool ghi cache vào thư mục khác với process cha.** Tên thư
   mục cache AST gồm phiên bản pilothify, mà mỗi process con theo kiểu spawn
   lại tự đọc phiên bản đó từ metadata. Khi một `*.egg-info` trong mã nguồn bị
