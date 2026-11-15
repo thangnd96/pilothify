@@ -8,7 +8,7 @@ Biến một codebase (kèm docs, schema SQL, config, PDF, ảnh) thành **knowl
 
 ## Cài đặt
 
-Cần Python 3.10 đến 3.14 và [uv](https://docs.astral.sh/uv/).
+Cần Python 3.11 đến 3.14 và [uv](https://docs.astral.sh/uv/).
 
 ```bash
 git clone https://github.com/thangnd96/pilothify.git && cd pilothify

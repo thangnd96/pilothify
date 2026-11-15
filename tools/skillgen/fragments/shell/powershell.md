@@ -9,7 +9,7 @@ function Find-PilothifyPython {
         if ($uvDir) {
             $py = Join-Path $uvDir "pilothify\Scripts\python.exe"
             if (Test-Path $py) {
-                & $py -c "import pilothify" 2>$null
+                & $py -P -c "import pilothify" 2>$null
                 if ($LASTEXITCODE -eq 0) { return $py }
             }
         }
@@ -20,7 +20,7 @@ function Find-PilothifyPython {
         if ($venvs) {
             $py = Join-Path $venvs "pilothify\Scripts\python.exe"
             if (Test-Path $py) {
-                & $py -c "import pilothify" 2>$null
+                & $py -P -c "import pilothify" 2>$null
                 if ($LASTEXITCODE -eq 0) { return $py }
             }
         }
@@ -28,7 +28,7 @@ function Find-PilothifyPython {
     # 3. Active venv / conda / pip-into-current-env
     $pyCmd = Get-Command python -ErrorAction SilentlyContinue
     if ($pyCmd) {
-        & $pyCmd.Source -c "import pilothify" 2>$null
+        & $pyCmd.Source -P -c "import pilothify" 2>$null
         if ($LASTEXITCODE -eq 0) {
             return (& $pyCmd.Source -c "import sys; print(sys.executable)").Trim()
         }
@@ -63,4 +63,4 @@ INPUT_PATH
 
 If the import succeeds, print nothing and move straight to Step 2.
 
-**In every subsequent block, run Python through the saved interpreter — `& (Get-Content pilothify-out\.pilothify_python)` in place of a bare `python3` — so every step uses the interpreter that actually has pilothify.**
+**In later blocks, use `& (Get-Content pilothify-out\.pilothify_python) -P` in place of `python3`.**

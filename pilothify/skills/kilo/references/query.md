@@ -11,7 +11,7 @@ Two traversal modes - choose based on the question:
 
 First check the graph exists:
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 from pathlib import Path
 if not Path('pilothify-out/graph.json').exists():
     print('ERROR: No graph found. Run /pilothify <path> first to build the graph.')
@@ -28,7 +28,7 @@ Fix this **without inventing tokens** by expanding the query against the actual 
 
 1. Extract the token vocabulary from node labels:
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json, re
 from pathlib import Path
 data = json.loads(Path('pilothify-out/graph.json').read_text(encoding='utf-8'))
@@ -77,7 +77,7 @@ If the CLI is unavailable, load `pilothify-out/graph.json` and run the traversal
 5. If the graph lacks enough information, say so - do not hallucinate edges.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from networkx.readwrite import json_graph
 from pathlib import Path
@@ -171,15 +171,15 @@ print(output)
 
 Replace `QUESTION` with the **expanded** query string, `MODE` with `bfs` or `dfs`, and `BUDGET` with the token budget (default `2000`, or whatever `--budget N` specifies). Then answer based on the subgraph output above, using only what the graph contains.
 
-**Bypass check (hub/bridge questions only).** If the question is about why a node bridges communities or has unusually many edges (a hub/god node), the neighbour listing above only shows code that already has an edge to it — it cannot show code that does the hub's job without ever calling it. Before finalizing the answer: pick one or two literal, distinctive things the hub does (a hard-coded constant it wraps, a specific string it returns, the exact computation in its body), then grep the corpus for that literal text in files that have **no edge** to the hub node in the subgraph above. Report any hits separately, labeled "Bypasses", distinct from the normal neighbour list — each is a file that reimplements the hub instead of using it. Also check whether the hub's own community label names a different node: a shared utility is often clustered into its heaviest consumer's community, so the label can read as if that consumer were the bridge. If so, say so plainly in the answer rather than letting the label stand unquestioned.
+**Bypass check (hub/bridge questions only).** If the question is about why a node bridges communities or has unusually many edges (a hub/god node), the neighbour listing above only shows code that already has an edge to it — it cannot show code that does the hub's job without ever calling it. Before finalizing the answer: pick one or two literal, distinctive things the hub does (a hard-coded constant it wraps, a specific string it returns, the exact computation in its body), then grep the corpus for that literal text in files that have **no edge** to the hub node in the subgraph above. Report any hits separately, labeled "Bypasses", distinct from the normal neighbour list — each is a file that reimplements the hub instead of using it. Also check whether the hub's own community label names a different node: a shared utility is often clustered into its heaviest consumer's community, so the label can read as if that consumer were the bridge. If so, say so plainly in the answer.
 
 After writing the answer, save it back into the graph so it improves future queries. Include the expanded tokens inside the `--answer` text (e.g. `"Expanded from original query via vocab: [tokens]. Then traversed..."`) so the next `--update` extracts the expansion history as a graph node:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -m pilothify save-result --question "ORIGINAL_QUESTION" --answer "ANSWER" --type query --nodes NODE1 NODE2
+$(cat pilothify-out/.pilothify_python) -P -m pilothify save-result --question "ORIGINAL_QUESTION" --answer "ANSWER" --type query --nodes NODE1 NODE2
 ```
 
-Replace `ORIGINAL_QUESTION` with the user's verbatim question, `ANSWER` with your full answer text (containing the expanded-token trace), `NODE1 NODE2` with the list of node labels you cited. This closes the feedback loop: the next `--update` will extract this Q&A as a node in the graph.
+Replace `ORIGINAL_QUESTION` with the user's verbatim question, `ANSWER` with your full answer text (containing the expanded-token trace), `NODE1 NODE2` with the list of node labels you cited.
 
 **Work memory (self-improving loop).** Add an `--outcome` so future sessions learn from this one — append `--outcome useful|dead_end|corrected` to the `save-result` command (and `--correction "the right answer"` when correcting):
 
@@ -202,7 +202,7 @@ pilothify path "NODE_A" "NODE_B"
 If the CLI is unavailable, run it inline:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json, sys
 import networkx as nx
 from networkx.readwrite import json_graph
@@ -254,7 +254,7 @@ Replace `NODE_A` and `NODE_B` with the actual concept names from the user. Then 
 After writing the explanation, save it back:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -m pilothify save-result --question "Path from NODE_A to NODE_B" --answer "ANSWER" --type path_query --nodes NODE_A NODE_B
+$(cat pilothify-out/.pilothify_python) -P -m pilothify save-result --question "Path from NODE_A to NODE_B" --answer "ANSWER" --type path_query --nodes NODE_A NODE_B
 ```
 
 ---
@@ -270,7 +270,7 @@ pilothify explain "NODE_NAME"
 If the CLI is unavailable, run it inline:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json, sys
 import networkx as nx
 from networkx.readwrite import json_graph
@@ -315,5 +315,5 @@ Replace `NODE_NAME` with the concept the user asked about. Then write a 3-5 sent
 After writing the explanation, save it back:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -m pilothify save-result --question "Explain NODE_NAME" --answer "ANSWER" --type explain --nodes NODE_NAME
+$(cat pilothify-out/.pilothify_python) -P -m pilothify save-result --question "Explain NODE_NAME" --answer "ANSWER" --type explain --nodes NODE_NAME
 ```

@@ -24,8 +24,8 @@ _SCOUT_PROGRAMS = {"grep", "rg", "ag", "ack", "find", "cat", "head", "tail", "le
 _SCOUT_TOOLS = {"Grep", "Glob", "Read"}
 # A shell command splits into simple commands at newlines, ;, &&, || and |.
 _SPLIT = re.compile(r"\n|;|&&|\|\||\|")
-# The skill runs pilothify as `$(cat pilothify-out/.pilothify_python) -m pilothify ...`.
-_INTERPRETER = re.compile(r"^(?:\$\([^)]*\)|\S*python[\d.]*)\s+-m\s+")
+# The skill runs pilothify as `$(cat pilothify-out/.pilothify_python) -P -m pilothify ...`.
+_INTERPRETER = re.compile(r"^(?:\$\([^)]*\)|\S*python[\d.]*)\s+(?:-[A-Za-z]+\s+)*?-m\s+")
 
 
 def transcript_dir(repo: Path) -> Path:

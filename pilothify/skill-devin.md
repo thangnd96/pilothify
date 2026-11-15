@@ -65,7 +65,7 @@ If a graph already exists, query it. With no graph, one targeted lookup ("where 
 
 ## What You Must Do When Invoked
 
-If the user invoked `/pilothify --help` or `/pilothify -h` (with no other arguments), print the contents of the `## Usage` section above verbatim and stop. Do not run any commands, do not detect files, do not default the path to `.`. Just print the Usage block and return.
+If the user invoked `/pilothify --help` or `/pilothify -h` (with no other arguments), print the contents of the `## Usage` section above verbatim and stop. Do not run any commands, do not detect files, do not default the path to `.`.
 
 If no path was given, use `.` (current directory). Do not ask the user for a path.
 
@@ -85,20 +85,20 @@ if [ -z "$PYTHON" ] && [ -n "$PILOTHIFY_BIN" ]; then
     _SHEBANG=$(head -1 "$PILOTHIFY_BIN" | tr -d '#!')
     case "$_SHEBANG" in
         *[!a-zA-Z0-9/_.@-]*) ;;
-        *) "$_SHEBANG" -c "import pilothify" 2>/dev/null && PYTHON="$_SHEBANG" ;;
+        *) "$_SHEBANG" -P -c "import pilothify" 2>/dev/null && PYTHON="$_SHEBANG" ;;
     esac
 fi
 # 3. Fall back to python3
 if [ -z "$PYTHON" ]; then PYTHON="python3"; fi
-if ! "$PYTHON" -c "import pilothify" 2>/dev/null; then
+if ! "$PYTHON" -P -c "import pilothify" 2>/dev/null; then
     # From the repo: the name is not ours on PyPI
     SRC="pilothify @ git+https://github.com/thangnd96/pilothify"
     if command -v uv >/dev/null 2>&1; then
         uv tool install --upgrade "$SRC" -q 2>&1 | tail -3
         PYTHON="$(uv tool dir)/pilothify/bin/python"
     else
-        "$PYTHON" -m pip install "$SRC" -q 2>/dev/null \
-          || "$PYTHON" -m pip install "$SRC" -q --break-system-packages 2>&1 | tail -3
+        "$PYTHON" -P -m pip install "$SRC" -q 2>/dev/null \
+          || "$PYTHON" -P -m pip install "$SRC" -q --break-system-packages 2>&1 | tail -3
     fi
 fi
 # Write interpreter path for all subsequent steps (persists across invocations)
@@ -114,12 +114,12 @@ PILOTHIFY_ROOT_EOF
 
 If the import succeeds, print nothing and move straight to Step 2.
 
-**In every subsequent bash block, replace `python3` with `$(cat pilothify-out/.pilothify_python)` to use the correct interpreter.**
+**In later bash blocks, use `$(cat pilothify-out/.pilothify_python) -P` in place of `python3`.**
 
 ### Step 2 - Detect files
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.detect import detect
 from pathlib import Path
@@ -172,7 +172,7 @@ Set it as `PILOTHIFY_WHISPER_PROMPT` in the environment before running the trans
 **Step 2 - Transcribe:**
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json, os
 from pathlib import Path
 from pilothify.transcribe import transcribe_all
@@ -211,7 +211,7 @@ Note: Parallelizing AST + semantic saves 5-15s on large corpora. AST is determin
 For any code files detected, run AST extraction in parallel with Part B subagents:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.extract import collect_files, extract
 from pathlib import Path
@@ -237,7 +237,7 @@ else:
 **Fast path:** If detection found zero docs, papers, and images (code-only corpus), skip Part B entirely and go straight to Part C. AST handles code - there is nothing for semantic subagents to do. **First write an empty semantic file** so Part C's merge has its input (it reads `pilothify-out/.pilothify_semantic.json` unconditionally; without this a code-only run hits `FileNotFoundError`):
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 Path('pilothify-out/.pilothify_semantic.json').write_text(json.dumps({'nodes':[],'edges':[],'hyperedges':[],'input_tokens':0,'output_tokens':0}), encoding='utf-8')
@@ -257,7 +257,7 @@ Before dispatching subagents, print a timing estimate:
 Before dispatching any subagents, check which files already have cached extraction results:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.cache import check_semantic_cache
 from pathlib import Path
@@ -352,7 +352,7 @@ If more than half the chunks failed or are missing, stop and tell the user to re
 After each subagent call completes, write its result to `pilothify-out/.pilothify_chunk_N.json`. **After each subagent call completes, read the real token counts from the subagent tool result's `usage` field and write them back into the chunk JSON before merging** — the chunk JSON itself always has placeholder zeros. Then merge:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json, glob
 from pathlib import Path
 from pilothify.semantic_cleanup import load_validated_semantic_fragment, sanitize_semantic_fragment
@@ -381,7 +381,7 @@ print(f'Merged {len(chunks)} chunks: {total_in:,} in / {total_out:,} out tokens'
 
 Save new results to cache:
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.cache import save_semantic_cache
 from pathlib import Path
@@ -395,7 +395,7 @@ print(f'Cached {saved} files')
 
 Merge cached + new results into `pilothify-out/.pilothify_semantic.json`:
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 from pilothify.semantic_cleanup import sanitize_semantic_fragment
@@ -430,7 +430,7 @@ Clean up temp files: `rm -f pilothify-out/.pilothify_cached.json pilothify-out/.
 #### Part C - Merge AST + semantic into final extraction
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pathlib import Path
 from pilothify.semantic_cleanup import sanitize_semantic_fragment
@@ -474,7 +474,7 @@ print(f'Merged: {total} nodes, {edges} edges ({len(ast[\"nodes\"])} AST + {len(s
 
 ```bash
 mkdir -p pilothify-out
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.build import build_from_json
 from pilothify.cluster import cluster, score_all
@@ -531,7 +531,7 @@ Read `pilothify-out/.pilothify_analysis.json`. For each community key, look at i
 Then regenerate the report and save the labels for the visualizer:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.build import build_from_json
 from pilothify.cluster import score_all
@@ -577,7 +577,7 @@ INPUT_PATH is read from `pilothify-out/.pilothify_root`; there is no path to sub
 If `--obsidian` was given:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.build import build_from_json
 from pilothify.export import to_obsidian, to_canvas
@@ -608,7 +608,7 @@ print('  _COMMUNITY_* - overview notes with cohesion scores and dataview queries
 Generate the HTML graph (always, unless `--no-viz`):
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.build import build_from_json
 from pilothify.export import to_html
@@ -661,7 +661,7 @@ The wiki is an agent-crawlable export — `index.md` plus one article per commun
 Run this before Step 9 (cleanup) so `pilothify-out/.pilothify_labels.json` is still available.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.build import build_from_json
 from pilothify.wiki import to_wiki
@@ -689,7 +689,7 @@ print('  pilothify-out/wiki/index.md  ->  agent entry point')
 **If `--neo4j`** - generate a Cypher file for manual import:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.build import build_from_json
 from pilothify.export import to_cypher
@@ -704,7 +704,7 @@ print('cypher.txt written - import with: cypher-shell < pilothify-out/cypher.txt
 **If `--neo4j-push <uri>`** - push directly to a running Neo4j instance. Ask the user for credentials if not provided:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.build import build_from_json
 from pilothify.export import push_to_neo4j
@@ -725,7 +725,7 @@ Replace `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD` with actual values. Default 
 ### Step 7b - SVG export (only if --svg flag)
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.build import build_from_json
 from pilothify.export import to_svg
@@ -747,7 +747,7 @@ print('graph.svg written - embeds in Obsidian, Notion, GitHub READMEs')
 ### Step 7c - GraphML export (only if --graphml flag)
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.build import build_from_json
 from pilothify.export import to_graphml
@@ -789,7 +789,7 @@ To configure in Claude Desktop, add to `claude_desktop_config.json`:
 If `total_words` from `pilothify-out/.pilothify_detect.json` is greater than 5,000, run:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.benchmark import run_benchmark, print_benchmark
 from pathlib import Path
@@ -807,7 +807,7 @@ Print the output directly in chat. If `total_words <= 5000`, skip silently - the
 ### Step 9 - Save manifest, update cost tracker, clean up, and report
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 from datetime import datetime, timezone
@@ -867,7 +867,7 @@ Graph complete. Outputs in PATH_TO_DIR/pilothify-out/
 
 Replace PATH_TO_DIR with the actual absolute path of the directory that was processed.
 
-If PATH_TO_DIR is inside a git repository, add one line to the report: `pilothify-out/` was written into the working tree, so unless the repository already ignores it, it will show in `git status`; the user can add `pilothify-out/` to `.gitignore`, or commit only the outputs their team should share.
+If PATH_TO_DIR is inside a git repository, add one line to the report: unless the repository ignores it, `pilothify-out/` will show in `git status`; the user can add it to `.gitignore`, or commit only the outputs their team should share.
 
 Then paste these sections from GRAPH_REPORT.md directly into the chat:
 - God Nodes
@@ -880,7 +880,7 @@ Then immediately offer to explore. Pick the single most interesting suggested qu
 
 > "The most interesting question this graph can answer: **[question]**. Want me to trace it?"
 
-If the user says yes, run `/pilothify query "[question]"` on the graph and walk them through the answer using the graph structure - which nodes connect, which community boundaries get crossed, what the path reveals. Keep going as long as they want to explore. Each answer should end with a natural follow-up ("this connects to X - want to go deeper?") so the session feels like navigation, not a one-shot report.
+If the user says yes, run `/pilothify query "[question]"` on the graph and walk them through the answer using the graph structure - which nodes connect, which community boundaries get crossed, what the path reveals. Keep going as long as they want to explore. Each answer should end with a natural follow-up ("this connects to X - want to go deeper?").
 
 The graph is the map. Your job after the pipeline is to be the guide.
 
@@ -911,7 +911,7 @@ fi
 Use when you've added or modified files since the last run. Only re-extracts changed files - saves tokens and time.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.detect import detect_incremental, save_manifest
 from pathlib import Path
@@ -934,10 +934,10 @@ if new_total > 0:
 "
 ```
 
-Then populate `.pilothify_detect.json` so Steps 3A–6 (which read it unconditionally) see the right state for an incremental run. `files` carries the changed subset (what Part A and Part B's cache check read); `all_files` carries the full corpus for any step that needs corpus-wide context:
+Then populate `.pilothify_detect.json` so Steps 3A–6 see the right state for an incremental run. `files` carries the changed subset (what Part A and Part B's cache check read); `all_files` carries the full corpus for any step that needs corpus-wide context:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 r = json.loads(Path('pilothify-out/.pilothify_incremental.json').read_text())
@@ -955,7 +955,7 @@ Path('pilothify-out/.pilothify_detect.json').write_text(json.dumps({
 If new files exist, first check whether all changed files are code files:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 
@@ -977,7 +977,7 @@ If no new files exist (only deletions), create an empty extraction so the merge 
 ```bash
 if [ ! -f pilothify-out/.pilothify_extract.json ]; then
     echo '[pilothify update] Only deletions -- creating empty extraction for merge.'
-    $(cat pilothify-out/.pilothify_python) -c "
+    $(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 Path('pilothify-out/.pilothify_extract.json').write_text(json.dumps({'nodes':[],'edges':[],'hyperedges':[],'input_tokens':0,'output_tokens':0}), encoding='utf-8')
@@ -988,7 +988,7 @@ fi
 Then:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.build import build_from_json
 from pilothify.export import to_json
@@ -1015,7 +1015,7 @@ Then run Steps 4-8 on the merged graph as normal.
 After Step 4, show the graph diff:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.analyze import graph_diff
 from pilothify.build import build_from_json
@@ -1048,7 +1048,7 @@ Clean up after: `rm -f pilothify-out/.pilothify_old.json`
 Skip Steps 1-3. Load the existing graph from `pilothify-out/graph.json` and re-run clustering:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.cluster import cluster, score_all
 from pilothify.analyze import god_nodes, surprising_connections
@@ -1101,7 +1101,7 @@ Two traversal modes - choose based on the question:
 
 First check the graph exists:
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 from pathlib import Path
 if not Path('pilothify-out/graph.json').exists():
     print('ERROR: No graph found. Run /pilothify <path> first to build the graph.')
@@ -1119,7 +1119,7 @@ Load `pilothify-out/graph.json`, then:
 5. If the graph lacks enough information, say so - do not hallucinate edges.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from networkx.readwrite import json_graph
 import networkx as nx
@@ -1207,12 +1207,12 @@ print(output)
 
 Replace `QUESTION` with the user's actual question, `MODE` with `bfs` or `dfs`, and `BUDGET` with the token budget (default `2000`, or whatever `--budget N` specifies). Then answer based on the subgraph output above.
 
-**Bypass check (hub/bridge questions only).** If the question is about why a node bridges communities or has unusually many edges (a hub/god node), the neighbour listing above only shows code that already has an edge to it — it cannot show code that does the hub's job without ever calling it. Before finalizing the answer: pick one or two literal, distinctive things the hub does (a hard-coded constant it wraps, a specific string it returns, the exact computation in its body), then grep the corpus for that literal text in files that have no edge to the hub node in the subgraph above. Report any hits separately, labeled "Bypasses", distinct from the normal neighbour list — each is a file that reimplements the hub instead of using it. Also check whether the hub's own community label names a different node: a shared utility is often clustered into its heaviest consumer's community, so the label can read as if that consumer were the bridge. If so, say so plainly in the answer rather than letting the label stand unquestioned.
+**Bypass check (hub/bridge questions only).** If the question is about why a node bridges communities or has unusually many edges (a hub/god node), the neighbour listing above only shows code that already has an edge to it — it cannot show code that does the hub's job without ever calling it. Before finalizing the answer: pick one or two literal, distinctive things the hub does (a hard-coded constant it wraps, a specific string it returns, the exact computation in its body), then grep the corpus for that literal text in files that have no edge to the hub node in the subgraph above. Report any hits separately, labeled "Bypasses", distinct from the normal neighbour list — each is a file that reimplements the hub instead of using it. Also check whether the hub's own community label names a different node: a shared utility is often clustered into its heaviest consumer's community, so the label can read as if that consumer were the bridge. If so, say so plainly in the answer.
 
 After writing the answer, save it back into the graph so it improves future queries:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -m pilothify save-result --question "QUESTION" --answer "ANSWER" --type query --nodes NODE1 NODE2
+$(cat pilothify-out/.pilothify_python) -P -m pilothify save-result --question "QUESTION" --answer "ANSWER" --type query --nodes NODE1 NODE2
 ```
 
 ---
@@ -1223,7 +1223,7 @@ Find the shortest path between two named concepts in the graph.
 
 First check the graph exists:
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 from pathlib import Path
 if not Path('pilothify-out/graph.json').exists():
     print('ERROR: No graph found. Run /pilothify <path> first to build the graph.')
@@ -1232,7 +1232,7 @@ if not Path('pilothify-out/graph.json').exists():
 ```
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json, sys
 import networkx as nx
 from networkx.readwrite import json_graph
@@ -1284,7 +1284,7 @@ Replace `NODE_A` and `NODE_B` with the actual concept names. Then explain the pa
 After writing the explanation, save it back:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -m pilothify save-result --question "Path from NODE_A to NODE_B" --answer "ANSWER" --type path_query --nodes NODE_A NODE_B
+$(cat pilothify-out/.pilothify_python) -P -m pilothify save-result --question "Path from NODE_A to NODE_B" --answer "ANSWER" --type path_query --nodes NODE_A NODE_B
 ```
 
 ---
@@ -1295,7 +1295,7 @@ Give a plain-language explanation of a single node - everything connected to it.
 
 First check the graph exists:
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 from pathlib import Path
 if not Path('pilothify-out/graph.json').exists():
     print('ERROR: No graph found. Run /pilothify <path> first to build the graph.')
@@ -1304,7 +1304,7 @@ if not Path('pilothify-out/graph.json').exists():
 ```
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json, sys
 import networkx as nx
 from networkx.readwrite import json_graph
@@ -1349,7 +1349,7 @@ Replace `NODE_NAME` with the concept. Then write a 3-5 sentence explanation usin
 After writing the explanation, save it back:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -m pilothify save-result --question "Explain NODE_NAME" --answer "ANSWER" --type explain --nodes NODE_NAME
+$(cat pilothify-out/.pilothify_python) -P -m pilothify save-result --question "Explain NODE_NAME" --answer "ANSWER" --type explain --nodes NODE_NAME
 ```
 
 ---
@@ -1359,7 +1359,7 @@ $(cat pilothify-out/.pilothify_python) -m pilothify save-result --question "Expl
 Fetch a URL and add it to the corpus, then update the graph.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys
 from pilothify.ingest import ingest
 from pathlib import Path
@@ -1392,7 +1392,7 @@ Supported URL types (auto-detected):
 Start a background watcher that monitors a folder and auto-updates the graph when files change.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -m pilothify.watch "$(cat pilothify-out/.pilothify_root)" --debounce 3
+$(cat pilothify-out/.pilothify_python) -P -m pilothify.watch "$(cat pilothify-out/.pilothify_root)" --debounce 3
 ```
 
 This watches the same folder pilothify extracted, read from the trusted `pilothify-out/.pilothify_root` that Step 1 resolved - there is no path to substitute, so a scan root containing shell metacharacters can never be re-interpreted here. Behavior depends on what changed:

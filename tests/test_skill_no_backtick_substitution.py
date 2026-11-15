@@ -29,8 +29,8 @@ GENERATED = sorted(GEN.glob("skill*.md")) + sorted(GEN.glob("skills/**/*.md"))
 
 _FENCE = re.compile(r"^```(\w*)\s*$")
 _DQ = re.compile(r'(?<!\\)"')                  # an unescaped double quote
-OPENER = '$(cat pilothify-out/.pilothify_python) -c "'
-OPENER_RE = re.compile(r'^"?\$\(cat pilothify-out/\.pilothify_python\)"? -c "')
+OPENER = '$(cat pilothify-out/.pilothify_python) -P -c "'
+OPENER_RE = re.compile(r'^"?\$\(cat pilothify-out/\.pilothify_python\)"? (?:-P )?-c "')
 PART_C = "merged_edges = ast['edges'] + sem['edges']"
 UPDATE = "from pilothify.build import build_merge"
 BASH = shutil.which("bash")
@@ -185,7 +185,7 @@ def run_statements(
             bad_exits.append((r.returncode, stmt.splitlines()[0]))
     allowed = (
         re.compile(r"^\+\+T cat pilothify-out/\.pilothify_python$"),
-        re.compile(rf"^\+T {re.escape(str(stub))} -c "),
+        re.compile(rf"^\+T {re.escape(str(stub))} (?:-P )?-c "),
     )
     traced = [ln for err in stderr for ln in err.splitlines() if re.match(r"^\++T ", ln)]
     other = [ln for ln in traced if not any(a.match(ln) for a in allowed)]

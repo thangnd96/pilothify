@@ -7,7 +7,7 @@ Load this only when the user passed `--update` or `--cluster-only`. A first-time
 Use when you've added or modified files since the last run. Only re-extracts changed files - saves tokens and time.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.detect import detect_incremental, save_manifest
 from pathlib import Path
@@ -40,10 +40,10 @@ if new_total > 0:
 "
 ```
 
-Then populate `.pilothify_detect.json` so Steps 3A–6 (which read it unconditionally) see the right state for an incremental run. `files` carries the changed subset (drives Step 3A AST + Step 3B0 cache check on only what changed); `all_files` carries the full corpus for any step that needs corpus-wide context:
+Then populate `.pilothify_detect.json` so Steps 3A–6 see the right state for an incremental run. `files` carries the changed subset (drives Step 3A AST + Step 3B0 cache check on only what changed); `all_files` carries the full corpus for any step that needs corpus-wide context:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 r = json.loads(Path('pilothify-out/.pilothify_incremental.json').read_text(encoding=\"utf-8\"))
@@ -61,7 +61,7 @@ Path('pilothify-out/.pilothify_detect.json').write_text(json.dumps({
 If new files exist, first check whether all changed files are code files:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 
@@ -84,7 +84,7 @@ If no new files exist (only deletions), create an empty extraction so the merge 
 ```bash
 if [ ! -f pilothify-out/.pilothify_extract.json ]; then
     echo '[pilothify update] Only deletions -- creating empty extraction for merge.'
-    $(cat pilothify-out/.pilothify_python) -c "
+    $(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 Path('pilothify-out/.pilothify_extract.json').write_text(json.dumps({'nodes':[],'edges':[],'hyperedges':[],'input_tokens':0,'output_tokens':0}), encoding='utf-8')
@@ -96,7 +96,7 @@ fi
 Then:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 from pilothify.build import build_merge
@@ -155,7 +155,7 @@ Then run Steps 4–8 on the merged graph as normal.
 After Step 4, show the graph diff:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.analyze import graph_diff
 from pilothify.build import build_from_json
@@ -192,4 +192,4 @@ Skip Steps 1–3. Re-run clustering on the existing graph:
 pilothify cluster-only .
 ```
 
-`pilothify cluster-only .` is **self-contained**: it re-clusters, names communities, and regenerates `GRAPH_REPORT.md`, `graph.json`, and `graph.html` from the existing graph. **Do not re-run Steps 5–9** — they read intermediate files (`.pilothify_extract.json`, `.pilothify_detect.json`, `.pilothify_analysis.json`) that a prior build's cleanup (Step 9) already deleted, so they raise `FileNotFoundError`. When it finishes, present the refreshed `GRAPH_REPORT.md` summary as usual.
+`pilothify cluster-only .` is **self-contained**: it re-clusters, names communities, and regenerates `GRAPH_REPORT.md`, `graph.json`, and `graph.html` from the existing graph. **Do not re-run Steps 5–9** — they read intermediate files that Step 9's cleanup already deleted, so they raise `FileNotFoundError`. When it finishes, present the refreshed `GRAPH_REPORT.md` summary as usual.

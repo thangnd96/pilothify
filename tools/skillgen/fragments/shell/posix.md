@@ -10,20 +10,20 @@ if [ -z "$PYTHON" ] && [ -n "$PILOTHIFY_BIN" ]; then
     _SHEBANG=$(head -1 "$PILOTHIFY_BIN" | tr -d '#!')
     case "$_SHEBANG" in
         *[!a-zA-Z0-9/_.@-]*) ;;
-        *) "$_SHEBANG" -c "import pilothify" 2>/dev/null && PYTHON="$_SHEBANG" ;;
+        *) "$_SHEBANG" -P -c "import pilothify" 2>/dev/null && PYTHON="$_SHEBANG" ;;
     esac
 fi
 # 3. Fall back to python3
 if [ -z "$PYTHON" ]; then PYTHON="python3"; fi
-if ! "$PYTHON" -c "import pilothify" 2>/dev/null; then
+if ! "$PYTHON" -P -c "import pilothify" 2>/dev/null; then
     # From the repo: the name is not ours on PyPI
     SRC="pilothify @ git+https://github.com/thangnd96/pilothify"
     if command -v uv >/dev/null 2>&1; then
         uv tool install --upgrade "$SRC" -q 2>&1 | tail -3
         PYTHON="$(uv tool dir)/pilothify/bin/python"
     else
-        "$PYTHON" -m pip install "$SRC" -q 2>/dev/null \
-          || "$PYTHON" -m pip install "$SRC" -q --break-system-packages 2>&1 | tail -3
+        "$PYTHON" -P -m pip install "$SRC" -q 2>/dev/null \
+          || "$PYTHON" -P -m pip install "$SRC" -q --break-system-packages 2>&1 | tail -3
     fi
 fi
 # Write interpreter path for all subsequent steps (persists across invocations)
@@ -37,4 +37,4 @@ PILOTHIFY_ROOT_EOF
 
 If the import succeeds, print nothing and move straight to Step 2.
 
-**In every subsequent bash block, replace `python3` with `$(cat pilothify-out/.pilothify_python)` to use the correct interpreter.**
+**In later bash blocks, use `$(cat pilothify-out/.pilothify_python) -P` in place of `python3`.**

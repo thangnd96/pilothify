@@ -56,10 +56,10 @@ def test_video_extra_caps_pyav_below_19():
     faster-whisper only requires ``av>=11``, so the resolver picks av 19 on
     Python 3.12+ and transcription raises ``TypeError: unexpected keyword
     argument 'metadata_errors'``. Both extras that install faster-whisper must
-    cap PyAV below 19, on the same interpreter marker.
+    cap PyAV below 19.
     """
     extras = _extras()
-    pin = "av>=11,<19; python_version >= '3.11'"
+    pin = "av>=11,<19"
     for extra in ("video", "all"):
         assert pin in extras[extra], f"[{extra}] must cap PyAV below 19"
 

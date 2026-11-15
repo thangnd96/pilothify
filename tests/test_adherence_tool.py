@@ -24,6 +24,7 @@ def _write(path: Path, records: list[dict]) -> None:
 def test_classify():
     assert classify("Bash", {"command": 'pilothify query "spin wallet"'}) == "graph"
     assert classify("Bash", {"command": '$(cat pilothify-out/.pilothify_python) -m pilothify explain "X"'}) == "graph"
+    assert classify("Bash", {"command": '$(cat pilothify-out/.pilothify_python) -P -m pilothify explain "X"'}) == "graph"
     assert classify("mcp__pilothify__query_graph", {}) == "graph"
     assert classify("Bash", {"command": "rg -n wallet src/"}) == "scout"
     assert classify("Bash", {"command": "cd api && grep -rn Spin ."}) == "scout"

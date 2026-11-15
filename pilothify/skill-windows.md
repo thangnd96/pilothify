@@ -55,7 +55,7 @@ If a graph already exists, query it. With no graph, one targeted lookup ("where 
 
 If the user invoked `/pilothify --help` or `/pilothify -h` (with no other arguments), print the contents of the `## Usage` section above verbatim and stop. Do not run any commands, do not detect files, do not default the path to `.`. Just print the Usage block and return.
 
-**Fast path — existing graph:** Before doing anything else, check whether `pilothify-out/graph.json` exists. The expected location is `pilothify-out/graph.json` relative to the **current working directory** (i.e. the project root where you are running commands). If it exists AND the user's request is a natural-language question about the codebase (e.g. "How does X work?", "What calls Y?", "Trace the data flow through Z") and NOT an explicit rebuild command (`--update`, `--cluster-only`, or a bare path/URL that implies fresh extraction): **skip Steps 1–5 entirely and jump straight to `## For /pilothify query`.** Run `pilothify query "<question>"` immediately. Do not run detect. Do not check corpus size. Do not ask the user to narrow. The graph is already built — use it.
+**Fast path — existing graph:** Before doing anything else, check whether `pilothify-out/graph.json` exists in the **current working directory** (the project root). If it exists AND the user's request is a natural-language question about the codebase (e.g. "How does X work?", "What calls Y?", "Trace the data flow through Z") and NOT an explicit rebuild command (`--update`, `--cluster-only`, or a bare path/URL that implies fresh extraction): **skip Steps 1–5 entirely and jump straight to `## For /pilothify query`.** Run `pilothify query "<question>"` immediately. Do not run detect. Do not check corpus size. Do not ask the user to narrow. The graph is already built — use it.
 
 If no path was given, use `.` (current directory). Do not ask the user for a path.
 
@@ -80,7 +80,7 @@ function Find-PilothifyPython {
         if ($uvDir) {
             $py = Join-Path $uvDir "pilothify\Scripts\python.exe"
             if (Test-Path $py) {
-                & $py -c "import pilothify" 2>$null
+                & $py -P -c "import pilothify" 2>$null
                 if ($LASTEXITCODE -eq 0) { return $py }
             }
         }
@@ -91,7 +91,7 @@ function Find-PilothifyPython {
         if ($venvs) {
             $py = Join-Path $venvs "pilothify\Scripts\python.exe"
             if (Test-Path $py) {
-                & $py -c "import pilothify" 2>$null
+                & $py -P -c "import pilothify" 2>$null
                 if ($LASTEXITCODE -eq 0) { return $py }
             }
         }
@@ -99,7 +99,7 @@ function Find-PilothifyPython {
     # 3. Active venv / conda / pip-into-current-env
     $pyCmd = Get-Command python -ErrorAction SilentlyContinue
     if ($pyCmd) {
-        & $pyCmd.Source -c "import pilothify" 2>$null
+        & $pyCmd.Source -P -c "import pilothify" 2>$null
         if ($LASTEXITCODE -eq 0) {
             return (& $pyCmd.Source -c "import sys; print(sys.executable)").Trim()
         }
@@ -134,7 +134,7 @@ INPUT_PATH
 
 If the import succeeds, print nothing and move straight to Step 2.
 
-**In every subsequent block, run Python through the saved interpreter — `& (Get-Content pilothify-out\.pilothify_python)` in place of a bare `python3` — so every step uses the interpreter that actually has pilothify.**
+**In later blocks, use `& (Get-Content pilothify-out\.pilothify_python) -P` in place of `python3`.**
 
 ### Step 2 - Detect files
 
@@ -149,7 +149,7 @@ INPUT_PATH = Path('pilothify-out/.pilothify_root').read_text(encoding="utf-8-sig
 result = detect(Path(INPUT_PATH), extra_excludes=_read_build_excludes(out_path()), gitignore=_read_build_gitignore(out_path()))
 Path('pilothify-out/.pilothify_detect.json').write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
 print(f'Detected {result["total_files"]} files')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 The block reads the scan root from the trusted `pilothify-out/.pilothify_root` that Step 1 resolved, so there is no path to substitute. Do NOT cat or print the JSON - read it silently and present a clean summary instead:
@@ -224,7 +224,7 @@ if code_files:
 else:
     Path('pilothify-out/.pilothify_ast.json').write_text(json.dumps({'nodes':[],'edges':[],'input_tokens':0,'output_tokens':0}, ensure_ascii=False), encoding="utf-8")
     print('No code files - skipping AST extraction')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 #### Part B - Semantic extraction (parallel subagents)
@@ -236,7 +236,7 @@ else:
 import json
 from pathlib import Path
 Path('pilothify-out/.pilothify_semantic.json').write_text(json.dumps({'nodes':[],'edges':[],'hyperedges':[],'input_tokens':0,'output_tokens':0}), encoding='utf-8')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 **MANDATORY: You MUST use the Agent tool here. Reading files yourself one-by-one is forbidden - it is 5-10x slower. If you do not use the Agent tool you are doing this wrong.**
@@ -275,7 +275,7 @@ Path('pilothify-out/.pilothify_uncached.txt').write_text('\n'.join(uncached), en
 for stale in Path('pilothify-out').glob('.pilothify_chunk_*.json'):
     stale.unlink()
 print(f'Cache: {len(all_files)-len(uncached)} files hit, {len(uncached)} files need extraction')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 Only dispatch subagents for files listed in `pilothify-out/.pilothify_uncached.txt`. If all files are cached, skip Steps B1 and B2 but still run Step B3's commands: its merge is the only Part B step that writes `pilothify-out/.pilothify_semantic.json`, and Part C reads that file unconditionally. Do not write an empty `.pilothify_semantic.json` instead, because that drops every cached node.
@@ -356,7 +356,7 @@ if partial:
         print(f'  {src}: read {n} of {total} lines')
 else:
     print('Coverage OK - every file a subagent reported was read to its last line')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 Tell the user which files came up short and what was lost (the line counts are printed above). The nodes already extracted for those files are kept - they are still true - but the file is cached as partial and left unstamped in the manifest below, so the next `--update` re-dispatches it and replace-on-re-extract swaps the partial node set for a complete one. This is the same mechanism the library path uses for a truncated LLM response, so both paths now recover instead of silently keeping a half-read file forever. A file a subagent did not report at all is not counted as partial - there is nothing to compare against - which is why the prompt rule in `references/extraction-spec.md` asks for the count in the first place.
@@ -382,7 +382,7 @@ Path('pilothify-out/.pilothify_semantic_new.json').write_text(json.dumps({
     'input_tokens': total_in, 'output_tokens': total_out,
 }, indent=2, ensure_ascii=False), encoding="utf-8")
 print(f'Merged {len(chunks)} chunks: {total_in:,} in / {total_out:,} out tokens')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 Save new results to cache. Pass the same SPEC_PATH as Step B0 — it stamps each entry with the prompt that produced it, and a write under a different prompt than the read lands where the next run won't look:
@@ -399,7 +399,7 @@ INPUT_PATH = Path('pilothify-out/.pilothify_root').read_text(encoding="utf-8-sig
 saved = save_semantic_cache(new.get('nodes', []), new.get('edges', []), new.get('hyperedges', []), root=INPUT_PATH, allowed_source_files=uncached, prompt_file='SPEC_PATH', partial_source_files=partial)
 note = f' ({len(partial)} left partial for retry)' if partial else ''
 print(f'Cached {saved} files' + note)
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 Merge cached + new results into `pilothify-out/.pilothify_semantic.json`:
@@ -430,7 +430,7 @@ merged = {
 }
 Path('pilothify-out/.pilothify_semantic.json').write_text(json.dumps(merged, indent=2, ensure_ascii=False), encoding="utf-8")
 print(f'Extraction complete - {len(deduped)} nodes, {len(all_edges)} edges ({len(cached["nodes"])} from cache, {len(new.get("nodes",[]))} new)')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 Clean up temp files: `Remove-Item -Force -ErrorAction SilentlyContinue pilothify-out\.pilothify_cached.json, pilothify-out\.pilothify_uncached.txt, pilothify-out\.pilothify_semantic_new.json`
 
@@ -470,7 +470,7 @@ Path('pilothify-out/.pilothify_extract.json').write_text(json.dumps(merged, inde
 total = len(merged_nodes)
 edges = len(merged_edges)
 print(f'Merged: {total} nodes, {edges} edges ({len(ast["nodes"])} AST + {len(sem["nodes"])} semantic)')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 ### Step 4 - Build graph, cluster, analyze, generate outputs
@@ -522,7 +522,7 @@ analysis = {
 }
 Path('pilothify-out/.pilothify_analysis.json').write_text(json.dumps(analysis, indent=2, ensure_ascii=False), encoding="utf-8")
 print(f'Graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges, {len(communities)} communities')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 If this step prints `ERROR: Graph is empty`, stop and tell the user what happened - do not proceed to labeling or visualization.
@@ -551,7 +551,7 @@ flags = [f'{summary[k]} {label}' for k, label in (
     ('undirected_same_endpoint_collapsed_edges', 'collapsed (undirected) edges'),
 ) if summary.get(k, 0)]
 print('GRAPH HEALTH WARNING: ' + '; '.join(flags) + ' - graph may be incomplete/corrupt.' if flags else 'Graph health: OK (no dangling/missing/collapsed edges).')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 Substitute `IS_DIRECTED` as in Step 4 (INPUT_PATH is read from `pilothify-out/.pilothify_root`). If a `GRAPH HEALTH WARNING` prints, surface it in the final summary (do not abort — the graph is still usable, but the integrity issue must be visible, per the Honesty Rules).
@@ -597,7 +597,7 @@ if not wrote:
     print('ERROR: refused to shrink pilothify-out/graph.json (existing graph has more nodes).')
     print('If this shrink is intentional (you deleted files), re-run a full build with --force.')
 print('Report updated with community labels')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 ```
 
 Replace `LABELS_DICT` with the actual dict you constructed (e.g. `{0: "Attention Mechanism", 1: "Training Pipeline"}`).
@@ -676,7 +676,7 @@ cost_path.write_text(json.dumps(cost, indent=2, ensure_ascii=False), encoding="u
 
 print(f'This run: {input_tok:,} input tokens, {output_tok:,} output tokens')
 print(f'All time: {cost["total_input_tokens"]:,} input, {cost["total_output_tokens"]:,} output ({len(cost["runs"])} runs)')
-'@ | & (Get-Content pilothify-out\.pilothify_python) -
+'@ | & (Get-Content pilothify-out\.pilothify_python) -P -
 Remove-Item -Force -ErrorAction SilentlyContinue pilothify-out\.pilothify_detect.json, pilothify-out\.pilothify_extract.json, pilothify-out\.pilothify_ast.json, pilothify-out\.pilothify_semantic.json, pilothify-out\.pilothify_analysis.json, pilothify-out\.pilothify_partial.txt
 Get-ChildItem pilothify-out -Filter '.pilothify_chunk_*.json' -File -ErrorAction SilentlyContinue | Remove-Item -Force
 Remove-Item -Force -ErrorAction SilentlyContinue pilothify-out\.needs_update
@@ -696,7 +696,7 @@ Graph complete. Outputs in PATH_TO_DIR/pilothify-out/
 
 Replace PATH_TO_DIR with the actual absolute path of the directory that was processed.
 
-If PATH_TO_DIR is inside a git repository, add one line to the report: `pilothify-out/` was written into the working tree, so unless the repository already ignores it, it will show in `git status`; the user can add `pilothify-out/` to `.gitignore`, or commit only the outputs their team should share.
+If PATH_TO_DIR is inside a git repository, add one line to the report: unless the repository ignores it, `pilothify-out/` will show in `git status`; the user can add it to `.gitignore`, or commit only the outputs their team should share.
 
 Then paste these sections from GRAPH_REPORT.md directly into the chat:
 - God Nodes

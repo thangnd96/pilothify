@@ -8,7 +8,7 @@ Skip this step entirely if `detect` returned zero `video` files.
 
 Video and audio files cannot be read directly. Transcribe them to text first, then treat the transcripts as doc files in Step 3.
 
-**Strategy:** Read the god nodes from `pilothify-out/.pilothify_detect.json` (or the analysis file if it exists from a previous run). You are already a language model — write a one-sentence domain hint yourself from those labels. Then pass it to Whisper as the initial prompt. No separate API call needed.
+**Strategy:** Read the god nodes from `pilothify-out/.pilothify_detect.json` (or the analysis file if it exists from a previous run). You are already a language model — write a one-sentence domain hint yourself from those labels. Then pass it to Whisper as the initial prompt.
 
 **However**, if the corpus has *only* video files and no other docs/code, use the generic fallback prompt: `"Use proper punctuation and paragraph breaks."`
 
@@ -26,7 +26,7 @@ Read the top god node labels from detect output or analysis, then compose a shor
 ```bash
 export PILOTHIFY_WHISPER_MODEL=base  # or whatever --whisper-model the user passed (must be exported)
 export PILOTHIFY_WHISPER_PROMPT="<the one-sentence domain hint you composed in Step 1>"
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json, os, sys
 from pathlib import Path
 from pilothify.transcribe import transcribe_all

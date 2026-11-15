@@ -56,9 +56,8 @@ def _run_probe(argv: list[str], extra_env: dict | None = None) -> dict:
 def _expected_argv(args: list[str]) -> list[str]:
     import pilothify
     from pilothify.__main__ import _REEXEC_BOOTSTRAP
-    safe = ["-P"] if sys.version_info >= (3, 11) else []
     root = str(Path(pilothify.__file__).resolve().parent.parent)
-    return [sys.executable, *safe, "-c", _REEXEC_BOOTSTRAP, root, *args]
+    return [sys.executable, "-P", "-c", _REEXEC_BOOTSTRAP, root, *args]
 
 
 def test_reexecs_for_hash_sensitive_commands_when_unset():

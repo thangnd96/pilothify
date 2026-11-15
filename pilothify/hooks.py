@@ -388,7 +388,7 @@ try:
 except OSError:
     _out = subprocess.DEVNULL
 _kw = dict(stdout=_out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, cwd=os.getcwd(), close_fds=True)
-_cmd = [sys.executable] + (['-P'] if sys.version_info >= (3, 11) else []) + ['-c', _src]
+_cmd = [sys.executable, '-P', '-c', _src]
 if os.name == 'nt':
     _flags = 0x08000000 | 0x00000200  # CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP
     try:

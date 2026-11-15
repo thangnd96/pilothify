@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Cần Python 3.11 trở lên
+
+- Bỏ hỗ trợ Python 3.10 (đã hết hạn hỗ trợ từ 10/2026). Lý do: cờ `-P` của
+  Python, dùng để chặn import từ thư mục hiện tại (xem mục sửa lỗi bên dưới),
+  chỉ có từ 3.11. Ai đang dùng 3.10 hãy cài lại bằng
+  `uv tool install --upgrade "pilothify @ git+https://github.com/thangnd96/pilothify"`;
+  uv sẽ tự chọn Python phù hợp.
+
 ### `query` trúng hơn nhiều
 
 - Node docstring giờ giữ tới 400 ký tự của docstring để tìm kiếm. Trước đây chỉ
@@ -34,10 +42,16 @@
   tiến trình mới và mọi process con của pool sẽ import thư mục đó, tức là chạy
   code của repo. Hook git (probe chọn interpreter, phần dựng lại graph) và
   merge driver cũng chạy ở gốc repo và gặp đúng lỗi này. Nay các chỗ đó bỏ thư
-  mục hiện tại khỏi `sys.path` trước khi import gì khác, và trên Python 3.11+
-  dùng thêm `-P`. Hook cũng chỉ nhận đường dẫn tuyệt đối từ
-  `pilothify-out/.pilothify_python`, để repo không thể trỏ nó tới một file của
-  chính repo.
+  mục hiện tại khỏi `sys.path` trước khi import gì khác, và dùng thêm `-P`.
+  Hook cũng chỉ nhận đường dẫn tuyệt đối từ `pilothify-out/.pilothify_python`,
+  để repo không thể trỏ nó tới một file của chính repo.
+- **Skill cũng chạy Python ngay trong repo đang phân tích.** Mọi khối
+  `$(cat pilothify-out/.pilothify_python) -c "..."` / `-m ...`, bước dò
+  interpreter ở Step 1 (trước đây chạy `import pilothify` trong thư mục repo),
+  lệnh `pip install` và bản Windows nay đều chạy với `-P`. Như vậy một thư mục
+  `pilothify/`, `networkx/` hay `pip/` trong repo không thể chen vào thay gói
+  thật. Số token của mọi file skill vẫn không vượt mức trần, nhờ rút gọn vài
+  câu lặp ý.
 - **Process con của pool ghi cache vào thư mục khác với process cha.** Tên thư
   mục cache AST gồm phiên bản pilothify, mà mỗi process con theo kiểu spawn
   lại tự đọc phiên bản đó từ metadata. Khi một `*.egg-info` trong mã nguồn bị

@@ -124,7 +124,7 @@ def test_monolith_watch_uses_trusted_pilothify_root(skill_file: str):
         f"{skill_file} --watch command does not reference pilothify-out/.pilothify_python"
     )
     assert block == (
-        '$(cat pilothify-out/.pilothify_python) -m pilothify.watch '
+        '$(cat pilothify-out/.pilothify_python) -P -m pilothify.watch '
         '"$(cat pilothify-out/.pilothify_root)" --debounce 3'
     )
 

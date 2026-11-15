@@ -63,10 +63,10 @@ pilothify export graphml
 ### Step 7d - MCP server (only if --mcp flag)
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -m pilothify.serve pilothify-out/graph.json
+$(cat pilothify-out/.pilothify_python) -P -m pilothify.serve pilothify-out/graph.json
 ```
 
-This starts a stdio MCP server that exposes tools: `query_graph`, `get_node`, `get_neighbors`, `get_community`, `god_nodes`, `graph_stats`, `shortest_path`. Add to Claude Desktop or any MCP-compatible agent orchestrator so other agents can query the graph live.
+This starts a stdio MCP server with tools: `query_graph`, `get_node`, `get_neighbors`, `get_community`, `god_nodes`, `graph_stats`, `shortest_path`. Add to Claude Desktop or any MCP client so other agents can query the graph live.
 
 To configure in Claude Desktop, add to `claude_desktop_config.json`. Claude Desktop can't run `$(...)`, and under `uv tool install` the system `python3` can't import pilothify — so set `command` to the **absolute interpreter path** printed by `cat pilothify-out/.pilothify_python`:
 ```json

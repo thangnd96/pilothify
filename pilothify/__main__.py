@@ -787,8 +787,8 @@ def _pin_hash_seed_if_needed() -> None:
 # would be imported instead of the installed package, by the new process
 # and by every spawn worker it starts (they inherit its sys.path) -- running
 # that repo's code. The bootstrap drops the cwd entry and puts back the
-# folder this copy of pilothify was loaded from. On 3.11+ -P also keeps the
-# cwd out of the spawn workers' own interpreter startup.
+# folder this copy of pilothify was loaded from. -P also keeps the cwd out
+# of the spawn workers' own interpreter startup.
 _REEXEC_BOOTSTRAP = (
     "import sys; root = sys.argv.pop(1); sys.path[:] = [p for p in sys.path if p]; "
     "root in sys.path or sys.path.insert(0, root); sys.argv[0] = 'pilothify'; "
@@ -797,9 +797,8 @@ _REEXEC_BOOTSTRAP = (
 
 
 def _reexec_argv(args: list[str]) -> list[str]:
-    safe = ["-P"] if sys.version_info >= (3, 11) else []
     root = str(Path(__file__).resolve().parent.parent)
-    return [sys.executable, *safe, "-c", _REEXEC_BOOTSTRAP, root, *args]
+    return [sys.executable, "-P", "-c", _REEXEC_BOOTSTRAP, root, *args]
 
 
 def _reexec(argv: list[str], env: dict[str, str], windows: bool | None = None) -> None:

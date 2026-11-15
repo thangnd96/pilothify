@@ -240,15 +240,17 @@ def test_devin_skill_file_uses_python_c_syntax():
     """Devin skill must use inline python -c syntax (cross-platform, no bash heredocs).
 
     All mature pilothify skills use the interpreter-detection pattern
-    ``$(cat pilothify-out/.pilothify_python) -c "..."`` rather than bare
-    ``python -c "..."`` so they work in pipx / venv environments.
+    ``$(cat pilothify-out/.pilothify_python) -P -c "..."`` rather than bare
+    ``python -c "..."`` so they work in pipx / venv environments, and -P keeps
+    a folder in the analysed repo from shadowing the installed package.
     """
     import pilothify
     skill = (Path(pilothify.__file__).parent / "skill-devin.md").read_text()
-    assert '.pilothify_python) -c "' in skill, (
+    assert '.pilothify_python) -P -c "' in skill, (
         "skill-devin.md must use the interpreter-detection pattern "
-        "'$(cat pilothify-out/.pilothify_python) -c \"...\"'"
+        "'$(cat pilothify-out/.pilothify_python) -P -c \"...\"'"
     )
+    assert '.pilothify_python) -c "' not in skill
     assert "#!/bin/bash" not in skill
 
 

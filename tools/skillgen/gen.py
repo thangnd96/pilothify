@@ -396,9 +396,9 @@ def _render_frontmatter(platform: Platform) -> str:
 # would drift), the composed body is translated deterministically:
 #
 #   * ```` ```bash ```` fences become ```` ```powershell ```` fences;
-#   * the inline ``$(cat pilothify-out/.pilothify_python) -c "..."`` python blocks
+#   * the inline ``$(cat pilothify-out/.pilothify_python) -P -c "..."`` python blocks
 #     become single-quoted here-strings piped to the interpreter's stdin
-#     (``@'...'@ | & (Get-Content pilothify-out\.pilothify_python) -``). A
+#     (``@'...'@ | & (Get-Content pilothify-out\.pilothify_python) -P -``). A
 #     single-quoted here-string is verbatim, so the bash ``\"`` escapes are
 #     dropped and no PowerShell escaping is introduced; piping the program to
 #     stdin (``python -``) sidesteps Windows PowerShell 5.1's native-argument
@@ -411,9 +411,9 @@ def _render_frontmatter(platform: Platform) -> str:
 # untranslated bash to the Windows variant. ``_POWERSHELL_BANNED_TOKENS`` is the
 # belt-and-braces post-check on the final body.
 
-_PY_INVOKE_POSIX = '$(cat pilothify-out/.pilothify_python) -c "'
+_PY_INVOKE_POSIX = '$(cat pilothify-out/.pilothify_python) -P -c "'
 _PY_INVOKE_PS_OPEN = "@'"
-_PY_INVOKE_PS_CLOSE = "'@ | & (Get-Content pilothify-out\\.pilothify_python) -"
+_PY_INVOKE_PS_CLOSE = "'@ | & (Get-Content pilothify-out\\.pilothify_python) -P -"
 _MKDIR_POSIX = "mkdir -p pilothify-out"
 _MKDIR_PS = "New-Item -ItemType Directory -Force -Path pilothify-out | Out-Null"
 _FIND_CHUNKS_POSIX = "find pilothify-out -maxdepth 1 -name '.pilothify_chunk_*.json' -delete 2>/dev/null"
@@ -1214,6 +1214,7 @@ def _is_watch_injection_fix_line(line: str) -> bool:
     return (
         stripped == "python3 -m pilothify.watch INPUT_PATH --debounce 3"
         or stripped == '$(cat pilothify-out/.pilothify_python) -m pilothify.watch "$(cat pilothify-out/.pilothify_root)" --debounce 3'
+        or stripped == '$(cat pilothify-out/.pilothify_python) -P -m pilothify.watch "$(cat pilothify-out/.pilothify_root)" --debounce 3'
         or stripped == "Replace INPUT_PATH with the folder to watch. Behavior depends on what changed:"
         or stripped == "This watches the same folder pilothify extracted, read from the trusted `pilothify-out/.pilothify_root` that Step 1 resolved - there is no path to substitute, so a scan root containing shell metacharacters can never be re-interpreted here. Behavior depends on what changed:"
     )
@@ -1284,7 +1285,7 @@ def _is_worktree_visibility_note_line(line: str) -> bool:
     untracked machine-local files in ``git status`` and no explanation. The report
     now adds one sentence saying so, with the two ways to handle it.
     """
-    return "`pilothify-out/` was written into the working tree" in line
+    return "`pilothify-out/` will show in `git status`" in line
 
 
 def _is_semantic_origin_stamp_fix_line(line: str) -> bool:
@@ -1337,6 +1338,7 @@ def _is_code_only_fast_path_fix_line(line: str) -> bool:
             'from pathlib import Path',
             '"',
             '$(cat pilothify-out/.pilothify_python) -c "',
+            '$(cat pilothify-out/.pilothify_python) -P -c "',
             "if [ ! -f .pilothify_extract.json ]; then",
             "if [ ! -f pilothify-out/.pilothify_extract.json ]; then",
         )

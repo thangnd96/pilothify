@@ -52,7 +52,7 @@ If a graph already exists, query it. With no graph, one targeted lookup ("where 
 
 If the user invoked `/pilothify --help` or `/pilothify -h` (with no other arguments), print the contents of the `## Usage` section above verbatim and stop. Do not run any commands, do not detect files, do not default the path to `.`. Just print the Usage block and return.
 
-**Fast path — existing graph:** Before doing anything else, check whether `pilothify-out/graph.json` exists. The expected location is `pilothify-out/graph.json` relative to the **current working directory** (i.e. the project root where you are running commands). If it exists AND the user's request is a natural-language question about the codebase (e.g. "How does X work?", "What calls Y?", "Trace the data flow through Z") and NOT an explicit rebuild command (`--update`, `--cluster-only`, or a bare path/URL that implies fresh extraction): **skip Steps 1–5 entirely and jump straight to `## For /pilothify query`.** Run `pilothify query "<question>"` immediately. Do not run detect. Do not check corpus size. Do not ask the user to narrow. The graph is already built — use it.
+**Fast path — existing graph:** Before doing anything else, check whether `pilothify-out/graph.json` exists in the **current working directory** (the project root). If it exists AND the user's request is a natural-language question about the codebase (e.g. "How does X work?", "What calls Y?", "Trace the data flow through Z") and NOT an explicit rebuild command (`--update`, `--cluster-only`, or a bare path/URL that implies fresh extraction): **skip Steps 1–5 entirely and jump straight to `## For /pilothify query`.** Run `pilothify query "<question>"` immediately. Do not run detect. Do not check corpus size. Do not ask the user to narrow. The graph is already built — use it.
 
 If no path was given, use `.` (current directory). Do not ask the user for a path.
 
@@ -71,7 +71,7 @@ Only when the path is one or more `https://github.com/...` URLs, or several loca
 ### Step 2 - Detect files
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.detect import detect
 from pathlib import Path
@@ -137,7 +137,7 @@ Note: Parallelizing AST + semantic saves 5-15s on large corpora. AST is determin
 For any code files detected, run AST extraction in parallel with Part B subagents:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.extract import collect_files, extract
 from pathlib import Path
@@ -164,7 +164,7 @@ else:
 **Fast path:** If detection found zero docs, papers, and images (code-only corpus), skip Part B entirely and go straight to Part C. AST handles code - there is nothing for semantic subagents to do. **First write an empty semantic file** so Part C's merge has its input (it reads `.pilothify_semantic.json` unconditionally; without this a code-only run hits `FileNotFoundError`):
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 Path('pilothify-out/.pilothify_semantic.json').write_text(json.dumps({'nodes':[],'edges':[],'hyperedges':[],'input_tokens':0,'output_tokens':0}), encoding='utf-8')
@@ -186,7 +186,7 @@ Before dispatching any subagents, check which files already have cached extracti
 SPEC_PATH below is the **absolute** path of the `references/extraction-spec.md` that ships beside this SKILL.md — the same file Step B2 loads and hands to every subagent. It is the extraction prompt, so cache entries are attributed to it: when a pilothify upgrade changes the prompt, entries produced by the old one are re-extracted instead of replayed, and unchanged prompts keep their entries. Substitute the real path in both Step B0 and Step B3 — pass the same one to each, and do not drop the argument.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.cache import check_semantic_cache
 from pathlib import Path
@@ -235,7 +235,7 @@ If more than half the chunks failed or are missing, stop and tell the user to re
 A subagent that only read the first Read call's worth of a long file still writes a well-formed chunk, so "chunk file exists and parses" is not evidence of coverage. Compare each file's self-reported `coverage` against its real length:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json, glob
 from pathlib import Path
 
@@ -271,7 +271,7 @@ Tell the user which files came up short and what was lost (the line counts are p
 
 Merge all chunk files into `.pilothify_semantic_new.json`. **After each Agent call completes, read the real token counts from the Agent tool result's `usage` field and write them back into the chunk JSON before merging** — the chunk JSON itself always has placeholder zeros. Then run:
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json, glob
 from pathlib import Path
 
@@ -295,7 +295,7 @@ print(f'Merged {len(chunks)} chunks: {total_in:,} in / {total_out:,} out tokens'
 
 Save new results to cache. Pass the same SPEC_PATH as Step B0 — it stamps each entry with the prompt that produced it, and a write under a different prompt than the read lands where the next run won't look:
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pilothify.cache import save_semantic_cache
 from pathlib import Path
@@ -312,7 +312,7 @@ print(f'Cached {saved} files' + note)
 
 Merge cached + new results into `pilothify-out/.pilothify_semantic.json`:
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 
@@ -345,7 +345,7 @@ Clean up temp files: `rm -f pilothify-out/.pilothify_cached.json pilothify-out/.
 #### Part C - Merge AST + semantic into final extraction
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pathlib import Path
 
@@ -387,7 +387,7 @@ print(f'Merged: {total} nodes, {edges} edges ({len(ast[\"nodes\"])} AST + {len(s
 
 ```bash
 mkdir -p pilothify-out
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.build import build_from_json
 from pilothify.cluster import cluster, score_all
@@ -442,7 +442,7 @@ INPUT_PATH is read from `pilothify-out/.pilothify_root`; there is no path to sub
 A non-destructive diagnostic on the extraction, before labeling. It surfaces edge collapse, dangling/missing endpoints, and self-loops — the silent-corruption modes of incremental updates and AST/LLM id mismatches. Read-only; never aborts.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 from pilothify.diagnostics import diagnose_extraction, format_diagnostic_report
@@ -471,7 +471,7 @@ Read `pilothify-out/.pilothify_analysis.json`. For each community key, look at i
 Then regenerate the report and save the labels for the visualizer:
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys, json
 from pilothify.build import build_from_json
 from pilothify.cluster import score_all
@@ -540,7 +540,7 @@ These run only when their flag is present (`--wiki`, `--neo4j`/`--neo4j-push`, `
 ### Step 9 - Save manifest, update cost tracker, clean up, and report
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import json
 from pathlib import Path
 from datetime import datetime, timezone
@@ -604,7 +604,7 @@ Graph complete. Outputs in PATH_TO_DIR/pilothify-out/
 
 Replace PATH_TO_DIR with the actual absolute path of the directory that was processed.
 
-If PATH_TO_DIR is inside a git repository, add one line to the report: `pilothify-out/` was written into the working tree, so unless the repository already ignores it, it will show in `git status`; the user can add `pilothify-out/` to `.gitignore`, or commit only the outputs their team should share.
+If PATH_TO_DIR is inside a git repository, add one line to the report: unless the repository ignores it, `pilothify-out/` will show in `git status`; the user can add it to `.gitignore`, or commit only the outputs their team should share.
 
 Then paste these sections from GRAPH_REPORT.md directly into the chat:
 - God Nodes

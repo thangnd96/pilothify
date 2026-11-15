@@ -7,7 +7,7 @@ Load this when the user ran `/pilothify add <url>` or passed `--watch`. Neither 
 Fetch a URL and add it to the corpus, then update the graph.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -c "
+$(cat pilothify-out/.pilothify_python) -P -c "
 import sys
 from pilothify.ingest import ingest
 from pathlib import Path
@@ -38,7 +38,7 @@ Supported URL types (auto-detected):
 Start a background watcher that monitors a folder and auto-updates the graph when files change.
 
 ```bash
-$(cat pilothify-out/.pilothify_python) -m pilothify.watch "$(cat pilothify-out/.pilothify_root)" --debounce 3
+$(cat pilothify-out/.pilothify_python) -P -m pilothify.watch "$(cat pilothify-out/.pilothify_root)" --debounce 3
 ```
 
 This watches the same folder pilothify extracted, read from the trusted `pilothify-out/.pilothify_root` that Step 1 resolved - there is no path to substitute, so a scan root containing shell metacharacters can never be re-interpreted here. Behavior depends on what changed:
