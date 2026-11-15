@@ -19,6 +19,9 @@
 
 - README ghi đúng biến bật query log (`PILOTHIFY_QUERY_LOG_ENABLE=1`). Log mặc
   định tắt.
+- Skill ghi chi phí thật của pass semantic, khoảng 25 nghìn token mỗi file,
+  thay vì "vài chục nghìn token" cho cả lượt.
+- Tác giả plugin và marketplace là ThangND4, khớp với chủ bản quyền.
 
 ## v0.1.2 — 2026-11-15
 

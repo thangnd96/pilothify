@@ -4,7 +4,7 @@
   "version": "0.1.2",
   "description": "Turn a codebase, its docs and schemas into a knowledge graph the agent queries before it greps.",
   "author": {
-    "name": "TBeo"
+    "name": "ThangND4"
   },
   "homepage": "https://github.com/thangnd96/pilothify",
   "repository": "https://github.com/thangnd96/pilothify",

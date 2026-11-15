@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Marketplace for the pilothify plugin.",
   "owner": {
-    "name": "TBeo"
+    "name": "ThangND4"
   },
   "plugins": [
     {
@@ -12,7 +12,7 @@
       "description": "Turn a codebase, its docs and schemas into a knowledge graph the agent queries before it greps.",
       "version": "0.1.2",
       "author": {
-        "name": "TBeo"
+        "name": "ThangND4"
       },
       "source": "./",
       "category": "development",
