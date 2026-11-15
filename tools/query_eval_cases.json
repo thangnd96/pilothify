@@ -1,0 +1,617 @@
+[
+ {
+  "q": "how do docs that mention an endpoint get linked to the handler serving it",
+  "want": "link_routes()",
+  "split": "tune"
+ },
+ {
+  "q": "where are identifier keys shared across documents linked together",
+  "want": "link_shared_keys()",
+  "split": "tune"
+ },
+ {
+  "q": "how is the query answer cut to fit the token budget",
+  "want": "_subgraph_to_text()",
+  "split": "tune"
+ },
+ {
+  "q": "how are the start nodes of a query chosen",
+  "want": "_pick_seeds()",
+  "split": "tune"
+ },
+ {
+  "q": "what does the PreToolUse hook do before a grep or read",
+  "want": "_run_hook_guard()",
+  "split": "tune"
+ },
+ {
+  "q": "how is a saved answer recalled for a similar question",
+  "want": "_recall_saved_answer()",
+  "split": "tune"
+ },
+ {
+  "q": "how are lessons aggregated from saved memory outcomes",
+  "want": "aggregate_lessons()",
+  "split": "tune"
+ },
+ {
+  "q": "how is the route of a spring request mapping computed",
+  "want": "_java_spring_route()",
+  "split": "tune"
+ },
+ {
+  "q": "how do express router registrations become route nodes",
+  "want": "_js_server_routes()",
+  "split": "tune"
+ },
+ {
+  "q": "which asset folders are left out of the vision pass",
+  "want": "asset_media_folder()",
+  "split": "tune"
+ },
+ {
+  "q": "how are python files extracted with tree-sitter",
+  "want": "extract_python()",
+  "split": "tune"
+ },
+ {
+  "q": "how does save-result write a question and answer to memory",
+  "want": "save_query_result()",
+  "split": "tune"
+ },
+ {
+  "q": "how are vietnamese questions scored",
+  "want": "_score_vietnamese_query()",
+  "split": "tune"
+ },
+ {
+  "q": "how is the pilothify section written into CLAUDE.md",
+  "want": "claude_install()",
+  "split": "tune"
+ },
+ {
+  "q": "how are C++ member declarations merged with their definitions",
+  "want": "_merge_cpp_member_declarations()",
+  "split": "tune"
+ },
+ {
+  "q": "how is the learning sidecar loaded and marked stale",
+  "want": "load_learning_overlay()",
+  "split": "tune"
+ },
+ {
+  "q": "how is a route string split into verb and path",
+  "want": "_parse_route()",
+  "split": "tune"
+ },
+ {
+  "q": "how is the semantic extraction cache saved",
+  "want": "save_semantic_cache()",
+  "split": "tune"
+ },
+ {
+  "q": "how does the code graph rebuild after a commit",
+  "want": "_rebuild_code()",
+  "split": "tune"
+ },
+ {
+  "q": "how are communities detected in the graph",
+  "want": "cluster()",
+  "split": "tune"
+ },
+ {
+  "q": "how is the interactive html graph written",
+  "want": "to_html()",
+  "split": "tune"
+ },
+ {
+  "q": "how does the plugin bundle check find stale files",
+  "want": "stale()",
+  "split": "tune"
+ },
+ {
+  "q": "how does the adherence tool classify a tool call",
+  "want": "classify()",
+  "split": "tune"
+ },
+ {
+  "q": "how is an identifier key like BUG-ADM-15-01 parsed from a label",
+  "want": "identifier_key()",
+  "split": "tune"
+ },
+ {
+  "q": "how do lessons lift the ranking of proven nodes",
+  "want": "_apply_learning_boost()",
+  "split": "tune"
+ },
+ {
+  "q": "how many times does the hook nudge an agent per session",
+  "want": "_nudge_allowed()",
+  "split": "tune"
+ },
+ {
+  "q": "how are FastAPI and Flask decorator routes read",
+  "want": "_python_routes()",
+  "split": "tune"
+ },
+ {
+  "q": "how are NestJS controller routes read",
+  "want": "_nest_routes()",
+  "split": "tune"
+ },
+ {
+  "q": "how does detect classify the files in a folder",
+  "want": "detect()",
+  "split": "tune"
+ },
+ {
+  "q": "how is the graph built from extraction json",
+  "want": "build_from_json()",
+  "split": "tune"
+ },
+ {
+  "q": "When two packages in one repo each contain a module called helper.py, which one does a `from helper` line link to, or is it left unlinked?",
+  "want": "_suppress_ambiguous_python_imports()",
+  "split": "tune"
+ },
+ {
+  "q": "How does the extractor tell that a dependency in a .py file is only there for mypy and never actually runs at load time?",
+  "want": "_python_under_type_checking()",
+  "split": "holdout"
+ },
+ {
+  "q": "Lazy module loading with await at the top level of a TypeScript file is missed by the syntax tree pass; where is it recovered with a regex?",
+  "want": "_rescue_js_dynamic_imports()",
+  "split": "tune"
+ },
+ {
+  "q": "In an iOS codebase, how do the extra members that other files add onto an existing class end up on that class's single node instead of a duplicate per file?",
+  "want": "_merge_swift_extensions()",
+  "split": "holdout"
+ },
+ {
+  "q": "When a .NET type is split across several files, how are the pieces combined into one graph entry without mixing types from different projects?",
+  "want": "_merge_csharp_partial_class_nodes()",
+  "split": "tune"
+ },
+ {
+  "q": "How does a .h file containing @interface get sent to the Objective-C extractor instead of losing its classes in the C one?",
+  "want": "_is_objc_header()",
+  "split": "holdout"
+ },
+ {
+  "q": "Why doesn't a PHP class that extends \\Exception get linked to a TypeScript class that happens to be called Exception?",
+  "want": "_names_own_builtin_base()",
+  "split": "tune"
+ },
+ {
+  "q": "What works around the C# grammar rejecting a @$\"...\" string that ends with an escaped quote, without shifting any line numbers?",
+  "want": "_normalize_csharp_verbatim_interpolation()",
+  "split": "holdout"
+ },
+ {
+  "q": "How does a Go file that only holds a dependency-injection set like wire.Bind(new(Iface), new(*Impl)) still point at the interfaces and structs it names?",
+  "want": "emit_go_package_var_type_refs()",
+  "split": "tune"
+ },
+ {
+  "q": "How are functions invoked inside the parentheses of println!(...) found, given tree-sitter keeps that content as a flat token tree?",
+  "want": "_rust_macro_arg_calls()",
+  "split": "holdout"
+ },
+ {
+  "q": "How are the tables a stored procedure reads from and writes to found, including an UPDATE that targets an alias?",
+  "want": "_routine_body_refs()",
+  "split": "tune"
+ },
+ {
+  "q": "In a T-SQL script, how is a batch-ending GO line told apart from a column that happens to be named go?",
+  "want": "_go_separators()",
+  "split": "holdout"
+ },
+ {
+  "q": "Why doesn't a line of three backticks end a code block that was opened with four backticks or with tildes in a markdown file?",
+  "want": "_fence_closes()",
+  "split": "tune"
+ },
+ {
+  "q": "How is a [[wikilink]] that gives only a note name resolved when several notes in the corpus share that name?",
+  "want": "_vault_lookup()",
+  "split": "holdout"
+ },
+ {
+  "q": "How are passwords nested inside lists of objects in HCL kept out of graph.json?",
+  "want": "_redact_value()",
+  "split": "tune"
+ },
+ {
+  "q": "In shell scripts, when does a function used inside $(...) count as an invocation edge, for example x=$(fn) versus a bare $(fn)?",
+  "want": "_bash_call_in_command_allowed()",
+  "split": "holdout"
+ },
+ {
+  "q": "How does using a modifier or function declared in a parent contract in another file get an edge, including super.f()?",
+  "want": "resolve_solidity_inherited_calls()",
+  "split": "tune"
+ },
+ {
+  "q": "Why does upgrading a tree-sitter language package invalidate previously stored syntax results?",
+  "want": "_grammar_fingerprint()",
+  "split": "holdout"
+ },
+ {
+  "q": "When can a stored file size and modification time be trusted to mean the content hasn't changed, given a write could land in the same timestamp tick?",
+  "want": "_stat_sig_fresh()",
+  "split": "tune"
+ },
+ {
+  "q": "How does the scan avoid re-opening every PDF and docx on each run just to size the corpus?",
+  "want": "cached_word_count()",
+  "split": "holdout"
+ },
+ {
+  "q": "What deletes stored LLM extraction results for files that were removed or whose content changed?",
+  "want": "prune_semantic_cache()",
+  "split": "tune"
+ },
+ {
+  "q": "How is a degraded LLM extraction flagged so the next run re-extracts that file instead of replaying the bad result?",
+  "want": "mark_semantic_cache_partial()",
+  "split": "holdout"
+ },
+ {
+  "q": "How are Office documents that are really decompression bombs rejected before conversion?",
+  "want": "_zip_within_caps()",
+  "split": "tune"
+ },
+ {
+  "q": "Why isn't a note called password-policy-discussion.md skipped as a secrets file while api_token.txt is?",
+  "want": "_generic_keyword_hit()",
+  "split": "holdout"
+ },
+ {
+  "q": "For a script with no extension, how is the language read from its #! first line, including forms like /usr/bin/env -S python3 -u?",
+  "want": "_shebang_interpreter()",
+  "split": "tune"
+ },
+ {
+  "q": "Why isn't a directory named out (as in a hexagonal adapter/out layer) always pruned from the scan?",
+  "want": "_has_build_output_markers()",
+  "split": "holdout"
+ },
+ {
+  "q": "How does the scan recognise a secondary checkout whose .git is a file pointing into another clone's .git directory, and find that primary clone?",
+  "want": "_linked_worktree_main_root()",
+  "split": "tune"
+ },
+ {
+  "q": "During an incremental update, how is a file that was removed from disk distinguished from one that a new ignore rule just excluded?",
+  "want": "classify_manifest_deletions()",
+  "split": "holdout"
+ },
+ {
+  "q": "What node gets created for a stdlib or third-party module that an edge points to, so the edge isn't dangling?",
+  "want": "_mint_external_stub()",
+  "split": "tune"
+ },
+ {
+  "q": "How are old graphs that stored a float like 0.95 as an edge's certainty level normalized when loaded?",
+  "want": "_fold_confidence()",
+  "split": "holdout"
+ },
+ {
+  "q": "How are two files both called index.ts given distinguishable display labels?",
+  "want": "_shortest_unique_suffix()",
+  "split": "tune"
+ },
+ {
+  "q": "After an update that follows an LLM build, how are the two nodes for the same markdown file (quick scan and semantic) collapsed into one?",
+  "want": "_doc_twin_remap()",
+  "split": "holdout"
+ },
+ {
+  "q": "When combining several repositories into one cross-repo view, how are node ids namespaced per repo while stdlib modules stay shared?",
+  "want": "prefix_graph_for_global()",
+  "split": "tune"
+ },
+ {
+  "q": "Why aren't headings like 'ADR 0011' and 'ADR 0013' merged as duplicate entities?",
+  "want": "_numeric_tokens_differ()",
+  "split": "holdout"
+ },
+ {
+  "q": "What keeps sibling section titles like 'Asset Contribution Flow' and 'Asset Consumption Flow' from being fused into one concept?",
+  "want": "_content_token_swap()",
+  "split": "tune"
+ },
+ {
+  "q": "When two nodes collide on the same id, how does a file in an archive or done folder lose to one in an active folder?",
+  "want": "_lifecycle_penalty()",
+  "split": "holdout"
+ },
+ {
+  "q": "What happens when x.py and x.html would both produce the same node id because the extension is stripped?",
+  "want": "_disambiguate_defining_collisions()",
+  "split": "tune"
+ },
+ {
+  "q": "Which node survives when several near-duplicate entities are combined: the one with richer content or the one with the shorter id?",
+  "want": "_pick_winner()",
+  "split": "holdout"
+ },
+ {
+  "q": "How are borderline duplicate pairs in the middle similarity band sent to a language model to decide?",
+  "want": "_llm_tiebreak()",
+  "split": "tune"
+ },
+ {
+  "q": "How does community detection avoid the multi-second import of graspologic's layout modules like umap and numba?",
+  "want": "_native_leiden()",
+  "split": "holdout"
+ },
+ {
+  "q": "With no LLM backend configured, how are clusters given readable names like auth instead of a number?",
+  "want": "label_communities_by_hub()",
+  "split": "tune"
+ },
+ {
+  "q": "How are cluster ids kept stable from one rebuild to the next so they don't get renumbered?",
+  "want": "remap_communities_to_previous()",
+  "split": "holdout"
+ },
+ {
+  "q": "How is it measured how tightly knit a cluster is, and why are recursive self-calls left out of that ratio?",
+  "want": "cohesion_score()",
+  "split": "tune"
+ },
+ {
+  "q": "How are common words like 'error' weighted down compared with rare identifiers when ranking search hits?",
+  "want": "_compute_idf()",
+  "split": "holdout"
+ },
+ {
+  "q": "How does substring search avoid scanning every node on a large graph, and when does it fall back to a full scan?",
+  "want": "_trigram_candidates()",
+  "split": "tune"
+ },
+ {
+  "q": "Why do tests, docs and config files rank lower in search results unless the question mentions tests?",
+  "want": "_query_path_weight()",
+  "split": "holdout"
+ },
+ {
+  "q": "Why could a link between two starting nodes be missing from the traversal output, and what adds such links back?",
+  "want": "_complete_induced_edges()",
+  "split": "tune"
+ },
+ {
+  "q": "When a comment block matches the question better than the function's name, how does the function itself get the credit as a starting point?",
+  "want": "_rank_owners_for_docstrings()",
+  "split": "holdout"
+ },
+ {
+  "q": "When several routes of equal length connect two nodes, which one is reported and with what certainty?",
+  "want": "_weakest_shortest_path()",
+  "split": "tune"
+ },
+ {
+  "q": "When finding a connection between two named symbols, how is a made-up name that only shares a few tokens with real symbols rejected instead of silently matched?",
+  "want": "_query_uses_known_words()",
+  "split": "holdout"
+ },
+ {
+  "q": "How does the MCP server cope with clients that send empty lines between JSON-RPC messages?",
+  "want": "_filter_blank_stdin()",
+  "split": "tune"
+ },
+ {
+  "q": "Why doesn't the markdown summary header contain the absolute path of the machine that built it?",
+  "want": "_portable_root_label()",
+  "split": "holdout"
+ },
+ {
+  "q": "How do preferred nodes and dead ends from saved work memory show up in GRAPH_REPORT.md?",
+  "want": "_learning_section()",
+  "split": "tune"
+ },
+ {
+  "q": "Which entities are listed as the core most-connected abstractions, and why are file hubs and tests left out?",
+  "want": "god_nodes()",
+  "split": "holdout"
+ },
+ {
+  "q": "How is a cross-file connection rated as unexpected, and why are inferred calls across languages discounted?",
+  "want": "_surprise_score()",
+  "split": "tune"
+ },
+ {
+  "q": "How are circular dependencies between files detected from the symbol-level graph?",
+  "want": "find_import_cycles()",
+  "split": "holdout"
+ },
+ {
+  "q": "What stops install, uninstall and the automatic refresh from writing the same agent instructions folder at the same time?",
+  "want": "_skill_lock()",
+  "split": "tune"
+ },
+ {
+  "q": "On uninstall, how are only our own entries removed from an agent's settings group while other tools' commands sharing that group survive?",
+  "want": "_strip_pilothify_hooks()",
+  "split": "holdout"
+ },
+ {
+  "q": "Which program location gets written into an agent's guard command, and why does it use forward slashes on Windows?",
+  "want": "_resolve_pilothify_exe()",
+  "split": "tune"
+ },
+ {
+  "q": "What prevents uninstall from wiping the home folder or the project itself when asked to delete the output directory too?",
+  "want": "_unsafe_purge_reason()",
+  "split": "holdout"
+ },
+ {
+  "q": "How does the post-commit rebuild start in the background without blocking the commit, even on shells without nohup?",
+  "want": "_detached_launch()",
+  "split": "tune"
+ },
+ {
+  "q": "What stops a repository-controlled config value from redirecting the commit script install to a folder outside the repo?",
+  "want": "_hooks_path_allowed()",
+  "split": "holdout"
+ },
+ {
+  "q": "Why isn't the commit script pinned to a Python interpreter that lives inside a snap revision directory?",
+  "want": "_is_rotating_prefix()",
+  "split": "tune"
+ },
+ {
+  "q": "Why does the command line restart its own interpreter before an update so that clustering comes out the same every run?",
+  "want": "_pin_hash_seed_if_needed()",
+  "split": "holdout"
+ },
+ {
+  "q": "After upgrading the package, how do the agent instruction copies for other platforms like codex or gemini get updated without reinstalling each one?",
+  "want": "_refresh_stale_skills()",
+  "split": "tune"
+ },
+ {
+  "q": "How does the agent guard tell whether a shell command actually runs grep or rg, rather than just mentioning it in a commit message?",
+  "want": "_bash_invokes_search()",
+  "split": "holdout"
+ },
+ {
+  "q": "In strict mode, how is an agent's raw file read blocked at most once per conversation, atomically?",
+  "want": "_mark_session_denied()",
+  "split": "tune"
+ },
+ {
+  "q": "Where does a command-line run append how many input and output tokens it used to the spending ledger file?",
+  "want": "_record_extract_cost()",
+  "split": "holdout"
+ },
+ {
+  "q": "What happens to the changed files from a commit when another rebuild is already holding the lock?",
+  "want": "_queue_pending()",
+  "split": "tune"
+ },
+ {
+  "q": "How are CPU priority and memory capped for background rebuilds started by commit scripts?",
+  "want": "_apply_resource_limits()",
+  "split": "holdout"
+ },
+ {
+  "q": "What refuses to replace the existing graph when an incremental rebuild suddenly ends up with far fewer nodes, unless files were explicitly deleted?",
+  "want": "_check_shrink()",
+  "split": "tune"
+ },
+ {
+  "q": "Why does the file watcher ignore open and close notifications on Linux?",
+  "want": "_is_read_only_event()",
+  "split": "holdout"
+ },
+ {
+  "q": "How does a rebuild decide it can skip work because nothing affecting the code structure changed, including tsconfig or lock file edits?",
+  "want": "_inputs_unchanged()",
+  "split": "tune"
+ },
+ {
+  "q": "How much less does an old saved answer count than a recent one when work-memory signals are combined?",
+  "want": "_decay()",
+  "split": "holdout"
+ },
+ {
+  "q": "How does running reflect with --if-stale decide the work-memory summary is already up to date?",
+  "want": "lessons_fresh()",
+  "split": "tune"
+ },
+ {
+  "q": "How does work memory know a stored verdict on a node needs re-checking after that node's source file was edited?",
+  "want": "_is_stale()",
+  "split": "holdout"
+ },
+ {
+  "q": "When adding content from a link, how is it decided whether it's a tweet, an arXiv paper, a PDF or a plain webpage?",
+  "want": "_detect_url_type()",
+  "split": "tune"
+ },
+ {
+  "q": "When saving a fetched page, how is a file name chosen that doesn't overwrite an existing file or follow a dangling symlink?",
+  "want": "_free_capture_path()",
+  "split": "holdout"
+ },
+ {
+  "q": "When matching an endpoint mentioned in a spec to a handler, how are placeholders like {id} and :id treated as the same?",
+  "want": "_segments()",
+  "split": "tune"
+ },
+ {
+  "q": "How is the base URL set on a FastAPI APIRouter or Flask Blueprint at module level picked up for its endpoints?",
+  "want": "_python_prefixes()",
+  "split": "holdout"
+ },
+ {
+  "q": "How does it work out which variables in a JS file hold an express app or router instance?",
+  "want": "_server_bindings()",
+  "split": "tune"
+ },
+ {
+  "q": "Which source files get HTTP endpoint info stamped onto their handlers, and how is the framework-specific parser chosen?",
+  "want": "attach_web_routes()",
+  "split": "holdout"
+ },
+ {
+  "q": "When is a dated snapshot of the graph files taken before they get overwritten?",
+  "want": "backup_if_protected()",
+  "split": "tune"
+ },
+ {
+  "q": "How are quotes, backslashes and newlines in labels made safe in the Neo4j script export?",
+  "want": "_cypher_escape()",
+  "split": "holdout"
+ },
+ {
+  "q": "How are very long note names, for example CJK labels, kept under the 255-byte filesystem limit in the Obsidian export?",
+  "want": "_cap_filename()",
+  "split": "tune"
+ },
+ {
+  "q": "How are vault notes whose labels differ only by letter case kept from overwriting each other on macOS?",
+  "want": "_dedup_node_filenames()",
+  "split": "holdout"
+ },
+ {
+  "q": "How can the interactive browser visualization be turned off on CI or capped for huge graphs?",
+  "want": "_viz_node_limit()",
+  "split": "tune"
+ },
+ {
+  "q": "What keeps the generator machine's absolute path out of the heading shown in the browser tab of the interactive visualization?",
+  "want": "_html_document_title()",
+  "split": "holdout"
+ },
+ {
+  "q": "How is the graph uploaded directly into a running bolt-protocol graph database so that re-running upserts instead of duplicating?",
+  "want": "push_to_neo4j()",
+  "split": "tune"
+ },
+ {
+  "q": "Which address ranges count as internal when guarding outbound fetches, and how are NAT64 addresses handled?",
+  "want": "_ip_is_blocked()",
+  "split": "holdout"
+ },
+ {
+  "q": "What stops adding a link that uses file:// or carries an embedded username and password?",
+  "want": "validate_url()",
+  "split": "tune"
+ },
+ {
+  "q": "How are API tokens pasted into code comments kept out of node labels?",
+  "want": "redact_secrets()",
+  "split": "holdout"
+ },
+ {
+  "q": "What check makes sure a requested file location resolves inside the output folder, and refuses when no output folder exists yet?",
+  "want": "validate_graph_path()",
+  "split": "tune"
+ }
+]

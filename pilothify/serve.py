@@ -419,12 +419,15 @@ _SUBSTRING_MATCH_BONUS = 1.0
 _SOURCE_MATCH_BONUS = 0.5
 # The extraction spec stores the WHY of a concept as a `rationale` attribute
 # on the node, not as a node of its own, so for a "why does X …" question that
-# prose is often the only place the question's words occur. Score it
-# as its own tier: below a label substring hit (the label still names the
-# thing), above a source-path hit, and — like the source tier — never counted
-# toward term coverage, so a long rationale adds recall without winning back
-# an exact-label tier it did not earn.
-_RATIONALE_MATCH_BONUS = 0.75
+# prose is often the only place the question's words occur. A docstring node
+# carries its docstring there too. Score it as its own tier: above a label
+# substring hit, because a question in plain words matches prose and rarely an
+# identifier piece, yet far below the exact and prefix tiers, and — like the
+# source tier — never counted toward term coverage, so a long rationale adds
+# recall without winning back an exact-label tier it did not earn. Measured
+# with tools/query_eval on held-out questions: 0.75 -> 3.0 took MRR from
+# 0.57 to 0.73; higher weights stopped helping.
+_RATIONALE_MATCH_BONUS = 3.0
 _ATTRIBUTE_MATCH_BONUS = 0.75
 
 # A label may carry a leading qualifier that the query never repeats: a SQL

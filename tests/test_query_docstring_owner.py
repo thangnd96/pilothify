@@ -39,3 +39,27 @@ def test_a_multigraph_with_parallel_edges_still_seeds_the_owner():
     G.add_edge("r", "f", relation="rationale_for")  # a parallel edge
     out = _query_graph_text(G, "how do earlier answers lift matched nodes")
     assert _start(out).startswith("['_apply_boost()'"), out
+
+
+def test_a_long_docstring_is_searchable_beyond_its_label(tmp_path):
+    from pathlib import Path
+
+    from pilothify.extract import extract
+    from pilothify.build import build_from_json
+
+    src = tmp_path / "mod.py"
+    src.write_text(
+        'def handler():\n'
+        '    """Short first sentence that the label keeps for display in the graph.\n\n'
+        '    Later on it ranks saved lessons by usefulness and recency, api_key=AKIAABCDEFGHIJKLMNOP.\n'
+        '    """\n'
+        '    return 1\n',
+        encoding="utf-8",
+    )
+    result = extract([src], cache_root=tmp_path)
+    (doc,) = [n for n in result["nodes"] if n.get("file_type") == "rationale"]
+    assert doc["label"].endswith("…") and "recency" in doc["rationale"]
+    assert "AKIAABCDEFGHIJKLMNOP" not in doc["rationale"]  # redacted like the label
+    G = build_from_json(result)
+    out = _query_graph_text(G, "where are saved lessons ranked by usefulness and recency")
+    assert _start(out).startswith("['handler()'"), out

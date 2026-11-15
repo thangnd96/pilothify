@@ -110,6 +110,8 @@ Muốn biết agent có thật sự hỏi graph không, chạy `python -m tools.
 
 Kiến trúc và cách thêm ngôn ngữ: [ARCHITECTURE.md](ARCHITECTURE.md). File skill trong `pilothify/` được sinh từ `tools/skillgen/fragments/`, nên sửa fragment rồi chạy `python -m tools.skillgen`, `python -m tools.skillgen --bless`, rồi `python -m tools.build_plugin` để chép skill sang bộ plugin.
 
+Trước khi sửa cách chấm điểm của `query`, chạy `PILOTHIFY_BACKEND=none pilothify extract . --code-only` rồi `python -m tools.query_eval` để có số đo trước và sau. Bộ câu hỏi nằm trong `tools/query_eval_cases.json`, chia hai phần: `tune` để chỉnh, `holdout` để kiểm. Một thay đổi làm điểm `holdout` giảm thì phải có lý do.
+
 Phát hành: tăng `version` cùng lúc ở `pyproject.toml`, `.claude-plugin/plugin.json` và `.claude-plugin/marketplace.json` (có test kiểm), ghi vào [CHANGELOG.md](CHANGELOG.md), rồi gắn tag `vX.Y.Z`.
 
 ## License

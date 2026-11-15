@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+### `query` trúng hơn nhiều
+
+- Node docstring giờ giữ tới 400 ký tự của docstring để tìm kiếm. Trước đây chỉ
+  có nhãn 80 ký tự, nên khoảng 2/3 số docstring bị cắt và phần còn lại không
+  bao giờ được dùng để khớp. Phần lưu thêm qua cùng bước che thông tin đăng
+  nhập như nhãn, và không được in ra trong kết quả.
+- Khớp trong docstring được cộng điểm nhiều hơn (trọng số 0,75 lên 3,0), vì câu
+  hỏi viết bằng lời thường thường khớp phần văn xuôi chứ không khớp tên định
+  danh. Khớp đúng nhãn vẫn đứng trên rất xa.
+- Đo bằng `tools/query_eval` với 123 câu hỏi; 46 câu được để riêng, không dùng
+  khi chỉnh. Trên 46 câu để riêng:
+  - Đáp án là điểm xuất phát: 13 → 36.
+  - Đáp án nằm trong 5 kết quả đầu: 13 → 36.
+  - Đáp án có mặt trong kết quả: 23 → 41.
+  - MRR: 0,208 → 0,727.
+- Cache AST lên schema 46.
+
+### Dọn dẹp
+
+- Không còn comment hay docstring nào mang số issue. Các câu có số issue chen
+  giữa đã được viết lại, cùng vài mẩu câu bị gãy từ đợt dọn trước. Các ghi chú
+  nhắc phiên bản cũ (0.9.x, 0.7.0) nay ghi là "older releases".
+
 ### Sửa lỗi
 
 - **Process con của pool ghi cache vào thư mục khác với process cha.** Tên thư
