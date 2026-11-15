@@ -89,6 +89,24 @@ jobs:
       - name: Run tests
         run: uv run --frozen pytest tests/ -q --tb=short
 
+  # Windows: cmd/PowerShell hooks, backslash paths and CRLF checkouts.
+  windows:
+    name: pytest (Windows, py3.13)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: uv sync --all-extras --frozen
+
+      - name: Run tests
+        run: uv run --frozen pytest tests/ -q --tb=line -p no:cacheprovider
+
   unlocked:
     name: pytest, unlocked install (py${{ matrix.python }})
     runs-on: ubuntu-latest
