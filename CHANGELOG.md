@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.1.5 — 2026-11-16
 
 ### Cần Python 3.11 trở lên
 
