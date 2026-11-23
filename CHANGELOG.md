@@ -23,6 +23,9 @@ Phần lớn thay đổi đến từ việc đo graph của một repo front-end
 
 - **Cache AST không dùng cho JS/TS là có chủ ý.** Kết quả trích một file JS/TS phụ thuộc tsconfig, package.json và việc file đích của import có tồn tại hay không. Cache theo nội dung từng file vì vậy có thể trả lại import trỏ tới file đã bị đổi tên. Muốn cache an toàn thì phải kiểm lại từng lần resolve module khi đọc cache, mà resolve module lại là phần tốn thời gian nhất (xem số đo ở README). Bản này chưa làm.
 - **Trong sandbox chặn POSIX semaphore** (sandbox Bash của Claude Code trên macOS), pool process không khởi động được nên trích AST chạy tuần tự. Cảnh báo nay ghi rõ lý do. Graph vẫn giống hệt; hook git và lệnh chạy từ terminal vẫn chạy song song.
+- **Bản cài không theo lock** (`uv tool install` bỏ qua `uv.lock`) nay nhận tree-sitter-c-sharp 0.24.0 và PyYAML 6.0.4. Graph không đổi, chỉ test được chỉnh:
+  - tree-sitter-c-sharp 0.24.0 đã parse được chuỗi verbatim interpolated mà 0.23.5 từ chối, nên không cần mask nữa. Các test riêng cho phần mask bỏ qua khi grammar không còn lỗi; test kiểm member sau chuỗi đó vẫn chạy trên cả hai bản.
+  - PyYAML 6.0.4 cho map đứng sau thắng trong `<<: [*a, *b]`, trái với đặc tả YAML. Extractor của pilothify vẫn theo đặc tả (map đứng trước thắng), và test nay so với đặc tả chứ không so với `yaml.safe_load`.
 
 ## v0.1.5 — 2026-11-16
 

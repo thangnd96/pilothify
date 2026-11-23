@@ -4,7 +4,9 @@ A verbatim interpolated string whose text ends with an interpolation hole, an
 escaped quote and then the terminator is valid C# -- ``dotnet build`` accepts it
 -- but tree-sitter-c-sharp 0.23.5 rejects it. The file is then only partially
 extracted and every member declared after that line is silently missing from the
-graph. 0.23.5 is the newest release, so there is no grammar bump to take.
+graph. 0.24.0 parses it; uv.lock still pins 0.23.5, and an unlocked install may
+take either, so the extraction tests run on both. The tests of the mask itself
+need a grammar that rejects the literal, and skip on one that does not.
 
 The fix neutralizes only the trailing escape, with two spaces. It must be
 byte-length preserving: line and column numbers are reported straight from the
@@ -15,6 +17,8 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+
+import pytest
 
 from pilothify.extract import (
     _csharp_broken_escape_offsets,
@@ -29,6 +33,17 @@ OFFENDER = 'var s = $@"a""{e}""";'
 
 def _cs_class(body_lines: list[str]) -> str:
     return "using System;\n\npublic class Config\n{\n" + "\n".join(body_lines) + "\n}\n"
+
+
+# The normalizer leaves a file the grammar parses alone, so on a grammar without the
+# bug (tree-sitter-c-sharp 0.24.0) there is nothing for the mask tests to check.
+GRAMMAR_REJECTS_OFFENDER = _normalize_csharp_verbatim_interpolation(
+    _cs_class(["    public string Offender(string e) { " + OFFENDER + " return s; }"]).encode("utf-8")
+) is not None
+needs_rejecting_grammar = pytest.mark.skipif(
+    not GRAMMAR_REJECTS_OFFENDER,
+    reason="this tree-sitter-c-sharp parses the literal (fixed in 0.24.0), so nothing is masked",
+)
 
 
 def _extract(tmp_path, files: dict[str, str]) -> dict:
@@ -93,6 +108,7 @@ def test_source_locations_are_not_shifted(tmp_path):
         assert seen[name] == line, f"{name} reported L{seen[name]}, really on line {line}"
 
 
+@needs_rejecting_grammar
 def test_mask_is_byte_length_preserving(tmp_path):
     """Only the two quote bytes change; length, newlines and every other byte hold."""
     src = _cs_class([
@@ -112,6 +128,7 @@ def test_mask_is_byte_length_preserving(tmp_path):
     assert masked[changed[0]:changed[0] + 2] == b"  "
 
 
+@needs_rejecting_grammar
 def test_multiline_literal_keeps_its_line_breaks(tmp_path):
     """A verbatim string may span lines; the mask must not consume a newline."""
     src = _cs_class([
@@ -159,10 +176,13 @@ def test_two_offending_literals_in_one_file(tmp_path):
     ])
     raw = src.encode("utf-8")
     masked = _normalize_csharp_verbatim_interpolation(raw)
-    assert masked is not None
-    assert len(masked) == len(raw)
-    changed = [i for i in range(len(raw)) if raw[i] != masked[i]]
-    assert len(changed) == 4, f"both literals must be cleared, got {changed}"
+    if GRAMMAR_REJECTS_OFFENDER:
+        assert masked is not None
+        assert len(masked) == len(raw)
+        changed = [i for i in range(len(raw)) if raw[i] != masked[i]]
+        assert len(changed) == 4, f"both literals must be cleared, got {changed}"
+    else:
+        assert masked is None, "a grammar that parses the file needs no mask"
 
     result = _extract(tmp_path, {"Config.cs": src})
     labels = {str(n.get("label", "")).lstrip(".") for n in result["nodes"]}

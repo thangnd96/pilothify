@@ -236,10 +236,11 @@ def test_merge_keys_are_expanded_like_the_constructed_mapping(tmp_path):
 
 def test_merge_key_sequence_earlier_map_wins(tmp_path):
     """A ``<<: [*a, *b]`` sequence merge must give an EARLIER map precedence over a
-    later one, matching the YAML merge spec and PyYAML's ``safe_load``/``flatten_mapping``
-    (which reverses the sequence so the first map's keys override). Here both anchors
-    define ``common``; ``*a`` is first, so ``services.web.common`` must resolve to
-    ``*a``'s mapping (key node at L2), not ``*b``'s (L5)."""
+    later one, as the YAML merge spec states: keys in mapping nodes earlier in the
+    sequence override keys in later ones. PyYAML's ``safe_load`` agreed up to 6.0.3;
+    6.0.4 lets the later map win, so the spec, not ``safe_load``, is the reference.
+    Here both anchors define ``common``; ``*a`` is first, so ``services.web.common``
+    must resolve to ``*a``'s mapping (key node at L2), not ``*b``'s (L5)."""
     from pilothify.extractors.yaml_config import _make_id, _file_stem
 
     text = (
@@ -248,10 +249,6 @@ def test_merge_key_sequence_earlier_map_wins(tmp_path):
         "services:\n  web:\n    <<: [*a, *b]\n"  # L7-L9
     )
     path = _write(tmp_path / "docker-compose.yml", text)
-
-    # Ground truth: safe_load lets the earlier map in the sequence win.
-    import yaml
-    assert list(yaml.safe_load(text)["services"]["web"]["common"]) == ["from_a"]
 
     result = extract_yaml(path)
     stem = _file_stem(path)
