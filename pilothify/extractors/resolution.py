@@ -1674,6 +1674,14 @@ def _apply_symbol_resolution_facts(
             )
             export_sites.setdefault(site, []).append(export_fact)
     owned_ids = {node.get("id") for node in nodes}
+    if resolution_context_nodes:
+        # An incremental build's unchanged corpus is owned too: its nodes stay
+        # in the persisted graph, so an import that resolves through a barrel
+        # to one of them supersedes the edge left on the barrel, as in a full
+        # build where that node is in `nodes`.
+        owned_ids |= {
+            node.get("id") for node in resolution_context_nodes if node.get("id")
+        }
     for edge in edges:
         if edge.get("relation") != "re_exports" or edge.get("target") in owned_ids:
             continue
@@ -3412,6 +3420,88 @@ def _collect_python_symbol_resolution_facts(
                     )
                 )
 
+# An incremental build follows re-exports from the changed files into the
+# unchanged corpus for at most this many hops and files (see below).
+_CONTEXT_FACT_MAX_HOPS = 8
+_CONTEXT_FACT_MAX_FILES = 4000
+
+
+def _collect_context_js_export_facts(
+    paths: list[Path],
+    facts: _SymbolResolutionFacts,
+    root: Path,
+    resolution_context_nodes: list[dict],
+) -> _SymbolResolutionFacts:
+    """Export facts of the unchanged JS/TS modules the changed files import through.
+
+    An incremental build parses only the changed files, so an import that goes
+    through an unchanged barrel (`export { X } from './x'`, `export * from`,
+    `import { X } from './x'; export { X }`) had no export facts to follow: it
+    stayed on the barrel's own id, build minted an `external` stub for it, and
+    the importer's calls to the real symbol disappeared. A full build has those
+    facts because the barrel is in its batch.
+
+    This walks the changed files' import and re-export targets, and from each
+    unchanged module only its re-exports, collecting import, alias and export
+    facts. Declarations, namespace exports and uses are left out: they mint
+    nodes and edges for the file they come from, and an unchanged module's
+    nodes and edges are already in the persisted graph. Only modules that are
+    part of the persisted corpus are read, as a full build would.
+    """
+    extra = _SymbolResolutionFacts()
+    corpus: set[Path] = set()
+    for node in resolution_context_nodes:
+        source_path = _js_source_path(str(node.get("source_file") or ""), root)
+        if source_path is not None and effective_suffix(source_path) in _JS_CACHE_BYPASS_SUFFIXES:
+            corpus.add(source_path)
+    if not corpus:
+        return extra
+
+    def norm(path: "Path | None") -> "Path | None":
+        if path is None:
+            return None
+        try:
+            return _resolve_cached(path)
+        except Exception:
+            return None
+
+    def reexport_targets(hop: _SymbolResolutionFacts, *, all_imports: bool) -> set["Path | None"]:
+        reexported = {(norm(e.file_path), e.local_name) for e in hop.exports if e.local_name}
+        out: set[Path | None] = set()
+        for e in hop.exports:
+            if e.target_path is not None:
+                out.add(norm(e.target_path))
+        out.update(norm(s.target_path) for s in hop.star_exports)
+        out.update(norm(n.target_path) for n in hop.namespace_exports)
+        for i in hop.imports:
+            if all_imports or (norm(i.file_path), i.local_name) in reexported:
+                out.add(norm(i.target_path))
+        return out
+
+    seen: set[Path] = set()
+    for path in paths:
+        resolved = norm(path)
+        if resolved is not None:
+            seen.add(resolved)
+    frontier = reexport_targets(facts, all_imports=True)
+    collected = 0
+    for _ in range(_CONTEXT_FACT_MAX_HOPS):
+        wave = sorted(p for p in frontier if p is not None and p not in seen and p in corpus)
+        wave = wave[: max(0, _CONTEXT_FACT_MAX_FILES - collected)]
+        if not wave:
+            break
+        seen.update(wave)
+        collected += len(wave)
+        hop = _SymbolResolutionFacts()
+        _collect_js_symbol_resolution_facts(wave, hop)
+        extra.imports.extend(hop.imports)
+        extra.aliases.extend(hop.aliases)
+        extra.exports.extend(hop.exports)
+        extra.star_exports.extend(hop.star_exports)
+        frontier = reexport_targets(hop, all_imports=False)
+    return extra
+
+
 def _augment_symbol_resolution_edges(
     paths: list[Path],
     nodes: list[dict],
@@ -3428,6 +3518,11 @@ def _augment_symbol_resolution_edges(
         ambiguous_python_modules=ambiguous_python_modules,
     )
     if resolution_context_nodes:
+        context = _collect_context_js_export_facts(paths, facts, root, resolution_context_nodes)
+        facts.imports.extend(context.imports)
+        facts.aliases.extend(context.aliases)
+        facts.exports.extend(context.exports)
+        facts.star_exports.extend(context.star_exports)
         _apply_symbol_resolution_facts(
             paths, nodes, edges, root, facts,
             resolution_context_nodes=resolution_context_nodes,
