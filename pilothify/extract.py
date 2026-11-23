@@ -109,6 +109,7 @@ from pilothify.extractors.resolution import (  # noqa: E402,F401
     _JS_RESOLVE_EXTS,
     _PACKAGE_IMPORTS_CACHE,
     _SCAN_ROOT_NAMESPACE_CACHE,
+    _JS_CONFIG_LOOKUP_CACHE,
     _TSCONFIG_ALIAS_CACHE,
     _TSCONFIG_BASEURL_CACHE,
     _VUE_SCRIPT_LANG_RE,
@@ -11418,6 +11419,7 @@ def extract(
     # Clearing per run, not per file, leaves within-run caching intact.
     _TSCONFIG_ALIAS_CACHE.clear()
     _TSCONFIG_BASEURL_CACHE.clear()
+    _JS_CONFIG_LOOKUP_CACHE.clear()
     _PACKAGE_IMPORTS_CACHE.clear()
     _XAML_CSHARP_CLASS_CACHE.clear()
     _MD_LINK_INDEX_CACHE.clear()

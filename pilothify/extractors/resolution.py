@@ -27,6 +27,12 @@ _TSCONFIG_ALIAS_CACHE: dict[str, dict[str, list[str]]] = {}
 # compilerOptions.baseUrl per config path, as an absolute dir.
 _TSCONFIG_BASEURL_CACHE: "dict[str, Path | None]" = {}
 
+# Nearest tsconfig/jsconfig per resolved start directory. Every non-relative
+# import asks twice (aliases, then baseUrl) and each ask walked every parent
+# directory with two exists() probes. Same lifetime rule as the caches above:
+# no mtime component, so extract() clears it per run.
+_JS_CONFIG_LOOKUP_CACHE: "dict[Path, tuple[Path, Path] | None]" = {}
+
 _WORKSPACE_MANIFEST_NAMES = ("pnpm-workspace.yaml", "package.json")
 
 # Nearest package.json `imports` map (Node subpath imports), keyed by the
@@ -261,12 +267,27 @@ def _find_js_config(start_dir: Path) -> "tuple[Path, Path] | None":
     which consult jsconfig.json only when there is no tsconfig.json.
     """
     current = _resolve_cached(start_dir)
+    if current in _JS_CONFIG_LOOKUP_CACHE:
+        return _JS_CONFIG_LOOKUP_CACHE[current]
+    walked: list[Path] = []
+    found: "tuple[Path, Path] | None" = None
     for candidate in [current, *current.parents]:
+        if candidate in _JS_CONFIG_LOOKUP_CACHE:
+            found = _JS_CONFIG_LOOKUP_CACHE[candidate]
+            break
+        walked.append(candidate)
         for name in ("tsconfig.json", "jsconfig.json"):
             config = candidate / name
             if config.exists():
-                return config, candidate
-    return None
+                found = (config, candidate)
+                break
+        if found is not None:
+            break
+    # Every directory walked shares the answer: none of them below the hit has
+    # a config of its own, so the nearest one from each is the same.
+    for directory in walked:
+        _JS_CONFIG_LOOKUP_CACHE[directory] = found
+    return found
 
 def _load_tsconfig_aliases(start_dir: Path) -> dict[str, list[str]]:
     """Walk up from start_dir to find tsconfig/jsconfig.json and return compilerOptions.paths aliases.
