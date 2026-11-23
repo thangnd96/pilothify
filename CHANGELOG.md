@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+Phần lớn thay đổi đến từ việc đo graph của một repo front-end thật (khoảng 3.440 file code, 11.400 node, 29.300 cạnh) khi đổi nhánh và sửa code. fe-delivery 0.4.0 dựa vào các thay đổi này để giữ graph khớp code.
+
+### Sửa lỗi
+
+- **Bản cập nhật tăng dần để lại stub khi import đi qua barrel.** Một file đã đổi import qua `index.ts` không đổi (`export { X } from './x'`, `export * from`, hay `import { X } from './x'; export { X }`) thì import đó dừng ở id của barrel. Khi build, id này thành một stub `external` (ví dụ `src_components_ui_index_button`), và mất các cạnh `calls` từ file đó tới component thật. `affected` và blast radius vì vậy bỏ sót người gọi. Nguyên nhân: bản tăng dần chỉ đọc file đã đổi, nên thiếu thông tin export của barrel. Nay bản tăng dần đọc thêm export của các module không đổi mà file đã đổi import qua, nhưng chỉ dùng để resolve, không sinh node hay cạnh cho các module đó. Đo trên repo thật: đổi sang commit khác rồi quay lại, trước đây graph dư 28 node và thiếu 57 cạnh so với bản dựng toàn bộ; nay hai graph trùng khớp từng node và từng cạnh.
+- **`update --no-cluster` và `extract --no-cluster` ghi `built_at_commit: null`.** Hai đường ghi graph thô này nay ghi commit giống đường có cluster.
+- **Hook git bỏ qua `PILOTHIFY_REBUILD_LOG`.** Bốn hook luôn đặt log về `~/.cache/pilothify-rebuild.log`, nên giá trị người dùng export không có tác dụng. Trong sandbox không ghi được `~/.cache`, output của lần dựng lại bị bỏ đi. Nay hook giữ giá trị đã export. Launcher cũng chuyển sang `pilothify-out/rebuild.log` khi không mở được file log. Hook đã cài sẽ báo `out of date` trong `hook status`; chạy lại `pilothify hook install` để cập nhật.
+
+### Mới
+
+- **`pilothify update --full`:** dựng lại toàn bộ corpus bằng chính pipeline của `update`, và vẫn giữ guard chống co graph. Trước đây cách duy nhất là `--force`, mà `--force` tắt luôn guard; còn `extract` là pipeline khác, cho ra số node khác. Nếu lần dựng trước đã là bản dựng toàn bộ của đúng cây đó thì `--full` không làm gì (khoảng 1 giây). Một yêu cầu tăng dần đang chờ trong hàng không làm `--full` hẹp lại.
+- **`pilothify hook install --no-merge-driver`:** chỉ cài hook, không ghi dòng `.gitattributes` và git config của merge driver. Repo gitignore `pilothify-out/` thì không bao giờ merge `graph.json`, nên không cần merge driver. `hook uninstall --no-merge-driver` để nguyên merge driver đã đăng ký.
+
+### Nhanh hơn
+
+- Kết quả tìm `tsconfig.json`/`jsconfig.json` gần nhất được nhớ theo từng thư mục trong một lần chạy. Trước đây mỗi import không tương đối dò lại toàn bộ thư mục cha. Rebuild toàn bộ repo front-end nói trên nhanh hơn khoảng 8%, graph không đổi.
+
+### Ghi chú
+
+- **Cache AST không dùng cho JS/TS là có chủ ý.** Kết quả trích một file JS/TS phụ thuộc tsconfig, package.json và việc file đích của import có tồn tại hay không. Cache theo nội dung từng file vì vậy có thể trả lại import trỏ tới file đã bị đổi tên. Muốn cache an toàn thì phải kiểm lại từng lần resolve module khi đọc cache, mà resolve module lại là phần tốn thời gian nhất (xem số đo ở README). Bản này chưa làm.
+- **Trong sandbox chặn POSIX semaphore** (sandbox Bash của Claude Code trên macOS), pool process không khởi động được nên trích AST chạy tuần tự. Cảnh báo nay ghi rõ lý do. Graph vẫn giống hệt; hook git và lệnh chạy từ terminal vẫn chạy song song.
+
 ## v0.1.5 — 2026-11-16
 
 ### Cần Python 3.11 trở lên

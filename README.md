@@ -40,8 +40,10 @@ Cách nào cũng vậy, hook và luật trong CLAUDE.md cài bằng CLI:
 
 ```bash
 pilothify claude install    # thêm luật vào CLAUDE.md và hook nhắc agent hỏi graph trước khi grep
-pilothify hook install      # git hook: cập nhật graph sau mỗi commit
+pilothify hook install      # git hook: cập nhật graph sau commit, đổi nhánh, merge, rebase
 ```
+
+Git hook dựng lại graph ở nền và ghi log vào `$PILOTHIFY_REBUILD_LOG` (mặc định `~/.cache/pilothify-rebuild.log`; không ghi được thì vào `pilothify-out/rebuild.log`). Hook nằm trong `.git/hooks`, nên mỗi clone phải cài riêng; trong linked worktree hook bỏ qua việc dựng lại. Khi `pilothify-out/` bị gitignore thì không cần merge driver cho `graph.json`: dùng `pilothify hook install --no-merge-driver` để không đụng `.gitattributes` và git config.
 
 Sau đó gõ `/pilothify .` trong Claude Code (bản plugin: `/pilothify:pilothify .`). Các assistant khác: `pilothify install --platform <tên>` (codex, cursor, gemini, …).
 
@@ -50,7 +52,8 @@ Sau đó gõ `/pilothify .` trong Claude Code (bản plugin: `/pilothify:pilothi
 ```bash
 PILOTHIFY_BACKEND=none pilothify extract . --code-only   # chỉ code, không cần API key
 pilothify cluster-only .                                 # chia community, sinh GRAPH_REPORT.md và graph.html
-pilothify update .                                       # cập nhật sau khi sửa code (chỉ AST)
+pilothify update .                                       # cập nhật sau khi sửa code (chỉ AST, chỉ file đã đổi)
+pilothify update . --full                                # dựng lại toàn bộ bằng cùng pipeline, giữ guard chống co graph
 
 pilothify query "spin wallet debit"                      # subgraph cho một câu hỏi
 pilothify explain "SpinService"                          # một node và các kết nối của nó
@@ -58,6 +61,10 @@ pilothify path "SpinController" "WalletApi"              # hai thứ nối với
 ```
 
 `query`, `path`, `explain` trả mã thoát 0 khi có kết quả, 3 khi tên mơ hồ, 4 khi không khớp. Kết quả ghi vào `pilothify-out/`: `graph.json`, `GRAPH_REPORT.md`, `graph.html` và `cache/`.
+
+`update --full` là no-op khi lần dựng trước đã là bản dựng toàn bộ của đúng cây đó. `--force` cũng dựng lại toàn bộ nhưng tắt guard chống co graph; chỉ dùng sau refactor xoá code thật.
+
+Trong sandbox chặn POSIX semaphore (ví dụ sandbox Bash của Claude Code trên macOS), pool process không khởi động được nên bước trích AST chạy tuần tự: graph giống hệt, chỉ chậm hơn (khoảng 1,6 lần trên repo 3.400 file). Hook git và lệnh chạy từ terminal vẫn chạy song song. File JS/TS không dùng cache AST theo từng file, vì kết quả trích của chúng phụ thuộc tsconfig, package.json và việc file đích của import có tồn tại hay không.
 
 Câu hỏi tiếng Việt: từ có dấu chỉ khớp với label tiếng Việt (sinh ra từ pass semantic trên docs). Với graph chỉ có code, hãy hỏi bằng tên định danh trong code.
 
