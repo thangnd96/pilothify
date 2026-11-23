@@ -1,6 +1,7 @@
 """Deterministic structural extraction from source code using tree-sitter. Outputs nodes+edges dicts."""
 from __future__ import annotations
 
+import errno
 import hashlib
 import importlib
 import json
@@ -11278,10 +11279,20 @@ def _extract_parallel(
     except OSError as exc:
         # The pool could not even start. On macOS, leaked POSIX semaphores
         # exhaust kern.posix.sem.max and sem_open fails with ENOSPC ("No space
-        # left on device", disk nowhere near full). Sequential needs no pool.
+        # left on device", disk nowhere near full). A sandbox that denies POSIX
+        # semaphores (Claude Code's Bash sandbox on macOS) fails it with EPERM.
+        # Sequential needs no pool.
+        reason = ""
+        if getattr(exc, "errno", None) in (errno.EPERM, errno.EACCES):
+            reason = (
+                " This process may not create the POSIX semaphores a process pool "
+                "needs (a sandbox such as Claude Code's Bash sandbox). The graph is "
+                "the same, only slower; rebuilds from git hooks or a terminal stay "
+                "parallel."
+            )
         print(
             f"  warning: parallel extraction unavailable ({exc}); "
-            "falling back to sequential.",
+            f"falling back to sequential.{reason}",
             flush=True,
         )
         return False
