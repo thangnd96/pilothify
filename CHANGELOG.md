@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.1.7 — 2026-11-23
+
+### Nhanh hơn
+
+- **File JS/TS dùng cache AST.** Kết quả trích một file JS/TS phụ thuộc tsconfig (`paths`, `baseUrl`), `imports` và workspaces trong package.json, và cả việc file nào đang tồn tại (`./util` thành `util.ts` khi `util.ts` xuất hiện cạnh `util.js`). Vì vậy trước đây các file này luôn bị trích lại. Nay mỗi mục cache ghi lại mọi lần resolve module lúc trích kèm kết quả, và khi đọc cache thì resolve lại. Chỉ cần một lần ra kết quả khác là file được trích lại từ đầu. Vue, Svelte và EJS cũng vậy. Astro và script `node` không đuôi vốn đã được cache nhưng không được kiểm lại gì, nay cũng được kiểm theo cách này.
+- Kết quả resolve được nhớ trong một lần chạy, dùng chung cho bước kiểm cache, bước trích và pass resolve giữa các file. Trên repo front-end 3.440 file, 18.189 lần resolve chỉ gồm 4.465 khoá khác nhau.
+- Đo rebuild toàn bộ trên repo đó, khi cache đã ấm:
+  - Tuần tự (như trong sandbox của Claude Code, nơi pool process không khởi động được): 15,5 s → 9 s.
+  - Song song: 8,5 s → 7,7 s; CPU giảm từ khoảng 21 s xuống 6,5 s.
+  - Graph giống hệt từng node và từng cạnh.
+
+### Sửa lỗi
+
+- **Gọi `extract()` với đường dẫn tương đối, từ một thư mục khác root, sinh node trùng.** Pass resolve symbol JS đọc `source_file` tương đối như thể nó tương đối với root (`src/lib/x.ts` dưới root `src/` thành `src/src/lib/x.ts`). Symbol của file đó vì vậy không được đánh chỉ mục, và pass sinh thêm một node trùng id với nhãn khác (`getPosts` cạnh `getPosts()`). Lệnh `pilothify` dò file bằng đường dẫn tuyệt đối nên không gặp lỗi này.
+
+### Ghi chú
+
+- Cache AST lên schema 47, nên lần chạy đầu sau khi nâng cấp sẽ trích lại toàn bộ.
+- Cache AST lớn hơn: trên repo nói trên, từ 288 KB (32 mục) lên khoảng 33 MB (3.440 mục). Máy có phần mềm quét file khi mở sẽ chậm hơn ở lần đọc đầu các mục mới ghi. Trên máy đo có Microsoft Defender, lần đọc đầu 3.440 mục mất 4,5 s, các lần sau 0,4 s.
+
 ## v0.1.6 — 2026-11-23
 
 Phần lớn thay đổi đến từ việc đo graph của một repo front-end thật (khoảng 3.440 file code, 11.400 node, 29.300 cạnh) khi đổi nhánh và sửa code. fe-delivery 0.4.0 dựa vào các thay đổi này để giữ graph khớp code.

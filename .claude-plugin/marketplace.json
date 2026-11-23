@@ -10,7 +10,7 @@
     {
       "name": "pilothify",
       "description": "Turn a codebase, its docs and schemas into a knowledge graph the agent queries before it greps.",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "author": {
         "name": "ThangND4"
       },

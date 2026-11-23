@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "pilothify",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Turn a codebase, its docs and schemas into a knowledge graph the agent queries before it greps.",
   "author": {
     "name": "ThangND4"
