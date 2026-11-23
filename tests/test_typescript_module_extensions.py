@@ -29,11 +29,11 @@ def test_mts_cts_in_js_language_family():
 
 
 def test_mts_cts_in_js_resolution_sets():
-    from pilothify.extract import _JS_CACHE_BYPASS_SUFFIXES, _JS_RESOLVE_EXTS
+    from pilothify.extract import _JS_FAMILY_SUFFIXES, _JS_RESOLVE_EXTS
     assert ".mts" in _JS_RESOLVE_EXTS
     assert ".cts" in _JS_RESOLVE_EXTS
-    assert ".mts" in _JS_CACHE_BYPASS_SUFFIXES
-    assert ".cts" in _JS_CACHE_BYPASS_SUFFIXES
+    assert ".mts" in _JS_FAMILY_SUFFIXES
+    assert ".cts" in _JS_FAMILY_SUFFIXES
 
 
 # A source with TypeScript-only syntax (a `type` alias + an `interface`) — these

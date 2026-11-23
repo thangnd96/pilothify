@@ -59,13 +59,14 @@ def test_ejs_in_js_language_families():
 
 def test_ejs_in_resolution_and_hook_sets():
     # `.ejs` is a JS resolve extension (so extensionless requires/includes probe
-    # the real template), a cache-bypass suffix (import resolution is
-    # corpus-dependent, like the other JS-family SFCs), and a hook source ext
+    # the real template), a JS-family suffix (import resolution is
+    # corpus-dependent, so its AST entry carries the resolutions it made, like
+    # the other JS-family SFCs), and a hook source ext
     # (editing a view must re-index the graph).
     from pilothify.cli import _HOOK_SOURCE_EXTS
-    from pilothify.extract import _JS_CACHE_BYPASS_SUFFIXES, _JS_RESOLVE_EXTS
+    from pilothify.extract import _JS_FAMILY_SUFFIXES, _JS_RESOLVE_EXTS
     assert ".ejs" in _JS_RESOLVE_EXTS
-    assert ".ejs" in _JS_CACHE_BYPASS_SUFFIXES
+    assert ".ejs" in _JS_FAMILY_SUFFIXES
     assert ".ejs" in _HOOK_SOURCE_EXTS
 
 

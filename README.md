@@ -64,7 +64,7 @@ pilothify path "SpinController" "WalletApi"              # hai thứ nối với
 
 `update --full` là no-op khi lần dựng trước đã là bản dựng toàn bộ của đúng cây đó. `--force` cũng dựng lại toàn bộ nhưng tắt guard chống co graph; chỉ dùng sau refactor xoá code thật.
 
-Trong sandbox chặn POSIX semaphore (ví dụ sandbox Bash của Claude Code trên macOS), pool process không khởi động được nên bước trích AST chạy tuần tự: graph giống hệt, chỉ chậm hơn (khoảng 1,6 lần trên repo 3.400 file). Hook git và lệnh chạy từ terminal vẫn chạy song song. File JS/TS không dùng cache AST theo từng file, vì kết quả trích của chúng phụ thuộc tsconfig, package.json và việc file đích của import có tồn tại hay không.
+Trong sandbox chặn POSIX semaphore (ví dụ sandbox Bash của Claude Code trên macOS), pool process không khởi động được nên bước trích AST chạy tuần tự: graph giống hệt, chỉ chậm hơn (khoảng 1,6 lần trên repo 3.400 file). Hook git và lệnh chạy từ terminal vẫn chạy song song. File JS/TS cũng dùng cache AST, dù kết quả trích của chúng phụ thuộc tsconfig, package.json và việc file đích của import có tồn tại hay không: mỗi mục cache ghi lại mọi lần resolve module lúc trích, và khi đọc cache thì resolve lại. Chỉ cần một lần ra kết quả khác là file đó được trích lại từ đầu.
 
 Câu hỏi tiếng Việt: từ có dấu chỉ khớp với label tiếng Việt (sinh ra từ pass semantic trên docs). Với graph chỉ có code, hãy hỏi bằng tên định danh trong code.
 

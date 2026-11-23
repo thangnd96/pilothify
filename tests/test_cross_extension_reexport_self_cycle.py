@@ -17,6 +17,7 @@ sibling node, and no phantom 1-file cycle survives.
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 from pilothify.build import build
@@ -290,22 +291,45 @@ def test_build_drops_persisted_target_file_from_a_pre_fix_graph(tmp_path: Path):
         )
 
 
-def test_target_file_hint_never_written_to_the_ast_cache(tmp_path: Path):
-    """The hint is emitted only on JS/TS-family edges, and those suffixes bypass
-    the AST cache entirely (``_JS_CACHE_BYPASS_SUFFIXES``). A warm/relocated
-    cache therefore can never carry a foreign absolute target_file that would
-    miss the disambiguation salt. Lock that no AST cache entry stores it."""
-    mjs = _write(tmp_path / "foo.mjs", "export const N = 1;\n")
-    ts = _write(tmp_path / "foo.ts", 'export { N } from "./foo.mjs";\n')
+def test_target_file_hint_is_cached_root_relative_and_replays_when_relocated(tmp_path: Path, capsys):
+    """JS/TS entries are cached (each records the module resolutions its
+    extraction made), so the hint is written to the AST cache. It must be stored
+    against the root, never as this checkout's absolute path: a foreign absolute
+    target_file on a relocated warm hit would miss the disambiguation salt and
+    bring the phantom self-loop back. A cache moved with its checkout replays
+    the same salted edges a cold build of the new location produces."""
+    first = tmp_path / "first"
+    _write(first / "foo.mjs", "export const N = 1;\n")
+    _write(first / "foo.ts", 'export { N } from "./foo.mjs";\n')
+    extract([first / "foo.mjs", first / "foo.ts"], cache_root=first)
 
-    extract([mjs, ts], cache_root=tmp_path)
+    hints = [
+        edge["target_file"]
+        for entry in (first / "pilothify-out" / "cache" / "ast").rglob("*.json")
+        for edge in json.loads(entry.read_text(encoding="utf-8")).get("edges", [])
+        if "target_file" in edge
+    ]
+    assert hints, "the re-export edges should carry their target_file hint"
+    for hint in hints:
+        assert str(first) not in hint and str(first.resolve()) not in hint, (
+            f"AST cache stored this checkout's absolute path: {hint}"
+        )
 
-    ast_dir = tmp_path / "pilothify-out" / "cache" / "ast"
-    entries = list(ast_dir.rglob("*.json")) if ast_dir.exists() else []
-    for entry in entries:
-        payload = json.loads(entry.read_text(encoding="utf-8"))
-        for edge in payload.get("edges", []):
-            assert "target_file" not in edge, (
-                f"AST cache entry {entry.name} stored a non-portable target_file "
-                f"hint: {edge}"
-            )
+    moved = tmp_path / "moved"
+    shutil.copytree(first, moved)
+    capsys.readouterr()
+    warm = extract([moved / "foo.mjs", moved / "foo.ts"], cache_root=moved)
+    assert "AST cache: 2/2 files served from cache (100%)" in capsys.readouterr().out
+
+    cold_root = tmp_path / "cold"
+    shutil.copytree(first, cold_root, ignore=shutil.ignore_patterns("pilothify-out"))
+    cold = extract([cold_root / "foo.mjs", cold_root / "foo.ts"], cache_root=cold_root)
+
+    def shape(result: dict) -> list[tuple]:
+        return sorted(
+            (e.get("source"), e.get("target"), e.get("relation"), e.get("context"))
+            for e in _reexport_like_edges(result)
+        )
+
+    assert shape(warm) == shape(cold)
+    assert not [e for e in _reexport_like_edges(warm) if e.get("source") == e.get("target")]

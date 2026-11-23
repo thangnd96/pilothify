@@ -5678,7 +5678,7 @@ def test_extract_progress_final_line_uses_consistent_denominator(tmp_path, capsy
 
 def test_extract_reports_ast_cache_hit_rate_over_file_total(tmp_path, capsys):
     # every progress line counts against uncached_work, so a run whose
-    # only uncached files are the JS/TS ones ends at "5/5 uncached files (100%)"
+    # only uncached files are a few new ones ends at "5/5 uncached files (100%)"
     # and reads as a perfect cache hit rate. The new "AST cache:" line reports
     # the hit rate against the FILE TOTAL, so the denominator cannot shrink to
     # the uncached set.
@@ -5689,7 +5689,7 @@ def test_extract_reports_ast_cache_hit_rate_over_file_total(tmp_path, capsys):
         py.append(p)
     ts = []
     for i in range(5):
-        p = tmp_path / f"t{i}.ts"  # JS/TS bypass the AST cache entirely
+        p = tmp_path / f"t{i}.ts"  # first extracted in run 3, so uncached there
         p.write_text(f"export function g{i}() {{ return {i}; }}\n")
         ts.append(p)
 

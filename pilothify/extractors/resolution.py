@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 from pathlib import Path
-from pilothify.extractors.models import LanguageConfig, _JS_CACHE_BYPASS_SUFFIXES, _NamespaceExportFact, _StarExportFact, _SymbolAliasFact, _SymbolDeclarationFact, _SymbolExportFact, _SymbolImportFact, _SymbolResolutionFacts, _SymbolUseFact, _WORKSPACE_PACKAGE_CACHE  # noqa: E402,F401
+from pilothify.extractors.models import LanguageConfig, _JS_FAMILY_SUFFIXES, _NamespaceExportFact, _StarExportFact, _SymbolAliasFact, _SymbolDeclarationFact, _SymbolExportFact, _SymbolImportFact, _SymbolResolutionFacts, _SymbolUseFact, _WORKSPACE_PACKAGE_CACHE  # noqa: E402,F401
 from pilothify.extractors.base import (  # noqa: F401
     _LANGUAGE_BUILTIN_GLOBALS,
     _file_stem,
@@ -44,6 +44,120 @@ _JS_RESOLVE_EXTS = (".ts", ".tsx", ".mts", ".cts", ".svelte", ".ejs", ".js", ".j
 
 _JS_INDEX_FILES = ("index.ts", "index.tsx", "index.svelte", "index.ejs", "index.js", "index.jsx", "index.mjs")
 
+# ---------------------------------------------------------------------------
+# The resolution record behind the JS/TS AST cache. A JS/TS-family extraction
+# depends on more than the file's bytes: tsconfig paths and baseUrl, package.json
+# imports and workspaces, and which candidate files exist (`./util` is util.ts once
+# util.ts appears beside util.js). Every such lookup goes through one of four entry
+# points: _resolve_js_import_path, _resolve_js_module_path, _load_tsconfig_aliases
+# and _load_tsconfig_base_url. While a file is extracted for the cache, each
+# OUTERMOST call to them is recorded with its answer (an inner call is part of the
+# outer answer). A cache hit replays the record (_js_resolutions_hold) and is a miss
+# when any answer differs.
+#
+# Results and answers are memoized for one extract() run, which clears them with
+# the tsconfig caches (clear_resolution_memo): nothing a resolution reads changes
+# within a run, and a front end makes the same few thousand resolutions from tens
+# of thousands of places (18,189 recorded on a 3,440-file app, 4,465 distinct).
+# The record check, the extractors and the cross-file pass share the memo.
+_RESOLUTION_LOG: "list[list] | None" = None
+_RESOLUTION_DEPTH = 0
+_RESOLUTION_MEMO: "dict[tuple, Any]" = {}
+_MISSING = object()
+
+
+def start_resolution_log() -> None:
+    global _RESOLUTION_LOG, _RESOLUTION_DEPTH
+    _RESOLUTION_LOG = []
+    _RESOLUTION_DEPTH = 0
+
+
+def stop_resolution_log() -> "list[list]":
+    global _RESOLUTION_LOG
+    records = _RESOLUTION_LOG if _RESOLUTION_LOG is not None else []
+    _RESOLUTION_LOG = None
+    return records
+
+
+def clear_resolution_memo() -> None:
+    _RESOLUTION_MEMO.clear()
+
+
+def _path_answer(value: "Path | str | None") -> list:
+    if value is None:
+        return [None, False]
+    try:
+        is_file = Path(value).is_file()
+    except OSError:
+        is_file = False
+    return [str(value), is_file]
+
+
+# A resolution is named by a key of JSON-safe values, which is also how a record
+# stores it: (kind, *arguments). _RESOLVERS computes one from its arguments and
+# _ANSWERS turns the result into what a record keeps.
+_RESOLVERS: "dict[str, Callable[..., Any]]" = {
+    "import_path": lambda candidate: _resolve_js_import_path_impl(Path(candidate)),
+    "module": lambda raw, start_dir, raw_is_path: _resolve_js_module_path_impl(
+        Path(raw) if raw_is_path else raw,
+        Path(start_dir) if start_dir is not None else None,
+    ),
+    "aliases": lambda start_dir: _load_tsconfig_aliases_impl(Path(start_dir)),
+    "base_url": lambda start_dir: _load_tsconfig_base_url_impl(Path(start_dir)),
+}
+_ANSWERS: "dict[str, Callable[[Any], Any]]" = {
+    "import_path": _path_answer,
+    "module": _path_answer,
+    "aliases": lambda aliases: {k: list(v) for k, v in aliases.items()},
+    "base_url": lambda base_url: str(base_url) if base_url is not None else None,
+}
+
+
+def _resolution(key: tuple) -> Any:
+    value = _RESOLUTION_MEMO.get(key, _MISSING)
+    if value is _MISSING:
+        value = _RESOLVERS[key[0]](*key[1:])
+        _RESOLUTION_MEMO[key] = value
+    return value
+
+
+def _answer(key: tuple) -> Any:
+    answer_key = ("answer", *key)
+    value = _RESOLUTION_MEMO.get(answer_key, _MISSING)
+    if value is _MISSING:
+        value = _ANSWERS[key[0]](_resolution(key))
+        _RESOLUTION_MEMO[answer_key] = value
+    return value
+
+
+def _recorded(key: tuple) -> Any:
+    global _RESOLUTION_DEPTH
+    if _RESOLUTION_LOG is None:
+        return _resolution(key)
+    _RESOLUTION_DEPTH += 1
+    try:
+        result = _resolution(key)
+    finally:
+        _RESOLUTION_DEPTH -= 1
+    if _RESOLUTION_DEPTH == 0:
+        _RESOLUTION_LOG.append([*key, _answer(key)])
+    return result
+
+
+def _js_resolutions_hold(records: Any) -> bool:
+    """True when every recorded resolution still gives the recorded answer."""
+    if not isinstance(records, list):
+        return False
+    for record in records:
+        try:
+            ok = _answer(tuple(record[:-1])) == record[-1]
+        except Exception:
+            ok = False
+        if not ok:
+            return False
+    return True
+
+
 def _declared_language_suffixes(target_exts: tuple[str, ...]) -> tuple[str, ...]:
     """Return declared literal suffixes for these languages in deterministic order."""
     # Mapping keys must be single suffixes, never relative path fragments.
@@ -58,6 +172,10 @@ def _declared_language_suffixes(target_exts: tuple[str, ...]) -> tuple[str, ...]
 
 def _resolve_js_import_path(candidate: Path) -> Path:
     """Resolve a JS/TS/Svelte import target to a local file when it exists."""
+    return _recorded(("import_path", str(candidate)))
+
+
+def _resolve_js_import_path_impl(candidate: Path) -> Path:
     candidate = Path(os.path.normpath(candidate))
     try:
         if candidate.is_file():
@@ -71,11 +189,11 @@ def _resolve_js_import_path(candidate: Path) -> Path:
             candidate.with_suffix(".ts"),
             candidate.with_suffix(".tsx"),
         ):
-            if ts_candidate.is_file() and effective_suffix(ts_candidate) in _JS_CACHE_BYPASS_SUFFIXES:
+            if ts_candidate.is_file() and effective_suffix(ts_candidate) in _JS_FAMILY_SUFFIXES:
                 return ts_candidate
     elif candidate.suffix == ".jsx":
         tsx_candidate = candidate.with_suffix(".tsx")
-        if tsx_candidate.is_file() and effective_suffix(tsx_candidate) in _JS_CACHE_BYPASS_SUFFIXES:
+        if tsx_candidate.is_file() and effective_suffix(tsx_candidate) in _JS_FAMILY_SUFFIXES:
             return tsx_candidate
 
     declared_exts = _declared_language_suffixes(_JS_RESOLVE_EXTS)
@@ -85,7 +203,7 @@ def _resolve_js_import_path(candidate: Path) -> Path:
     # Native suffixes retain precedence over declared ones.
     for ext in _JS_RESOLVE_EXTS + declared_exts:
         with_ext = candidate.parent / f"{candidate.name}{ext}"
-        if with_ext.is_file() and effective_suffix(with_ext) in _JS_CACHE_BYPASS_SUFFIXES:
+        if with_ext.is_file() and effective_suffix(with_ext) in _JS_FAMILY_SUFFIXES:
             return with_ext
 
     # Only fall back to directory indexes after file candidates lose, native
@@ -93,7 +211,7 @@ def _resolve_js_import_path(candidate: Path) -> Path:
     if candidate.is_dir():
         for index_name in _JS_INDEX_FILES:
             index_candidate = candidate / index_name
-            if index_candidate.is_file() and effective_suffix(index_candidate) in _JS_CACHE_BYPASS_SUFFIXES:
+            if index_candidate.is_file() and effective_suffix(index_candidate) in _JS_FAMILY_SUFFIXES:
                 return index_candidate
         for ext in declared_exts:
             index_candidate = candidate / f"index{ext}"
@@ -301,6 +419,10 @@ def _load_tsconfig_aliases(start_dir: Path) -> dict[str, list[str]]:
     component, so extract() clears it per run; do not assume the entry
     survives a config edit within a long-lived process.
     """
+    return _recorded(("aliases", str(start_dir)))
+
+
+def _load_tsconfig_aliases_impl(start_dir: Path) -> dict[str, list[str]]:
     found = _find_js_config(start_dir)
     if found is None:
         return {}
@@ -320,6 +442,10 @@ def _load_tsconfig_base_url(start_dir: Path) -> "Path | None":
     Returns None when no config declares baseUrl. Cached by config path with no
     mtime component, so extract() clears it per run.
     """
+    return _recorded(("base_url", str(start_dir)))
+
+
+def _load_tsconfig_base_url_impl(start_dir: Path) -> "Path | None":
     found = _find_js_config(start_dir)
     if found is None:
         return None
@@ -883,6 +1009,12 @@ def _resolve_js_module_path(raw: str | Path, start_dir: Path | None = None) -> P
     module specifiers including relative paths, tsconfig aliases, and workspace
     packages.
     """
+    return _recorded(
+        ("module", str(raw), str(start_dir) if start_dir is not None else None, isinstance(raw, Path))
+    )
+
+
+def _resolve_js_module_path_impl(raw: str | Path, start_dir: Path | None = None) -> Path | None:
     if isinstance(raw, Path):
         return _resolve_js_import_path(raw)
     if start_dir is None:
@@ -1316,6 +1448,20 @@ def _apply_symbol_resolution_facts(
     path_by_resolved = {_resolve_cached(path): path for path in paths}
     source_file_id = {_resolve_cached(path): _make_id(str(path)) for path in paths}
 
+    # A fresh extraction stamps ``source_file`` with the path string extract()
+    # was handed, CWD-relative for a relative input, while a cached entry comes
+    # back absolute. Reading every relative stamp against ``root`` named no file
+    # when CWD is not the root (``src/lib/x.ts`` under root ``src/`` became
+    # ``src/src/lib/x.ts``): that file's declarations went unindexed and
+    # ``ensure_symbol_node`` minted a second node under an id it already had, so
+    # a cold build and a warm one disagreed. An input's own spelling names it;
+    # anything else (a root-relative context node) reads against ``root``.
+    input_spellings = {str(path): _resolve_cached(path) for path in paths}
+
+    def source_path_of(source_file: str) -> Path | None:
+        hit = input_spellings.get(source_file)
+        return hit if hit is not None else _js_source_path(source_file, root)
+
     def reexport_file_target(path: Path) -> tuple[str, str]:
         resolved = _resolve_cached(path)
         stored = path_by_resolved.get(resolved, resolved)
@@ -1369,7 +1515,7 @@ def _apply_symbol_resolution_facts(
             symbol_nodes[key] = str(nid)
 
     for node in nodes:
-        source_path = _js_source_path(str(node.get("source_file", "")), root)
+        source_path = source_path_of(str(node.get("source_file", "")))
         if source_path is None:
             continue
         raw_label = str(node.get("label", "")).strip()
@@ -1408,7 +1554,7 @@ def _apply_symbol_resolution_facts(
     if facts.imports:
         declared: dict[tuple[Path, str], str] = {}
         for node in nodes:
-            node_path = _js_source_path(str(node.get("source_file") or ""), root)
+            node_path = source_path_of(str(node.get("source_file") or ""))
             if node_path is None:
                 continue
             label = str(node.get("label") or "").strip()
@@ -1423,7 +1569,7 @@ def _apply_symbol_resolution_facts(
         for edge in edges:
             if edge.get("relation") != "references":
                 continue
-            edge_source = _js_source_path(str(edge.get("source_file") or ""), root)
+            edge_source = source_path_of(str(edge.get("source_file") or ""))
             if edge_source is not None:
                 refs_by_source.setdefault(edge_source, []).append(edge)
         for fact in facts.imports:
@@ -1464,13 +1610,13 @@ def _apply_symbol_resolution_facts(
             str(edge.get("target")),
             str(edge.get("relation")),
             str(edge.get("context") or ""),
-            _js_source_path(str(edge.get("source_file") or ""), root),
+            source_path_of(str(edge.get("source_file") or "")),
         )
         for edge in edges
     }
 
     def add_edge(source: str, target: str, relation: str, context: str, line: int, source_path: Path, target_file: str | None = None, local_alias: str | None = None, type_only: bool = False) -> None:
-        key = (source, target, relation, context or "", _js_source_path(str(source_path), root))
+        key = (source, target, relation, context or "", source_path_of(str(source_path)))
         if key in existing_edges:
             return
         existing_edges.add(key)
@@ -1707,7 +1853,7 @@ def _apply_symbol_resolution_facts(
         if edge.get("relation") != "re_exports" or edge.get("target") in owned_ids:
             continue
         target_file = edge.get("target_file")
-        source_path = _js_source_path(str(edge.get("source_file", "")), root)
+        source_path = source_path_of(str(edge.get("source_file", "")))
         if not target_file or source_path is None:
             continue
         target_path = Path(target_file)
@@ -1749,20 +1895,20 @@ def _apply_symbol_resolution_facts(
 
     if raw_calls and any(
         fact.imported_name in ("default", "*")
-        and effective_suffix(fact.file_path) in _JS_CACHE_BYPASS_SUFFIXES
+        and effective_suffix(fact.file_path) in _JS_FAMILY_SUFFIXES
         for fact in facts.imports
     ):
         default_imports = {
             (_resolve_cached(fact.file_path), fact.local_name): _resolve_cached(fact.target_path)
             for fact in facts.imports
             if fact.imported_name == "default"
-            and effective_suffix(fact.file_path) in _JS_CACHE_BYPASS_SUFFIXES
+            and effective_suffix(fact.file_path) in _JS_FAMILY_SUFFIXES
         }
         namespace_imports = {
             (_resolve_cached(fact.file_path), fact.local_name): _resolve_cached(fact.target_path)
             for fact in facts.imports
             if fact.imported_name == "*"
-            and effective_suffix(fact.file_path) in _JS_CACHE_BYPASS_SUFFIXES
+            and effective_suffix(fact.file_path) in _JS_FAMILY_SUFFIXES
         }
         member_nodes: dict[tuple[Path, str, str], set[str]] = {}
         fresh_paths = {_resolve_cached(path) for path in paths}
@@ -1772,7 +1918,7 @@ def _apply_symbol_resolution_facts(
         ]:
             if not node.get("_callable"):
                 continue
-            source_path = _js_source_path(str(node.get("source_file", "")), root)
+            source_path = source_path_of(str(node.get("source_file", "")))
             if source_path is None:
                 continue
             key = (source_path, str(node.get("label", "")), str(node.get("source_location", "")))
@@ -1781,7 +1927,7 @@ def _apply_symbol_resolution_facts(
         for call in raw_calls:
             if (not call.get("is_member_call") or call.get("_js_construct") or call.get("ts_this_field")):
                 continue
-            source_path = _js_source_path(str(call.get("source_file", "")), root)
+            source_path = source_path_of(str(call.get("source_file", "")))
             if source_path is None:
                 continue
             receiver = str(call.get("receiver") or "")
@@ -1840,7 +1986,7 @@ def _apply_symbol_resolution_facts(
         if edge.get("relation") != "imports" or edge.get("target") in owned_ids:
             continue
         target_file = edge.get("target_file")
-        source_path = _js_source_path(str(edge.get("source_file", "")), root)
+        source_path = source_path_of(str(edge.get("source_file", "")))
         if not target_file or source_path is None:
             continue
         target_path = Path(target_file)
@@ -1867,7 +2013,7 @@ def _apply_symbol_resolution_facts(
     provisional_by_loc: dict[tuple[Path, str], list[dict]] = {}
     for edge in edges:
         if edge.get("relation") == "imports_from" and edge.get("context") == "import":
-            src = _js_source_path(str(edge.get("source_file", "")), root)
+            src = source_path_of(str(edge.get("source_file", "")))
             loc = edge.get("source_location")
             if src is not None and loc:
                 provisional_by_loc.setdefault((src, loc), []).append(edge)
@@ -1991,7 +2137,7 @@ def _apply_symbol_resolution_facts(
             # alphanumeric suffix is a child node id (`classid_methodname`), so
             # matching it would wrongly steal a class member's edge (e.g. a
             # type-annotated field's reference) onto a preceding method.
-            _js_source_path(str(n.get("source_file") or ""), root) == file_path
+            source_path_of(str(n.get("source_file") or "")) == file_path
         )]
         if len(candidates) < 2:
             return source_id
@@ -2705,7 +2851,7 @@ _JS_FACT_NODE_TYPES = frozenset({
 def _collect_js_symbol_resolution_facts(paths: list[Path], facts: _SymbolResolutionFacts) -> None:
     js_paths = [
         path for path in paths
-        if effective_suffix(path) in _JS_CACHE_BYPASS_SUFFIXES
+        if effective_suffix(path) in _JS_FAMILY_SUFFIXES
     ]
     if not js_paths:
         return
@@ -3473,7 +3619,7 @@ def _collect_context_js_export_facts(
     corpus: set[Path] = set()
     for node in resolution_context_nodes:
         source_path = _js_source_path(str(node.get("source_file") or ""), root)
-        if source_path is not None and effective_suffix(source_path) in _JS_CACHE_BYPASS_SUFFIXES:
+        if source_path is not None and effective_suffix(source_path) in _JS_FAMILY_SUFFIXES:
             corpus.add(source_path)
     if not corpus:
         return extra

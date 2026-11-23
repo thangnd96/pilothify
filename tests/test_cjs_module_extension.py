@@ -38,9 +38,9 @@ def test_cjs_in_js_language_family():
 
 
 def test_cjs_in_js_resolution_sets():
-    from pilothify.extract import _JS_CACHE_BYPASS_SUFFIXES, _JS_RESOLVE_EXTS
+    from pilothify.extract import _JS_FAMILY_SUFFIXES, _JS_RESOLVE_EXTS
     assert ".cjs" in _JS_RESOLVE_EXTS
-    assert ".cjs" in _JS_CACHE_BYPASS_SUFFIXES
+    assert ".cjs" in _JS_FAMILY_SUFFIXES
 
 
 def test_cjs_in_hook_source_exts():

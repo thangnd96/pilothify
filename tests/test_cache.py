@@ -354,9 +354,7 @@ def _reset_stat_index():
 def _portability_corpus(base: Path) -> Path:
     """A corpus covering every id/path carrier a cache entry can hold.
 
-    Deliberately NOT JavaScript/TypeScript: those suffixes are in
-    ``_JS_CACHE_BYPASS_SUFFIXES`` and are never cached, so a JS fixture would
-    make the warm-hit assertions below pass vacuously.
+    JavaScript/TypeScript portability is covered by tests/test_js_ast_cache.py.
 
     - python  -> cross-file `imports_from` with an already-canonical target
     - C       -> `edges[].target_file` (absolute) on the `#include` edge
@@ -536,9 +534,12 @@ def test_warm_hit_with_relative_inputs_from_above_the_root(tmp_path, monkeypatch
     ``src_pages_index_posts``, no longer under its ``pages_index`` file node's
     stem — the prefix ``build.py`` reconciles symbols to files by.
 
-    Astro is the fixture because ``.astro`` is cached while every other
-    JS-family suffix is in ``_JS_CACHE_BYPASS_SUFFIXES``; the defect itself is
-    language-agnostic (the gate is shared).
+    The cold side had its own form of the defect: a fresh stamp stays
+    CWD-relative while the JS symbol-resolution pass read every relative stamp
+    against the root, so ``src/lib/content.ts`` named no file, its
+    ``getPosts()`` went unindexed and the pass minted a second
+    ``lib_content_getposts`` node. A warm hit (absolute stamps) did not, so the
+    two builds disagreed once ``.ts`` files were cached too.
     """
     import pilothify.extract as ex
 
@@ -563,8 +564,7 @@ def test_warm_hit_with_relative_inputs_from_above_the_root(tmp_path, monkeypatch
     cold = ex.extract(rel_paths, parallel=False)
 
     # Warmth probe (see test_warm_cache_from_another_root...): a silent
-    # re-extraction would make the assertions below pass vacuously. Only the
-    # .astro file is cached, so it is the one that must not be re-extracted.
+    # re-extraction would make the assertions below pass vacuously.
     misses: list[str] = []
     real_extract = ex._safe_extract_with_xaml_root
 
@@ -575,9 +575,7 @@ def test_warm_hit_with_relative_inputs_from_above_the_root(tmp_path, monkeypatch
     monkeypatch.setattr(ex, "_safe_extract_with_xaml_root", _counting)
     _reset_stat_index()
     warm = ex.extract(rel_paths, parallel=False)
-    assert not [m for m in misses if m.endswith(".astro")], (
-        f"the .astro file must be served from the cache, re-extracted: {misses}"
-    )
+    assert not misses, f"both files must be served from the cache, re-extracted: {misses}"
 
     assert _graph_ids(cold) == _graph_ids(warm), (
         "a warm cache hit must reproduce the cold extraction's ids exactly"
@@ -585,6 +583,8 @@ def test_warm_hit_with_relative_inputs_from_above_the_root(tmp_path, monkeypatch
     for label, graph in (("cold", cold), ("warm", warm)):
         ids = {str(n["id"]) for n in graph["nodes"]}
         assert {"pages_index", "pages_index_posts"} <= ids, (label, sorted(ids))
+        getposts = [n for n in graph["nodes"] if n["id"] == "lib_content_getposts"]
+        assert [n.get("label") for n in getposts] == ["getPosts()"], (label, getposts)
         # The stem the frontmatter variable must NOT keep: `src_`-prefixed is
         # the pre-remap form derived from the raw input path.
         assert not [i for i in ids if i.startswith("src_pages_index")], (

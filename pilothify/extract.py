@@ -99,7 +99,7 @@ from pilothify.extractors.zig import extract_zig  # noqa: F401
 from pilothify.security import sanitize_metadata
 from pilothify.paths import disambiguate_ambiguous_candidates
 
-from pilothify.extractors.models import LanguageConfig, _JS_CACHE_BYPASS_SUFFIXES, _NamespaceExportFact, _StarExportFact, _SymbolAliasFact, _SymbolDeclarationFact, _SymbolExportFact, _SymbolImportFact, _SymbolResolutionFacts, _SymbolUseFact, _WORKSPACE_PACKAGE_CACHE  # noqa: E402,F401
+from pilothify.extractors.models import LanguageConfig, _JS_FAMILY_SUFFIXES, _NamespaceExportFact, _StarExportFact, _SymbolAliasFact, _SymbolDeclarationFact, _SymbolExportFact, _SymbolImportFact, _SymbolResolutionFacts, _SymbolUseFact, _WORKSPACE_PACKAGE_CACHE  # noqa: E402,F401
 
 from pilothify.extractors.resolution import (  # noqa: E402,F401
     _DECLDEF_HEADER_SUFFIXES,
@@ -130,6 +130,10 @@ from pilothify.extractors.resolution import (  # noqa: E402,F401
     _is_python_package_dir,
     _is_type_like_definition,
     _js_call_identifier,
+    _js_resolutions_hold,
+    clear_resolution_memo,
+    start_resolution_log,
+    stop_resolution_log,
     _js_default_export_name,
     _js_default_import_name,
     _js_export_clause,
@@ -11071,6 +11075,54 @@ def _worker_init(language_overrides: dict[str, str],
         adopt_cache_namespace(namespace)
 
 
+# An AST entry whose extraction resolved a module (see
+# resolution.start_resolution_log) carries the resolutions it made, and is
+# served only while every one of them still gives the same answer. That covers
+# the JS/TS family and anything else routed through the same resolvers (Astro,
+# an extensionless `node` script). A JS/TS-family entry always carries the
+# record, even an empty one, so one without it (written by hand, or by an older
+# release) is never served.
+_JS_RESOLUTIONS_KEY = "_js_resolutions"
+
+
+def _is_js_family(path: Path) -> bool:
+    return effective_suffix(path) in _JS_FAMILY_SUFFIXES
+
+
+def _load_ast_entry(path: Path, root: Path, cache_location: Path) -> "dict | None":
+    cached = load_cached(path, root, cache_root=cache_location, salt=cache_salt(path))
+    if cached is None:
+        return None
+    records = cached.pop(_JS_RESOLUTIONS_KEY, None)
+    if records is None:
+        return None if _is_js_family(path) else cached
+    return cached if _js_resolutions_hold(records) else None
+
+
+def _extract_for_cache(extractor, path: Path, root: Path) -> "tuple[dict, list]":
+    """Run the extractor and return its result with the module resolutions it made."""
+    start_resolution_log()
+    try:
+        result = _safe_extract_with_xaml_root(extractor, path, root)
+    finally:
+        records = stop_resolution_log()
+    return result, records
+
+
+def _save_ast_entry(path: Path, result: dict, root: Path, cache_location: Path, records: list) -> None:
+    # Never cache a zero-node result for an extractable file. Every supported
+    # source produces at least a file node, so an empty node list is anomalous
+    # (e.g. a transient batch/parallel hiccup). Caching it makes the empty
+    # byte-stable across runs and silently blinds affected/explain to and
+    # through the file; skipping the write lets a rerun self-heal.
+    # An intentional decline or virtual workspace root (result.get("skipped"))
+    # is cached so repeat runs do not re-extract and re-report it.
+    if "error" in result or not (result.get("nodes") or result.get("skipped")):
+        return
+    entry = {**result, _JS_RESOLUTIONS_KEY: records} if records or _is_js_family(path) else result
+    save_cached(path, entry, root, cache_root=cache_location, salt=cache_salt(path))
+
+
 def _extract_single_file(args: tuple) -> tuple[int, dict]:
     """Worker function for parallel extraction. Runs in a subprocess.
 
@@ -11095,28 +11147,18 @@ def _extract_single_file(args: tuple) -> tuple[int, dict]:
     root = Path(root_str)
     cache_location = Path(cache_location_str)
     _raise_recursion_limit()
-    bypass_cache = effective_suffix(path) in _JS_CACHE_BYPASS_SUFFIXES
 
     # Check cache first (avoid re-extraction)
-    if not bypass_cache:
-        cached = load_cached(path, root, cache_root=cache_location, salt=cache_salt(path))
-        if cached is not None:
-            return idx, cached
+    cached = _load_ast_entry(path, root, cache_location)
+    if cached is not None:
+        return idx, cached
 
     extractor = _get_extractor(path)
     if extractor is None:
         return idx, {"nodes": [], "edges": []}
 
-    result = _safe_extract_with_xaml_root(extractor, path, root)
-    # Never cache a zero-node result for an extractable file. Every supported
-    # source produces at least a file node, so an empty node list is anomalous
-    # (e.g. a transient batch/parallel hiccup). Caching it makes the empty
-    # byte-stable across runs and silently blinds affected/explain to and
-    # through the file; skipping the write lets a rerun self-heal.
-    # An intentional decline or virtual workspace root (result.get("skipped"))
-    # is cached so repeat runs do not re-extract and re-report it.
-    if not bypass_cache and "error" not in result and (result.get("nodes") or result.get("skipped")):
-        save_cached(path, result, root, cache_root=cache_location, salt=cache_salt(path))
+    result, records = _extract_for_cache(extractor, path, root)
+    _save_ast_entry(path, result, root, cache_location, records)
     return idx, result
 
 
@@ -11342,13 +11384,11 @@ def _extract_sequential(
         if extractor is None:
             per_file[idx] = {"nodes": [], "edges": []}
             continue
-        bypass_cache = effective_suffix(path) in _JS_CACHE_BYPASS_SUFFIXES
         # XAML boundary anchors on `root` (the corpus), not the cache location.
-        result = _safe_extract_with_xaml_root(extractor, path, root)
-        # See _extract_single_file: don't cache an anomalous zero-node result,
-        # but cache intentional declines/virtual manifests carrying `skipped`.
-        if not bypass_cache and "error" not in result and (result.get("nodes") or result.get("skipped")):
-            save_cached(path, result, root, cache_root=cache_location, salt=cache_salt(path))
+        result, records = _extract_for_cache(extractor, path, root)
+        # See _save_ast_entry: no anomalous zero-node result is cached, but
+        # intentional declines/virtual manifests carrying `skipped` are.
+        _save_ast_entry(path, result, root, cache_location, records)
         per_file[idx] = result
     if total_files >= _PROGRESS_INTERVAL:
         # Consistent denominator with the intermediate lines.
@@ -11435,6 +11475,7 @@ def extract(
     _XAML_CSHARP_CLASS_CACHE.clear()
     _MD_LINK_INDEX_CACHE.clear()
     _SCAN_ROOT_NAMESPACE_CACHE.clear()
+    clear_resolution_memo()
     # Path-resolution memoization is keyed by path (plus the cwd for a
     # relative path) with no mtime component, so — like the alias caches above —
     # a symlink repoint or a path that starts/stops existing between rebuilds in
@@ -11528,13 +11569,11 @@ def extract(
             per_file[i] = {"nodes": [], "edges": []}
             no_extractor += 1
             continue
-        bypass_cache = effective_suffix(path) in _JS_CACHE_BYPASS_SUFFIXES
-        if not bypass_cache:
-            cached = load_cached(path, root, cache_root=cache_location, salt=cache_salt(path))
-            if cached is not None:
-                per_file[i] = cached
-                cache_hits += 1
-                continue
+        cached = _load_ast_entry(path, root, cache_location)
+        if cached is not None:
+            per_file[i] = cached
+            cache_hits += 1
+            continue
         uncached_work.append((i, path))
 
     # Report the hit rate against the file TOTAL. The "(100%)" on the progress

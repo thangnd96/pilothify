@@ -143,7 +143,8 @@ def test_dedup_build_and_merge_keep_both(tmp_path):
 
 
 def test_pre_fix_ast_cache_entry_is_never_served_for_js(tmp_path):
-    """JS/TS bypass the AST cache, so a collapsed entry left by an older run can't resurface."""
+    """A JS/TS entry without the record of its module resolutions (every entry an
+    older release wrote) is never served, so a collapsed one can't resurface."""
     from pilothify.cache import save_cached
     from pilothify.extract import cache_salt, extract_js
     src = tmp_path / "a.js"
