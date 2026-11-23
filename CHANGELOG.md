@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.1.6 — 2026-11-23
 
 Phần lớn thay đổi đến từ việc đo graph của một repo front-end thật (khoảng 3.440 file code, 11.400 node, 29.300 cạnh) khi đổi nhánh và sửa code. fe-delivery 0.4.0 dựa vào các thay đổi này để giữ graph khớp code.
 
