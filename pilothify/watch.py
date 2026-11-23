@@ -2220,6 +2220,7 @@ def _rebuild_code(
     *,
     changed_paths: list[Path] | None = None,
     incremental: bool = False,
+    full: bool = False,
     follow_symlinks: bool = False,
     force: bool = False,
     no_cluster: bool = False,
@@ -2227,6 +2228,13 @@ def _rebuild_code(
     block_on_lock: bool = False,
 ) -> bool:
     """Re-run AST extraction + build + optional cluster + report for code files. No LLM needed.
+
+    ``full`` is an explicit request for the graph a full build of this tree
+    would write (``pilothify update --full``): the whole corpus is re-extracted,
+    and a queued incremental record does not narrow it, because a full pass
+    serves that record too. It keeps the shrink guard (unlike ``force``) and
+    the no-change gate, which skips only when the last build was itself a full
+    one of the same inputs.
 
     When ``force`` is True the node-count safety check in ``to_json`` is bypassed
     so the rebuilt graph overwrites graph.json even if it has fewer nodes.
@@ -2311,17 +2319,19 @@ def _rebuild_code(
             # A queued incremental request has to be honoured even when this
             # caller's own flag is off. The marker exists because that request
             # lost the lock; its change set is the manifest diff, which this
-            # holder can compute just as well.
-            incremental_effective = incremental or queued_incremental
-            if queued_full:
-                full = True
+            # holder can compute just as well. An explicit full request serves
+            # it as well, so it is not narrowed to the manifest diff.
+            explicit_full = full and changed_paths is None
+            incremental_effective = (incremental or queued_incremental) and not explicit_full
+            if queued_full or explicit_full:
+                full_pass = True
             elif changed_paths is None:
-                full = not incremental_effective
+                full_pass = not incremental_effective
             else:
-                full = False
+                full_pass = False
             merged = (
                 _merge_changed_paths(changed_paths, pending)
-                if changed_paths is not None and not full
+                if changed_paths is not None and not full_pass
                 else None
             )
             ok = _rebuild_code(
@@ -2330,6 +2340,7 @@ def _rebuild_code(
                 # A queued full request overrides the hint: a hook saw a tree
                 # change it could not describe, so re-extract everything.
                 incremental=incremental_effective and not queued_full,
+                full=explicit_full,
                 follow_symlinks=follow_symlinks,
                 force=force,
                 no_cluster=no_cluster,
@@ -3018,6 +3029,11 @@ def _rebuild_code(
                 "directed": _directed,
                 "multigraph": _has_parallel_links(raw_links, directed=_directed),
             }
+            # Same provenance stamp as the clustered path's to_json: without it
+            # a consumer comparing built_at_commit with HEAD read null and could
+            # not tell a fresh --no-cluster graph from a stale one.
+            if commit:
+                candidate_graph_data["built_at_commit"] = commit
             # This path writes the raw merged extraction, not a build_from_json
             # graph, so mint the same external stubs the builder does — otherwise
             # an import to stdlib / a third-party module leaves an undeclared

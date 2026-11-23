@@ -929,6 +929,8 @@ def _run_cli() -> None:
         print("  update <path>           re-extract code files and update the graph (no LLM needed)")
         print("    --force                 overwrite graph.json even if the rebuild has fewer nodes")
         print("                            (also: PILOTHIFY_FORCE=1 env var; use after refactors that delete code)")
+        print("    --full                  re-extract every file through this pipeline (the graph a full build")
+        print("                            writes; keeps the shrink guard; a no-op after a full build of the same tree)")
         print("    --no-cluster            skip clustering, write raw extraction only")
         print("  cluster-only <path>     rerun clustering on an existing graph.json and regenerate report")
         print("    --no-viz                skip graph.html generation (useful for >5000 node graphs / CI)")

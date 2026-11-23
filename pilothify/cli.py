@@ -3378,6 +3378,7 @@ def dispatch_command(cmd: str) -> None:
     elif cmd == "update":
         force = os.environ.get("PILOTHIFY_FORCE", "").lower() in ("1", "true", "yes")
         no_cluster = False
+        full = False
         args = sys.argv[2:]
         watch_arg: str | None = None
         for a in args:
@@ -3386,6 +3387,9 @@ def dispatch_command(cmd: str) -> None:
                 continue
             if a == "--no-cluster":
                 no_cluster = True
+                continue
+            if a == "--full":
+                full = True
                 continue
             if a.startswith("-"):
                 print(f"error: unknown update option: {a}", file=sys.stderr)
@@ -3420,10 +3424,14 @@ def dispatch_command(cmd: str) -> None:
         # re-extract only the files whose content differs from the
         # manifest, so a warm tree costs what changed rather than the whole
         # corpus. `--force` and a missing/unreadable manifest both keep the
-        # full path (see _rebuild_code).
+        # full path (see _rebuild_code). `--full` asks for the graph a full
+        # build of this tree would write: every file re-extracted through this
+        # same pipeline, the shrink guard still on, and nothing to do when the
+        # last build was already a full one of the same inputs.
         ok = _rebuild_code(
             watch_path,
-            incremental=True,
+            incremental=not full,
+            full=full,
             force=force,
             no_cluster=no_cluster,
             block_on_lock=True,
@@ -5632,13 +5640,16 @@ def dispatch_command(cmd: str) -> None:
             _invalidate_file_manifest_for_db_graph()
             from pilothify.paths import write_json_atomic as _write_json_atomic
             from pilothify.extract import RUN_ONLY_EXTRACTION_KEYS as _RUN_ONLY_KEYS
+            from pilothify.watch import _git_head as _raw_git_head
             # merge_raw_extraction above has consumed them; graph.json must not
             # carry this run's absolute input paths.
-            _write_json_atomic(
-                graph_json_path,
-                {k: v for k, v in merged.items() if k not in _RUN_ONLY_KEYS},
-                compact=True,
-            )
+            _raw_graph = {k: v for k, v in merged.items() if k not in _RUN_ONLY_KEYS}
+            # Same provenance stamp the clustered path writes through to_json,
+            # taken from the scanned repo, not the shell's cwd.
+            _raw_commit = _raw_git_head(cwd=Path(target).resolve())
+            if _raw_commit:
+                _raw_graph["built_at_commit"] = _raw_commit
+            _write_json_atomic(graph_json_path, _raw_graph, compact=True)
             try:
                 # Record the scan root so a later build_merge / update runbook can
                 # relativize deleted-file paths correctly even for a custom --out
