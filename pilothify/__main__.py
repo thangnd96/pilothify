@@ -1041,7 +1041,10 @@ def _run_cli() -> None:
         print("  export falkordb         emit Cypher or push to FalkorDB [--graph PATH] [--push URI] [--user U] [--password P]")
         print("                          (or set FALKORDB_PASSWORD instead of --password to keep it off argv)")
         print("  hook install            install post-commit/post-checkout/post-merge/post-rewrite git hooks (all platforms)")
+        print("    --no-merge-driver       hooks only: skip the graph.json merge driver (.gitattributes + git config)")
+        print("                            when pilothify-out/ is gitignored; rebuild log: $PILOTHIFY_REBUILD_LOG")
         print("  hook uninstall          remove git hooks")
+        print("    --no-merge-driver       leave the merge driver registration in place")
         print("  hook status             check if git hooks are installed")
         print(
             "  gemini install          write GEMINI.md section + BeforeTool hook (Gemini CLI)"

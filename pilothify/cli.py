@@ -2021,14 +2021,21 @@ def dispatch_command(cmd: str) -> None:
         )
 
         subcmd = sys.argv[2] if len(sys.argv) > 2 else ""
+        hook_opts = sys.argv[3:]
+        allowed_opts = {"--no-merge-driver"} if subcmd in ("install", "uninstall") else set()
+        unknown_opts = [a for a in hook_opts if a not in allowed_opts]
+        if unknown_opts:
+            print(f"error: unknown hook {subcmd or ''} option: {unknown_opts[0]}".replace("  ", " "), file=sys.stderr)
+            sys.exit(2)
+        merge_driver = "--no-merge-driver" not in hook_opts
         if subcmd == "install":
-            print(hook_install(Path(".")))
+            print(hook_install(Path("."), merge_driver=merge_driver))
         elif subcmd == "uninstall":
-            print(hook_uninstall(Path(".")))
+            print(hook_uninstall(Path("."), merge_driver=merge_driver))
         elif subcmd == "status":
             print(hook_status(Path(".")))
         else:
-            print("Usage: pilothify hook [install|uninstall|status]", file=sys.stderr)
+            print("Usage: pilothify hook [install|uninstall [--no-merge-driver]|status]", file=sys.stderr)
             sys.exit(1)
     elif cmd == "query":
         _query_usage = "Usage: pilothify query \"<question>\" [--dfs] [--no-doc-demotion] [--context C] [--seed X] [--budget N] [--depth N] [--graph path]"

@@ -382,11 +382,14 @@ _src = '''
 __REBUILD_BODY__
 '''
 _log = os.environ.get('PILOTHIFY_REBUILD_LOG') or os.path.join(os.path.expanduser('~'), '.cache', 'pilothify-rebuild.log')
-try:
-    os.makedirs(os.path.dirname(_log), exist_ok=True)
-    _out = open(_log, 'a', buffering=1, encoding='utf-8', errors='replace')
-except OSError:
-    _out = subprocess.DEVNULL
+_out = subprocess.DEVNULL
+for _cand in (_log, os.path.join(os.environ.get('PILOTHIFY_OUT') or 'pilothify-out', 'rebuild.log')):
+    try:
+        os.makedirs(os.path.dirname(_cand) or '.', exist_ok=True)
+        _out = open(_cand, 'a', buffering=1, encoding='utf-8', errors='replace')
+        break
+    except OSError:
+        continue
 _kw = dict(stdout=_out, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, cwd=os.getcwd(), close_fds=True)
 _cmd = [sys.executable, '-P', '-c', _src]
 if os.name == 'nt':
@@ -560,8 +563,8 @@ export PILOTHIFY_CHANGED="$CHANGED"
 # can take hours; blocking the post-commit hook stalls the shell. The Python
 # launcher below detaches the child cross-platform, so it works on Git for
 # Windows' shell too (which lacks the coreutils backgrounding tools).
-_PILOTHIFY_LOG="${HOME}/.cache/pilothify-rebuild.log"
-mkdir -p "$(dirname "$_PILOTHIFY_LOG")"
+_PILOTHIFY_LOG="${PILOTHIFY_REBUILD_LOG:-${HOME}/.cache/pilothify-rebuild.log}"
+mkdir -p "$(dirname "$_PILOTHIFY_LOG")" 2>/dev/null
 export PILOTHIFY_REBUILD_LOG="$_PILOTHIFY_LOG"
 echo "[pilothify hook] launching background rebuild (log: $_PILOTHIFY_LOG)"
 """ + _detached_launch(_REBUILD_BODY_COMMIT) + """)
@@ -622,8 +625,8 @@ GIT_DIR=${GIT_DIR:-$(git rev-parse --git-dir 2>/dev/null)}
 [ "${PILOTHIFY_SKIP_HOOK:-0}" = "1" ] && exit 0
 
 """ + _WORKTREE_GUARD + _TOPLEVEL_ANCHOR + _PYTHON_DETECT + """
-_PILOTHIFY_LOG="${HOME}/.cache/pilothify-rebuild.log"
-mkdir -p "$(dirname "$_PILOTHIFY_LOG")"
+_PILOTHIFY_LOG="${PILOTHIFY_REBUILD_LOG:-${HOME}/.cache/pilothify-rebuild.log}"
+mkdir -p "$(dirname "$_PILOTHIFY_LOG")" 2>/dev/null
 export PILOTHIFY_REBUILD_LOG="$_PILOTHIFY_LOG"
 echo "[pilothify] Branch switched - launching background rebuild (log: $_PILOTHIFY_LOG)"
 """ + _detached_launch(_REBUILD_BODY_CHECKOUT) + """)
@@ -675,8 +678,8 @@ GIT_DIR=${GIT_DIR:-$(git rev-parse --git-dir 2>/dev/null)}
 [ "${PILOTHIFY_SKIP_HOOK:-0}" = "1" ] && exit 0
 
 """ + _WORKTREE_GUARD + _TOPLEVEL_ANCHOR + _PYTHON_DETECT + """
-_PILOTHIFY_LOG="${HOME}/.cache/pilothify-rebuild.log"
-mkdir -p "$(dirname "$_PILOTHIFY_LOG")"
+_PILOTHIFY_LOG="${PILOTHIFY_REBUILD_LOG:-${HOME}/.cache/pilothify-rebuild.log}"
+mkdir -p "$(dirname "$_PILOTHIFY_LOG")" 2>/dev/null
 export PILOTHIFY_REBUILD_LOG="$_PILOTHIFY_LOG"
 echo "[pilothify] Merge completed - launching background rebuild (log: $_PILOTHIFY_LOG)"
 """ + _detached_launch(_REBUILD_BODY_CHECKOUT) + """)
@@ -727,8 +730,8 @@ fi
 [ "${PILOTHIFY_SKIP_HOOK:-0}" = "1" ] && exit 0
 
 """ + _WORKTREE_GUARD + _TOPLEVEL_ANCHOR + _PYTHON_DETECT + """
-_PILOTHIFY_LOG="${HOME}/.cache/pilothify-rebuild.log"
-mkdir -p "$(dirname "$_PILOTHIFY_LOG")"
+_PILOTHIFY_LOG="${PILOTHIFY_REBUILD_LOG:-${HOME}/.cache/pilothify-rebuild.log}"
+mkdir -p "$(dirname "$_PILOTHIFY_LOG")" 2>/dev/null
 export PILOTHIFY_REBUILD_LOG="$_PILOTHIFY_LOG"
 echo "[pilothify] Rebase completed - launching background rebuild (log: $_PILOTHIFY_LOG)"
 """ + _detached_launch(_REBUILD_BODY_CHECKOUT) + """)
@@ -1142,8 +1145,14 @@ def _user_hooks_dir(hooks_dir: Path) -> Path:
     return hooks_dir
 
 
-def install(path: Path = Path(".")) -> str:
-    """Install pilothify's post-commit, post-checkout, post-merge, and post-rewrite hooks in the nearest git repo."""
+def install(path: Path = Path("."), *, merge_driver: bool = True) -> str:
+    """Install pilothify's post-commit, post-checkout, post-merge, and post-rewrite hooks in the nearest git repo.
+
+    ``merge_driver=False`` (``hook install --no-merge-driver``) installs only the
+    hooks. The graph.json union merge driver adds a ``.gitattributes`` line and
+    git config, and serves no purpose in a repository that gitignores the
+    output directory, since graph.json is then never merged.
+    """
     root = _git_root(path)
     if root is None:
         raise RuntimeError(f"No git repository found at or above {path.resolve()}")
@@ -1175,7 +1184,7 @@ def install(path: Path = Path(".")) -> str:
     post_rewrite_msg = _install_hook(
         hooks_dir, "post-rewrite", rewrite_hook, _REWRITE_HOOK_MARKER, _REWRITE_HOOK_MARKER_END
     )
-    merge_msg = _register_merge_driver(root)
+    merge_msg = _register_merge_driver(root) if merge_driver else "skipped (--no-merge-driver)"
 
     return (
         f"post-commit: {commit_msg}\npost-checkout: {checkout_msg}\n"
@@ -1183,8 +1192,12 @@ def install(path: Path = Path(".")) -> str:
     )
 
 
-def uninstall(path: Path = Path(".")) -> str:
-    """Remove pilothify's post-commit, post-checkout, post-merge, and post-rewrite hooks."""
+def uninstall(path: Path = Path("."), *, merge_driver: bool = True) -> str:
+    """Remove pilothify's post-commit, post-checkout, post-merge, and post-rewrite hooks.
+
+    ``merge_driver=False`` (``hook uninstall --no-merge-driver``) leaves the merge
+    driver registration as it is, for a caller that installed only the hooks.
+    """
     root = _git_root(path)
     if root is None:
         raise RuntimeError(f"No git repository found at or above {path.resolve()}")
@@ -1198,7 +1211,7 @@ def uninstall(path: Path = Path(".")) -> str:
     post_rewrite_msg = _uninstall_hook(
         hooks_dir, "post-rewrite", _REWRITE_HOOK_MARKER, _REWRITE_HOOK_MARKER_END
     )
-    merge_msg = _unregister_merge_driver(root)
+    merge_msg = _unregister_merge_driver(root) if merge_driver else "left in place (--no-merge-driver)"
 
     return (
         f"post-commit: {commit_msg}\npost-checkout: {checkout_msg}\n"
